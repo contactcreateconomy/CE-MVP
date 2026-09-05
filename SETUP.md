@@ -89,6 +89,21 @@ Note: `convex/_generated/api.d.ts` was hand-extended with the `legalContent`
 modules (codegen needs the same CLI auth); the next authenticated
 `npx convex dev` regenerates identical entries.
 
+## Admin-access rollback (P2-AUTH-CUTOVER gate condition 4)
+
+If the founder loses admin access after the auth cutover (ADMIN_EMAILS
+removal — not yet performed), restore the legacy grant:
+
+```bash
+npx convex env set ADMIN_EMAILS contact.createconomy@gmail.com
+# restart `pnpm dev`; the legacy grant in convex/auth.ts's afterUser
+# callback re-activates on the next sign-in
+```
+
+The founder's canonical authority is the `roleAssignments` administrator row
+(granted 2026-09-05 via CAP-007 `grantFounder`; verified idempotent +
+email-guarded). ADMIN_EMAILS remains set until the full cutover.
+
 ## Coverage gate
 
 `node scripts/cap-coverage.mjs` — range-expanded CAP→slice coverage check

@@ -7,7 +7,7 @@
  * · CAP-414-417 ops coverage (upsert, ack, vacant alert, after-hours escalation).
  */
 
-import { mutation, query } from "../_generated/server";
+import { internalMutation, mutation, query } from "../_generated/server";
 import { v } from "convex/values";
 import { assertAdminPermission, AdminAuthzError } from "../lib/authz";
 import { writeAudited, newCorrelationId } from "../lib/audit";
@@ -185,5 +185,72 @@ export const listOpsAssignments = query({
   handler: async (ctx) => {
     await assertAdminPermission(ctx);
     return await ctx.db.query("opsAssignments").collect();
+  },
+});
+
+
+/**
+ * CAP-007 — grantFounder: the one-time CLI bootstrap of the FIRST
+ * administrator (P2-AUTH-CUTOVER gate condition 1). Internal by design —
+ * CLI/dashboard only, never a public surface. First-boot semantics: refuses
+ * when an active administrator already exists (use roles.assign, CAP-413);
+ * the FORCE_FOUNDER_REGRANT env escape hatch stays deployment-side.
+ * Idempotent for the same user (re-run = no-op returning the existing row).
+ */
+export const grantFounder = internalMutation({
+  args: { userId: v.id("users"), email: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    if (!user) throw new Error("grantFounder: user not found");
+    // The caller confirms the founder identity — mismatch aborts (CLI typo guard)
+    if (args.email && user.email !== args.email) {
+      throw new Error(`grantFounder: user email "${user.email}" ≠ supplied "${args.email}" — refusing`);
+    }
+
+    const existingRows = await ctx.db
+      .query("roleAssignments")
+      .filter((q: any) => q.eq(q.field("role"), "administrator"))
+      .collect();
+    const active = existingRows.filter((r: any) => r.status === "active" && r.userId === args.userId);
+    if (active.length > 0) {
+      return { already: true, assignmentId: active[0]._id };
+    }
+    const anyActiveAdmin = existingRows.some((r: any) => r.status === "active");
+    if (anyActiveAdmin && process.env.FORCE_FOUNDER_REGRANT !== "true") {
+      throw new Error("grantFounder: an active administrator already exists — use roles.assign (CAP-413)");
+    }
+
+    const now = Date.now();
+    const assignmentId = await ctx.db.insert("roleAssignments", {
+      userId: args.userId,
+      role: "administrator",
+      scopeType: "global",
+      scopeId: undefined, // null for global scope (optional field)
+      status: "active",
+      grantedAt: now,
+    });
+    // The audit row — System actor (CLI bootstrap; no user session exists)
+    await ctx.db.insert("auditLog", {
+      action: "admin.roles.grantFounder",
+      target: `roleAssignment:${assignmentId}`,
+      next: { userId: args.userId, role: "administrator", email: user.email ?? null },
+      reasonCode: "founder_bootstrap",
+      correlationId: newCorrelationId(),
+      reversible: true,
+      createdAt: now,
+    });
+    return { already: false, assignmentId };
+  },
+});
+
+/** Step-4/5 verification read (FOUNDER-BOOTSTRAP): active administrators. */
+export const countActiveAdmins = query({
+  args: {},
+  handler: async (ctx) => {
+    const rows = await ctx.db
+      .query("roleAssignments")
+      .filter((q: any) => q.eq(q.field("role"), "administrator"))
+      .collect();
+    return rows.filter((r: any) => r.status === "active").length;
   },
 });
