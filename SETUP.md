@@ -13,12 +13,28 @@ repo root (updated 2026-09-05 from the earlier `PRD/app` wording).
 2. **pnpm 10.x** — bundled with Node via corepack (`corepack enable`) or
    `npm i -g pnpm@10`. Note: on the reference dev shell, pnpm is NOT on the
    plain PATH — the fnm installation dir must be prepended first.
+   Windows notes: Node 25+ no longer bundles corepack — use `npm i -g pnpm@10`
+   there. If `pnpm install` fails with path-length errors, enable long-path
+   support (`git config --global core.longpaths true` plus the Windows
+   long-paths group-policy flag) — pnpm's `.pnpm` store is deep.
 
-## Install & run
+## Install & run (fresh clone, macOS / Windows / Linux)
 
 ```bash
 # from the repo root
-pnpm install          # ~42s cold; 621 packages; uses pnpm-lock.yaml
+pnpm install          # ~621 packages; uses pnpm-lock.yaml
+
+# frontend env — REQUIRED on every fresh clone (gitignored, never committed):
+cp apps/forum/.env.example apps/forum/.env.local      # macOS/Linux
+copy apps\forum\.env.example apps\forum\.env.local    # Windows (cmd)
+# then set the one value it needs:
+#   NEXT_PUBLIC_CONVEX_URL=https://watchful-chameleon-570.convex.cloud
+#   (the example file documents this URL — it's the shared dev deployment)
+
+# optional — only if this machine will push backend changes or run seeds
+# (once per machine; opens a browser auth flow):
+npx convex login
+
 pnpm dev              # Next.js dev server → http://localhost:3000
 ```
 
@@ -35,9 +51,10 @@ http://localhost:3000/feed` → `200`.
 
 ## Environment
 
-`.env.local` files live at the repo root (Convex CLI config, created by
-`npx convex dev`) and at `apps/forum/` (values are pre-configured for the
-shared Convex cloud deployment; key names only):
+`.env.local` files live at the repo root (Convex CLI config, created
+automatically by `npx convex dev` when you first push) and at `apps/forum/`
+(**created by you on every fresh clone** — it is gitignored; see the
+quickstart above). Key names only:
 
 - `NEXT_PUBLIC_CONVEX_URL` — client URL (the only var the app source reads,
   via `@cemvp/convex-client`)
