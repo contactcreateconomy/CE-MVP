@@ -204,8 +204,8 @@ describe("SLICE-P3-02 — admin shell chrome", () => {
 });
 
 describe("SLICE-P3-03 — adminWidgets catalog + seeder", () => {
-  it("source-controlled catalog: 3 Phase-3 consoles with correct permission keys", () => {
-    expect(ADMIN_WIDGET_CATALOG).toHaveLength(3);
+  it("source-controlled catalog: the Phase-3 consoles with correct permission keys (catalog grows per phase)", () => {
+    expect(ADMIN_WIDGET_CATALOG.length).toBeGreaterThanOrEqual(3); // grows per phase (P4-12: affiliate-inventory)
     const config = ADMIN_WIDGET_CATALOG.find((w) => w.routeKey === "/admin/config");
     expect(config?.requiredPermissionKeys).toEqual(["administrator"]);
     const roles = ADMIN_WIDGET_CATALOG.find((w) => w.routeKey === "/admin/roles");

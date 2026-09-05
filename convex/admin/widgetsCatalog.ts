@@ -12,7 +12,9 @@
 
 import { internalMutation } from "../_generated/server";
 
-/** dataSourceKey literals — derived ONLY from Phase 3's three consoles. */
+/** dataSourceKey literals — Phase 3's three consoles + per-phase growth
+ * (P3-03's own scope: the catalog grows as later consoles land; P4-12 adds
+ * the affiliate-inventory row). */
 const DATA_SOURCE_KEYS = [
   "config.getNamespace",    // /admin/config
   "roles.listAssignments",  // /admin/roles
@@ -50,6 +52,20 @@ export const ADMIN_WIDGET_CATALOG: WidgetDef[] = [
     wikiSlug: "admin-config",
     freshnessThresholdSeconds: 60,
     dataSourceKey: "config.getNamespace",
+  },
+  {
+    widgetKey: "admin-affiliate-inventory",
+    moduleId: "m2",
+    widgetType: "console",
+    title: "Affiliate Inventory",
+    routeKey: "/admin/affiliate-inventory",
+    requiredPermissionKeys: ["administrator"],
+    status: "active",
+    homeEligible: false,
+    defaultOrder: 40,
+    wikiSlug: "admin-affiliate-inventory",
+    freshnessThresholdSeconds: 60,
+    dataSourceKey: "affiliate.listInventory",
   },
   {
     widgetKey: "admin-roles",

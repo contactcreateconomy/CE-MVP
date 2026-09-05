@@ -1081,7 +1081,7 @@ export default defineSchema({
    *  (P4-12) stages links on the candidate; publish validates + materializes. */
   postAffiliateLinks: defineTable({
     postId: v.id("posts"),
-    affiliateLinkId: v.string(), // v.id("affiliateLinks") — P4-12 defines the table
+    affiliateLinkId: v.id("affiliateLinks"),
     toolId: v.optional(v.string()),
     labelType: v.union(
       v.literal("featured_tool"), v.literal("popular_platform"),
@@ -1092,6 +1092,51 @@ export default defineSchema({
     injectedAt: v.number(),
   })
     .index("by_postId", ["postId"])
+    .index("by_toolId", ["toolId"]),
+
+  /** bible l.206 — Wave-4B affiliate inventory (E6 defaults). The FK chain
+   *  commercialEntities → affiliateRelationships → affiliateLinks feeds
+   *  CAP-049 inject; CAP-545 soft-deactivates cascade down it. */
+  commercialEntities: defineTable({
+    name: v.string(),
+    entityType: v.union(v.literal("vendor"), v.literal("brand"), v.literal("publisher"), v.literal("internal")),
+    websiteUrl: v.string(),
+    logoAssetId: v.optional(v.id("_storage")), // written via CAP-012 generateUploadUrl (forum/mutations — reuse, no fork)
+    status: v.union(v.literal("active"), v.literal("inactive")),
+    createdAt: v.number(),
+  })
+    .index("by_status", ["status"])
+    .index("by_name", ["name"]),
+
+  /** bible l.207 — E2 founder enum; CAP-049 injects only when =active;
+   *  CAP-545 entity-deactivate cascade writes terminated. */
+  affiliateRelationships: defineTable({
+    commercialEntityId: v.id("commercialEntities"),
+    toolId: v.optional(v.string()),
+    network: v.string(),
+    programName: v.string(),
+    relationshipStatus: v.union(v.literal("active"), v.literal("paused"), v.literal("terminated")),
+    commissionModel: v.union(v.literal("cpa"), v.literal("cps"), v.literal("cpc"), v.literal("revshare"), v.literal("flat"), v.literal("other")),
+    cookieWindow: v.number(), // integer days
+    approvedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_commercialEntityId", ["commercialEntityId"])
+    .index("by_toolId", ["toolId"])
+    .index("by_status", ["relationshipStatus"]),
+
+  /** bible l.208 — E1: status for CAP-545 soft-deactivate (CAP-049 injects
+   *  only when active); E3: URL validation per CAP-100+CAP-235 discipline. */
+  affiliateLinks: defineTable({
+    affiliateRelationshipId: v.optional(v.id("affiliateRelationships")), // bible-optional; mutations enforce the parent chain (contract state B)
+    toolId: v.optional(v.string()),
+    url: v.string(),
+    disclosureClass: v.union(v.literal("sponsored"), v.literal("affiliate"), v.literal("paid")),
+    status: v.union(v.literal("active"), v.literal("inactive")),
+    createdAt: v.number(),
+  })
+    .index("by_affiliateRelationshipId", ["affiliateRelationshipId"])
+    .index("by_status", ["status"])
     .index("by_toolId", ["toolId"]),
 
   /** bible l.88 — Review block. verdictScore is computed, NEVER member-settable. */

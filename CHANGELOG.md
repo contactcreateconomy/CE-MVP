@@ -7,6 +7,14 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Phase 4 — P4-12 affiliate inventory (2026-09-05)
+- Schema (bible l.206-208, Wave-4B E1–E6 verbatim): `commercialEntities` → `affiliateRelationships` → `affiliateLinks` (+ `postAffiliateLinks.affiliateLinkId` tightened to the id type). Logo asset via CAP-012 (`forum/mutations.generateUploadUrl` — reuse, no fork).
+- `convex/affiliateInventory.ts` (administrator-only per W4B-E4, CAP-019 rate-limited, writeAudited): `listInventory` (CAP-544 connected read), `entityUpsert`/`relationshipUpsert`/`linkUpsert` (CAP-539/540/541 with **server-side parent-chain rejection** — create-child-without-parent blocked in UI and mutations; URLs on the E3 HTTPS/no-creds discipline), `deactivate` (CAP-545 soft cascade: entity → relationships terminated + links inactive; relationship → terminated + its links; link → itself; published posts keep their links per FUTURE-M2-01).
+- `convex/editorial/inject.ts` (CAP-049/050): inject verifies active status **at injection time** (link active AND relationship active — the E1/E2 stamps), enforces the CAP-057 boundary server-side, and stages onto `draft.plannedAffiliateLinks` (publish validates + materializes); remove un-stages (published posts immutable per FUTURE-M2-01). `listInjectable` powers the picker (tool name-match as the operator's selection aid).
+- `/admin/affiliate-inventory` console (dense §12.4 panel): entity cards with nested relationships/links, parent-gated create buttons (contract state B), CAP-545 confirm modals, logo upload. Widget catalog grew the console row (administrator-only; the P3-03 test evolved with the catalog's designed per-phase growth).
+- Editorial surface: "Inject link (n/2)" affordance on approved/scheduled candidates with the active-link picker + staged-link removal.
+- Verified: typecheck/lint 0 errors, 301/301 tests (+7), coverage 572/572, pushed live; widget catalog re-seeded (4 consoles).
+
 ### Phase 4 — P4-11 publish (2026-09-05)
 - `convex/editorial/publish.ts`: time-fired `publishCandidate` (internalAction → atomic `persistPublish`) — one transaction writes posts (authorType=editorial) + postNews source-of-truth block + postRevisions (changedByUserId = the approver stamped at approve) + postAffiliateLinks materialization + contentEmbeddings copy (candidate→post) + candidate status flip; idempotent (scheduled-only re-check).
 - **CAP-046 re-run** at publish: URL half checked inside the transaction; similarity half enforced by revision-staleness (latest run must pass AND be on the current candidateRevision — a post-edit draft without re-qualification cannot publish). **CAP-057 cap binds HERE** (FATAL-adjacent): `affiliateCapViolation` (≤2/post, ≤1/tool) runs inside the publish gate — inject 3 → publish blocked. **CAP-056** persona density trivially satisfied — persona fan-out (CAP-047/051) stays fenced to Phase 5 (flagged).

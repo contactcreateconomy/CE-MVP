@@ -15,7 +15,7 @@
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { CalendarClock, Check, RefreshCw, Save, X } from "lucide-react";
+import { CalendarClock, Check, Plus, RefreshCw, Save, X } from "lucide-react";
 
 import { api } from "../../../../../../../convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
@@ -355,6 +355,15 @@ export default function AdminEditorialPage() {
                   <CalendarClock className="size-4" /> Schedule
                 </Button>
               )}
+              {(review.candidate.status === "approved" || review.candidate.status === "scheduled") && (
+                <AffiliateInjectSection
+                  candidateId={selectedId ?? ""}
+                  staged={(((review.candidate.draft as any)?.plannedAffiliateLinks ?? []) as any[]).map((l) => l.affiliateLinkId)}
+                  candidateToolIds={((review.candidate.draft as any)?.toolIds ?? []) as string[]}
+                  onError={setDecisionError}
+                  onDone={(m) => setDecisionToast({ variant: "success", message: m })}
+                />
+              )}
             </div>
           </CardHeader>
           <CardContent className="p-4 pt-0">
@@ -486,5 +495,103 @@ export default function AdminEditorialPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+/** CAP-049/050 — inject/remove on the editorial surface (P4-12). The picker
+ *  lists active inventory links (server verifies active status AGAIN at
+ *  injection time); the cap boundary disables the affordance (≤2/post,
+ *  ≤1/tool — publish re-enforces server-side). */
+function AffiliateInjectSection({
+  candidateId, staged, candidateToolIds, onError, onDone,
+}: {
+  candidateId: string;
+  staged: string[];
+  candidateToolIds: string[];
+  onError: (e: string | null) => void;
+  onDone: (message: string) => void;
+}) {
+  const stagedCount = staged.length;
+  const injectable = useQuery(api.editorial.inject.listInjectable, {});
+  const injectLink = useMutation(api.editorial.inject.inject);
+  const removeLink = useMutation(api.editorial.inject.remove);
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  const atCap = stagedCount >= 2;
+  // CAP-049's tool name-match as a selection aid: candidate-bound tools first
+  const sorted = ((injectable as any[]) ?? []).slice().sort((a, b) => {
+    const aMatch = a.toolId && candidateToolIds.includes(a.toolId) ? 0 : 1;
+    const bMatch = b.toolId && candidateToolIds.includes(b.toolId) ? 0 : 1;
+    return aMatch - bMatch;
+  });
+
+  const run = async (fn: () => Promise<unknown>, message: string) => {
+    onError(null);
+    try {
+      await fn();
+      onDone(message);
+      setPickerOpen(false);
+    } catch (e) {
+      onError((e as Error).message);
+    }
+  };
+
+  return (
+    <>
+      <Button
+        variant="secondary"
+        size="sm"
+        disabled={atCap}
+        title={atCap ? "CAP-057: ≤2 injected links per post" : "Inject an affiliate link (verified active at injection time — CAP-049)"}
+        onClick={() => setPickerOpen(true)}
+      >
+        <Plus className="size-4" /> Inject link ({stagedCount}/2)
+      </Button>
+      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Inject affiliate link</DialogTitle>
+            <DialogDescription>
+              Structured CTA at publish (rel=&quot;sponsored nofollow noopener&quot;, never prose). Active status is re-verified server-side at injection time.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-72 space-y-1 overflow-y-auto">
+            {sorted.length === 0 ? (
+              <p className="text-sm text-(--text-muted)">No active links in the inventory — an administrator adds them at /admin/affiliate-inventory.</p>
+            ) : (
+              sorted.map((l) => (
+                <button
+                  key={l._id}
+                  className="flex w-full flex-col items-start gap-0.5 rounded-lg border border-(--border-default) p-2 text-left hover:border-(--border-active)"
+                  onClick={() => void run(() => injectLink({ candidateId: candidateId as any, affiliateLinkId: l._id }), "Link injected (staged for publish)")}
+                >
+                  <span className="flex items-center gap-2 text-sm text-(--text-primary)">
+                    <Badge tone="neutral">{l.disclosureClass}</Badge>
+                    {l.entityName ?? "(no entity)"} · {l.programName ?? l.network ?? "(no program)"}
+                  </span>
+                  <span className="truncate text-xs text-(--text-muted)">{l.url}</span>
+                </button>
+              ))
+            )}
+          </div>
+          {stagedCount > 0 ? (
+            <div className="border-t border-(--border-subtle) pt-2">
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-(--text-muted)">Staged ({stagedCount}/2) — click to remove (CAP-050)</p>
+              <div className="space-y-1">
+                {staged.map((id) => (
+                  <button
+                    key={id}
+                    className="w-full rounded-md border border-(--border-subtle) px-2 py-1.5 text-left text-xs text-(--text-secondary) hover:border-(--border-active)"
+                    onClick={() => void run(() => removeLink({ candidateId: candidateId as any, affiliateLinkId: id as any }), "Link removed")}
+                  >
+                    {String(id)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
