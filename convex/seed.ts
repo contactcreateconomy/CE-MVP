@@ -13,6 +13,8 @@ import { internalMutation } from "./_generated/server";
 import { TAXONOMY_REGISTRY_ROW } from "./tags";
 import { AUTOFLAG_REGISTRY_ROWS } from "./toolRatings";
 import { RULEBOOK_REGISTRY_ROWS } from "./rulebook";
+import { SIGNUP_EVENT_CATALOG_ROW } from "./bootstrap";
+import { WAITLIST_EVENT_CATALOG_ROW } from "./waitlist";
 
 // DEC-C01 (LOCKED, founder): the five editorial categories, constrained to
 // AI, creators, small business, digital work.
@@ -43,6 +45,12 @@ const REGISTRY_ROWS = [
   // rulebook.* — live values live in qualificationRules.thresholdConfig).
   ...RULEBOOK_REGISTRY_ROWS,
 ];
+
+// P1-07 mechanism + P2 rows: CAP-437 rejects capture of any event whose
+// catalog row is missing (fail-closed rolls back the domain mutation), so
+// the rows must exist in the deployment before the surfaces run. Idempotent
+// by eventName.
+const EVENT_CATALOG_ROWS = [SIGNUP_EVENT_CATALOG_ROW, WAITLIST_EVENT_CATALOG_ROW];
 
 export const bootstrap = internalMutation({
   args: {},
@@ -113,6 +121,20 @@ export const bootstrap = internalMutation({
         updatedAt: Date.now(),
       });
       result.push(`config:${row.key}: seeded`);
+    }
+
+    // 4. eventCatalog — idempotent by eventName (P1-07 gate rows; P2 events)
+    for (const row of EVENT_CATALOG_ROWS) {
+      const existing = await ctx.db
+        .query("eventCatalog")
+        .withIndex("by_eventName", (q: any) => q.eq("eventName", row.eventName))
+        .unique();
+      if (existing) {
+        result.push(`eventCatalog:${row.eventName}: skipped`);
+        continue;
+      }
+      await ctx.db.insert("eventCatalog", { ...row });
+      result.push(`eventCatalog:${row.eventName}: seeded`);
     }
 
     // R-FOUNDER boundary: no users, no roleAssignments, no founder grants —

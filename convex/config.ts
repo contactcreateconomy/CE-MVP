@@ -50,6 +50,19 @@ export const casUpdate = mutation({
     }
     if (registry.sealed) throw new Error(`casUpdate: "${args.key}" is sealed (CAP-394)`);
 
+    // CAP-480/E5: signup.mode→open only through the readiness gate — the
+    // same in-transaction rule as admin/stop.signupModeSet, so the generic
+    // editor path cannot bypass it (fail-closed for opening up; waitlist/
+    // closed remain always settable).
+    if (args.key === "signup.mode" && args.value === "open") {
+      const readiness = await ctx.db.query("launchReadinessResults").first();
+      if (!readiness || readiness.overall !== "ready") {
+        throw new Error(
+          `casUpdate: cannot set signup.mode=open — readiness is ${readiness?.overall ?? "unevaluated"} (fail-closed per E5/DEC-M18-READINESS)`,
+        );
+      }
+    }
+
     // CAP-395: reason required for tier2/3
     if ((registry.editTier === "tier2" || registry.editTier === "tier3") && !args.reason?.trim()) {
       throw new Error(`casUpdate: reason required for ${registry.editTier} keys`);

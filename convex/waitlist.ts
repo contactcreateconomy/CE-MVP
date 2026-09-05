@@ -12,6 +12,32 @@ import { mutation as publicMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { captureEvent } from "./lib/events";
 
+// CAP-478: the ONLY event waitlist.join emits — an observational
+// waitlist_join (NOT an L08 signup_completed). This catalog row satisfies
+// CAP-437's unknown-event gate; seeded by seed:bootstrap (idempotent by
+// eventName). Without it, captureEvent throws and the public mutation
+// rolls back (CAP-436 fail-closed).
+export const WAITLIST_EVENT_CATALOG_ROW = {
+  eventName: "waitlist_join",
+  schemaVersion: 1,
+  eventClass: "interaction" as const,
+  ownerModule: "m1",
+  description: "Anonymous waitlist email capture (waitlist.join publicMutation)",
+  captureMode: "same_mutation",
+  piiClass: "none",
+  consentGate: "strictly_necessary",
+  signalEligible: false,
+  s18Eligible: false,
+  excludeStaff: true,
+  excludePersonas: true,
+  idempotencyScope: "none",
+  retentionClass: "standard",
+  posthogMirror: false,
+  status: "active",
+  effectiveFrom: Date.now(),
+  owner: "m1",
+};
+
 export const join = publicMutation({
   args: { email: v.string() },
   handler: async (ctx, { email }) => {

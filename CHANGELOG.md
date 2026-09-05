@@ -7,6 +7,13 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Audited — Phases 1–3 verification (2026-09-05)
+- **Static:** 279/279 tests, lint 0 errors, coverage 572/572; bug-class sweep clean (no `ctx.db` inside any action; absorbed entities `takedownRequests`/`dmcaNotices`/`systemJobs` exist only in comments/tests asserting their absence; PostHog unmounted; flag defaults fail closed, no `?? true`).
+- **Live (dev deployment):** `effectiveSignupMode` fail-closes to `closed` with no readiness row (FATAL-M1A-02 ✓); sealed keys absent from registry and rejected by `casUpdate` ✓; unregistered config keys throw ✓; admin widget catalog seeded via `deploySeed` (3 consoles — DEV-HANDOFF #5 closed) ✓; `seed:bootstrap` idempotent (37/37 skipped on re-run) ✓; E5 gate blocks `signup.mode=open` ✓.
+- **Fixed — runtime-breaking:** `eventCatalog` was never seeded anywhere, so `captureEvent` rejected `signup` and `waitlist_join` (CAP-437) → **public `waitlist.join` and `finalizeBootstrap` would have failed on first real use**. Rows now seeded idempotently by `seed:bootstrap`. Separately, every `rawEvents` insert missed the required `isAiPersona` field (bible unions M12's `isAiPersona` with M16's `isPersona`) — `captureEvent` now derives both from one truth. E2E-verified: `waitlist.join` joins, duplicate-joins idempotently, writes no `users` row (CAP-014), captures the event same-mutation (CAP-436).
+- **Fixed — logic:** `config.casUpdate` allowed setting `signup.mode=open` through the generic editor path, bypassing the E5 readiness gate that `admin/stop.signupModeSet` enforces — now the same in-transaction rule applies (CAP-480 "setter and gate are one transaction").
+- **Not yet E2E-verifiable (needs G1 founder bootstrap):** P3's permission-filtered catalog / revoke-next-request with a real staff session; P2's CAP-005 precedence against an authenticated `pending_context` user. Guards verified to reject unauthenticated calls (fail-closed direction). Known open: rate limits defined-not-enforced (G2); `launchReadinessResults` reads use `.first()` (oldest) — P7A-10 must move to "latest row" semantics when multiple rows exist.
+
 ### Added
 - Root `README.md` — product overview, quickstart with repo-correct paths, scripts, environment variables, docs map, pre-development checklist.
 - Root `AGENTS.md` — operating instructions for coding agents: spec path mapping (`PRD/` → `docs/`), read order, hard rules, architecture decisions, code conventions, open items.

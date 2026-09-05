@@ -65,6 +65,10 @@ export async function captureEvent(ctx: MutationCtx, input: RawEventInput): Prom
     sequenceInSession: input.sequenceInSession ?? 0,
     // CAP-438: stamped once at write — callers never rewrite this
     isCountableAtWrite: input.isCountableAtWrite,
+    // Bible unions two names for the same stamp: M12 envelope "isAiPersona"
+    // (l.121, required) + M16 deepen "isPersona" (l.271, CAP-438). Both are
+    // written from the single caller-provided truth.
+    isAiPersona: input.isPersona,
     // CAP-442: posthogMirror committed with the event when consent-gated
     posthogMirror: input.posthogMirror ?? false,
     occurredAt: Date.now(),
