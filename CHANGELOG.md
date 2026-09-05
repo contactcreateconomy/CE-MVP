@@ -7,6 +7,15 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Phase 4 — P4-13 post-detail render (2026-09-05)
+- Schema (bible l.93–99/166): `postSeoMeta` (slug = the canonical route key, `previousSlugs` reserved for P7G-01 301s), `debateVotes` (unique userId+postId; persona votes excluded from tallies), `listItemVotes` (unique userId+item).
+- `convex/posts/detail.ts`: `getDetail` (CAP-090 — `{post, extension, threadContext}` with mechanic state per type, signed-in `userVote` only, CAP-106 read tolerance reverting cleared Help refs to open, live CAP-092 compare rows from the tools aggregate with count-0 → "—" and nothing stored, and the CAP-049 structured affiliate CTAs `rel="sponsored nofollow noopener"`); `listByType` (CAP-091, Convex cursor pagination — M4-owned, P6-03 consumes); `softDelete` (CAP-089 — author-only tombstone via `lifecycleStatus=archived`, thread preserved).
+- Route strangler (00-TRANSITION): `/discussions/[slug]` resolves **canonical `postSeoMeta` first**, falls back to the legacy forum thread — both render paths live in one loader. `generateMetadata` sets **noindex unconditionally** (CAP-107 Wave-2 posture; the indexable flip is inseparable from the P7G-01/P7T-11 pairing per FATAL-M17-01). Held/rejected/private/unlisted never resolve a live detail.
+- `PostDetailClient`: the §4.3 720px reading column with per-type blocks (news source-of-truth, review verdict, compare live grid, spark statement, debate tallies, list items, showcase UGC-rel project button, help state), the CAP-089 tombstone render, and an honest Phase-5 thread placeholder. Mechanic affordances render read-only — P4-14/15 wire them.
+- Publish (CAP-051 seo.generate): `persistPublish` now writes the deterministic postSeoMeta base (slug + title/description from the final approved revision; GLM enrichment rides the pipeline).
+- Fixed en route: TS narrowing exposed that the published-only guard made the CAP-089 tombstone unreachable — archived-public posts now resolve.
+- Verified: typecheck/lint 0 errors, 307/307 tests (+6), coverage 572/572, pushed live (new tables + indexes); live probes — unknown slug → null, paginated listByType → cursor contract.
+
 ### Phase 4 — P4-12 affiliate inventory (2026-09-05)
 - Schema (bible l.206-208, Wave-4B E1–E6 verbatim): `commercialEntities` → `affiliateRelationships` → `affiliateLinks` (+ `postAffiliateLinks.affiliateLinkId` tightened to the id type). Logo asset via CAP-012 (`forum/mutations.generateUploadUrl` — reuse, no fork).
 - `convex/affiliateInventory.ts` (administrator-only per W4B-E4, CAP-019 rate-limited, writeAudited): `listInventory` (CAP-544 connected read), `entityUpsert`/`relationshipUpsert`/`linkUpsert` (CAP-539/540/541 with **server-side parent-chain rejection** — create-child-without-parent blocked in UI and mutations; URLs on the E3 HTTPS/no-creds discipline), `deactivate` (CAP-545 soft cascade: entity → relationships terminated + links inactive; relationship → terminated + its links; link → itself; published posts keep their links per FUTURE-M2-01).

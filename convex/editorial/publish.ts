@@ -198,6 +198,28 @@ export const persistPublish = internalMutation({
       });
     }
 
+    // CAP-051 (seo.generate) — deterministic base at publish: slug + meta
+    // from the final approved revision. GLM enrichment (titles/descriptions/
+    // keywords) rides the pipeline when GLM runs; this guarantees the
+    // canonical route key exists (P4-13's lookup).
+    const baseSlug = (draft.title ?? "post")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60) || "post";
+    const slug = `${baseSlug}-${postId.slice(-6)}`;
+    await ctx.db.insert("postSeoMeta", {
+      postId,
+      seoTitle: (draft.title ?? "Untitled").slice(0, 120),
+      seoDescription: (draft.body ?? "").replace(/[#*>`]/g, "").trim().slice(0, 160),
+      slug,
+      keywords: [],
+      canonicalUrl: `/discussions/${slug}`,
+      structuredDataType: postType === "review" ? "review" : "article",
+      manuallyEdited: false,
+      generatedAt: now,
+    });
+
     // Status flip — the candidate's terminal state (+ the post link for the
     // workspace's derivative surfaces)
     const { lastPublishFailure, ...cleanDraft } = draft;

@@ -1139,6 +1139,46 @@ export default defineSchema({
     .index("by_status", ["status"])
     .index("by_toolId", ["toolId"]),
 
+  /** bible l.166 — per-post SEO meta; slug is the canonical route key
+   *  (contract OQ#2). Written at publish (CAP-051 seo.generate —
+   *  deterministic base; GLM enrichment rides the pipeline). */
+  postSeoMeta: defineTable({
+    postId: v.id("posts"),
+    seoTitle: v.string(),
+    seoDescription: v.string(),
+    slug: v.string(),
+    keywords: v.array(v.string()),
+    ogImageAssetId: v.optional(v.id("_storage")),
+    canonicalUrl: v.string(), // self
+    structuredDataType: v.string(), // article|review|faq|... (open set per bible)
+    manuallyEdited: v.boolean(),
+    previousSlugs: v.optional(v.array(v.string())), // P7G-01 301 depth (indexable-entity deepen)
+    generatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_postId", ["postId"]),
+
+  /** bible l.98 — debate mechanic: source of truth for the derived tallies;
+   *  unique (userId, postId); persona votes excluded from the public tally. */
+  debateVotes: defineTable({
+    postId: v.id("posts"),
+    userId: v.id("users"),
+    choice: v.union(v.literal("agree"), v.literal("disagree"), v.literal("abstain")),
+    createdAt: v.number(),
+  })
+    .index("by_postId", ["postId"])
+    .index("by_user_post", ["userId", "postId"]),
+
+  /** bible l.99 — list mechanic: source of truth for derived voteCounts;
+   *  unique (userId, postListItemId). */
+  listItemVotes: defineTable({
+    postListItemId: v.id("postListItems"),
+    userId: v.id("users"),
+    createdAt: v.number(),
+  })
+    .index("by_item", ["postListItemId"])
+    .index("by_user_item", ["userId", "postListItemId"]),
+
   /** bible l.88 — Review block. verdictScore is computed, NEVER member-settable. */
   postReviews: defineTable({
     postId: v.id("posts"),

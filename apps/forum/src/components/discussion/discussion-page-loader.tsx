@@ -3,6 +3,7 @@
 import { useQuery } from "convex/react";
 
 import { DiscussionPageClient } from "@/components/discussion/discussion-page-client";
+import { PostDetailClient } from "@/components/discussion/post-detail-client";
 import { api } from "@/lib/convex";
 import { isConvexConfigured } from "@cemvp/convex-client";
 import type { DiscussionThread } from "@/types/discussion";
@@ -13,14 +14,25 @@ interface DiscussionPageLoaderProps {
 }
 
 function DiscussionPageLoaderWithConvex({ pathSlug }: DiscussionPageLoaderProps) {
-  const state = useQuery(api.forum.discussionRoute.getDiscussionRouteState, { pathSlug });
+  // SLICE-P4-13 strangler (00-TRANSITION): canonical postSeoMeta slug
+  // resolves FIRST; only a null canonical falls through to the legacy
+  // forum thread. Never rename either side's slug space.
+  const canonical = useQuery(api.posts.detail.getDetail, { slug: pathSlug });
+  const state = useQuery(
+    api.forum.discussionRoute.getDiscussionRouteState,
+    canonical === null ? { pathSlug } : "skip",
+  );
   const sidebarData = useQuery(
     api.forum.discussionRoute.getDiscussionSidebarData,
     state?.kind === "rich" ? { threadSlug: pathSlug } : "skip",
   );
 
-  if (state === undefined) {
+  if (canonical === undefined || state === undefined) {
     return null;
+  }
+
+  if (canonical) {
+    return <PostDetailClient detail={canonical as any} /> /* eslint-disable-line @typescript-eslint/no-explicit-any -- CAP-090's shape is client-edge untyped until codegen push */;
   }
 
   if (state.kind === "not_found") {

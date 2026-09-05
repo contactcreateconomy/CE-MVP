@@ -59,6 +59,7 @@ import type * as lib_rateLimit from "../lib/rateLimit.js";
 import type * as lib_safeFetch from "../lib/safeFetch.js";
 import type * as lib_urlGuards from "../lib/urlGuards.js";
 import type * as posts from "../posts.js";
+import type * as posts_detail from "../posts/detail.js";
 import type * as profile from "../profile.js";
 import type * as qualify_orchestrator from "../qualify/orchestrator.js";
 import type * as qualify_rules from "../qualify/rules.js";
@@ -130,6 +131,7 @@ declare const fullApi: ApiFromModules<{
   "lib/safeFetch": typeof lib_safeFetch;
   "lib/urlGuards": typeof lib_urlGuards;
   posts: typeof posts;
+  "posts/detail": typeof posts_detail;
   profile: typeof profile;
   "qualify/orchestrator": typeof qualify_orchestrator;
   "qualify/rules": typeof qualify_rules;
