@@ -37,10 +37,12 @@ import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertAdminPermission } from "../lib/authz";
+import { REGEN_ATTEMPTS_MAX } from "./decisions";
 
 /** Editorial roles for review-side actions (CAP-041/542/543 Actor=Editor;
- *  Publisher/Administrator are senior per the role split). */
-async function assertEditorial(ctx: any): Promise<Id<"users">> {
+ *  Publisher/Administrator are senior per the role split). Exported for
+ *  decisions.ts (P4-10) — one gate, not a fork. */
+export async function assertEditorial(ctx: any): Promise<Id<"users">> {
   const roles = await assertAdminPermission(ctx);
   const ok = roles.some((r) => r === "editor" || r === "publisher" || r === "administrator");
   if (!ok) throw new Error("editorial: Editor role required (CAP-041/542/543)");
@@ -121,6 +123,16 @@ export const candidateReview = query({
       }
     }
 
+    // CAP-042 regen affordance state (States C): attempts used on this
+    // candidate's cluster lineage, exhausted at REGEN_ATTEMPTS_MAX.
+    const regenAttemptsUsed = candidate.claimClusterId
+      ? (await ctx.db
+          .query("generationRuns")
+          .withIndex("by_runType", (q: any) => q.eq("runType", "forge.draft"))
+          .filter((q: any) => q.eq(q.field("inputRef"), candidate.claimClusterId))
+          .collect()).length
+      : 0;
+
     return {
       candidate,
       claimRefs: claimRefs.map((r: any) => ({
@@ -136,6 +148,7 @@ export const candidateReview = query({
       similarityChecks,
       candidateSources,
       approveGate: canApprove(claimRefs), // CAP-043 invariant surfaced for the UI's disabled affordance
+      regen: { attemptsUsed: regenAttemptsUsed, attemptsMax: REGEN_ATTEMPTS_MAX, exhausted: regenAttemptsUsed >= REGEN_ATTEMPTS_MAX },
     };
   },
 });

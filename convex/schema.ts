@@ -1333,7 +1333,7 @@ export default defineSchema({
     ),
     draft: v.any(),
     evaluation: v.optional(v.any()), // { overallResult, ruleResults[], runId?, evaluatedAt? }
-    claimClusterId: v.optional(v.string()), // tighten to v.id("claimClusters") when SLICE-P4-08 defines it
+    claimClusterId: v.optional(v.id("claimClusters")), // tightened per the stale-TODO note: claimClusters exists since P4-08
     postType: v.optional(v.string()),
     operatorId: v.optional(v.id("users")),
     rejectionReason: v.optional(v.string()), // REQUIRED when status=rejected (CAP-044)
