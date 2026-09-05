@@ -51,6 +51,10 @@ const REGISTRY_ROWS = [
   { key: "signup.mode", module: "m1", valueType: "string" as const, default: "waitlist", enumValues: ["waitlist", "open", "closed"], editTier: "tier3" as const, blastRadius: "Controls whether new members can sign up.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   { key: "constellation.ugc.enabled", module: "m10", valueType: "boolean" as const, default: false, editTier: "tier2" as const, blastRadius: "Enables/disables user-generated resource intake (/contribute).", failDirection: "closed" as const, effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   { key: "uploads.avatar.enabled", module: "m1", valueType: "boolean" as const, default: true, editTier: "tier1" as const, blastRadius: "Avatar upload surface availability.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  // SLICE-P4-15 (CAP-100): the showcase projectUrl host allowlist — fail-closed
+  // when missing; empty default rejects all hosts until an administrator
+  // populates it (the correct pre-configuration posture).
+  { key: "showcase.allowedDomains", module: "m4", valueType: "json" as const, default: [], editTier: "tier2" as const, blastRadius: "Which hosts a showcase projectUrl may point at.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   // permission keys (M1 §6 "Seeds: … permission keys") — read by future authz
   { key: "media.upload.maxBytes", module: "m1", valueType: "number" as const, default: 5242880, min: 1024, max: 104857600, editTier: "tier1" as const, blastRadius: "Maximum upload size for avatars and media.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   // SLICE-P4-03: CAP-534's Admin-Config flag (row owned by convex/tags.ts)

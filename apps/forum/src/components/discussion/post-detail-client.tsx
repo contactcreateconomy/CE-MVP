@@ -13,8 +13,13 @@
  * arrives with the M6 discussion engine (Phase 5) — honest empty state.
  */
 
+import { useState } from "react";
+import { useMutation } from "convex/react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { api } from "@/lib/convex";
 
 const TYPE_LABELS: Record<string, string> = {
   news: "News", review: "Review", compare: "Compare", spark: "Spark",
@@ -163,7 +168,7 @@ export function PostDetailClient({ detail }: { detail: any }) {
               <span className="text-(--text-error)">👎 {mechanic.disagreeCount ?? 0} disagree</span>
               <span className="text-(--text-muted)">🏳️ {mechanic.abstainCount ?? 0} abstain</span>
             </div>
-            <p className="text-xs text-(--text-muted)">Casting/changing your vote lands with the debate mechanic (P4-14).</p>
+            <DebateVote postId={post._id} current={threadContext?.userVote} />
           </CardContent>
         </Card>
       ) : null}
@@ -174,10 +179,13 @@ export function PostDetailClient({ detail }: { detail: any }) {
             <h2 className="text-sm font-semibold text-(--text-primary)">The list ({mechanic.mode})</h2>
             <ol className="list-decimal space-y-1 pl-5 text-sm text-(--text-secondary)">
               {(mechanic.items ?? []).map((it: any) => (
-                <li key={it._id}>{it.content} <span className="text-xs text-(--text-muted)">· {it.voteCount} votes</span></li>
+                <li key={it._id} className="flex items-center gap-2">
+                  <span>{it.content}</span>
+                  <ListVoteButton itemId={it._id} voted={(mechanic.votedItemIds ?? []).includes(it._id)} count={it.voteCount} />
+                </li>
               ))}
             </ol>
-            <p className="text-xs text-(--text-muted)">Add/remove/vote land with the list mechanic (P4-14).</p>
+            {mechanic.mode === "community_ranked" ? <ListAddForm postListId={extension._id} /> : null}
           </CardContent>
         </Card>
       ) : null}
@@ -186,7 +194,7 @@ export function PostDetailClient({ detail }: { detail: any }) {
         <Card>
           <CardContent className="space-y-2 p-4">
             <h2 className="text-sm font-semibold text-(--text-primary)">{extension.theThing}</h2>
-            {extension.projectUrl ? (
+            {extension.projectUrl && extension.approvalStatus === "approved" ? (
               <a
                 href={extension.projectUrl}
                 target="_blank"
@@ -207,7 +215,8 @@ export function PostDetailClient({ detail }: { detail: any }) {
             <Badge tone={mechanic.resolvedStatus === "resolved" ? "success" : "warning"}>
               {mechanic.resolvedStatus === "resolved" ? "Resolved" : "Open"}
             </Badge>
-            <p className="text-xs text-(--text-muted)">Accept/reopen land with the help mechanic (P4-15).</p>
+            <HelpActions postId={post._id} resolved={mechanic.resolvedStatus === "resolved"} />
+            <p className="text-xs text-(--text-muted)">Accept targets a comment id — the thread arrives with Phase 5 (contract OQ#6).</p>
           </CardContent>
         </Card>
       ) : null}
@@ -237,5 +246,88 @@ export function PostDetailClient({ detail }: { detail: any }) {
         <p className="text-sm text-(--text-muted)">The discussion thread arrives with the comments engine (Phase 5).</p>
       </section>
     </article>
+  );
+}
+
+
+/** P4-14 — debate cast/change (CAP-093/094). */
+function DebateVote({ postId, current }: { postId: string; current: string | null }) {
+  const cast = useMutation(api.posts.debate.cast);
+  const change = useMutation(api.posts.debate.change);
+  const [busy, setBusy] = useState(false);
+  const vote = async (choice: string) => {
+    setBusy(true);
+    try {
+      if (current) await change({ postId: postId as any, choice: choice as any });
+      else await cast({ postId: postId as any, choice: choice as any });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="flex flex-wrap gap-2" data-testid="debate-vote">
+      {(["agree", "disagree", "abstain"] as const).map((c) => (
+        <Button key={c} variant={current === c ? "primary" : "secondary"} size="sm" disabled={busy} onClick={() => void vote(c)}>
+          {c}
+        </Button>
+      ))}
+      <span className="self-center text-xs text-(--text-muted)">
+        {current ? `Your vote: ${current} — pick another to change it (atomic)` : "Cast your vote"}
+      </span>
+    </div>
+  );
+}
+
+/** P4-14 — CAP-097 vote toggle (same-mutation tally). */
+function ListVoteButton({ itemId, voted, count }: { itemId: string; voted: boolean; count: number }) {
+  const toggle = useMutation(api.posts.listItems.toggleVote);
+  return (
+    <button
+      className={`rounded-full border px-2 py-0.5 text-xs ${voted ? "border-(--border-active) text-(--text-accent)" : "border-(--border-default) text-(--text-muted)"}`}
+      title={voted ? "Remove your vote" : `Vote (${count})`}
+      onClick={() => void toggle({ itemId: itemId as any })}
+    >
+      ▲ {count}
+    </button>
+  );
+}
+
+/** P4-14 — CAP-095 add (≤200 chars, community_ranked). */
+function ListAddForm({ postListId }: { postListId: string }) {
+  const add = useMutation(api.posts.listItems.add);
+  const [text, setText] = useState("");
+  const disabled = !text.trim() || text.trim().length > 200;
+  return (
+    <div className="flex gap-2">
+      <Input
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Add an item (≤200 chars)"
+        className="max-w-md"
+      />
+      <Button variant="secondary" size="sm" disabled={disabled} onClick={() => { void add({ postListId: postListId as any, content: text.trim() }); setText(""); }}>
+        Add
+      </Button>
+    </div>
+  );
+}
+
+/** P4-15 — CAP-098/099 accept/reopen (accept's comment target arrives with
+ *  the Phase-5 thread — contract OQ#6; the mutation is live). */
+function HelpActions({ postId, resolved }: { postId: string; resolved: boolean }) {
+  const accept = useMutation(api.posts.help.accept);
+  const reopen = useMutation(api.posts.help.reopen);
+  const [commentId, setCommentId] = useState("");
+  return resolved ? (
+    <Button variant="ghost" size="sm" onClick={() => void reopen({ postId: postId as any })}>
+      Reopen (CAP-099)
+    </Button>
+  ) : (
+    <span className="flex items-center gap-1">
+      <Input value={commentId} onChange={(e) => setCommentId(e.target.value)} placeholder="accepted comment id (Phase 5)" className="h-7 w-52 text-xs" />
+      <Button variant="secondary" size="sm" disabled={!commentId.trim()} onClick={() => void accept({ postId: postId as any, acceptedCommentId: commentId.trim() })}>
+        Accept (CAP-098)
+      </Button>
+    </span>
   );
 }

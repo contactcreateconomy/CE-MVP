@@ -1230,7 +1230,12 @@ export default defineSchema({
     postId: v.id("posts"),
     theThing: v.string(),
     projectUrl: v.optional(v.string()),
-  }).index("by_postId", ["postId"]),
+    // bible l.94: validated + domain-allowlisted + operator-approved (the
+    // moderator gate is P7E-13 CAP-101 — never invented here)
+    approvalStatus: v.union(v.literal("none"), v.literal("pending"), v.literal("approved"), v.literal("rejected")),
+  })
+    .index("by_postId", ["postId"])
+    .index("by_approvalStatus", ["approvalStatus"]),
 
   /** bible l.95 — Help block with resolved mechanic. */
   postHelps: defineTable({
