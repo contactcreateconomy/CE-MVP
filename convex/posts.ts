@@ -14,26 +14,38 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { assertCustomerCapability, getFlag } from "./lib/authz";
-import { captureEvent } from "./lib/events";
+import { assertCustomerCapability } from "./lib/authz";
 import { writeAudited, newCorrelationId } from "./lib/audit";
 
 // ── R-URL pattern (CAP-087): https?://, www., bare domain.tld, obfuscation ──
 const URL_PATTERNS = [
   /https?:\/\//i,
   /www\./i,
-  /\b[a-z0-9]+(\.[a-z0-9]+)+\b/i, // bare domain.tld
+  /\b(?:[a-z0-9-]+\.)+[a-z]{2,}\b/i, // bare domain.tld — alpha TLD ≥2 chars, so decimals ("4.5", "v1.2") don't match
   /\s*\(\s*(?:dot|\.)\s*\)\s*/i,   // obfuscation: "example (dot) com"
   /\s*\[\s*(?:dot|\.)\s*\]\s*/i,
 ];
 
-/** CAP-087 — R-URL check. Rejects URLs in user bodies (except showcase projectUrl). */
-function checkNoUrls(body: string, type: string, projectUrl?: string): void {
-  if (type === "showcase" && projectUrl) return; // the single allowed field
+/** CAP-087 — R-URL check on the BODY. The postShowcases.projectUrl FIELD is
+ *  the sole exempt location — the body itself is always checked (field ≠
+ *  body: an exempt field never exempts the body). */
+function checkNoUrls(body: string): void {
   for (const pattern of URL_PATTERNS) {
     if (pattern.test(body)) {
       throw new Error("POST_URL_NOT_ALLOWED: user posts cannot contain URLs (CAP-087)");
     }
+  }
+}
+
+/** Showcase projectUrl field validation — the single controlled outbound
+ *  URL. P4-15's submitProjectUrl adds the allowlist + approval flow; here
+ *  only transport + shape are checked. */
+function validateProjectUrl(url: string): void {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "https:") throw new Error();
+  } catch {
+    throw new Error("POST_URL_NOT_ALLOWED: showcase projectUrl must be a valid HTTPS URL");
   }
 }
 
@@ -79,8 +91,10 @@ export const createPost = mutation({
       throw new Error(`R-TYP: post type "${args.type}" is not active (locked or unregistered)`);
     }
 
-    // R-URL: CAP-087 — check body for URLs (before persistence, before moderation)
-    checkNoUrls(args.body, args.type, args.projectUrl);
+    // R-URL: CAP-087 — check body for URLs (before persistence, before
+    // moderation); the showcase projectUrl FIELD is validated separately.
+    checkNoUrls(args.body);
+    if (args.type === "showcase" && args.projectUrl) validateProjectUrl(args.projectUrl);
 
     // INV-2: user posts must have authorUserId, no personaId
     const userId = await getAuthUserId(ctx) as any;
@@ -161,6 +175,7 @@ export const updatePost = mutation({
     postId: v.id("posts"),
     title: v.optional(v.string()),
     body: v.optional(v.string()),
+    toolIds: v.optional(v.array(v.string())),
     extensionData: v.optional(v.any()),
     dimensionScores: v.optional(v.any()),
     projectUrl: v.optional(v.string()),
@@ -171,12 +186,17 @@ export const updatePost = mutation({
 
     const post = await ctx.db.get(args.postId);
     if (!post) throw new Error("posts.update: not found");
-    if (post.authorUserId !== (await getAuthUserId(ctx) as any)) {
+    const actorId = (await getAuthUserId(ctx)) as any;
+    if (post.authorUserId !== actorId) {
       throw new Error("posts.update: not the author");
     }
 
     const body = args.body ?? post.body;
-    checkNoUrls(body, post.type, args.projectUrl ?? (post as any).projectUrl);
+    // CAP-087 on the update path too — the body is always checked; the
+    // showcase projectUrl FIELD (on postShowcases, not posts) is validated
+    // separately below.
+    checkNoUrls(body);
+    if (post.type === "showcase" && args.projectUrl !== undefined) validateProjectUrl(args.projectUrl);
 
     return await writeAudited(ctx, async (actx) => {
       const latestRev = await actx.db
@@ -190,18 +210,23 @@ export const updatePost = mutation({
         title: args.title ?? post.title,
         body,
         lifecycleStatus: args.asDraft ? "draft" : post.lifecycleStatus,
+        toolIds: args.toolIds !== undefined ? args.toolIds : post.toolIds,
       });
 
       await actx.db.insert("postRevisions", {
         postId: args.postId, revisionNumber: nextRev,
         title: args.title ?? post.title, body,
         changeType: "update",
-        changedByUserId: (await getAuthUserId(ctx)) as any,
+        changedByUserId: actorId,
         createdAt: Date.now(),
       });
 
+      // W2-E4 — extension updates ride the SAME transaction as the post
+      // update (verdictScore recomputed on edit, extension fields applied).
+      await patchExtensionRow(actx, args.postId, post.type, args);
+
       return {
-        actorId: (await getAuthUserId(ctx)) as any,
+        actorId,
         action: "posts.update",
         target: `post:${args.postId}`,
         prev: { title: post.title, body: post.body },
@@ -212,6 +237,71 @@ export const updatePost = mutation({
     });
   },
 });
+
+/** Patch the type-specific extension row in the same transaction (W2-E4).
+ *  Only provided fields are applied — undefined args leave the stored value. */
+async function patchExtensionRow(actx: any, postId: string, type: string, args: any): Promise<void> {
+  const data = args.extensionData ?? {};
+  switch (type) {
+    case "review": {
+      const row = (await actx.db.query("postReviews").withIndex("by_postId", (q: any) => q.eq("postId", postId)).unique()) as any;
+      if (!row) break;
+      const patch: Record<string, unknown> = {};
+      if (data.toolId !== undefined) patch.toolId = data.toolId;
+      if (data.verdictSummary !== undefined) patch.verdictSummary = data.verdictSummary;
+      if (data.pros !== undefined) patch.pros = data.pros;
+      if (data.cons !== undefined) patch.cons = data.cons;
+      if (args.dimensionScores) patch.verdictScore = computeVerdictScore(args.dimensionScores);
+      if (Object.keys(patch).length) await actx.db.patch(row._id, patch);
+      break;
+    }
+    case "compare": {
+      const row = (await actx.db.query("postCompares").withIndex("by_postId", (q: any) => q.eq("postId", postId)).unique()) as any;
+      if (!row) break;
+      const patch: Record<string, unknown> = {};
+      if (args.toolIds !== undefined) patch.toolIds = args.toolIds;
+      if (data.qualitativeGrid !== undefined) patch.qualitativeGrid = data.qualitativeGrid;
+      if (Object.keys(patch).length) await actx.db.patch(row._id, patch);
+      break;
+    }
+    case "spark": {
+      const row = (await actx.db.query("postSparks").withIndex("by_postId", (q: any) => q.eq("postId", postId)).unique()) as any;
+      if (!row) break;
+      if (data.statement !== undefined) await actx.db.patch(row._id, { statement: data.statement });
+      break;
+    }
+    case "debate": {
+      const row = (await actx.db.query("postDebates").withIndex("by_postId", (q: any) => q.eq("postId", postId)).unique()) as any;
+      if (!row) break;
+      if (data.proposition !== undefined) await actx.db.patch(row._id, { proposition: data.proposition });
+      break;
+    }
+    case "list": {
+      const row = (await actx.db.query("postLists").withIndex("by_postId", (q: any) => q.eq("postId", postId)).unique()) as any;
+      if (!row) break;
+      const patch: Record<string, unknown> = {};
+      if (data.mode !== undefined) patch.mode = data.mode;
+      if (data.intro !== undefined) patch.intro = data.intro;
+      if (Object.keys(patch).length) await actx.db.patch(row._id, patch);
+      break;
+    }
+    case "showcase": {
+      const row = (await actx.db.query("postShowcases").withIndex("by_postId", (q: any) => q.eq("postId", postId)).unique()) as any;
+      if (!row) break;
+      const patch: Record<string, unknown> = {};
+      if (data.theThing !== undefined) patch.theThing = data.theThing;
+      if (args.projectUrl !== undefined) patch.projectUrl = args.projectUrl;
+      if (Object.keys(patch).length) await actx.db.patch(row._id, patch);
+      break;
+    }
+    case "help": {
+      const row = (await actx.db.query("postHelps").withIndex("by_postId", (q: any) => q.eq("postId", postId)).unique()) as any;
+      if (!row) break;
+      if (data.problemStatement !== undefined) await actx.db.patch(row._id, { problemStatement: data.problemStatement });
+      break;
+    }
+  }
+}
 
 /** CAP-532 — My Drafts: lifecycleStatus=draft AND authorUserId=self. */
 export const myDrafts = query({

@@ -7,6 +7,12 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Phase 4 — Step 0 foundation (2026-09-05, pre P4-10)
+- **P4 validation audit findings fixed:** `postTypeConfig` was never seeded anywhere (createPost's R-TYP gate rejected every type — now 8 active + 2 locked rows seeded idempotently by `seed:bootstrap`); URL regex false-positived on decimals ("4.5", "v1.2"); showcase URL carve-out exempted the whole body instead of the `projectUrl` field; `updatePost` read a nonexistent `posts.projectUrl` and silently dropped extension updates (extension rows + verdictScore now ride the same transaction per W2-E4); editorial workspace queries (`queueList`/`candidateReview`/`loadCandidateRefs`) were publicly readable (now Editor-role-gated — live-verified: anonymous calls rejected); qualify replay persisted a type-invalid id (replay runs are now report-only — the immutable audit is for live runs).
+- **Rate limits enforced (gate G2 closed):** `@convex-dev/rate-limiter` component installed (`convex/convex.config.ts`), `checkRateLimit` wired per the P1-09 contract; `waitlist.join` enforces CAP-015's 3/24h per-email gate BEFORE the duplicate lookup (attempts count; email-probing via `alreadyJoined` blocked). Live-verified: 3 attempts pass, 4th throws. ip-side gates need the client IP (Convex mutations don't receive it) — activate at http/edge entry points (flagged).
+- **Rulebook seeded (DEV-HANDOFF #12 partial):** `rulebook:deploySeed` run — 5 qualification rules (H-QUOTE/H-SIM/H-DUP/H-HAT/H-TYPE) live on the deployment.
+- CLI note: `npx convex run` needs the colon form (`rulebook:deploySeed`) for nested names on convex 1.34.
+
 ### Audited — Phases 1–3 verification (2026-09-05)
 - **Static:** 279/279 tests, lint 0 errors, coverage 572/572; bug-class sweep clean (no `ctx.db` inside any action; absorbed entities `takedownRequests`/`dmcaNotices`/`systemJobs` exist only in comments/tests asserting their absence; PostHog unmounted; flag defaults fail closed, no `?? true`).
 - **Live (dev deployment):** `effectiveSignupMode` fail-closes to `closed` with no readiness row (FATAL-M1A-02 ✓); sealed keys absent from registry and rejected by `casUpdate` ✓; unregistered config keys throw ✓; admin widget catalog seeded via `deploySeed` (3 consoles — DEV-HANDOFF #5 closed) ✓; `seed:bootstrap` idempotent (37/37 skipped on re-run) ✓; E5 gate blocks `signup.mode=open` ✓.

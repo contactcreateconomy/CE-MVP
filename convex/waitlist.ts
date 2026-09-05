@@ -11,6 +11,7 @@
 import { mutation as publicMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { captureEvent } from "./lib/events";
+import { checkRateLimit } from "./lib/rateLimit";
 
 // CAP-478: the ONLY event waitlist.join emits — an observational
 // waitlist_join (NOT an L08 signup_completed). This catalog row satisfies
@@ -43,6 +44,13 @@ export const join = publicMutation({
   handler: async (ctx, { email }) => {
     const emailNormalized = email.trim().toLowerCase();
 
+    // Rate gates FIRST (CAP-015 "10/h ip + 3/24h email"): the limit counts
+    // ATTEMPTS per email — checking before the duplicate lookup also stops
+    // probing via the alreadyJoined response. The ip side needs the client
+    // IP, which Convex mutations do not receive (http/edge entry point —
+    // flagged, not silently skipped).
+    await checkRateLimit(ctx, "waitlist.join", { kind: "email_hash", value: emailNormalized });
+
     // Identity invariant: this writes waitlistEntries ONLY — no users row,
     // no role assignment, no auth side effect (CAP-014)
     const existing = await ctx.db
@@ -55,9 +63,6 @@ export const join = publicMutation({
       // remains waitlist-contract OQ2 — return the existing state, don't guess
       return { status: existing.status, alreadyJoined: true };
     }
-
-    // Rate gates: CAP-015 literals (10/h ip + 3/24h email) are enforced by
-    // the @convex-dev/rate-limiter integration at the consumer wiring point.
 
     const id = await ctx.db.insert("waitlistEntries", {
       email,

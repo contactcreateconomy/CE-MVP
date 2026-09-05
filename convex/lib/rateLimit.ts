@@ -86,3 +86,41 @@ export function subjectKey(subject: RateSubject): string {
 export function isRateExempt(): boolean {
   return false;
 }
+
+// ── @convex-dev/rate-limiter integration (SLICE-P1-09's consumer-time
+//    install, wired 2026-09-05) ────────────────────────────────────────────
+// Fixed-window counting matches the register's "N per period" literals.
+// NOTE: ip_hash subjects need the client IP, which Convex functions do not
+// receive (only httpAction headers do) — ip-side gates wire at their
+// http/edge entry points, not here.
+import { RateLimiter } from "@convex-dev/rate-limiter";
+import { components } from "../_generated/api";
+
+const LIMIT_CONFIGS = Object.fromEntries(
+  Object.values(RATE_LIMITS)
+    .flat()
+    .map((l) => [l.name, { kind: "fixed window" as const, rate: l.max, period: l.periodMs }]),
+);
+
+const limiter = new RateLimiter(components.rateLimiter, LIMIT_CONFIGS);
+
+/**
+ * checkRateLimit — the single consumer-facing check (SLICE-P1-09's promised
+ * integration point). Evaluates the limits in the set whose subject kind
+ * matches the provided subject (callers pass every subject they can see —
+ * e.g. mutations never see the client IP, so ip_hash gates activate at
+ * their http/edge entry points). Throws the typed RateLimitError on
+ * exhaustion; a silent pass is never returned.
+ */
+export async function checkRateLimit(ctx: any, setName: string, subject: RateSubject): Promise<void> {
+  const applicable = rateLimitSet(setName).filter((l) => l.subject === subject.kind);
+  if (applicable.length === 0) {
+    throw new Error(`rate_limit: set "${setName}" has no limit for subject kind ${subject.kind}`);
+  }
+  for (const limit of applicable) {
+    const status = await limiter.limit(ctx, limit.name, { key: subjectKey(subject), throws: false });
+    if (!status.ok) {
+      throw new RateLimitError(limit.name, limit.max, limit.periodMs, subject.kind);
+    }
+  }
+}

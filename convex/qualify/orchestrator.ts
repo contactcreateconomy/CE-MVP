@@ -349,18 +349,12 @@ export const replay = internalAction({
       const hardResults = await evaluateHard(context, ruleRows);
       const overallResult = hardResults.some((r) => r.result === "fail") ? "fail" : "pass";
 
-      await ctx.runMutation(internal.qualify.orchestrator.persistRun, {
-        live: false,
-        run: {
-          // The example id stands in for the candidate id in replay runs —
-          // insert-only, never resolves to a real candidate row.
-          contentCandidateId: example._id,
-          candidateRevision: context.candidateRevision,
-          rulebookVersion,
-          overallResult,
-        },
-        results: hardResults,
-      });
+      // Replay runs are NOT persisted: qualificationRuns.contentCandidateId is
+      // v.id("contentCandidates") and a calibrationExamples id would be
+      // rejected at insert (table-affinity validation). The immutable audit
+      // trail is for LIVE candidate runs; calibrate's product is the drift
+      // report below.
+      void overallResult;
 
       const drift = hardResults
         .filter((r) => example.expectedOutcome[r.ruleKey] !== undefined)

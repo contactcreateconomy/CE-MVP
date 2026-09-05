@@ -67,10 +67,12 @@ export function resetAllConfirmations<T extends { operatorConfirmed: boolean }>(
   return refs.map((r) => ({ ...r, operatorConfirmed: false }));
 }
 
-/** CAP-041 — candidate.review: the workspace's render read (Writes none). */
+/** CAP-041 — candidate.review: the workspace's render read (Writes none).
+ *  Editorially role-gated: review drafts/claims are not public reads. */
 export const candidateReview = query({
   args: { candidateId: v.string() },
   handler: async (ctx, { candidateId }) => {
+    await assertEditorial(ctx);
     const candidate = await ctx.db.get(candidateId as Id<"contentCandidates">);
     if (!candidate) return null;
 
@@ -162,6 +164,7 @@ export const confirmClaimRef = mutation({
 export const loadCandidateRefs = query({
   args: { candidateId: v.string() },
   handler: async (ctx, { candidateId }) => {
+    await assertEditorial(ctx);
     return await ctx.db
       .query("draftClaimRefs")
       .withIndex("by_candidate", (q: any) => q.eq("contentCandidateId", candidateId))
@@ -224,6 +227,7 @@ export const editDraft = mutation({
 export const queueList = query({
   args: { status: v.optional(v.string()) },
   handler: async (ctx, { status }) => {
+    await assertEditorial(ctx);
     const rows = await ctx.db.query("contentCandidates").collect();
     return rows
       .filter((c: any) => !status || c.status === status)

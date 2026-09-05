@@ -16,6 +16,23 @@ import { RULEBOOK_REGISTRY_ROWS } from "./rulebook";
 import { SIGNUP_EVENT_CATALOG_ROW } from "./bootstrap";
 import { WAITLIST_EVENT_CATALOG_ROW } from "./waitlist";
 
+// Bible l.86 (quoted): "All 10 types admin-toggleable. 8 ship `active`;
+// `launch_pad`,`gigs` ship `locked` (flip at ~1000 DAU = admin action, not
+// deploy)." sortOrder/label values are derived from the type list (the
+// registry is thin STATE, not type definitions — those live in code).
+const POST_TYPE_CONFIG_ROWS = [
+  { type: "review", state: "active" as const, sortOrder: 1, label: "Review" },
+  { type: "compare", state: "active" as const, sortOrder: 2, label: "Compare" },
+  { type: "help", state: "active" as const, sortOrder: 3, label: "Help" },
+  { type: "spark", state: "active" as const, sortOrder: 4, label: "Spark" },
+  { type: "debate", state: "active" as const, sortOrder: 5, label: "Debate" },
+  { type: "list", state: "active" as const, sortOrder: 6, label: "List" },
+  { type: "showcase", state: "active" as const, sortOrder: 7, label: "Showcase" },
+  { type: "news", state: "active" as const, sortOrder: 8, label: "News (editorial)" },
+  { type: "launch_pad", state: "locked" as const, sortOrder: 9, label: "Launch Pad", lockedMessage: "Launch Pad unlocks at ~1000 DAU (admin action, not deploy)" },
+  { type: "gigs", state: "locked" as const, sortOrder: 10, label: "Gigs", lockedMessage: "Gigs unlocks at ~1000 DAU (admin action, not deploy)" },
+];
+
 // DEC-C01 (LOCKED, founder): the five editorial categories, constrained to
 // AI, creators, small business, digital work.
 const DEC_C01_CATEGORIES = [
@@ -123,7 +140,23 @@ export const bootstrap = internalMutation({
       result.push(`config:${row.key}: seeded`);
     }
 
-    // 4. eventCatalog — idempotent by eventName (P1-07 gate rows; P2 events)
+    // 4. postTypeConfig — idempotent by type (P4-02's R-TYP gate reads this;
+    //    without rows, createPost rejects every type and the composer's type
+    //    list renders empty)
+    for (const row of POST_TYPE_CONFIG_ROWS) {
+      const existing = await ctx.db
+        .query("postTypeConfig")
+        .withIndex("by_type", (q: any) => q.eq("type", row.type))
+        .unique();
+      if (existing) {
+        result.push(`postTypeConfig:${row.type}: skipped`);
+        continue;
+      }
+      await ctx.db.insert("postTypeConfig", { ...row, updatedAt: Date.now() });
+      result.push(`postTypeConfig:${row.type}: seeded`);
+    }
+
+    // 5. eventCatalog — idempotent by eventName (P1-07 gate rows; P2 events)
     for (const row of EVENT_CATALOG_ROWS) {
       const existing = await ctx.db
         .query("eventCatalog")
