@@ -2,7 +2,7 @@
 
 Createconomy is a creator-economy discussion platform (typed-post forum + labeled AI-persona discussions + claims-first editorial pipeline + tool registry + reputation economy). This repo is a pnpm monorepo containing the **PRD reference app**: the `apps/forum` Next.js frontend, a shared `convex/` backend, and the complete build specification under `docs/`.
 
-**Status snapshot (2026-09-05):** Phases 1–3 complete + Phase 4 partial (≈47 of 132 slices), 279 tests passing, typecheck/lint clean — but the code has **never run against a live Convex deployment** (mocks only). See `docs/00-project-status/PROJECT-STATUS.md` before deciding what to keep vs. rewrite.
+**Status snapshot (2026-09-05, post-P4):** Phases 1–4 **code-complete** (P4-01…P4-15; the Phase-4 exit-gate E2E still needs GLM + classifier keys), 315 tests passing, typecheck/lint clean, coverage 572/572. Phases 5–7 not started. A live Convex **dev** deployment (`watchful-chameleon-570`) is now active — schema pushed, seeds run, G1 founder bootstrap executed (CAP-007 `grantFounder`), live probes passing. Caveat: `docs/00-project-status/PROJECT-STATUS.md` was written at the 2026-09-05 scope-stop and still says nothing has ever run live — it predates the resumed work; the `CHANGELOG.md` "Unreleased" entries are the up-to-date record.
 
 ---
 
@@ -56,11 +56,11 @@ From `docs/00-project-status/` (founder-approved 2026-09-04 — read before any 
 
 | Path | Contents |
 |---|---|
-| `apps/forum` | The real app (Next.js App Router, ~200 files; all MVP routes) |
+| `apps/forum` | The real app (Next.js App Router, ~250 files; all MVP routes) |
 | `apps/admin`, `apps/seller`, `apps/marketplace` | Parked placeholder apps (single page each) |
 | `packages/auth-ui` | Auth modal + providers (`@cemvp/auth-ui`) — reference implementation |
 | `packages/convex-client` | Tiny env helper (`isConvexConfigured()`, `getConvexUrl()`) |
-| `convex/` | Shared Convex backend: 82-table `schema.ts`, auth, crons, forum/, ingest/, qualify/, admin/, lib/ |
+| `convex/` | Shared Convex backend: 89-table `schema.ts`, auth, crons, admission/ forum/ ingest/ qualify/ editorial/ posts/ admin/ lib/ |
 | `docs/` | The complete PRD (this is what internal docs call `PRD/`) |
 | `SETUP.md` | Historical run guide (paths predate this repo layout) |
 | `scripts/cap-coverage.mjs` | CAP→slice coverage gate (run after any slice-catalog edit; expect 572/572) |
@@ -78,9 +78,14 @@ From `docs/00-project-status/` (founder-approved 2026-09-04 — read before any 
 | `pnpm convex:seed-forum` / `-force` | Seed forum demo content |
 | `pnpm convex:seed-legal` | Seed the 4 legal docs (requires one-time `npx convex login`) |
 | `pnpm dev:seller` / `dev:admin` / `dev:marketplace` | Run parked placeholder apps |
+| `pnpm convex:deploy:prod` / `convex:prod:ensure-categories` | Prod push + prod category check (Bucket-1 — flag before running) |
 | `node scripts/cap-coverage.mjs` | Capability coverage gate (572/572 expected) |
 
 Toolchain: Node ≥ 22, pnpm 10 (`packageManager` pins pnpm@10.28.2), Convex pinned to 1.34.1 via pnpm override, forum runs `next dev` on Turbopack.
+
+Git: work happens on phase branches (currently `001-phase4`); the PR target is `001-default` (not `main`).
+
+Gotchas: a long-running dev server accumulates a stale Turbopack graph — after several slices of new files, module-not-found errors mean **restart `pnpm dev`**, not a code bug. `npx convex run` needs the colon form for nested function names (`rulebook:deploySeed`) on convex 1.34.
 
 ## 8. Code conventions established by the reference implementations
 
@@ -88,7 +93,7 @@ Three pieces are real, verified code — **extend them; never build parallel ver
 
 1. **Feed** — `apps/forum/src/app/(app)/(shell)/feed/page.tsx` + `components/feed/` (RSC + ISR, Convex-backed).
 2. **Auth popup** — `packages/auth-ui` (`auth-modal.tsx`, `AppAuthProvider`, `useAuth`). UI complete; live OAuth providers intentionally not configured.
-3. **Discussion page** — `apps/forum/src/app/(app)/discussions/[slug]/` — partially built; extend to close the gap with `docs/02-contracts/wave-5/CONTRACT-5-discussion-thread-FINAL.md`.
+3. **Discussion page / post detail** — `apps/forum/src/app/(app)/discussions/[slug]/` — built through P4-15 as the strangler route: canonical `postSeoMeta` resolves first, legacy forum thread is the fallback; per-type render + debate/list/help/showcase mechanics are live. The thread/comments area is an honest Phase-5 placeholder — close the gap against `docs/02-contracts/wave-5/CONTRACT-5-discussion-thread-FINAL.md` when Phase 5 starts.
 
 Conventions to follow:
 
@@ -108,7 +113,7 @@ Conventions to follow:
 
 ## 10. Terminal/deployment-blocked items
 
-Anything requiring the Convex CLI, package installs, deployment pushes, or external accounts is **Bucket-1: stop, flag, hand off** — see `docs/DEV-HANDOFF.md` (items 1–4 are needed immediately: Convex login + codegen + legal seed; founder-bootstrap admin verification; `pnpm add @convex-dev/rate-limiter`; schema push for the ~21 new canonical tables). Founder-only steps live in `docs/FOUNDER-BOOTSTRAP.md`.
+Anything requiring the Convex CLI, package installs, deployment pushes, or external accounts is **Bucket-1: stop, flag, hand off** — see `docs/DEV-HANDOFF.md` (note: its "Immediate" items 1–5 — Convex login/codegen, founder bootstrap, rate-limiter install, schema push, widget seeder — are all **closed**, executed 2026-09-05 against the live dev deployment; the doc still lists them). Still blocked, in priority order: **GLM API key** and **moderation-classifier provider** (both pipeline-blocking — H-SAFE/qualify holds every candidate until wired), then Twilio / PostHog / email providers, legal-doc seed verification, and the prod push. Founder-only steps live in `docs/FOUNDER-BOOTSTRAP.md`; the admin-access rollback is documented in `SETUP.md`.
 
 Pre-launch-only gates (do NOT block build): lawyer review of the four legal docs, and Readiness Category 8 (ranking calibration reviewed) — both gate `signup.mode=open` only.
 
