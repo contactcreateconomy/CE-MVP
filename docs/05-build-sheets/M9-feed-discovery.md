@@ -1,0 +1,93 @@
+# DECISION — M9: Feed & Discovery (Build Sheet · BACKEND-LOCKED)
+
+**Status:** BACKEND LOCKED · **CONFIRMED (GPT/GLM/Sonnet AGREE; 2 GPT fatal fixes applied)** · **Customer FE:** DONE + LOCKED (founder-supplied layout, `Brainstorm/legacy/preview (1).webp`) · **Date:** 2026-08-03
+**RACI:** R/A = Opus · Consulted/Informed = GPT/GLM/Sonnet + Founder
+**Schema:** fills `M0-build-sheet-schema.md`. Canonical names = `_data-model.md`.
+
+**North star:** the feed is where **distribution is earned and discovery happens** — one of the two most-visited surfaces (feed + thread). Honesty spine: **earned distribution** (reach comes from quality/legitimacy, not status), **personas excluded** from core ranking, **firewall** (Recognition/featuring never boost organic), **grounded** intelligence (faithful, never manufactured). Design-for-psychology: emotion drives engagement — so we surface **real** emotion, honestly.
+
+---
+
+## 1. Header & Layer Profile
+- **id:** M9 · **purpose:** the feed ranking (Top/Hot/New/Fav), the cold-start exploration pool, "What's Vibing" (trending + internal-ad slots), the featured hero, the Podium leaderboard render, and card intelligence (AI one-liner, running comment, engaged avatars). · **owner:** Opus · **status:** backend locked.
+- **dependencies (up):** M4 (posts/types) · M6 (comments, reactions, MAX map → the Vibing hook's grounding source) · M7 (legitimacy/trust, exploration-pool contract, `rawEvents` exposure/placement) · M2 (grounded generation for one-liner + hook) · M8 (personas — excluded from core ranking) · M12 (Recognition → leaderboard). **(down):** M11 (affiliate placement) · M13 (moderation) · M16 (analytics) · M17 (SEO/search).
+- **Layer Profile:** Backend/Data = **Required** · Jobs (rank recompute, trend, exploration, leaderboard, one-liner/hook generation) = **Required** · Integration (M2 generation) = **Required** · Realtime (visible-card counters, "newer material") = **Required** · Customer-FE = **DONE/locked** · Analytics/Audit = Required.
+
+## 2. Canonical Names & Enums
+- Tables (Bible §O): `postDistributionScores`, `postDistributionBuckets`, `feedExplorationState`, `heroSlots`, `heroAssignments`, `vibingTrends`, `vibingFeatured`, `vibingHooks`, `cardSummaries`, `leaderboardProjections`, `feedSessions`.
+- Enums: `feed.sortMode` (top·hot·new·fav), `vibingItem.source` (algorithmic·featured), `hero.status` (draft·scheduled·active·expired·paused·archived), `leaderboard.category` (overall·commenter·helper·reviewer·rising), `leaderboard.window` (h24·d7·m1).
+- Functions: `feed.list` (paginated by sort + diversity assembly), `rank.recompute` (leased batched cron), `exploration.refresh` (cron), `vibing.compute` (cron), `vibing.setFeatured` (admin), `hero.upsert/schedule` (admin), `leaderboard.render` (reads M12 projections), `card.generateSummary` / `card.generateHook` (M2 async), `card.pickRunningComment`.
+
+## 3. Scope & Non-Goals
+- **In:** the four sorts + exploration pool; the diversity assembler; What's Vibing (momentum trend + grounded emotional hook + Featured internal-ad slots); the featured hero; the Podium render; card intelligence; the precompute/scale machinery; the post-type nav filter.
+- **Non-Goals:** the **economic Signal engine** (deferred — M9 uses a Phase-1 distribution-quality projection via a versioned adapter); Recognition **computation** (M12 owns; M9 renders); notifications (the bell — separate); personalized/ML feed ranking (Phase 2 — MVP feed is global + exploration); the visual UI (locked/done).
+
+## 4. Domain Context
+- **Terminology:** *distribution-quality projection* = the Phase-1 ranking value (legitimacy-weighted engagement quality), forward-compatible with economic Signal; *exploration pool* = new content given a fair first look via an **exposure-deficit queue** (never operator curation); *Vibing hook* = a grounded, emotionally-framed one-line pull derived from a thread's **real** tension; *Featured* = a manual, time-bound, labeled internal-ad slot inside the Vibing rotation.
+- **Actors:** visitor (browse, anonymous — lands on Hot); member (react/save/comment → feeds ranking); operator (hero, Featured, moderation, config); automated (rank/trend/exploration/leaderboard crons, generation).
+- **Invariants:**
+  - INV-1 **Rank from precomputed projections; reads = index scan** (never compute at read).
+  - INV-2 **Trust-weight = account LEGITIMACY only** (verification/age/integrity/`signalReputation`), **never** Recognition/leaderboard/followers/accepted-answers/profile-completion.
+  - INV-3 **Personas + staff contribute ZERO** to Top/Hot/New ranking, counts, exploration, leaderboard, running-comment, engaged-avatars, **AND What's Vibing momentum** (velocity/acceleration/interaction-type-count/confidence/threshold/rank). A post qualifies for and stays in Vibing **entirely on eligible HUMAN activity**; persona participation may be shown as **display-only context after qualification** — never a momentum input.
+  - INV-4 **Firewall:** Recognition/featuring/hero/Podium/manual-pins **never** boost organic Top/Hot/New scores. Admin featuring never consults Recognition rank. Exploration is an **exposure-deficit queue, never an operator curation surface**.
+  - INV-5 **Grounded intelligence, faithful not manufactured:** the AI one-liner is **neutral/factual** (no clickbait/question); the Vibing hook may be **emotional** but must be **entailed by the real content + discussion** (derived from M6 MAX tension), never oversold or fabricated. The system surfaces genuine tension/curiosity — it is **not** tuned to maximize manufactured negativity.
+  - INV-6 **Featured never mutates the algorithmic trend score** (overlay slot, labeled, time-bound, moderated, audited).
+  - INV-7 **No dark patterns**; cursor freezes ranking version (no reorder while reading); exploration = opportunity, never fabricated counts / false "trending" labels.
+  - INV-8 **Controlled participation is display-only** (standing anti-manipulation principle): no Createconomy-controlled / operator-curated input (personas, featuring, hero, exploration curation, manual promo) may **manufacture** organic distribution or momentum — it may earn **display visibility** but never feeds a ranking/momentum score.
+
+## 5. Ranking base
+- **R-BASE:** every score consumes a **`distributionQualityVersion`** projection from Phase-1 eligible events (weighted-Valuable `V`, distinct human commenters `C`, human replies `R`, distinct saves `S`, qualified dwell `D`, 7-day returns `T`, integrity `I`), all **legitimacy-weighted** (unverified 0 → high-confidence 1). `I` = integrity multiplier (normal 1 / velocity-review 0.5 / suspected 0.25 / confirmed 0 / held-removed ineligible) — affects rank, never the visible counter. A versioned adapter lets economic Signal replace/augment this later.
+
+## 6. The four sorts
+- **R-TOP (7-day quality, rolling by INTERACTION):** the **Bayesian confidence-damped positive score** (same as M6 Best — damped toward a per-type prior; small-sample penalty; distinct-human corroboration; log-volume factor). **NOT Wilson** — positive-only reactions have no valid trials denominator (a Wilson/rate variant may activate in a LATER ranking version ONLY once deduplicated, integrity-filtered **qualified exposures** are proven as trials; never blended). **Per-post-type normalized.** Window = ≥1 eligible human interaction in the rolling 7 days (**not** publish date → evergreen protected); leaves TOP after 7d idle. NOT raw upvotes.
+- **R-HOT (momentum):** `I × qualityFloor × engagement^0.8 / (ageTicks + 2)^gravity` (gravity ~1.5). Engagement = log-scaled legitimacy-weighted V/C/R/S/D/T; **qualityFloor = 0.5 + 0.5×positiveQuality** (kills comment-farming); **age in activity-ticks, not wall-clock** (no overnight penalty). Velocity anomaly → integrity review (never a viral bonus).
+- **R-NEW (chronology + guaranteed discovery):** reverse-chron + **interleaved exploration** at fixed slots. Exploration selection = **exposure-deficit queue** (target − actual qualified exposures; order by deficit → oldest → lower recent author exposure). Eligibility: user-authored, moderation-passed, age 15min–48h, under exposure target, not-already-shown-this-session, author reputation>floor, author not over-shown/page, no integrity anomaly, **not persona**, not featured-via-Recognition. **Dynamic rate: HIGH at launch, tapering as organic volume grows** (config). **Cold-start author boost**; **anti-bubble cross-injection** of out-of-affinity category content.
+- **R-FAV (personal):** split **Saved** + **Your Discussions** (participated); order unread-activity → latest human activity. (Public label may stay "Fav".)
+- **R-ASSEMBLE (diversity, never mutates canonical scores):** page caps — ≤1 consecutive same-author, ≤3/author, ≤2 consecutive same-type, ≥3 active types, ≤40% editorial, ≤40% affiliate, ≤50% one-category; session repetition controls; user hide/mute/see-fewer/report.
+- **R-NAV:** the DISCOVER post-type nav renders **active types only** → **add Spark**; **hide Launch Pad + Gigs until the ~1000-DAU flip** (per M4 `postTypeConfig`).
+
+## 7. What's Vibing (the momentum ticker)
+- **R-VIBING (algorithmic = the main show):** a single **rotating ticker** (each item ~5s / a readable beat). Trend = **engagement momentum**: `velocity × acceleration × recency × confidence × I` vs a baseline (recent rate ÷ 24h baseline, priors in denominator to kill near-zero-baseline spikes), computed **entirely from eligible HUMAN activity**. Detects **change, not state**. Qualify + remain via **≥3 distinct humans + ≥2 human interaction types** + no single-referrer/one-author domination + min duration + cooldown. **Personas contribute ZERO to the momentum math** — persona participation is display-only context after qualification. Object types: post/tool/category/theme.
+- **R-HOOK (the grounded emotional pull):** each Vibing item displays an **AI-generated emotional hook** that captures the thread's **real tension** — e.g. *"Is human coding dead in 2026?"* + `💬 N engaged · <type> →` (clickable to the thread). **Grounded by construction:** derived from M6's MAX tension clusters (entailment-verified), **faithful not manufactured** (INV-5) — no overselling, no fabricated claim, no manufactured-negativity tuning; stale on material thread change → regenerate or fall back to the neutral title. **Valence-distribution guard (against selection-bias drift toward negativity):** tag each hook {tension|curiosity|informational|positive}; **cap tension ≤~35%** of a rolling window (excess deprioritized regardless of momentum); **≥1 curiosity + ≥1 positive per rotation cycle**; the scorer **prefers question/unresolved-tension over contempt/us-vs-them** when multiple faithful framings exist; **periodic negativity-drift audit** of published hooks. **Representativeness (≠ entailment):** the selected tension must meet **min distinct-human + cluster-support** thresholds; store supporting AND opposing spans; **never attribute emotion to a named user**; **neutral fallback** when no representative tension exists. This is a **distinct register** from the feed card's neutral one-liner (calm reading-room feed vs. emotional hot-take ticker).
+- **R-FEATURED (internal-ad slots):** manual, **time-bound** promo (e.g., 1 hour) occupying an **ad slot in the same rotation**, **tagged "Featured"** — the label must be **visually UNMISTAKABLE on every frame** (persistent conspicuous badge / distinct treatment; FTC clear-and-conspicuous; NOT a subtle tag or hover/destination-only — higher stakes because monetized). **Never mutates the algorithmic trend score** (overlay only); cadence cap (≤1 Featured per rotation cycle; ≤1–2 active platform-wide); passes moderation; audit-logged; empty slot → next algorithmic item. Forward-compatible with **paid** internal ads (roadmap).
+
+## 8. Featured hero
+- **R-HERO:** 10 admin-curated slots (order, post, overrides, CTA, start/end, desktop/mobile, status, approvedBy, disclosureClass, fallback). States draft/scheduled/active/expired/paused/archived; activation predicate; precedence safety-removal > emergency-pause > schedule > fallback. **Manage 10, render 4–6 active** (staleness); **guarantee ≥2 slots rotate per 24h** (anti-stale rule); auto-fill from TOP if stale >24h (labeled "Community Top"); "new/just-added" for returners. **Never Recognition-selected; hero exposure ≠ organic boost;** retains placement context in `rawEvents`.
+
+## 9. Podium leaderboard (render; M12 computes)
+- **R-PODIUM:** categories **Overall + Best Commenter + Best Helper + Best Reviewer + Rising** (Rising = **period-over-period Recognition growth** `score_thisWindow / score_prevWindow − 1`, with a **minimum historical baseline + eligible-event floor** so a 0→1 event isn't "infinite growth"). Windows **24H/7D/1M** (event-based). Points = Recognition **outcomes** (not post volume); personas/staff excluded; per-contribution + pairwise caps; reversal on removed events; snapshot for audit; hold during integrity review; **no "one action from a rank" nudges**. **Overall = percentile-normalized across categories** (require ≥2 categories). **Min activation threshold** (25 eligible contributors, else "Podium is forming" → show Top Contributions, not people; updated 2026-08-26, Wave 7C L25 — matches data-model `leaderboard≥25`). Guard **end-of-window sniping**. Firewall: never affects feed/exploration/reaction-weight/hero/Vibing.
+
+## 10. Card intelligence
+- **R-ONELINER:** neutral factual distillation (M2 grounded) — 90–160 chars, one sentence, **no hype/question/clickbait/unsupported-number/persona-voice**; references approved source claims for system-generated posts; generated once at publish; **stale on material revision → fallback to excerpt**. (Emotional framing lives ONLY in the Vibing hook.)
+- **R-RUNNINGCOMMENT:** one real-human comment, selected by the **same trust-weighted Wilson/Best score as M6** (NOT a separate cherry-pick — closes a gaming hole); recent window; **freeze ≥15min** (anti-flicker); **personas excluded**; empty → "Start the discussion" (no fabricated/persona quote).
+- **R-AVATARS:** up to 3 distinct **recent genuine** human engagers (commented/positive-reacted); personas/staff/suspended/opted-out excluded; **savers counted but NOT shown as identifiable avatars** (privacy); `3 avatars + "N discussing"` = human commenters only.
+
+## 11. Scale & precompute (Convex)
+- **R-PRECOMPUTE:** `postDistributionScores` materialized per post × `distributionQualityVersion`; **rolling counters** on the post (atomic per reaction); **time-window buckets** (`postDistributionBuckets` hourly first 48h, daily 3–30d — never scan 7d raw events). **Selective reranking** (recompute active posts + random top-N; not global). Refresh tiers by age (<6h ~3s batched; 6–48h ~30s; 2–7d 15min; >7d on-event). **Incremental TOP** at scale (per-reaction) + daily window-expiry cleanup. **Leaderboard = pre-aggregated per-user-per-window counters** (O(users)). **Dirty-flag + leased bounded workers** (M6 pattern). Cursor = {sortMode, rankingVersion, score, tiebreak id, ts} — **freezes ranking version, no reorder while reading**. Realtime = subscribe only to visible-card counters + "newer material exists" (feed = snapshot). `scoreVersion` for staleness.
+- **R-LOOP (biggest risk = self-reinforcing distribution loop):** fixed **structurally**, not with a multiplier — record placement + qualified exposure (`rawEvents`), bounded exploration, page diversity, separate manual/organic inventory, confidence damping, explicit ranking versions, exploration holdouts, never Recognition→organic.
+
+## 12. Config
+`feed.explorationRate` (dynamic, launch-high + taper curve) · `feed.diversityCaps` · `hot.gravity`/`hot.weights` · `top.priorStrength`/`top.window7d` · `vibing.{velocityPriors, minDistinctHumans, humanAnchorMin, cooldown}` · `vibing.featured.{maxPerCycle, maxActive}` · `hero.{renderActive, minRotationPer24h}` · `leaderboard.minContributors` · `card.hook.groundingThreshold`.
+
+## 13. RBAC
+Member: react/save/comment/hide/mute/see-fewer/report; own Fav. Operator: hero slots, Featured slots (time-bound), config, moderation. **No role** can make Recognition/featuring affect organic rank or hand-curate the exploration pool (firewall + INV-4).
+
+## 14. Acceptance criteria (Given·When·Then)
+- G a low-trust upvote ring · W they cross-react · T legitimacy-weighting collapses their weight + Wilson damps → no Top/Hot movement.
+- G an anonymous visitor · W they land · T they see **Hot** (not last-used), full browse, `rawEvents` by session.
+- G a new post · W published · T it enters the exposure-deficit exploration pool at the **launch-high rate**, personas excluded, with a legible "building initial engagement" cue.
+- G a thread genuinely debating "is human coding dead" · W it trends · T the Vibing hook renders that **real** tension (entailment-grounded); a mild technical thread never gets an oversold hook.
+- G an operator books a 1-hour Featured promo · W it rotates · T it shows tagged **Featured**, never alters the trend score, respects the cadence cap, and is audit-logged.
+- G a post gets a material revision · W the one-liner is stale · T the card falls back to an excerpt until regeneration.
+- G personas comment on a post with no human engagement · W Vibing evaluates · T **no trend** (human-anchor threshold unmet).
+
+## 15. DEC map
+DEC-M9-RANKINGBASE · DEC-M9-SORTS · DEC-M9-EXPLORE · DEC-M9-VIBING · DEC-M9-HERO · DEC-M9-PODIUM · DEC-M9-CARDS · DEC-M9-DIVERSITY · DEC-M9-SCALE · DEC-M9-NAV (`_index` §O). Inherits DEC-SIGNAL-FIREWALL, DEC-RAWEVENTS, M7 cold-start/persona-exclusion, M8 persona-exclusion, M6 Best/MAX, M2 grounding, DEC-ROADMAP.
+
+## 16. Migration & MVP good-to-haves
+- Seed `systemConfig` M9 keys; build order = rolling counters → New → Hot → Top → exploration → Vibing (trend + hook + Featured) → hero → leaderboard render → card intelligence.
+- **MVP good-to-haves (founder-picked):** **"Why am I seeing this?"** per-card reason drawer; **Rising** badge; **land-on-Hot** for new visitors; user **hide/mute/see-fewer**; admin **feed-health dashboard**; **anti-bubble cross-injection**. Backlog: "Quietly Valuable" shelf, author "Reach % grows" indicator, cross-sort dedup, first-visitor mix, hero A/B, sparklines, Thompson-sampling exploration, z-score trending, ranking-version shadow/backtest.
+
+## 17. Open / Deferred
+- **Deferred:** economic Signal adapter (Phase 2); personalized/ML ranking (Phase 2); paid internal ads (roadmap); the Phase-2 exploration/trending upgrades.
+- **Legal/brand:** the Vibing hook generator needs a standing content-safety + no-manufactured-negativity guard (panel confirmation pass, Sonnet).

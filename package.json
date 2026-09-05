@@ -1,0 +1,46 @@
+{
+  "name": "cemvp",
+  "private": true,
+  "packageManager": "pnpm@10.28.2+sha512.41872f037ad22f7348e3b1debbaf7e867cfd448f2726d9cf74c08f19507c31d2c8e7a11525b983febc2df640b5438dee6023ebb1f84ed43cc2d654d2bc326264",
+  "scripts": {
+    "dev": "pnpm --filter ./apps/forum dev",
+    "build": "pnpm --filter ./apps/forum build",
+    "start": "pnpm --filter ./apps/forum start",
+    "lint": "pnpm --filter ./apps/forum lint",
+    "typecheck": "pnpm --filter ./apps/forum typecheck",
+    "test": "pnpm --filter ./apps/forum test",
+    "test:run": "pnpm --filter ./apps/forum test:run",
+    "dev:seller": "pnpm --filter @cemvp/seller dev",
+    "dev:admin": "pnpm --filter @cemvp/admin dev",
+    "dev:marketplace": "pnpm --filter @cemvp/marketplace dev",
+    "build:seller": "pnpm --filter @cemvp/seller build",
+    "build:admin": "pnpm --filter @cemvp/admin build",
+    "build:marketplace": "pnpm --filter @cemvp/marketplace build",
+    "lint:seller": "pnpm --filter @cemvp/seller lint",
+    "lint:admin": "pnpm --filter @cemvp/admin lint",
+    "lint:marketplace": "pnpm --filter @cemvp/marketplace lint",
+    "typecheck:seller": "pnpm --filter @cemvp/seller typecheck",
+    "typecheck:admin": "pnpm --filter @cemvp/admin typecheck",
+    "typecheck:marketplace": "pnpm --filter @cemvp/marketplace typecheck",
+    "convex:dev": "convex dev",
+    "convex:codegen": "convex codegen",
+    "convex:deploy:prod": "convex deploy",
+    "convex:seed-forum": "convex run forum/seed:runForumSeed '{\"force\":false}'",
+    "convex:seed-forum-force": "convex run forum/seed:runForumSeed '{\"force\":true}'",
+    "convex:prod:ensure-categories": "convex run forum/seed:ensureForumCategories --prod",
+    "convex:seed-legal": "convex run legalContent:seedDefaults"
+  },
+  "devDependencies": {
+    "convex": "^1.34.1",
+    "jose": "^6.2.2"
+  },
+  "dependencies": {
+    "@auth/core": "0.37.0",
+    "@convex-dev/auth": "^0.0.91"
+  },
+  "pnpm": {
+    "overrides": {
+      "convex": "1.34.1"
+    }
+  }
+}

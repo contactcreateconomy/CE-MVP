@@ -1,0 +1,1073 @@
+@import 'tailwindcss';
+
+@source "../../../../packages/auth-ui/src/**/*.{ts,tsx}";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-border: var(--border-default);
+  --color-input: var(--border-default);
+  --color-ring: var(--border-active);
+  --color-muted-foreground: var(--text-muted);
+
+  /* Background colors */
+  --color-bg-canvas: var(--bg-canvas);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-surface-elevated: var(--bg-surface-elevated);
+  --color-bg-overlay: var(--bg-overlay);
+  --color-bg-inset: var(--bg-inset);
+  --color-bg-wash: var(--bg-wash);
+
+  /* Text colors */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-disabled: var(--text-disabled);
+  --color-text-inverse: var(--text-inverse);
+
+  /* Border colors */
+  --color-border-subtle: var(--border-subtle);
+  --color-border-default: var(--border-default);
+  --color-border-prominent: var(--border-prominent);
+  --color-border-active: var(--border-active);
+
+  /* Brand colors */
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-hover: var(--brand-primary-hover);
+  --color-brand-primary-pressed: var(--brand-primary-pressed);
+  --color-brand-primary-bright: var(--brand-primary-bright);
+  --color-brand-primary-subtle: var(--brand-primary-subtle);
+  --color-brand-primary-whisper: var(--brand-primary-whisper);
+  --color-brand-primary-deep: var(--brand-primary-deep);
+  --color-brand-primary-midnight: var(--brand-primary-midnight);
+  --color-brand-primary-abyss: var(--brand-primary-abyss);
+
+  /* Feedback colors */
+  --color-feedback-success: var(--feedback-success);
+  --color-feedback-error: var(--feedback-error);
+  --color-feedback-warning: var(--feedback-warning);
+  --color-feedback-info: var(--feedback-info);
+  /* §2.5 ramps (FIX 2): mode-aware -bg/-border/-text as utility-generating colors */
+  --color-feedback-success-bg: var(--feedback-success-bg);
+  --color-feedback-success-border: var(--feedback-success-border);
+  --color-feedback-success-text: var(--feedback-success-text);
+  --color-feedback-error-bg: var(--feedback-error-bg);
+  --color-feedback-error-border: var(--feedback-error-border);
+  --color-feedback-error-text: var(--feedback-error-text);
+  --color-feedback-warning-bg: var(--feedback-warning-bg);
+  --color-feedback-warning-border: var(--feedback-warning-border);
+  --color-feedback-warning-text: var(--feedback-warning-text);
+  --color-feedback-info-bg: var(--feedback-info-bg);
+  --color-feedback-info-border: var(--feedback-info-border);
+  --color-feedback-info-text: var(--feedback-info-text);
+
+  /* Category accents (locked 8-type taxonomy, seed catalog) */
+  --color-cat-news: var(--cat-news);
+  --color-cat-review: var(--cat-review);
+  --color-cat-compare: var(--cat-compare);
+  --color-cat-help: var(--cat-help);
+  --color-cat-spark: var(--cat-spark);
+  --color-cat-debate: var(--cat-debate);
+  --color-cat-list: var(--cat-list);
+  --color-cat-showcase: var(--cat-showcase);
+
+  /* Podium / leaderboard rank medals */
+  --color-rank-gold: var(--rank-gold);
+  --color-rank-silver: var(--rank-silver);
+  --color-rank-bronze: var(--rank-bronze);
+  --color-rank-four: var(--rank-four);
+  --color-rank-five: var(--rank-five);
+
+  /* Shadows */
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+
+  /* Glows */
+  --shadow-glow-primary-sm: var(--glow-primary-sm);
+  --shadow-glow-primary-md: var(--glow-primary-md);
+  --shadow-glow-primary-lg: var(--glow-primary-lg);
+  --shadow-glow-primary-text: var(--glow-primary-text);
+  --shadow-glow-primary-border: var(--glow-primary-border);
+  --shadow-glow-primary-pill: var(--glow-primary-pill);
+  --shadow-glow-primary-pill-hover: var(--glow-primary-pill-hover);
+  --shadow-glow-primary-card-hover: var(--glow-primary-card-hover);
+  --shadow-glow-primary-track: var(--glow-primary-track);
+
+  /* Named radii beyond the base four (real-app values, Layer 1 reconciliation #8) */
+  --radius-menu: var(--radius-menu);
+  --radius-menu-item: var(--radius-menu-item);
+  --radius-modal-auth: var(--radius-modal-auth);
+  --radius-hero: var(--radius-hero);
+
+  /* Container widths */
+  --container-app: var(--container-app);
+  --container-reading: var(--container-reading);
+  --container-compose: var(--container-compose);
+  --container-modal: var(--container-modal);
+  --container-modal-compact: var(--container-modal-compact);
+  --container-modal-media: var(--container-modal-media);
+  --container-toast: var(--container-toast);
+  --container-auth: var(--container-auth);
+  --container-search: var(--container-search);
+
+  /* §3 Type scale — named utilities (text-label-sm, text-body-md, …) */
+  --text-label-lg: var(--type-label-lg-size);
+  --text-label-lg--line-height: var(--type-label-lg-lh);
+  --text-label-lg--letter-spacing: var(--type-label-lg-track);
+  --text-label-md: var(--type-label-md-size);
+  --text-label-md--line-height: var(--type-label-md-lh);
+  --text-label-md--letter-spacing: var(--type-label-md-track);
+  --text-label-sm: var(--type-label-sm-size);
+  --text-label-sm--line-height: var(--type-label-sm-lh);
+  --text-label-sm--letter-spacing: var(--type-label-sm-track);
+  --text-caption: var(--type-caption-size);
+  --text-caption--line-height: var(--type-caption-lh);
+  --text-overline: var(--type-overline-size);
+  --text-overline--line-height: var(--type-overline-lh);
+  --text-overline--letter-spacing: var(--type-overline-track);
+  --text-micro: var(--type-micro-size);
+  --text-micro--line-height: var(--type-micro-lh);
+  --text-micro-2: var(--type-micro-2-size);
+  --text-micro-2--line-height: var(--type-micro-2-lh);
+  --text-body-xs: var(--type-body-xs-size);
+  --text-body-xs--line-height: var(--type-body-xs-lh);
+  --text-body-sm: var(--type-body-sm-size);
+  --text-body-sm--line-height: var(--type-body-sm-lh);
+  --text-body-md: var(--type-body-md-size);
+  --text-body-md--line-height: var(--type-body-md-lh);
+  --text-body-lg: var(--type-body-lg-size);
+  --text-body-lg--line-height: var(--type-body-lg-lh);
+  --text-fine: var(--type-fine-size);
+  --text-fine--line-height: var(--type-fine-lh);
+  --text-heading-xs: var(--type-heading-xs-size);
+  --text-heading-xs--line-height: var(--type-heading-xs-lh);
+  --text-heading-xs--letter-spacing: var(--type-heading-xs-track);
+  --text-heading-sm: var(--type-heading-sm-size);
+  --text-heading-sm--line-height: var(--type-heading-sm-lh);
+  --text-heading-sm--letter-spacing: var(--type-heading-sm-track);
+  --text-heading-md: var(--type-heading-md-size);
+  --text-heading-md--line-height: var(--type-heading-md-lh);
+  --text-heading-md--letter-spacing: var(--type-heading-md-track);
+  --text-heading-lg: var(--type-heading-lg-size);
+  --text-heading-lg--line-height: var(--type-heading-lg-lh);
+  --text-heading-lg--letter-spacing: var(--type-heading-lg-track);
+  --text-heading-xl: var(--type-heading-xl-size);
+  --text-heading-xl--line-height: var(--type-heading-xl-lh);
+  --text-heading-xl--letter-spacing: var(--type-heading-xl-track);
+  --text-display-sm: var(--type-display-sm-size);
+  --text-display-sm--line-height: var(--type-display-sm-lh);
+  --text-display-sm--letter-spacing: var(--type-display-sm-track);
+  --text-display-md: var(--type-display-md-size);
+  --text-display-md--line-height: var(--type-display-md-lh);
+  --text-display-md--letter-spacing: var(--type-display-md-track);
+  --text-display-lg: var(--type-display-lg-size);
+  --text-display-lg--line-height: var(--type-display-lg-lh);
+  --text-display-lg--letter-spacing: var(--type-display-lg-track);
+  --text-display-xl: var(--type-display-xl-size);
+  --text-display-xl--line-height: var(--type-display-xl-lh);
+  --text-display-xl--letter-spacing: var(--type-display-xl-track);
+  --text-display-2xl: var(--type-display-2xl-size);
+  --text-display-2xl--line-height: var(--type-display-2xl-lh);
+  --text-display-2xl--letter-spacing: var(--type-display-2xl-track);
+
+  /* Z-index — real app ladder (Layer 1 reconciliation #7) */
+  --z-behind: var(--z-behind);
+  --z-base: var(--z-base);
+  --z-sticky-local: var(--z-sticky-local);
+  --z-raised: var(--z-raised);
+  --z-progress: var(--z-progress);
+  --z-layer: var(--z-layer);
+  --z-sticky: var(--z-sticky);
+  --z-dropdown: var(--z-dropdown);
+  --z-toast: var(--z-toast);
+  --z-modal-auth: var(--z-modal-auth);
+  --z-tooltip: var(--z-tooltip);
+  --z-max: var(--z-max);
+
+  /* Easings (Layer 1 §7.2) */
+  --ease-out-cubic: var(--ease-out-cubic);
+  --ease-loop: var(--ease-loop);
+  --ease-emerge: var(--ease-emerge);
+  --ease-pop-in: var(--ease-pop-in);
+  --ease-pop-out: var(--ease-pop-out);
+  --ease-toggle: var(--ease-toggle);
+  --ease-spring-soft: var(--ease-spring-soft);
+
+  /* Named transitions — duration/easing pairs (Layer 1 §7) */
+  --transition-hover: var(--duration-normal) var(--ease-out-cubic);
+  --transition-standard: var(--duration-normal) var(--ease-out-cubic);
+  --transition-press: var(--duration-fast) var(--ease-out-cubic);
+  --transition-emerge: var(--duration-emerge) var(--ease-emerge);
+  --transition-fade-in: var(--duration-overlay-in) ease-out;
+
+  /* Text/link colors */
+  --color-text-link: var(--text-link);
+  --color-text-link-hover: var(--text-link-hover);
+
+  /* Z-index scale */
+  --z-70: 70;
+  --z-80: 80;
+}
+
+:root {
+  --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), "SF Mono", "Fira Code", "Cascadia Code", monospace;
+
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(240 10% 4%);
+  --popover: hsl(0 0% 98%);
+  --popover-foreground: hsl(240 10% 4%);
+
+  /* Light mode (semantic tokens) */
+  --bg-canvas: hsl(0 0% 100%);
+  --bg-surface: hsl(0 0% 98%);
+  --bg-surface-elevated: hsl(240 5% 96%);
+  --bg-overlay: hsl(240 5% 90%);
+  --bg-inset: hsl(240 5% 96%);
+  --bg-wash: hsl(0 0% 0% / 0.02);
+
+  --text-primary: hsl(240 10% 4%);
+  --text-secondary: hsl(240 5% 34%);
+  --text-muted: hsl(240 4% 46%);
+  --text-disabled: hsl(240 5% 65%);
+  --text-inverse: hsl(0 0% 98%);
+
+  --border-subtle: hsl(240 5% 96%);
+  --border-default: hsl(240 5% 90%);
+  --border-prominent: hsl(240 5% 84%);
+  --border-active: hsl(199 89% 48%);
+
+  --brand-primary: hsl(199 89% 48%);
+  --brand-primary-hover: hsl(199 94% 60%);
+  --brand-primary-pressed: hsl(200 98% 39%);
+  --brand-primary-bright: hsl(199 95% 74%);
+  --brand-primary-subtle: hsl(199 92% 86%);
+  --brand-primary-whisper: hsl(200 95% 94%);
+  --brand-primary-deep: hsl(201 94% 32%);
+  --brand-primary-midnight: hsl(200 88% 28%);
+  --brand-primary-abyss: hsl(201 76% 24%);
+
+  --feedback-success: hsl(142 71% 45%);
+  --feedback-error: hsl(0 84% 60%);
+  --feedback-warning: hsl(38 92% 50%);
+  --feedback-info: hsl(199 89% 48%);
+
+  /* §2.5 feedback ramps — LIGHT mode values (AUDIT-LAYERS-1-2-3 FIX 2:
+     documented in STYLE-KIT §2.5 but never shipped as variables).
+     -bg = solid 50-tier tint · -border = 600-tier (mode-invariant) ·
+     -text = 700/800-tier on light, 400-tier on dark (see .dark). */
+  --feedback-success-bg: hsl(138 76% 96.7%);
+  --feedback-success-border: hsl(142 76% 36.3%);
+  --feedback-success-text: hsl(142 72% 29.2%);
+  --feedback-error-bg: hsl(0 86% 97.3%);
+  --feedback-error-border: hsl(0 72% 50.6%);
+  --feedback-error-text: hsl(0 74% 41.8%);
+  --feedback-warning-bg: hsl(48 100% 96.1%);
+  --feedback-warning-border: hsl(32 95% 43.7%);
+  --feedback-warning-text: hsl(23 83% 31.4%);
+  --feedback-info-bg: hsl(204 94% 93.7%);
+  --feedback-info-border: hsl(200 98% 39.4%);
+  --feedback-info-text: hsl(201 96% 32.2%);
+
+  /* Category accents — seed catalog (locked 8-type taxonomy) */
+  --cat-news: hsl(217 91% 60%);
+  --cat-review: hsl(258 90% 66%);
+  --cat-compare: hsl(142 71% 45%);
+  --cat-help: hsl(173 80% 36%);
+  --cat-spark: hsl(276 87% 61%);
+  --cat-debate: hsl(0 84% 60%);
+  --cat-list: hsl(25 95% 53%);
+  --cat-showcase: hsl(330 81% 60%);
+
+  /* Podium / leaderboard rank medals */
+  --rank-gold: hsl(45 93% 53%);
+  --rank-silver: hsl(210 24% 84%);
+  --rank-bronze: hsl(28 89% 44%);
+  --rank-four: hsl(173 80% 36%);
+  --rank-five: hsl(230 84% 66%);
+
+  /* Named radii (Layer 1 #8) */
+  --radius-menu: 14px;
+  --radius-menu-item: 10px;
+  --radius-modal-auth: 20px;
+  --radius-hero: 28px;
+
+  /* Container widths (Layer 1 §4) */
+  --container-app: 1440px;
+  --container-reading: 720px;
+  --container-compose: 900px;
+  --container-modal: min(560px, 94vw);
+  --container-modal-compact: min(480px, 92vw);
+  --container-modal-media: min(1200px, 96vw);
+  --container-toast: min(420px, 92vw);
+  --container-auth: 420px;
+  --container-search: 480px;
+
+  /* §4b Chrome stacking offset (Stage-2 audit FIX 1): mirrors the kit's
+     --chrome-offset-progress — reading-progress bar sits under header + mode
+     bar. RECONCILIATION-NOTE #12 claimed this token existed; the app port
+     never shipped it until now. */
+  --chrome-offset-progress: calc(3.5rem + 2.75rem);
+
+  /* §4.1 Spacing scale (FIX 2): reference variables for the documented 4px
+     scale. Plain :root vars by design — utilities (p-*, gap-*) already
+     generate from Tailwind's own default spacing scale, which §4.1 declares
+     identical; these vars exist so the scale is addressable by name.
+     Dotted doc names map hyphen-safe: space/0.5 → --space-0-5, space/1.5 → --space-1-5. */
+  --space-0: 0rem;
+  --space-0-5: 0.125rem;   /* 2px */
+  --space-1: 0.25rem;      /* 4px */
+  --space-1-5: 0.375rem;   /* 6px */
+  --space-2: 0.5rem;       /* 8px */
+  --space-3: 0.75rem;      /* 12px */
+  --space-4: 1rem;         /* 16px */
+  --space-5: 1.25rem;      /* 20px */
+  --space-6: 1.5rem;       /* 24px */
+  --space-8: 2rem;         /* 32px */
+  --space-10: 2.5rem;      /* 40px */
+  --space-12: 3rem;        /* 48px */
+  --space-16: 4rem;        /* 64px */
+  --space-20: 5rem;        /* 80px */
+  --space-24: 6rem;        /* 96px */
+  --space-32: 8rem;        /* 128px */
+
+  /* Z-index ladder (Layer 1 #7) */
+  --z-behind: -1;
+  --z-base: 0;
+  --z-sticky-local: 5;
+  --z-raised: 10;
+  --z-progress: 20;
+  --z-layer: 30;
+  --z-sticky: 40;
+  --z-dropdown: 50;
+  --z-toast: 60;
+  --z-modal-auth: 70;
+  --z-tooltip: 80;
+  --z-max: 100;
+
+  /* Motion durations (Layer 1 §7.1) */
+  --duration-instant: 0ms;
+  --duration-stagger-step: 50ms;
+  --duration-fast: 160ms;
+  --duration-normal: 200ms;
+  --duration-float: 220ms;
+  --duration-slow: 300ms;
+  --duration-overlay-in: 320ms;
+  --duration-overlay-out: 300ms;
+  --duration-modal-in: 360ms;
+  --duration-modal-out: 320ms;
+  --duration-emerge: 420ms;
+  --duration-media: 500ms;
+  --duration-shimmer: 1200ms;
+  --duration-pulse: 2000ms;
+
+  /* Easings (Layer 1 §7.2) */
+  --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --ease-loop: cubic-bezier(0.645, 0.045, 0.355, 1);
+  --ease-emerge: cubic-bezier(0.2, 0.9, 0.2, 1);
+  --ease-pop-in: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-pop-out: cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-toggle: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* §3 Type scale raw values (mode-invariant; rem on 16px root = 4px grid)
+     Tracking = §3.2's px value ÷ token size, exact (AUDIT-LAYERS-1-2-3 FIX 2:
+     the prior -0.05…-0.0025em ladder was a derivation error, up to 1.8x off
+     the documented -2.0px…-0.1px tracking; §3.2 is the authority — the real
+     app ships no display/heading tracking of its own to override it). */
+  --type-display-2xl-size: 4.5rem;   --type-display-2xl-lh: 5rem;    --type-display-2xl-track: -0.0278em;
+  --type-display-xl-size: 3.75rem;   --type-display-xl-lh: 4.25rem;  --type-display-xl-track: -0.03em;
+  --type-display-lg-size: 3rem;      --type-display-lg-lh: 3.5rem;   --type-display-lg-track: -0.0313em;
+  --type-display-md-size: 2.25rem;   --type-display-md-lh: 2.75rem;  --type-display-md-track: -0.0333em;
+  --type-display-sm-size: 1.875rem;  --type-display-sm-lh: 2.25rem;  --type-display-sm-track: -0.0267em;
+  --type-heading-xl-size: 1.875rem;  --type-heading-xl-lh: 2.25rem;  --type-heading-xl-track: -0.0167em;
+  --type-heading-lg-size: 1.5rem;    --type-heading-lg-lh: 2rem;     --type-heading-lg-track: -0.0167em;
+  --type-heading-md-size: 1.25rem;   --type-heading-md-lh: 1.75rem;  --type-heading-md-track: -0.015em;
+  --type-heading-sm-size: 1rem;      --type-heading-sm-lh: 1.5rem;   --type-heading-sm-track: -0.0125em;
+  --type-heading-xs-size: 0.875rem;  --type-heading-xs-lh: 1.25rem;  --type-heading-xs-track: -0.0071em;
+  --type-body-lg-size: 1.125rem;     --type-body-lg-lh: 1.75rem;
+  --type-body-md-size: 1rem;         --type-body-md-lh: 1.5rem;
+  --type-body-sm-size: 0.875rem;     --type-body-sm-lh: 1.25rem;
+  --type-body-xs-size: 0.75rem;      --type-body-xs-lh: 1rem;
+  --type-fine-size: 0.8125rem;       --type-fine-lh: 1.25rem;
+  --type-label-lg-size: 0.875rem;    --type-label-lg-lh: 1.25rem;    --type-label-lg-track: 0.01em;
+  --type-label-md-size: 0.75rem;     --type-label-md-lh: 1rem;       --type-label-md-track: 0.01em;
+  --type-label-sm-size: 0.6875rem;   --type-label-sm-lh: 1rem;       --type-label-sm-track: 0.02em;
+  --type-caption-size: 0.75rem;      --type-caption-lh: 1rem;
+  --type-overline-size: 0.6875rem;   --type-overline-lh: 1rem;       --type-overline-track: 0.08em;
+  --type-micro-size: 0.625rem;       --type-micro-lh: 0.875rem;
+  --type-micro-2-size: 0.5625rem;    --type-micro-2-lh: 0.75rem;
+
+  /* §11.7 overlay backdrop blur */
+  --blur-overlay: 4px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+
+  --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0 1px 3px hsl(0 0% 0% / 0.08), 0 1px 2px hsl(0 0% 0% / 0.04);
+  --shadow-md: 0 4px 6px hsl(0 0% 0% / 0.1), 0 2px 4px hsl(0 0% 0% / 0.05);
+  --shadow-lg: 0 10px 15px hsl(0 0% 0% / 0.12), 0 4px 6px hsl(0 0% 0% / 0.06);
+  --shadow-xl: 0 20px 25px hsl(0 0% 0% / 0.15), 0 10px 10px hsl(0 0% 0% / 0.08);
+
+  /* Link tokens (Layer 1 §2) */
+  --text-link: hsl(200 98% 39%);
+  --text-link-hover: hsl(199 89% 48%);
+
+  /* Glows — disabled in light mode (Layer 1 mechanism) */
+  --glow-primary-sm: none;
+  --glow-primary-md: none;
+  --glow-primary-lg: none;
+  --glow-primary-text: none;
+  --glow-primary-border: none;
+  --glow-primary-pill: none;
+  --glow-primary-pill-hover: none;
+  --glow-primary-card-hover: none;
+  --glow-primary-track: none;
+  --glow-primary-halo: none;
+  --dot-color: hsl(240 10% 4% / 0.08);
+
+  /* ── Mode toggle animation tokens ── */
+  --toggle-ease-spring:    cubic-bezier(0.22, 1, 0.36, 1);
+  --toggle-enter-duration: 320ms;
+  --toggle-exit-duration:  220ms;
+  --toggle-stagger:         40ms;
+}
+
+.dark {
+  /* Near-black canvas; shared charcoal panels (#121212) for discover, posts, feed chrome — matches product mockups */
+  --background: hsl(0 0% 2%);
+  --foreground: hsl(0 0% 98%);
+  --popover: hsl(0 0% 7%);
+  --popover-foreground: hsl(0 0% 98%);
+
+  --bg-canvas: hsl(0 0% 2%);
+  --bg-surface: hsl(0 0% 7.1%);
+  --bg-surface-elevated: hsl(0 0% 9%);
+  --bg-overlay: hsl(0 0% 12%);
+  --bg-inset: hsl(0 0% 4%);
+  --bg-wash: hsl(0 0% 100% / 0.03);
+
+  --text-primary: hsl(0 0% 98%);
+  --text-secondary: hsl(0 0% 65%);
+  --text-muted: hsl(0 0% 46%);
+  --text-disabled: hsl(0 0% 34%);
+  --text-inverse: hsl(0 0% 2%);
+
+  --border-subtle: hsl(0 0% 11%);
+  --border-default: hsl(0 0% 15%);
+  --border-prominent: hsl(0 0% 20%);
+  --border-active: hsl(199 89% 48%);
+
+  /* §2.5 feedback ramps — DARK mode: -bg = base at 10% (the real-app tint
+     pattern), -text = 400-tier brights. -border stays 600-tier (mode-invariant). */
+  --feedback-success-bg: hsl(142 71% 45% / 0.1);
+  --feedback-success-text: hsl(142 69% 58%);
+  --feedback-error-bg: hsl(0 84% 60% / 0.1);
+  --feedback-error-text: hsl(0 91% 70.8%);
+  --feedback-warning-bg: hsl(38 92% 50% / 0.1);
+  --feedback-warning-text: hsl(43 96% 56.3%);
+  --feedback-info-bg: hsl(199 89% 48% / 0.1);
+  --feedback-info-text: hsl(198 93% 59.6%);
+
+  --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.3);
+  --shadow-sm: 0 1px 3px hsl(0 0% 0% / 0.25), 0 1px 2px hsl(0 0% 0% / 0.15);
+  --shadow-md: 0 4px 6px hsl(0 0% 0% / 0.3), 0 2px 4px hsl(0 0% 0% / 0.15);
+  --shadow-lg: 0 10px 15px hsl(0 0% 0% / 0.35), 0 4px 6px hsl(0 0% 0% / 0.2);
+  --shadow-xl: 0 20px 25px hsl(0 0% 0% / 0.4), 0 10px 10px hsl(0 0% 0% / 0.25);
+
+  /* Link tokens (Layer 1 §2) */
+  --text-link: hsl(199 89% 48%);
+  --text-link-hover: hsl(199 94% 60%);
+
+  /* Glows — dark mode only (Layer 1 #6) */
+  --glow-primary-sm: 0 0 10px hsl(199 89% 48% / 0.2);
+  --glow-primary-md: 0 0 20px hsl(199 89% 48% / 0.35), 0 0 60px hsl(199 89% 48% / 0.15);
+  --glow-primary-lg: 0 0 30px hsl(199 89% 48% / 0.4), 0 0 80px hsl(199 89% 48% / 0.2);
+  --glow-primary-text: 0 0 40px hsl(199 89% 48% / 0.5);
+  --glow-primary-border: 0 0 0 1px hsl(199 89% 48%), 0 0 15px hsl(199 89% 48% / 0.25);
+  --glow-primary-pill: 0 8px 24px hsl(199 89% 48% / 0.28);
+  --glow-primary-pill-hover: 0 10px 28px hsl(199 89% 48% / 0.35);
+  --glow-primary-card-hover: 0 0 22px hsl(199 89% 48% / 0.09), 0 0 40px hsl(199 89% 48% / 0.04), 0 10px 28px hsl(199 89% 48% / 0.035);
+  --glow-primary-track: 0 0 6px hsl(199 89% 48% / 0.5), 0 0 14px hsl(199 89% 48% / 0.2);
+  /* Halo: single-color stop for radial gradient washes (hero carousel scrim) */
+  --glow-primary-halo: hsl(199 89% 48% / 0.08);
+  --dot-color: hsl(0 0% 100% / 0.08);
+}
+
+* {
+  @apply border-transparent;
+}
+
+html,
+body {
+  @apply min-h-full;
+}
+
+body {
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+main {
+  @apply min-h-screen;
+}
+
+@layer base {
+  a {
+    color: var(--brand-primary);
+  }
+}
+
+:focus-visible {
+  outline: none;
+}
+
+.card-surface {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+/* Feed post cards: soft outer glow on hover / keyboard focus within */
+.feed-post-card {
+  transition:
+    transform 200ms ease-out,
+    box-shadow 200ms ease-out;
+}
+
+.feed-post-card:hover,
+.feed-post-card:focus-within {
+  transform: translateY(-2px);
+  box-shadow:
+    var(--shadow-xs),
+    0 0 22px hsl(199 89% 48% / 0.09),
+    0 0 40px hsl(199 89% 48% / 0.04),
+    0 10px 28px hsl(199 89% 48% / 0.035);
+}
+
+.electric-glow {
+  box-shadow: var(--glow-primary-sm);
+}
+
+.canvas-dot-grid {
+  background-image: radial-gradient(circle at center, var(--dot-color) 1px, transparent 1px);
+  background-size: 18px 18px;
+  background-position: 0 0;
+}
+
+@keyframes soft-float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: var(--glow-primary-sm);
+  }
+  50% {
+    box-shadow: var(--glow-primary-md);
+  }
+}
+
+@keyframes route-emerge {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.animate-soft-float {
+  animation: soft-float-up 220ms cubic-bezier(0.215, 0.61, 0.355, 1) both;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2000ms cubic-bezier(0.645, 0.045, 0.355, 1) infinite;
+}
+
+.animate-route-emerge {
+  animation: route-emerge 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+/* Layer 2: component-scope animations as @utility so variants compose.
+   Durations/easings reference the §7 tokens defined in :root. */
+@utility animate-modal-pop-in {
+  animation: modal-pop-in var(--duration-modal-in) var(--ease-pop-in) both;
+}
+
+@utility animate-modal-pop-out {
+  animation: modal-pop-out var(--duration-modal-out) var(--ease-pop-out) both;
+}
+
+@utility animate-overlay-fade-in {
+  animation: overlay-fade-in var(--duration-overlay-in) ease-out both;
+}
+
+@utility animate-overlay-fade-out {
+  animation: overlay-fade-out var(--duration-overlay-out) ease-in both;
+}
+
+/* Layer 3 (§11.9 skeleton): token-backed shimmer sweep — mirrors the kit's
+   --animate-progress-shimmer; keyframe + --duration-shimmer already exist.
+   Gradient = §11.9 "bg/surface → bg/overlay → bg/surface"; the registered
+   --progress-shimmer-offset drives the left→right sweep. */
+@utility animate-progress-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--bg-surface) 0%,
+    var(--bg-overlay) 50%,
+    var(--bg-surface) 100%
+  );
+  background-size: 200% 100%;
+  background-position: var(--progress-shimmer-offset) 0;
+  animation: progress-shimmer var(--duration-shimmer) linear infinite;
+}
+
+/* A8 ladder (§7.3 FADE IN — opacity 0→1, duration/normal, ease/out):
+   browsing the ladder fades in; no movement (§11.26 "browsing = fade"). */
+@utility animate-fade-in {
+  animation: fade-in var(--duration-normal) var(--ease-out-cubic) both;
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* A8 ladder (§7.3 SCALE REVEAL — scale(0.95)→1 + fade, duration/slow,
+   ease/spring): level-up only. duration/slower never shipped; the
+   reconciled scale's emerge step (420ms, RECONCILIATION-NOTE #9) rides. */
+@utility animate-scale-reveal {
+  animation: scale-reveal var(--duration-emerge) var(--ease-spring-soft) both;
+}
+
+@keyframes scale-reveal {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Layer 2: z-ladder utilities (z-index is not a @theme namespace in v4). */
+@utility z-behind { z-index: var(--z-behind); }
+@utility z-base { z-index: var(--z-base); }
+@utility z-sticky-local { z-index: var(--z-sticky-local); }
+@utility z-raised { z-index: var(--z-raised); }
+@utility z-progress { z-index: var(--z-progress); }
+@utility z-layer { z-index: var(--z-layer); }
+@utility z-sticky { z-index: var(--z-sticky); }
+@utility z-dropdown { z-index: var(--z-dropdown); }
+@utility z-toast { z-index: var(--z-toast); }
+@utility z-modal-auth { z-index: var(--z-modal-auth); }
+@utility z-tooltip { z-index: var(--z-tooltip); }
+@utility z-max { z-index: var(--z-max); }
+
+/* Layer 2: named duration utilities on the §7.1 scale. */
+@utility duration-instant { transition-duration: var(--duration-instant); }
+@utility duration-stagger-step { transition-duration: var(--duration-stagger-step); }
+@utility duration-fast { transition-duration: var(--duration-fast); }
+@utility duration-normal { transition-duration: var(--duration-normal); }
+@utility duration-slow { transition-duration: var(--duration-slow); }
+@utility duration-float { transition-duration: var(--duration-float); }
+@utility duration-emerge { transition-duration: var(--duration-emerge); }
+
+/* Layer 2: §7.2 easing utilities. */
+@utility ease-out-cubic { transition-timing-function: var(--ease-out-cubic); }
+@utility ease-loop { transition-timing-function: var(--ease-loop); }
+@utility ease-emerge { transition-timing-function: var(--ease-emerge); }
+@utility ease-pop-in { transition-timing-function: var(--ease-pop-in); }
+@utility ease-pop-out { transition-timing-function: var(--ease-pop-out); }
+@utility ease-toggle { transition-timing-function: var(--ease-toggle); }
+@utility ease-spring-soft { transition-timing-function: var(--ease-spring-soft); }
+
+@keyframes modal-pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modal-pop-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+}
+
+@keyframes overlay-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes overlay-fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes auth-otp-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+@keyframes search-focus-spin {
+  to { --search-focus-angle: 360deg; }
+}
+
+@property --search-focus-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.search-input:focus {
+  border-color: transparent;
+  background: var(--bg-surface) padding-box,
+    conic-gradient(
+      from var(--search-focus-angle),
+      rgba(14, 165, 233, 0.55),
+      rgba(14, 165, 233, 0.12),
+      rgba(14, 165, 233, 0.0),
+      rgba(14, 165, 233, 0.12),
+      rgba(14, 165, 233, 0.55)
+    ) border-box;
+  animation: search-focus-spin 2.5s linear infinite;
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.15);
+}
+
+/* Navigation progress bar — metallic gradient shimmer */
+@property --progress-shimmer-offset {
+  syntax: "<percentage>";
+  initial-value: -100%;
+  inherits: false;
+}
+
+@keyframes progress-shimmer {
+  to { --progress-shimmer-offset: 200%; }
+}
+
+.navigation-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.navigation-progress-bar__track {
+  height: 100%;
+  border-radius: 0 1px 1px 0;
+  background: linear-gradient(
+    90deg,
+    hsl(199 89% 48%) 0%,
+    hsl(199 94% 60%) 20%,
+    hsl(200 98% 39%) 40%,
+    hsl(199 89% 60%) 60%,
+    hsl(200 98% 39%) 80%,
+    hsl(199 89% 48%) 100%
+  );
+  background-size: 200% 100%;
+  animation: progress-shimmer 1.2s linear infinite;
+  box-shadow:
+    0 0 6px hsl(199 89% 48% / 0.5),
+    0 0 14px hsl(199 89% 48% / 0.2);
+}
+
+.auth-modal-content[data-state="open"] {
+  animation: modal-pop-in 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.auth-modal-content[data-state="closed"] {
+  animation: modal-pop-out 320ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+.auth-modal-overlay[data-state="open"] {
+  animation: overlay-fade-in 320ms ease-out both;
+}
+
+.auth-modal-overlay[data-state="closed"] {
+  animation: overlay-fade-out 300ms ease-in both;
+}
+
+/* TipTap /new-post: paragraph rhythm + placeholder (Medium-style canvas) */
+.new-post-prose.tiptap p {
+  margin: 0.65em 0;
+}
+
+.new-post-prose.tiptap h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1.25em 0 0.5em;
+  letter-spacing: -0.02em;
+}
+
+.new-post-prose.tiptap h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1em 0 0.4em;
+}
+
+.new-post-prose.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--text-muted);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   MODE TOGGLE  (ModeToggle component — src/components/ui/toggle-switch.tsx)
+   ─────────────────────────────────────────────────────────────────────────
+   Animation is driven purely by CSS using data-state on the root element.
+   JS only toggles data-state and ARIA attributes — no style mutations.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Container */
+.toggle-root {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  width: 72px;
+  height: 24px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Sliding active indicator pill */
+.toggle-indicator {
+  position: absolute;
+  top: 1.5px;
+  bottom: 1.5px;
+  left: 1.5px;
+  width: calc(50% - 1.5px);
+  border-radius: 9px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-prominent);
+  box-shadow: var(--shadow-xs);
+  will-change: transform;
+  transition: transform var(--toggle-enter-duration) var(--toggle-ease-spring);
+  pointer-events: none;
+}
+
+[data-state="min"] .toggle-indicator {
+  transform: translateX(0);
+}
+
+[data-state="max"] .toggle-indicator {
+  transform: translateX(calc(100% + 1.5px));
+}
+
+/* Half buttons — grid for pixel-perfect centering */
+.toggle-half {
+  position: relative;
+  flex: 1 1 0;
+  width: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+.toggle-half:focus-visible {
+  outline: 2px solid var(--border-active);
+  outline-offset: -2px;
+  border-radius: 12px;
+  z-index: 1;
+}
+
+/* ── Icon circle (− / +) — visible when side is INACTIVE ── */
+.toggle-letter {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  opacity: 1;
+  transform: scale(1);
+  will-change: transform, opacity;
+  transition:
+    opacity    160ms ease-out,
+    transform  160ms ease-out,
+    box-shadow 200ms ease-out,
+    border-color 200ms ease-out;
+}
+
+.toggle-lucide {
+  width: 10px;
+  height: 10px;
+  transition: color 200ms ease-out, filter 200ms ease-out;
+}
+
+/* Hover glow on inactive icon */
+[data-state="max"] .left-half:hover .toggle-lucide,
+[data-state="min"] .right-half:hover .toggle-lucide {
+  color: var(--brand-primary);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--brand-primary) 50%, transparent));
+}
+
+/* ── Word (MIN / MAX) — visible when side is ACTIVE ── */
+.toggle-word {
+  grid-area: 1 / 1;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  color: var(--text-primary);
+  opacity: 0;
+  transform: translateY(3px);
+  pointer-events: none;
+  will-change: transform, opacity;
+  transition:
+    opacity  240ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 240ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ────────────────────────────────────────────────────────────
+   STATE: MIN active  →  left shows "MIN", right shows "+"
+   ──────────────────────────────────────────────────────────── */
+
+/* Left: letter exits */
+[data-state="min"] .left-half .toggle-letter {
+  opacity: 0;
+  transform: scale(0.78);
+}
+
+/* Left: word enters (staggered 50ms after letter starts exiting) */
+[data-state="min"] .left-half .toggle-word {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 50ms, 50ms;
+}
+
+/* ────────────────────────────────────────────────────────────
+   STATE: MAX active  →  right shows "MAX", left shows "−"
+   ──────────────────────────────────────────────────────────── */
+
+/* Right: letter exits */
+[data-state="max"] .right-half .toggle-letter {
+  opacity: 0;
+  transform: scale(0.78);
+}
+
+/* Right: word enters (staggered 50ms) */
+[data-state="max"] .right-half .toggle-word {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 50ms, 50ms;
+}
+
+/* ── Initial / unset state ── */
+:not([data-state]) .toggle-letter { opacity: 1; transform: scale(1); }
+:not([data-state]) .toggle-word   { opacity: 0; transform: translateY(3px); }
+
+
+@media (prefers-reduced-motion: reduce) {
+  .feed-post-card:hover,
+  .feed-post-card:focus-within {
+    transform: none;
+  }
+
+  .electric-glow,
+  .animate-pulse-glow {
+    box-shadow: none;
+    animation: none !important;
+  }
+
+  /* Keep reduced-motion respect limited to our modal + pulse effects. */
+  .animate-modal-pop-in,
+  .animate-modal-pop-out,
+  .animate-overlay-fade-in,
+  .animate-overlay-fade-out,
+  /* §11.9 skeleton shimmer — decorative sweep (Layer 3 component-scoped). */
+  .animate-progress-shimmer,
+  /* §7.3 ladder motion — fade/scale-reveal are decorative (§11.26). */
+  .animate-fade-in,
+  .animate-scale-reveal {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  .auth-modal-content[data-state],
+  .auth-modal-overlay[data-state] {
+    animation: none !important;
+    filter: none;
+  }
+
+  .auth-modal-content[data-state] {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .auth-modal-overlay[data-state] {
+    opacity: 1;
+  }
+
+  .navigation-progress-bar__track {
+    animation: none !important;
+  }
+
+  /* Mode toggle — instant state switch, no motion */
+  .toggle-indicator,
+  .toggle-icon,
+  .toggle-label {
+    transition-duration: 0ms !important;
+    transition-delay: 0ms !important;
+  }
+}
