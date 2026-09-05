@@ -291,6 +291,11 @@ export default defineSchema({
     points: v.number(),
     streakDays: v.number(),
     verified: v.optional(v.boolean()),
+    /** Legacy-only: AI-persona flag on pre-copy demo rows in the shared
+     *  deployment; not written by this codebase. Tolerated so the schema
+     *  push validates against existing data (forum* tables are transitional
+     *  per 00-TRANSITION and are dropped in SLICE-P7-CLEANUP). */
+    managedByAutomation: v.optional(v.boolean()),
     role: v.union(v.literal("member"), v.literal("moderator"), v.literal("admin")),
   })
     .index("by_handle", ["handle"])

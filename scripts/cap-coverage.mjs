@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const S = "C:/Users/akr604/Music/CEY/PRD/03-slices/";
+const S = path.resolve(import.meta.dirname, "../docs/03-slices");
 const files = fs.readdirSync(S).filter(f => f.endsWith(".md"));
 
 const covered = new Set();

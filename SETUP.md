@@ -2,7 +2,8 @@
 
 Verified working from this exact copy on 2026-09-04. This file replaces the
 historical root-README/docs references that were not carried into the PRD
-copy (FINAL-HOLISTIC-AUDIT HOL-P2-007).
+copy (FINAL-HOLISTIC-AUDIT HOL-P2-007). Paths below are relative to the
+repo root (updated 2026-09-05 from the earlier `PRD/app` wording).
 
 ## Prerequisites (Windows/macOS/Linux)
 
@@ -16,7 +17,7 @@ copy (FINAL-HOLISTIC-AUDIT HOL-P2-007).
 ## Install & run
 
 ```bash
-cd PRD/app
+# from the repo root
 pnpm install          # ~42s cold; 621 packages; uses pnpm-lock.yaml
 pnpm dev              # Next.js dev server → http://localhost:3000
 ```
@@ -24,7 +25,7 @@ pnpm dev              # Next.js dev server → http://localhost:3000
 `/` redirects to `/feed`. Verify with: `curl -s -o /dev/null -w "%{http_code}"
 http://localhost:3000/feed` → `200`.
 
-## Verification commands (run from PRD/app)
+## Verification commands (run from the repo root)
 
 | Command | What it checks |
 |---|---|
@@ -34,8 +35,9 @@ http://localhost:3000/feed` → `200`.
 
 ## Environment
 
-`.env.local` files exist at `PRD/app/` and `PRD/app/apps/forum/` (values are
-pre-configured for the shared Convex cloud deployment; key names only):
+`.env.local` files live at the repo root (Convex CLI config, created by
+`npx convex dev`) and at `apps/forum/` (values are pre-configured for the
+shared Convex cloud deployment; key names only):
 
 - `NEXT_PUBLIC_CONVEX_URL` — client URL (the only var the app source reads,
   via `@cemvp/convex-client`)
@@ -46,7 +48,7 @@ the original workspace talk to identical data.
 
 ## Convex backend
 
-Function code lives in `PRD/app/convex/` (registered by `convex.json`).
+Function code lives in `convex/` (registered by `convex.json`).
 Deploy/push function changes from the monorepo root: `pnpm convex:dev`.
 Backend auth env (JWT_PRIVATE_KEY, JWKS, AUTH_GOOGLE_*, etc.) is documented
 by key name in `convex/.env.example`; provider secrets are NOT part of this
@@ -60,7 +62,7 @@ the versioned `contentVersions` table via `/privacy`, `/terms`, `/dmca`,
 `/repeat-infringer`. **Seeding requires a one-time authenticated CLI run:**
 
 ```bash
-npx convex login        # once — this environment has no Convex access token
+npx convex login        # once (this machine is already authenticated, 2026-09-05)
 pnpm convex:seed-legal  # inserts v1 published rows (idempotent)
 ```
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- schema/validator introspection + pure-fixture tests */
 import { describe, it, expect } from "vitest";
 
 /* SLICE-P2-01/02/03 acceptance tests — admission gate + bootstrap txn +

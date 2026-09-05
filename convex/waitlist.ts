@@ -8,7 +8,7 @@
  * path; not a parallel flow."
  */
 
-import { publicMutation } from "./_generated/server";
+import { mutation as publicMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { captureEvent } from "./lib/events";
 

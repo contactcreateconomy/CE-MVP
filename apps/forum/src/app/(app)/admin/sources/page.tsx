@@ -72,7 +72,7 @@ export default function AdminSourcesPage() {
 
   const sources = useQuery(api.sources.listSources);
   const upsert = useMutation(api.sources.sourceUpsert);
-  const validateUrl = useAction(api.sources.validateSourceUrl);
+  const validateUrl = useAction(api.sourcesValidate.validateSourceUrl);
   const setTrustLevel = useMutation(api.sources.setTrustLevel);
 
   const rows: SourceRow[] = useMemo(() => (sources as any[]) ?? [], [sources]);

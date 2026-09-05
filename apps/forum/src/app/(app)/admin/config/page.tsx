@@ -54,7 +54,7 @@ export default function AdminConfigPage() {
   const casUpdate = useMutation(api.config.casUpdate);
 
   const rows: ConfigRow[] = useMemo(() => {
-    const ns = (namespace as any[]) ?? [];
+    const ns = (namespace as ConfigRow[] | undefined) ?? [];
     return ns.map((r) => ({
       _id: r._id,
       key: r.key,

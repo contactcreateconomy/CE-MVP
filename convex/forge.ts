@@ -1,5 +1,3 @@
-"use node";
-
 /**
  * forge — SLICE-P4-09: forge.draft (CAP-038/039/040) — the claims-first
  * draft generator.
@@ -34,7 +32,7 @@ import { internalAction, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
-import { hashContent } from "./ingest/pollers";
+import { hashContent } from "./lib/hash";
 
 const URL_LIKE = /https?:\/\/|www\.|\b[a-z0-9-]+(\.[a-z0-9-]+)+\b/i;
 

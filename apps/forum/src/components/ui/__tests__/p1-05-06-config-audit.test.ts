@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- schema/validator introspection + pure-fixture tests */
 import { describe, it, expect } from "vitest";
 
 /* SLICE-P1-05 + P1-06 acceptance tests — schema shape + validation-core +

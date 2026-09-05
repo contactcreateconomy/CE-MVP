@@ -26,7 +26,7 @@
  * config-driven (registry keys seeded with the slice).
  */
 
-import { internalAction, internalMutation } from "../_generated/server";
+import { internalAction } from "../_generated/server";
 import { internal } from "../_generated/api";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
@@ -80,20 +80,10 @@ export function parseFeedItems(xml: string): RssItem[] {
   return items;
 }
 
-/** Stable content hash for dedup (CAP-062: "hash dedup"). */
-export function hashContent(text: string): string {
-  // FNV-1a 32-bit x4 lanes → 32-hex-char digest (no node:crypto import
-  // burden; adequate for dedup keys, not security)
-  let h1 = 0x811c9dc5, h2 = 0x01000193, h3 = 0xdeadbeef, h4 = 0x41c6ce57;
-  for (let i = 0; i < text.length; i++) {
-    const c = text.charCodeAt(i);
-    h1 = (h1 ^ c) * 0x01000193;
-    h2 = (h2 + c * (i + 1)) >>> 0;
-    h3 = (h3 ^ (c << 3)) >>> 0;
-    h4 = (h4 + c * c) >>> 0;
-  }
-  return [h1, h2, h3, h4].map((x) => (x >>> 0).toString(16).padStart(8, "0")).join("");
-}
+/** Stable content hash for dedup (CAP-062: "hash dedup") — pure impl in
+ *  lib/hash.ts so non-node modules (forge) can import it too. */
+import { hashContent } from "../lib/hash";
+export { hashContent };
 
 /** Per-source budget check (R-COST): requests today vs maxRequestsPerDay. */
 export function withinDailyBudget(
@@ -103,56 +93,28 @@ export function withinDailyBudget(
   return itemsDiscoveredToday < maxRequestsPerDay;
 }
 
-/** Shared poll bookkeeping: mark config polled (+ failure counter). */
+/** Shared poll bookkeeping: mark config polled (+ failure counter). Runs as
+ *  a mutation (pollersData.recordPollState) — actions cannot touch ctx.db. */
 async function recordPoll(
   ctx: any,
   configId: Id<"ingestionConfigs">,
   success: boolean,
   intervalMinutes: number,
 ): Promise<void> {
-  const config = await ctx.db.get(configId);
-  if (!config) return;
-  await ctx.db.patch(configId, {
-    lastPolledAt: Date.now(),
-    nextPollAt: Date.now() + intervalMinutes * 60_000,
-    lastSuccessAt: success ? Date.now() : config.lastSuccessAt,
-    consecutiveFailures: success ? 0 : config.consecutiveFailures + 1,
+  await ctx.runMutation(internal.ingest.pollersData.recordPollState, {
+    configId,
+    success,
+    intervalMinutes,
   });
 }
 
-/** Due-config loader (shared by all cron pollers). */
-export const loadDueConfigs = internalMutation({
-  args: { method: v.string(), now: v.number() },
-  handler: async (ctx, { method, now }) => {
-    const configs = await ctx.db.query("ingestionConfigs").collect();
-    const due = [];
-    for (const config of configs) {
-      if (config.method !== method) continue;
-      if (config.nextPollAt !== undefined && config.nextPollAt > now) continue;
-      const source = await ctx.db.get(config.sourceId);
-      if (!source || source.trustLevel === "blocked") continue; // H-SRC sibling: blocked sources don't poll
-      const dayStart = new Date(now); dayStart.setUTCHours(0, 0, 0, 0);
-      const todaysItems = await ctx.db
-        .query("sourceItems")
-        .withIndex("by_sourceId", (q: any) => q.eq("sourceId", config.sourceId))
-        .collect();
-      const discoveredToday = todaysItems.filter((i: any) => i.discoveredAt >= dayStart.getTime()).length;
-      due.push({
-        config,
-        source,
-        budgetRemaining: config.maxRequestsPerDay - discoveredToday,
-      });
-    }
-    return due;
-  },
-});
-
 /** CAP-032 — RSS poll (cron). Fetch feed → parse → per-item fetch + extract
- *  with hash dedup; every fetch R-SSRF-validated. */
+ *  with hash dedup; every fetch R-SSRF-validated. DB loaders/writers live in
+ *  pollersData.ts (default runtime; this file is "use node" for safeFetch). */
 export const pollRss = internalAction({
   args: {},
   handler: async (ctx): Promise<{ polled: number; discovered: number; skipped: number }> => {
-    const due = (await ctx.runMutation(internal.ingest.pollers.loadDueConfigs, {
+    const due = (await ctx.runMutation(internal.ingest.pollersData.loadDueConfigs, {
       method: "rss",
       now: Date.now(),
     })) as any[];
@@ -177,10 +139,10 @@ export const pollRss = internalAction({
       for (const item of items) {
         if (budget <= 0) { skipped++; continue; }
         const itemHash = hashContent(`${item.link}|${item.title}`);
-        const dup = await ctx.runMutation(internal.ingest.pollers.hasSourceItemHash, { contentHash: itemHash });
+        const dup = await ctx.runMutation(internal.ingest.pollersData.hasSourceItemHash, { contentHash: itemHash });
         if (dup) { skipped++; continue; }
         budget--;
-        await ctx.runMutation(internal.ingest.pollers.insertDiscoveredItem, {
+        await ctx.runMutation(internal.ingest.pollersData.insertDiscoveredItem, {
           sourceId: source._id,
           canonicalUrl: item.link,
           title: item.title,
@@ -198,63 +160,6 @@ export const pollRss = internalAction({
   },
 });
 
-/** Hash-dedup probe (CAP-062 "hash dedup idempotent"). */
-export const hasSourceItemHash = internalMutation({
-  args: { contentHash: v.string() },
-  handler: async (ctx, { contentHash }) => {
-    const existing = await ctx.db
-      .query("sourceItems")
-      .withIndex("by_contentHash", (q: any) => q.eq("contentHash", contentHash))
-      .first();
-    const extraction = await ctx.db
-      .query("contentExtractions")
-      .withIndex("by_contentHash", (q: any) => q.eq("contentHash", contentHash))
-      .first();
-    return Boolean(existing || extraction);
-  },
-});
-
-/** Insert a discovered item + its extraction row (the poller's two Writes
- *  per CAP-032). Extraction body fetching is bounded; failures record the
- *  extraction with failureCode rather than dropping the item. */
-export const insertDiscoveredItem = internalMutation({
-  args: {
-    sourceId: v.id("sources"),
-    canonicalUrl: v.string(),
-    title: v.string(),
-    contentHash: v.string(),
-    publishedAt: v.optional(v.number()),
-    requestedUrl: v.optional(v.string()),
-    extractedText: v.optional(v.string()),
-    extractionStatus: v.optional(v.string()),
-    failureCode: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    await ctx.db.insert("sourceItems", {
-      sourceId: args.sourceId,
-      canonicalUrl: args.canonicalUrl,
-      title: args.title,
-      publishedAt: args.publishedAt,
-      contentHash: args.contentHash,
-      discoveredAt: Date.now(),
-      status: args.extractedText ? "extracted" : args.failureCode ? "failed_extraction" : "discovered",
-    });
-    await ctx.db.insert("contentExtractions", {
-      sourceId: args.sourceId,
-      requestedUrl: args.requestedUrl ?? args.canonicalUrl,
-      resolvedUrl: args.requestedUrl ?? args.canonicalUrl,
-      extractionStatus: args.extractionStatus ?? (args.extractedText ? "ok" : "pending"),
-      extractedTitle: args.title,
-      extractedText: args.extractedText,
-      publishedAt: args.publishedAt,
-      contentHash: args.contentHash,
-      extractorVersion: "rss-poller/1",
-      failureCode: args.failureCode,
-      createdAt: Date.now(),
-    });
-  },
-});
-
 /** CAP-033 — YouTube poll (cron, daily cadence via config intervals).
  *  Env-gated: no YOUTUBE_API_KEY → skip with reason (provider config
  *  error, not a source failure — counters untouched). */
@@ -265,7 +170,7 @@ export const pollYouTube = internalAction({
     if (!apiKey) {
       return { polled: 0, skipped: "YOUTUBE_API_KEY unset — provider not wired (env-gated seam)" };
     }
-    const due = (await ctx.runMutation(internal.ingest.pollers.loadDueConfigs, {
+    const due = (await ctx.runMutation(internal.ingest.pollersData.loadDueConfigs, {
       method: "youtube_api",
       now: Date.now(),
     })) as any[];
@@ -285,9 +190,9 @@ export const pollYouTube = internalAction({
           if (!videoId) continue;
           const canonicalUrl = `https://www.youtube.com/watch?v=${videoId}`;
           const contentHash = hashContent(canonicalUrl);
-          const dup = await ctx.runMutation(internal.ingest.pollers.hasSourceItemHash, { contentHash });
+          const dup = await ctx.runMutation(internal.ingest.pollersData.hasSourceItemHash, { contentHash });
           if (dup) continue;
-          await ctx.runMutation(internal.ingest.pollers.insertDiscoveredItem, {
+          await ctx.runMutation(internal.ingest.pollersData.insertDiscoveredItem, {
             sourceId: source._id,
             canonicalUrl,
             title: item.snippet?.title ?? videoId,
@@ -312,7 +217,7 @@ export const pollYouTube = internalAction({
 export const pollRawFetch = internalAction({
   args: {},
   handler: async (ctx): Promise<{ polled: number; fetched: number }> => {
-    const due = (await ctx.runMutation(internal.ingest.pollers.loadDueConfigs, {
+    const due = (await ctx.runMutation(internal.ingest.pollersData.loadDueConfigs, {
       method: "raw_scrape",
       now: Date.now(),
     })) as any[];
@@ -331,10 +236,10 @@ export const pollRawFetch = internalAction({
         continue;
       }
       const contentHash = hashContent(page.finalUrl ?? source.url + page.text.slice(0, 4096));
-      const dup = await ctx.runMutation(internal.ingest.pollers.hasSourceItemHash, { contentHash });
+      const dup = await ctx.runMutation(internal.ingest.pollersData.hasSourceItemHash, { contentHash });
       if (!dup && entry.budgetRemaining > 0) {
         const title = (page.text.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] ?? source.domain).trim();
-        await ctx.runMutation(internal.ingest.pollers.insertDiscoveredItem, {
+        await ctx.runMutation(internal.ingest.pollersData.insertDiscoveredItem, {
           sourceId: source._id,
           canonicalUrl: page.finalUrl ?? source.url,
           title,
@@ -392,7 +297,7 @@ export const ingestInboundEmail = internalAction({
   handler: async (ctx, args): Promise<{ accepted: boolean; reason?: string }> => {
     // strip tracking pixels (CAP-035): drop <img…> tags outright
     const clean = args.text.replace(/<img[^>]*>/gi, "");
-    const configs = await ctx.runMutation(internal.ingest.pollers.loadNewsletterConfigs, {});
+    const configs = await ctx.runMutation(internal.ingest.pollersData.loadNewsletterConfigs, {});
     const match = (configs as any[]).find(
       (c) => c.config.newsletterInbox?.toLowerCase() === args.to.toLowerCase(),
     );
@@ -400,9 +305,9 @@ export const ingestInboundEmail = internalAction({
       return { accepted: false, reason: `sender/inbox ${args.to} not allowlisted` };
     }
     const contentHash = hashContent(`${args.from}|${args.subject}|${clean.slice(0, 2048)}`);
-    const dup = await ctx.runMutation(internal.ingest.pollers.hasSourceItemHash, { contentHash });
+    const dup = await ctx.runMutation(internal.ingest.pollersData.hasSourceItemHash, { contentHash });
     if (dup) return { accepted: false, reason: "duplicate (hash dedup)" };
-    await ctx.runMutation(internal.ingest.pollers.insertDiscoveredItem, {
+    await ctx.runMutation(internal.ingest.pollersData.insertDiscoveredItem, {
       sourceId: match.source._id,
       canonicalUrl: `mailto:${args.from}?subject=${encodeURIComponent(args.subject)}`,
       title: args.subject,
@@ -414,21 +319,5 @@ export const ingestInboundEmail = internalAction({
     });
     await recordPoll(ctx, match.config._id, true, match.config.pollIntervalMinutes);
     return { accepted: true };
-  },
-});
-
-/** Newsletter-config loader for the inbound webhook. */
-export const loadNewsletterConfigs = internalMutation({
-  args: {},
-  handler: async (ctx) => {
-    const configs = await ctx.db.query("ingestionConfigs").collect();
-    const out = [];
-    for (const config of configs) {
-      if (config.method !== "newsletter") continue;
-      const source = await ctx.db.get(config.sourceId);
-      if (!source) continue;
-      out.push({ config, source });
-    }
-    return out;
   },
 });

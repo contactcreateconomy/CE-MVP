@@ -6,11 +6,11 @@ Next.js **App Router** frontend for the Createconomy forum. Data and auth come f
 
 | Topic | Location |
 |-------|----------|
-| Env vars, OAuth, Vercel | [README.md](../../README.md) (repo root) |
-| Stack versions, diagram | [docs/architecture.md](../../docs/architecture.md) |
-| Run + seed | [docs/quick-start.md](../../docs/quick-start.md) |
-| Convex tables / API map | [docs/schema-forum.md](../../docs/schema-forum.md) |
-| Scale, crons, subscriptions | [docs/forum-capacity.md](../../docs/forum-capacity.md) |
+| Overview, quickstart, env vars, scripts | [README.md](../../README.md) (repo root) |
+| Verified run notes (2026-09-04) | [SETUP.md](../../SETUP.md) |
+| Spec entry point + agent rules | [AGENTS.md](../../AGENTS.md) · [docs/AGENT-START-HERE.md](../../docs/AGENT-START-HERE.md) |
+| Canonical entities / Convex tables | [docs/01-product-spec/_data-model.md](../../docs/01-product-spec/_data-model.md) |
+| Deployment-blocked items, cron activation | [docs/DEV-HANDOFF.md](../../docs/DEV-HANDOFF.md) |
 
 ## Local dev
 

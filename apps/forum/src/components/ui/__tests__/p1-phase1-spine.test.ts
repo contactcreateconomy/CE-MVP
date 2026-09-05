@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- schema/validator introspection + pure-fixture tests */
 import { describe, it, expect } from "vitest";
 
 /* SLICE-P1-02/03/04/07/08/09/10 acceptance tests — schema-vs-bible fidelity +

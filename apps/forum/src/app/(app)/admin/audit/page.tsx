@@ -30,7 +30,7 @@ export default function AdminAuditPage() {
     action: filterAction || undefined,
     limit: 50,
   });
-  const rows: AuditRow[] = useMemo(() => (result as any)?.rows ?? [], [result]);
+  const rows: AuditRow[] = useMemo(() => (result as { rows?: AuditRow[] } | undefined)?.rows ?? [], [result]);
 
   const filtered = useMemo(() => {
     if (!search) return rows;

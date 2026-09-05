@@ -1,5 +1,3 @@
-"use node";
-
 /**
  * ingest extract + cluster — SLICE-P4-08 (CAP-036/037).
  *

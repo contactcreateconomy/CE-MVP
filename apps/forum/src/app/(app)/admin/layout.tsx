@@ -36,7 +36,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Permitted widgets for the sidebar
   const navItems = useMemo(() => {
-    return (widgets as any[])?.map((w) => ({
+    return (widgets as { widgetKey: string; title: string; routeKey: string }[] | undefined)?.map((w) => ({
       key: w.widgetKey,
       title: w.title,
       routeKey: w.routeKey,

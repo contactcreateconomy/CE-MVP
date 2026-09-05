@@ -129,7 +129,8 @@ export function CommandPalette({
     }
   };
 
-  let runningIndex = -1;
+  // Flat-list index of each section's first item (render order = flatItems order)
+  const sectionStarts = filtered.map((_, i) => filtered.slice(0, i).reduce((a, s) => a + s.items.length, 0));
 
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
@@ -210,9 +211,8 @@ export function CommandPalette({
                       <p className="px-3 py-2 text-xs font-medium tracking-widest text-text-muted">
                         {section.label}
                       </p>
-                      {section.items.map((item) => {
-                        runningIndex += 1;
-                        const idx = runningIndex;
+                      {section.items.map((item, itemIdx) => {
+                        const idx = sectionStarts[sIdx] + itemIdx;
                         const isActive = idx === activeIndex;
                         return (
                           <button

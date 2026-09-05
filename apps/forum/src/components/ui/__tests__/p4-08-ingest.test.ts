@@ -13,6 +13,7 @@ import { resolve } from "node:path";
 
 import schemaDefault from "../../../../../../convex/schema";
 import * as sourcesModule from "../../../../../../convex/sources";
+import * as sourcesValidate from "../../../../../../convex/sourcesValidate";
 import * as pollers from "../../../../../../convex/ingest/pollers";
 import * as extract from "../../../../../../convex/ingest/extract";
 import * as safeFetchModule from "../../../../../../convex/lib/safeFetch";
@@ -196,7 +197,7 @@ describe("SLICE-P4-08 — module surface + api registration", () => {
     expect((sourcesModule.sourceUpsert as any).isMutation).toBe(true);
     expect((sourcesModule.sourceUpsert as any).isPublic).toBe(true);
     expect((sourcesModule.setTrustLevel as any).isMutation).toBe(true);
-    expect((sourcesModule.validateSourceUrl as any).isAction).toBe(true);
+    expect((sourcesValidate.validateSourceUrl as any).isAction).toBe(true);
   });
 
   it("pollers: all three cron pollers + inbound webhook action are internal", () => {

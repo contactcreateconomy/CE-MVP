@@ -30,13 +30,15 @@
  * takedown fields exist on the entity but are NOT written here.
  */
 
-import { mutation, query, action } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertAdminPermission } from "./lib/authz";
 import { writeAudited, newCorrelationId } from "./lib/audit";
-import { validateUrlSyntax, safeFetch } from "./lib/safeFetch";
+// Pure R-SSRF syntax layer only — the DNS-resolving validateSourceUrl action
+// lives in sourcesValidate.ts ("use node" runtime).
+import { validateUrlSyntax } from "./lib/urlGuards";
 
 /** CAP-031 Actor=Publisher; trigger adds Admin. */
 async function assertPublisherOrAdmin(ctx: any): Promise<Id<"users">> {
@@ -85,22 +87,6 @@ export const listSources = query({
       });
     }
     return withHealth;
-  },
-});
-
-/** Registration-time full R-SSRF validation (DNS + IP) — action-only (node
- *  dns). The console calls this before upsert; the mutation independently
- *  enforces the syntactic layer so no path skips it. */
-export const validateSourceUrl = action({
-  args: { url: v.string() },
-  handler: async (_ctx, { url }): Promise<{ ok: boolean; reason?: string; domain?: string }> => {
-    const syntax = validateUrlSyntax(url);
-    if (!syntax.ok) return { ok: false, reason: syntax.reason };
-    const probe = await safeFetch(url, { mode: "trusted_source_fetch", maxBytes: 64 * 1024 });
-    if (probe.status === "blocked" || probe.status === "error") {
-      return { ok: false, reason: probe.reason ?? `${probe.status} (R-SSRF ingress)` };
-    }
-    return { ok: true, domain: new URL(url).hostname };
   },
 });
 

@@ -219,7 +219,7 @@ export default function SigninPage() {
             {state === "error" && (
               <Banner variant="error" role="alert">
                 <span className="inline-flex items-center gap-2">
-                  <AlertCircle className="size-4" /> That code didn't work. It may have expired — request a new one.
+                  <AlertCircle className="size-4" /> That code didn&apos;t work. It may have expired — request a new one.
                 </span>
               </Banner>
             )}
