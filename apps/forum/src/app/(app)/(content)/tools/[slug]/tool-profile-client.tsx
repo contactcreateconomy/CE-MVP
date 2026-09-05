@@ -34,7 +34,10 @@ interface ToolProfileClientProps {
 }
 
 export function ToolProfileClient({ slug }: ToolProfileClientProps) {
-  const profile = useQuery(api.tools.getProfile, { slug });
+  // v.any() fields surface as unknown through the regenerated api types —
+  // cast at the boundary (page-local idiom)
+  // regenerated api types surface v.any() as unknown — boundary cast
+  const profile = useQuery(api.tools.getProfile, { slug }) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
   const { authStatus } = useAuth();
 
   if (profile === undefined) {
@@ -112,7 +115,7 @@ export function ToolProfileClient({ slug }: ToolProfileClientProps) {
                 </span>
               </div>
               <dl className="space-y-1.5">
-                {Object.entries(aggregate.dimensions).map(([dim, d]) => (
+                {Object.entries(aggregate.dimensions).map(([dim, d]: [string, any]) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
                   <div key={dim} className="flex items-center justify-between gap-4 text-sm">
                     <dt className="text-(--text-secondary)">{DIMENSION_LABELS[dim] ?? dim}</dt>
                     <dd className="text-(--text-primary)">
@@ -176,7 +179,7 @@ export function ToolProfileClient({ slug }: ToolProfileClientProps) {
             </p>
           ) : (
             <ul className="space-y-3">
-              {ratingsPage.items.map((r, i) => (
+              {ratingsPage.items.map((r: any, i: number) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
                 <li key={i} className="border-b border-(--border-subtle) pb-3 last:border-b-0 last:pb-0">
                   <div className="flex items-center gap-2">
                     <Badge tone="brand">{r.overallScore} / 5</Badge>

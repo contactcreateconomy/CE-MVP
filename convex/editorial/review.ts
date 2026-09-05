@@ -133,6 +133,16 @@ export const candidateReview = query({
           .collect()).length
       : 0;
 
+    // P4-11 — publish-gate alert (OQ5) + social derivatives for published
+    // candidates (export-only per DEC-O07)
+    const draftAny = candidate.draft as any;
+    const derivatives = draftAny?.publishedPostId
+      ? await ctx.db
+          .query("postSocialDerivatives")
+          .withIndex("by_postId", (q: any) => q.eq("postId", draftAny.publishedPostId))
+          .collect()
+      : [];
+
     return {
       candidate,
       claimRefs: claimRefs.map((r: any) => ({
@@ -149,6 +159,8 @@ export const candidateReview = query({
       candidateSources,
       approveGate: canApprove(claimRefs), // CAP-043 invariant surfaced for the UI's disabled affordance
       regen: { attemptsUsed: regenAttemptsUsed, attemptsMax: REGEN_ATTEMPTS_MAX, exhausted: regenAttemptsUsed >= REGEN_ATTEMPTS_MAX },
+      publishGateFailure: draftAny?.lastPublishFailure ?? null,
+      derivatives,
     };
   },
 });
@@ -252,6 +264,9 @@ export const queueList = query({
         title: (c.draft as any)?.title ?? "(untitled)",
         overallResult: (c.evaluation as any)?.overallResult ?? null,
         createdAt: c.createdAt,
+        // OQ5 outcome: publish-gate failures keep the candidate scheduled +
+        // surface here (chosen + documented in publish.ts)
+        publishGateFailure: (c.draft as any)?.lastPublishFailure ?? null,
       }));
   },
 });

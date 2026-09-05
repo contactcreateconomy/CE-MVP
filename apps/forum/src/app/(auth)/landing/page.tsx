@@ -59,6 +59,9 @@ export default function LandingPage() {
         return { label: "Join the waitlist", href: "/waitlist" };
       case "closed":
         return { label: "Explore free resources", href: "/feed" };
+      default:
+        // fail-closed posture (mirrors effectiveSignupMode's falsy branch)
+        return { label: "Explore free resources", href: "/feed" };
     }
   }, [mode]);
 

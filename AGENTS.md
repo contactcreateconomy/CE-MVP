@@ -111,3 +111,23 @@ Conventions to follow:
 Anything requiring the Convex CLI, package installs, deployment pushes, or external accounts is **Bucket-1: stop, flag, hand off** — see `docs/DEV-HANDOFF.md` (items 1–4 are needed immediately: Convex login + codegen + legal seed; founder-bootstrap admin verification; `pnpm add @convex-dev/rate-limiter`; schema push for the ~21 new canonical tables). Founder-only steps live in `docs/FOUNDER-BOOTSTRAP.md`.
 
 Pre-launch-only gates (do NOT block build): lawyer review of the four legal docs, and Readiness Category 8 (ranking calibration reviewed) — both gate `signup.mode=open` only.
+
+## 11. Progress tracking — GitHub wiki (MANDATORY per slice)
+
+The step-by-step build tracker lives on the repo wiki: **https://github.com/contactcreateconomy/CE-MVP/wiki** (pages: Development Roadmap · Working Agreements · Progress Tracker · one per phase). It is the single source of truth for what's done — the repo docs deliberately do not duplicate it.
+
+**Every completed slice MUST update the wiki in the same session that ships it** (this is part of the definition of done, alongside the CHANGELOG entry):
+
+1. `Progress-Tracker.md` — add a log row (date, slice, commit hash, one-line note); adjust the "Next up" queue and the remaining-slices count.
+2. The phase page (e.g. `Phase-4-Content-Core.md`) — flip the slice row's status (✅ + date + commit, or 🔜 for the new next-up).
+3. `Home.md` current-status snapshot — update when a phase completes (not per slice).
+
+Mechanics: the wiki is its own git repo —
+
+```bash
+git clone https://github.com/contactcreateconomy/CE-MVP.wiki.git   # needs gh auth (gh auth login)
+# edit pages, then:
+git add -A && git commit -m "Tracker: <slice> done (<hash>)" && git push
+```
+
+Wiki clone lives locally at `/tmp/CE-MVP-wiki` on the founder Mac (re-clone if missing). If wiki push is impossible (no auth), STOP and report — do not let code and tracker drift apart.

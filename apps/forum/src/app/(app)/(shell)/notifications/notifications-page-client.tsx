@@ -60,7 +60,7 @@ function NotificationsPageWithConvex({
         </CardHeader>
 
         <CardContent className="space-y-2">
-          {viewerNotifications.map((notification) => {
+          {viewerNotifications.map((notification: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
             const wrapperClass = notification.read
               ? "rounded-md border border-(--border-default) bg-(--bg-surface) p-3"
               : "rounded-md border border-(--border-active) bg-(--bg-overlay) p-3";

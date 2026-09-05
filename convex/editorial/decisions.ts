@@ -80,7 +80,10 @@ export const candidateApprove = mutation({
     }
 
     return await writeAudited(ctx, async (actx) => {
-      await actx.db.patch(args.candidateId, { status: "approved" });
+      // operatorId stamps the approver — persistPublish's postRevisions row
+      // needs changedByUserId (bible l.77: required) and the editorial
+      // publish's user provenance is this approval.
+      await actx.db.patch(args.candidateId, { status: "approved", operatorId: publisherId });
       return {
         actorId: publisherId,
         role: "publisher",
@@ -159,6 +162,11 @@ export const candidateSchedule = mutation({
     await ctx.db.patch(args.candidateId, {
       status: "scheduled",
       draft: { ...(candidate.draft as Record<string, unknown>), scheduledFor: args.fireAt },
+    });
+    // P4-11 — arm the time-fired publish (the sweeper cron is the
+    // missed-fire backstop, incl. rows scheduled before this wiring)
+    await ctx.scheduler.runAfter(args.fireAt - now, internal.editorial.publish.publishCandidate, {
+      candidateId: args.candidateId,
     });
     return { status: "scheduled", fireAt: args.fireAt };
   },

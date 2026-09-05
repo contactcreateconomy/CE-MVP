@@ -49,3 +49,12 @@ crons.interval("ingest claims extract", { minutes: 10 }, internal.ingest.extract
 crons.interval("ingest cluster build", { minutes: 15 }, internal.ingest.extract.buildClusters, {});
 
 export default crons;
+
+// SLICE-P4-11: publish sweeper — fires due scheduled candidates (missed
+// fire-times + rows scheduled before the scheduler-arming wiring landed).
+crons.interval(
+  "sweep due scheduled candidates",
+  { minutes: 5 },
+  internal.editorial.publish.sweepScheduled,
+  {},
+);

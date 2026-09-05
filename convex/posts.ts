@@ -28,8 +28,9 @@ const URL_PATTERNS = [
 
 /** CAP-087 — R-URL check on the BODY. The postShowcases.projectUrl FIELD is
  *  the sole exempt location — the body itself is always checked (field ≠
- *  body: an exempt field never exempts the body). */
-function checkNoUrls(body: string): void {
+ *  body: an exempt field never exempts the body). Exported for P4-11's
+ *  CAP-046 publish-time re-run (edits can reintroduce URLs). */
+export function checkNoUrls(body: string): void {
   for (const pattern of URL_PATTERNS) {
     if (pattern.test(body)) {
       throw new Error("POST_URL_NOT_ALLOWED: user posts cannot contain URLs (CAP-087)");

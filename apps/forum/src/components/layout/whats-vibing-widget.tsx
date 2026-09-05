@@ -65,7 +65,7 @@ function WhatsVibingWidgetInner() {
 
       <CardContent className="flex h-[186px] flex-col justify-between p-0">
         <div className="relative h-full min-h-[140px] overflow-hidden rounded-2xl">
-          {items.map((item, index) => {
+          {items.map((item: any, index: number) => /* eslint-disable-line @typescript-eslint/no-explicit-any */ {
             const category = item.kind.charAt(0).toUpperCase() + item.kind.slice(1);
 
             return (

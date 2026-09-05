@@ -21,6 +21,7 @@ import type * as config from "../config.js";
 import type * as crons from "../crons.js";
 import type * as dev_ensureTestUser from "../dev/ensureTestUser.js";
 import type * as editorial_decisions from "../editorial/decisions.js";
+import type * as editorial_publish from "../editorial/publish.js";
 import type * as editorial_review from "../editorial/review.js";
 import type * as forge from "../forge.js";
 import type * as forum_constants from "../forum/constants.js";
@@ -89,6 +90,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   "dev/ensureTestUser": typeof dev_ensureTestUser;
   "editorial/decisions": typeof editorial_decisions;
+  "editorial/publish": typeof editorial_publish;
   "editorial/review": typeof editorial_review;
   forge: typeof forge;
   "forum/constants": typeof forum_constants;

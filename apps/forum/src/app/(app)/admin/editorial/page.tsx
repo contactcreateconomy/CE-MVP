@@ -37,6 +37,7 @@ interface QueueRow {
   title: string;
   overallResult: string | null;
   createdAt: number;
+  publishGateFailure?: { reason: string; at: number } | null;
 }
 
 const STATUS_TABS = ["review", "drafting", "approved", "scheduled", "published", "rejected", "submitted", "extracting"];
@@ -68,6 +69,7 @@ export default function AdminEditorialPage() {
   const rejectCandidate = useMutation(api.editorial.decisions.candidateReject);
   const scheduleCandidate = useMutation(api.editorial.decisions.candidateSchedule);
   const regenCandidate = useMutation(api.editorial.decisions.candidateRegen);
+  const exportDerivative = useMutation(api.editorial.publish.socialExport);
 
   const runDecision = async (fn: () => Promise<unknown>, successMessage: string) => {
     setDecisionError(null);
@@ -110,7 +112,19 @@ export default function AdminEditorialPage() {
 
   const queueColumns: DataTableColumn<QueueRow>[] = [
     { key: "title", header: "Candidate", cell: (r) => <span className="text-sm font-medium">{r.title}</span> },
-    { key: "status", header: "Status", cell: (r) => <Badge tone={r.status === "rejected" ? "error" : r.status === "published" ? "success" : "neutral"}>{r.status}</Badge> },
+    {
+      key: "status",
+      header: "Status",
+      cell: (r) => (
+        <span className="inline-flex items-center gap-1">
+          <Badge tone={r.status === "rejected" ? "error" : r.status === "published" ? "success" : "neutral"}>{r.status}</Badge>
+          {/* OQ5 outcome: publish-gate failure keeps the candidate scheduled + alerts here */}
+          {r.publishGateFailure ? (
+            <Badge tone="warning" title={r.publishGateFailure.reason}>publish blocked</Badge>
+          ) : null}
+        </span>
+      ),
+    },
     { key: "postType", header: "Type", cell: (r) => <span className="text-xs text-text-muted">{r.postType ?? "—"}</span> },
     {
       key: "overall",
@@ -344,6 +358,13 @@ export default function AdminEditorialPage() {
             </div>
           </CardHeader>
           <CardContent className="p-4 pt-0">
+            {review.publishGateFailure ? (
+              <div className="mb-3">
+                <Banner variant="warning">
+                  Publish gate blocked this candidate (it stays scheduled): {review.publishGateFailure.reason}. Fix and re-approve, or reject.
+                </Banner>
+              </div>
+            ) : null}
             {decisionError ? <div className="mb-3"><Banner variant="error">{decisionError}</Banner></div> : null}
             {decisionToast ? (
               <div className="mb-3">
@@ -367,6 +388,36 @@ export default function AdminEditorialPage() {
               Click a claim to highlight it (A10 sync). Source links: {(review.candidateSources ?? []).length} ·
               conflicts surface via H-SRC rule evidence.
             </p>
+            {/* States G — social derivatives for published candidates (CAP-052/053,
+                export-only per DEC-O07: copy + mark exported, never auto-posted) */}
+            {(review.derivatives ?? []).length > 0 ? (
+              <div className="mt-4 space-y-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-(--text-muted)">Social derivatives (export-only)</h3>
+                {(review.derivatives as any[]).map((d) => (
+                  <div key={d._id} className="flex items-start justify-between gap-3 rounded-lg border border-(--border-default) p-3">
+                    <div className="min-w-0">
+                      <Badge tone={d.status === "exported" ? "success" : "neutral"}>{d.derivativeType}</Badge>
+                      <p className="mt-1 line-clamp-3 text-xs text-(--text-secondary)">{d.content}</p>
+                    </div>
+                    {d.status !== "exported" ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        title="Copy to clipboard + mark exported (never auto-posted — DEC-O07)"
+                        onClick={() =>
+                          void runDecision(async () => {
+                            const res = await exportDerivative({ derivativeId: d._id });
+                            await navigator.clipboard?.writeText(res.content);
+                          }, "Derivative copied + marked exported")
+                        }
+                      >
+                        Copy &amp; mark exported
+                      </Button>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </CardContent>
         </Card>
       ) : selectedId ? (

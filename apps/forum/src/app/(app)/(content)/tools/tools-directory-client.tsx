@@ -114,7 +114,7 @@ export function ToolsDirectoryClient() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All categories</SelectItem>
-            {(categories ?? []).map((c) => (
+            {((categories ?? []) as any[]).map((c) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
               <SelectItem key={c.slug} value={c.slug}>
                 {c.name}
               </SelectItem>

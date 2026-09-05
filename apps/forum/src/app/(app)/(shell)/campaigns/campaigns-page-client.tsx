@@ -25,7 +25,7 @@ function CampaignsPageWithConvex() {
         </CardHeader>
 
         <CardContent className="space-y-3">
-          {campaigns.map((campaign) => (
+          {campaigns.map((campaign: any) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
             <div key={campaign.id} className="rounded-md border border-(--border-default) bg-(--bg-surface) p-3">
               <p className="text-sm font-semibold text-(--text-primary)">{campaign.title}</p>
               <p className="mt-1 text-xs text-(--text-secondary)">{campaign.description}</p>

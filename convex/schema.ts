@@ -1058,6 +1058,42 @@ export default defineSchema({
     publishedAt: v.optional(v.number()),
   }).index("by_postId", ["postId"]),
 
+  /** bible l.167 — EXPORT-ONLY social derivatives (DEC-O07: never
+   *  auto-published externally). Generated (System) at publish; exported
+   *  (Editor) on demand. */
+  postSocialDerivatives: defineTable({
+    postId: v.id("posts"),
+    derivativeType: v.union(
+      v.literal("twitter"), v.literal("linkedin"), v.literal("hook"),
+      v.literal("teaser"), v.literal("shorts_caption"),
+    ),
+    content: v.string(),
+    generationRunId: v.optional(v.string()),
+    status: v.union(v.literal("generated"), v.literal("edited"), v.literal("exported"), v.literal("stale")),
+    editedByUserId: v.optional(v.id("users")),
+    exportedByUserId: v.optional(v.id("users")),
+    exportedAt: v.optional(v.number()),
+    generatedAt: v.number(),
+  }).index("by_postId", ["postId"]),
+
+  /** bible l.168 — the per-post affiliate cap join (≤2/post, ≤1/tool,
+   *  enforced in the publish mutation — CAP-057's binding point). Inject
+   *  (P4-12) stages links on the candidate; publish validates + materializes. */
+  postAffiliateLinks: defineTable({
+    postId: v.id("posts"),
+    affiliateLinkId: v.string(), // v.id("affiliateLinks") — P4-12 defines the table
+    toolId: v.optional(v.string()),
+    labelType: v.union(
+      v.literal("featured_tool"), v.literal("popular_platform"),
+      v.literal("createconomy_pick"), v.literal("affiliate_partner"),
+    ),
+    position: v.number(),
+    injectedByUserId: v.optional(v.id("users")),
+    injectedAt: v.number(),
+  })
+    .index("by_postId", ["postId"])
+    .index("by_toolId", ["toolId"]),
+
   /** bible l.88 — Review block. verdictScore is computed, NEVER member-settable. */
   postReviews: defineTable({
     postId: v.id("posts"),
@@ -1353,7 +1389,9 @@ export default defineSchema({
     embeddingModel: v.string(),
     embeddingVersion: v.number(),
     textHash: v.string(), // skip re-embed if unchanged
-  }).vectorIndex("by_embedding", {
+  })
+    .index("by_ref", ["refType", "refId"]) // publish copies candidate→post embeddings by ref
+    .vectorIndex("by_embedding", {
     vectorField: "embedding",
     // 1024 = the GLM embedding model's dimension (in-slice choice — the
     // bible's rule is only that dims are model-bound; a model swap bumps
