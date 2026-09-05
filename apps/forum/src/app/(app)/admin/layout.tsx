@@ -13,7 +13,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useQuery, useConvexAuth } from "convex/react";
 import {
   LayoutGrid, ShieldCheck, ScrollText, Bell, FileQuestion, User,
   Search, AlertTriangle,
@@ -31,8 +31,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const [paletteOpen, setPaletteOpen] = useState(false);
 
-  // Widget catalog — filtered by the user's staff roles (CAP-392)
+  // Auth gate first: an anonymous /admin visit renders a sign-in prompt
+  // instead of crashing on role-gated queries (useQuery rethrows errors).
+  const { isAuthenticated, isLoading } = useConvexAuth();
+
+  // Widget catalog — filtered by the user's staff roles (CAP-392); the
+  // query degrades to [] for anonymous/non-staff (see convex/admin/shell.ts)
   const widgets = useQuery(api.admin.shell?.getWidgetCatalog) ?? [];
+  const catalogLoaded = widgets !== undefined;
 
   // Permitted widgets for the sidebar
   const navItems = useMemo(() => {
@@ -43,7 +49,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     })) ?? [];
   }, [widgets]);
 
-  // Palette sections — from the same permitted catalog; genome NEVER included
   const paletteSections: CommandSection[] = useMemo(() => {
     const items = navItems.map((n) => ({
       id: n.key,
@@ -58,6 +63,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push("/signin");
   }, [router]);
 
+  if (isLoading) {
+    return <div className="flex min-h-screen items-center justify-center bg-bg-canvas p-6 text-sm text-text-muted">Loading…</div>;
+  }
+  if (!isAuthenticated) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-bg-canvas p-6 text-center">
+        <ShieldCheck className="size-8 text-text-muted" />
+        <h1 className="text-lg font-semibold text-text-primary">Admin console</h1>
+        <p className="max-w-sm text-sm text-text-muted">
+          Staff access required. Sign in with your authorized account to continue.
+        </p>
+        <Button variant="primary" size="sm" onClick={() => router.push("/signin")}>Sign in</Button>
+      </div>
+    );
+  }
+  if (catalogLoaded && (widgets as unknown as { widgetKey: string }[]).length === 0) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-bg-canvas p-6 text-center">
+        <ShieldCheck className="size-8 text-text-muted" />
+        <h1 className="text-lg font-semibold text-text-primary">No admin access</h1>
+        <p className="max-w-sm text-sm text-text-muted">
+          This account has no staff role assigned. Ask a Founder to grant one (roles console, CAP-413).
+        </p>
+        <Button variant="ghost" size="sm" onClick={() => router.push("/feed")}>Back to the feed</Button>
+      </div>
+    );
+  }
+
+  // Palette sections — from the same permitted catalog; genome NEVER included
   return (
     <div className="flex min-h-screen flex-col bg-bg-canvas">
       {/* §12.4 Admin Header — 48px compact */}

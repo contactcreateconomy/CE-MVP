@@ -10,6 +10,14 @@ import { getPermittedWidgetCatalog } from "../lib/authz";
 export const getWidgetCatalog = query({
   args: {},
   handler: async (ctx) => {
-    return await getPermittedWidgetCatalog(ctx);
+    // Graceful degrade for the layout's always-on subscription: anonymous
+    // and non-staff visitors get an EMPTY catalog (the layout renders a
+    // sign-in / no-access state) instead of a thrown error that crashes
+    // client render. Per-widget data queries keep their hard role gates.
+    try {
+      return await getPermittedWidgetCatalog(ctx);
+    } catch {
+      return [];
+    }
   },
 });
