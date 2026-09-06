@@ -1823,6 +1823,199 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_persona_version", ["personaId", "genomeVersion"]),
 
+  /* ── M9 feed & discovery (SLICE-P6-01; bible l.129-139) ──────────────
+   * Firewall (l.128, quoted): "Personas/staff = ZERO in core ranking."
+   * cardSummaries (l.137, quoted): "MUST NOT write postDistributionScores
+   * or any rank/score field" — enforced by the P6-02 writers' separation. */
+
+  /** bible l.129 — materialized rank projections (rebuildable). Read =
+   *  index scan, never compute-at-read; topScore = Bayesian
+   *  confidence-damped, NOT Wilson (no valid trials denominator). */
+  postDistributionScores: defineTable({
+    postId: v.id("posts"),
+    distributionQualityVersion: v.number(),
+    topScore: v.number(),
+    hotScore: v.number(),
+    trendScore: v.number(),
+    integrityMultiplier: v.number(),
+    valuableWeighted: v.number(),
+    distinctCommenters: v.number(),
+    replyCount: v.number(),
+    saveCount: v.number(),
+    qualifiedReads: v.number(),
+    returns7d: v.number(),
+    qualifiedExposureCount: v.number(),
+    explorationDeficit: v.number(),
+    lastEligibleInteractionAt: v.number(),
+    scoreVersion: v.number(),
+    dirtySince: v.optional(v.number()),
+    computedAt: v.number(),
+  })
+    .index("by_postId", ["postId"])
+    .index("by_dirtySince", ["dirtySince"]) // leased dirty-queue (M6 pattern)
+    .index("by_topScore", ["topScore"])
+    .index("by_hotScore", ["hotScore"])
+    .index("by_lastEligibleInteractionAt", ["lastEligibleInteractionAt"]), // New recency scan
+
+  /** bible l.130 — rolling event aggregates (avoid scanning 7d rawEvents). */
+  postDistributionBuckets: defineTable({
+    postId: v.id("posts"),
+    bucketStart: v.number(),
+    granularity: v.union(v.literal("hour"), v.literal("day")),
+    valuableWeighted: v.number(),
+    distinctCommenterCount: v.number(),
+    replyCount: v.number(),
+    saveCount: v.number(),
+    qualifiedReads: v.number(),
+    returns: v.number(),
+    integrityAdjustments: v.number(),
+  }).index("by_post_bucket", ["postId", "bucketStart"]),
+
+  /** bible l.131 — exposure-deficit queue; NEVER an operator curation
+   *  surface (INV-4). Personas excluded from exploration. */
+  feedExplorationState: defineTable({
+    postId: v.id("posts"),
+    qualifiedExposureTarget: v.number(),
+    qualifiedExposureCount: v.number(),
+    insertionCount: v.number(),
+    lastInsertedAt: v.number(),
+    eligibilityStatus: v.string(),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_postId", ["postId"])
+    .index("by_eligibility_status", ["eligibilityStatus"]),
+
+  /** bible l.132 — admin-curated featured inventory; never organic rank,
+   *  never Recognition-selected. Manage 10, render 4–6, ≥2 rotate/24h. */
+  heroSlots: defineTable({
+    slotOrder: v.number(), // 0–9
+    postId: v.id("posts"),
+    headlineOverride: v.optional(v.string()),
+    textOverride: v.optional(v.string()),
+    mediaAssetId: v.optional(v.id("_storage")),
+    ctaLabel: v.optional(v.string()),
+    startAt: v.number(),
+    endAt: v.number(),
+    desktopEnabled: v.boolean(),
+    mobileEnabled: v.boolean(),
+    status: v.union(
+      v.literal("draft"), v.literal("scheduled"), v.literal("active"),
+      v.literal("expired"), v.literal("paused"), v.literal("archived"),
+    ),
+    disclosureClass: v.string(), // values unnamed (curation OQ3) — string, not invented
+    fallbackPostId: v.optional(v.id("posts")),
+    approvedByUserId: v.optional(v.id("users")),
+    createdAt: v.number(),
+  })
+    .index("by_slotOrder", ["slotOrder"])
+    .index("by_status_start", ["status", "startAt"]),
+
+  /** bible l.133 — hero scheduling/audit history. */
+  heroAssignments: defineTable({
+    slotOrder: v.number(),
+    postId: v.id("posts"),
+    activatedAt: v.number(),
+    deactivatedAt: v.optional(v.number()),
+    reason: v.string(),
+    actorUserId: v.id("users"),
+  }).index("by_slot_activated", ["slotOrder", "activatedAt"]),
+
+  /** bible l.134 — What's Vibing momentum; HUMAN activity ONLY (personas
+   *  contribute ZERO to velocity/acceleration/counts/threshold/rank). */
+  vibingTrends: defineTable({
+    objectType: v.union(v.literal("post"), v.literal("tool"), v.literal("category"), v.literal("theme")),
+    objectId: v.string(),
+    trendScore: v.number(),
+    velocity: v.number(),
+    acceleration: v.number(),
+    distinctHumanCount: v.number(),
+    interactionTypeCount: v.number(),
+    integrityMultiplier: v.number(),
+    enteredAt: v.number(),
+    cooldownUntil: v.optional(v.number()),
+    status: v.string(),
+  })
+    .index("by_object", ["objectType", "objectId"])
+    .index("by_status_trendScore", ["status", "trendScore"]),
+
+  /** bible l.135 — grounded emotional hook; entailment-grounded, valence-
+   *  drift guard, NO emotion attributed to a named user, neutral fallback. */
+  vibingHooks: defineTable({
+    objectType: v.union(v.literal("post"), v.literal("tool"), v.literal("category"), v.literal("theme")),
+    objectId: v.string(),
+    hookText: v.string(),
+    valence: v.union(v.literal("tension"), v.literal("curiosity"), v.literal("informational"), v.literal("positive")),
+    sourceIntelligenceRunId: v.optional(v.string()), // M6 MAX tension source
+    groundingStatus: v.union(v.literal("grounded"), v.literal("insufficient")),
+    entailment: v.union(v.literal("supported"), v.literal("contradicted"), v.literal("insufficient")),
+    supportingSpans: v.array(v.string()),
+    opposingSpans: v.array(v.string()),
+    generationRunId: v.string(),
+    stale: v.boolean(),
+    createdAt: v.number(),
+  }).index("by_object", ["objectType", "objectId"]),
+
+  /** bible l.136 — manual time-bound Featured slots; NEVER mutates
+   *  trendScore. status includes `pulled` (CAP-554); the remaining
+   *  literals are curation-contract-derived (OQ1) — flagged, not invented
+   *  beyond the known set. */
+  vibingFeatured: defineTable({
+    postId: v.id("posts"),
+    label: v.string(),
+    startAt: v.number(),
+    endAt: v.number(),
+    status: v.union(
+      v.literal("scheduled"), v.literal("active"), v.literal("expired"), v.literal("pulled"),
+    ),
+    reason: v.optional(v.string()),
+    approvedByUserId: v.id("users"),
+    createdAt: v.number(),
+  })
+    .index("by_status", ["status"])
+    .index("by_postId", ["postId"]),
+
+  /** bible l.137 — the feed-card projection. Display ONLY: the writers
+   *  must never write postDistributionScores or any rank/score field. */
+  cardSummaries: defineTable({
+    postId: v.id("posts"),
+    postRevisionId: v.optional(v.id("postRevisions")),
+    oneLiner: v.string(),
+    generationRunId: v.string(),
+    supportingClaimIds: v.array(v.string()),
+    groundingStatus: v.string(),
+    stale: v.boolean(),
+    runningCommentRef: v.optional(v.object({ commentId: v.id("comments"), frozenAt: v.number() })), // freeze ≥15min anti-flicker (CAP-196)
+    avatarUserIds: v.optional(v.array(v.id("users"))), // ≤3 (CAP-197)
+    discussingCount: v.optional(v.number()), // "N discussing" (CAP-197)
+    createdAt: v.number(),
+  }).index("by_postId", ["postId"]),
+
+  /** bible l.138 — Recognition rankings, computed by M12 (Phase 7),
+   *  rendered by M9. Table exists so P6-03 renders "Podium is forming"
+   *  (minThresholdMet=false) until Phase 7 writes it. */
+  leaderboardProjections: defineTable({
+    category: v.union(
+      v.literal("overall"), v.literal("commenter"), v.literal("helper"),
+      v.literal("reviewer"), v.literal("rising"),
+    ),
+    window: v.union(v.literal("h24"), v.literal("d7"), v.literal("m1")),
+    projectionVersion: v.number(),
+    entries: v.array(v.object({ userId: v.id("users"), rank: v.number(), points: v.number(), trend: v.string() })),
+    minThresholdMet: v.boolean(),
+    computedAt: v.number(),
+  }).index("by_category_window", ["category", "window"]),
+
+  /** bible l.139 — ordering continuity. */
+  feedSessions: defineTable({
+    sessionId: v.string(),
+    userId: v.optional(v.id("users")),
+    sortMode: v.string(),
+    rankingVersion: v.number(),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  }).index("by_sessionId", ["sessionId"]),
+
+
 
   /** bible l.77 — revision history. */
   postRevisions: defineTable({
