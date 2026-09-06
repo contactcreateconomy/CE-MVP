@@ -142,3 +142,13 @@ crons.interval(
   internal.cards.heroStaleFill,
   {},
 );
+
+// SLICE-P6-07 (CAP-216): qualified-download settlement scan. Promotes
+// pending downloads to qualified_download markers; the signalLedger mint
+// is M12's (Phase 7) — no Signal math here.
+crons.interval(
+  "settle qualified downloads",
+  { hours: 1 },
+  internal.jobs.settleDownload.settleQualifiedDownloads,
+  {},
+);

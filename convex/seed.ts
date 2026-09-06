@@ -85,6 +85,10 @@ const REGISTRY_ROWS = [
   { key: "feed.top.priorWeight", module: "m9", valueType: "number" as const, default: 5, min: 0.1, max: 100, editTier: "tier2" as const, blastRadius: "Top-sort Bayesian damping weight (calibration_pending.v1).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   { key: "feed.top.priorMean", module: "m9", valueType: "number" as const, default: 0.3, min: 0, max: 1, editTier: "tier2" as const, blastRadius: "Top-sort prior mean (calibration_pending.v1).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   { key: "feed.hot.halfLifeHours", module: "m9", valueType: "number" as const, default: 12, min: 0.5, max: 168, editTier: "tier2" as const, blastRadius: "Hot-sort time-decay gravity half-life (calibration_pending.v1).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  // SLICE-P6-07/08: the M10 library/viewer flags (browse public-on; viewer
+  // routes fail-closed when false).
+  { key: "resources.library.enabled", module: "m10", valueType: "boolean" as const, default: true, editTier: "tier1" as const, blastRadius: "The /resources library browse surface.", failDirection: "closed" as const, effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "resources.view.enabled", module: "m10", valueType: "boolean" as const, default: true, editTier: "tier1" as const, blastRadius: "The sandboxed resource viewer route.", failDirection: "closed" as const, effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   // permission keys (M1 §6 "Seeds: … permission keys") — read by future authz
   { key: "media.upload.maxBytes", module: "m1", valueType: "number" as const, default: 5242880, min: 1024, max: 104857600, editTier: "tier1" as const, blastRadius: "Maximum upload size for avatars and media.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   // SLICE-P4-03: CAP-534's Admin-Config flag (row owned by convex/tags.ts)
