@@ -117,15 +117,16 @@ Anything requiring the Convex CLI, package installs, deployment pushes, or exter
 
 Pre-launch-only gates (do NOT block build): lawyer review of the four legal docs, and Readiness Category 8 (ranking calibration reviewed) — both gate `signup.mode=open` only.
 
-## 11. Progress tracking — GitHub wiki (MANDATORY per slice)
+## 11. Progress tracking — GitHub wiki (MANDATORY per slice + per phase)
 
-The step-by-step build tracker lives on the repo wiki: **https://github.com/contactcreateconomy/CE-MVP/wiki** (pages: Development Roadmap · Working Agreements · Progress Tracker · one per phase). It is the single source of truth for what's done — the repo docs deliberately do not duplicate it.
+The step-by-step build tracker lives on the repo wiki: **https://github.com/contactcreateconomy/CE-MVP/wiki** (pages: Development Roadmap · Working Agreements · Progress Tracker · Founder Review Queue · one per phase). It is the single source of truth for what's done — the repo docs deliberately do not duplicate it.
 
 **Every completed slice MUST update the wiki in the same session that ships it** (this is part of the definition of done, alongside the CHANGELOG entry):
 
 1. `Progress-Tracker.md` — add a log row (date, slice, commit hash, one-line note); adjust the "Next up" queue and the remaining-slices count.
 2. The phase page (e.g. `Phase-4-Content-Core.md`) — flip the slice row's status (✅ + date + commit, or 🔜 for the new next-up).
 3. `Home.md` current-status snapshot — update when a phase completes (not per slice).
+4. `Founder-Review-Queue.md` — **at every phase boundary (and whenever a slice creates or resolves a founder-facing item)**: add new entries under the matching section (A founder actions · B product decisions · C flagged defaults/deviations · D pre-launch gates), and strike resolved items with a one-line resolution note + date. This page is the founder's consolidated checklist for the final validation pass — never let a fence, flagged default, or blocked key live only in a commit message.
 
 Mechanics: the wiki is its own git repo —
 
