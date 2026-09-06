@@ -152,3 +152,13 @@ crons.interval(
   internal.jobs.settleDownload.settleQualifiedDownloads,
   {},
 );
+
+// SLICE-P6-11 (CAP-220): kill-gate evaluation — appends
+// pilotKillGateEvaluations ONLY (never flips the UGC flag; CAP-221 is
+// the Administrator-only switch).
+crons.interval(
+  "ugc pilot kill-gate evaluation",
+  { hours: 24 },
+  internal.admin.resourcesLifecycle.killGateEvaluate,
+  {},
+);

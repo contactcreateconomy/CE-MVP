@@ -2117,7 +2117,8 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_resource", ["resourceId"])
-    .index("by_resource_reference", ["resourceId", "referenceId"]),
+    .index("by_resource_reference", ["resourceId", "referenceId"])
+    .index("by_reference", ["referenceId"]), // the CAP-219 cascade walk's reverse edge (bible l.192: "Cascade/takedown walks this graph depth ≤5")
 
   /** bible l.193 — structured post↔resource token target (not body text). */
   postResources: defineTable({

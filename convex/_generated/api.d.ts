@@ -11,6 +11,8 @@
 import type * as activity from "../activity.js";
 import type * as admin_audit from "../admin/audit.js";
 import type * as admin_curation from "../admin/curation.js";
+import type * as admin_resources from "../admin/resources.js";
+import type * as admin_resourcesLifecycle from "../admin/resourcesLifecycle.js";
 import type * as admin_roles from "../admin/roles.js";
 import type * as admin_shell from "../admin/shell.js";
 import type * as admin_stop from "../admin/stop.js";
@@ -114,6 +116,8 @@ declare const fullApi: ApiFromModules<{
   activity: typeof activity;
   "admin/audit": typeof admin_audit;
   "admin/curation": typeof admin_curation;
+  "admin/resources": typeof admin_resources;
+  "admin/resourcesLifecycle": typeof admin_resourcesLifecycle;
   "admin/roles": typeof admin_roles;
   "admin/shell": typeof admin_shell;
   "admin/stop": typeof admin_stop;
