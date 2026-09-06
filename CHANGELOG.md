@@ -7,6 +7,15 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Phase 5 — P5-01 M6 discussion spine schema (2026-09-06)
+- Schema (bible l.79–115, CONTRACT-5-discussion-thread §2/§3): 9 canonical tables — `comments` (INV-1 depth {0|1}, threadRootCommentId self-id convention, authorIntent/isQuestion, tombstone deletedAt), `commentReactions` (valuable|negative only — DEC-M6-REACTIONS; mutual-exclusivity lookup index; PRIVATE reason enum; weightAtCast), `commentSaves`, `commentContextSignals` (signalType; status literals unnamed in bible → string, flagged), `commentScores` (full projection field set + `dirty` transcribing the "indexed dirty-score queue"; scores are server-computed only), `threadStats` (persona counts separate — INV-6), `threadReadStates` (unique userId+postId), `userReadingProgress`, `threadPluginConfig` (typed keys only). Sort-mode + cursor-freeze indexes on the post/parent/root scans.
+- Deferred with flag (not silently dropped): `commentRankSnapshots` (l.108 — calibration audit, Readiness Cat-8 owner) and the MAX artifact tables `threadIntelligenceRuns`/`threadThemes`/`threadPositions`/`threadQuestions` (l.110–114 — compute is CAP-132/133, Phase-7-owned per the contract's layering note).
+- `postHelps.acceptedCommentId` tightened from its pre-P5 string placeholder to `v.id("comments")` (help.accept arg + the P4-15 placeholder UI boundary-cast); `help.accept`/`reopen` gained `returns` validators (convex-lint).
+- Verified: typecheck/lint 0 errors, 324/324 tests (+9 schema-fidelity), schema pushed live (9 tables + 16 indexes on `watchful-chameleon-570`).
+
+### Phase 5 — gates note (2026-09-06)
+- **Founder deferred G3 `GLM_API_KEY` + G4 `MODERATION_CLASSIFIER_API_KEY` (2026-09-06)** — build continues through Phase 5; the P4 exit-gate E2E runs when the keys land. Noted in AGENTS.md §10 + wiki Roadmap.
+
 ### Phase 4 — P4-14 + P4-15 post-detail mechanics (2026-09-05) — PHASE 4 CODE COMPLETE
 - **P4-14 debate (CAP-093/094):** `posts/debate.ts` — `cast` (unique userId+postId; active published user-debates only — persona/editorial votes excluded from tallies by construction) and `change` (atomic decrement-old + increment-new in one transaction).
 - **P4-14 list (CAP-095/096/097):** `posts/listItems.ts` — `add` (≤200 chars, community_ranked only — static_creator author-lock enforced), `remove` (item creator or post author; votes deleted with the derived tally), `toggleVote` (unique userId+item; voteCount maintained in the same mutation). OQ#7 fence honored: static_creator vote-toggle suppression unstated — not invented.

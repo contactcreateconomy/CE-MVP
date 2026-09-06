@@ -1242,7 +1242,7 @@ export default defineSchema({
     postId: v.id("posts"),
     problemStatement: v.string(),
     resolvedStatus: v.union(v.literal("open"), v.literal("resolved")),
-    acceptedCommentId: v.optional(v.string()),
+    acceptedCommentId: v.optional(v.id("comments")), // CAP-122 clears same-tx on comment tombstone
     acceptedByUserId: v.optional(v.id("users")),
     acceptedAt: v.optional(v.number()),
   }).index("by_postId", ["postId"]),
@@ -1260,6 +1260,160 @@ export default defineSchema({
     workDescription: v.string(),
     engagementType: v.string(),
   }).index("by_postId", ["postId"]),
+
+  /* ── M6 discussion spine (SLICE-P5-01; bible l.79-115) ─────────────
+   * Deferred with flag (NOT silently dropped): commentRankSnapshots
+   * (l.108, calibration audit — Readiness Cat-8 owner) and the MAX
+   * artifact tables threadIntelligenceRuns / threadThemes /
+   * threadPositions / threadQuestions (l.110-114 — compute is
+   * CAP-132/133, Phase-7-owned per CONTRACT-5-discussion-thread §1). */
+
+  /** bible l.79 — one reply depth (INV-1); no separate thread entity;
+   *  threadRootCommentId = own id on top-level (MUST-DEFINE resolved).
+   *  Denormalized counters + rank projections live on commentScores. */
+  comments: defineTable({
+    postId: v.id("posts"),
+    parentCommentId: v.optional(v.id("comments")),
+    threadRootCommentId: v.id("comments"), // self-id convention on depth 0
+    replyToCommentId: v.optional(v.id("comments")),
+    depth: v.union(v.literal(0), v.literal(1)),
+    authorType: v.union(v.literal("editorial"), v.literal("persona"), v.literal("user")),
+    authorUserId: v.optional(v.id("users")),
+    authorPersonaId: v.optional(v.string()), // persona id (M8 tables land P5-08)
+    body: v.string(),
+    authorIntent: v.optional(v.union(
+      v.literal("question"), v.literal("answer"), v.literal("evidence"),
+      v.literal("counterpoint"), v.literal("experience"),
+    )),
+    isQuestion: v.boolean(),
+    moderationStatus: v.union(
+      v.literal("not_required"), v.literal("pending"), v.literal("passed"),
+      v.literal("held"), v.literal("rejected"), v.literal("removed"),
+    ),
+    editedAt: v.optional(v.number()),
+    deletedAt: v.optional(v.number()), // tombstone; replies preserved (CAP-122)
+    lastActivityAt: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_post_depth_created", ["postId", "depth", "createdAt"])
+    .index("by_parent_created", ["parentCommentId", "createdAt"])
+    .index("by_thread_root_created", ["threadRootCommentId", "createdAt"])
+    .index("by_author_type_authorUserId", ["authorType", "authorUserId"]),
+
+  /** bible l.103 — precomputed rank projection (rebuildable). Writes in
+   *  this layer only set dirty-flags; recompute is CAP-129/130 (P5-04).
+   *  All numeric projections + weightAtCast are SERVER-COMPUTED (never
+   *  client-supplied; writers must range-check — no unbounded float from
+   *  args ever lands here). `dirty` transcribes the "indexed dirty-score
+   *  queue (leased, idempotent)" requirement — the lease fields belong
+   *  to P5-04. */
+  commentScores: defineTable({
+    commentId: v.id("comments"),
+    valuableCount: v.number(),
+    replyCount: v.number(),
+    distinctReplierCount: v.number(),
+    saveCount: v.number(),
+    contextSignalCount: v.number(),
+    bestScore: v.number(), // Bayesian confidence-damped, NOT Wilson; ONE numerator
+    liveScore: v.number(),
+    mostDiscussedScore: v.number(),
+    rankVersion: v.number(),
+    lastInteractionAt: v.number(),
+    lastRankedAt: v.number(),
+    dirty: v.boolean(),
+  })
+    .index("by_comment", ["commentId"])
+    .index("by_dirty_lastInteraction", ["dirty", "lastInteractionAt"]),
+
+  /** bible l.81 — `valuable` is the SINGLE positive numerator (only Best
+   *  input); `negative` is a hidden-result signal (no public count, never
+   *  lowers Best). Mutually exclusive per (userId, commentId) — enforced
+   *  in the mutation via the by_user_comment lookup (one row per pair).
+   *  reason is PRIVATE (read-scoped server-side). weightAtCast =
+   *  signalReputation + legitimacy, NEVER Recognition-derived. */
+  commentReactions: defineTable({
+    userId: v.id("users"),
+    commentId: v.id("comments"),
+    reactionType: v.union(v.literal("valuable"), v.literal("negative")),
+    reason: v.optional(v.union(
+      v.literal("disagree"), v.literal("not_useful"),
+      v.literal("needs_evidence"), v.literal("off_topic"),
+    )),
+    weightAtCast: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_user_comment", ["userId", "commentId"])
+    .index("by_comment_type", ["commentId", "reactionType"]),
+
+  /** bible l.104 — private; no agreement semantics; weak rank input. */
+  commentSaves: defineTable({
+    userId: v.id("users"),
+    commentId: v.id("comments"),
+    createdAt: v.number(),
+  })
+    .index("by_user_comment", ["userId", "commentId"])
+    .index("by_comment", ["commentId"]),
+
+  /** bible l.105 — community curation; hidden until threshold; routes to
+   *  intelligence/moderation (CAP-137); never cuts rank (INV-3).
+   *  `status` literals are unnamed in the bible — v.string(), not invented. */
+  commentContextSignals: defineTable({
+    userId: v.id("users"),
+    commentId: v.id("comments"),
+    signalType: v.union(v.literal("context_needed"), v.literal("outdated")),
+    status: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_comment", ["commentId"])
+    .index("by_user_comment", ["userId", "commentId"]),
+
+  /** bible l.107 — rebuildable projection; persona counts separate (INV-6). */
+  threadStats: defineTable({
+    postId: v.id("posts"),
+    humanCommentCount: v.number(),
+    personaCommentCount: v.number(),
+    topLevelCount: v.number(),
+    replyCount: v.number(),
+    humanParticipantCount: v.number(),
+    unresolvedQuestionCount: v.number(),
+    latestHumanCommentId: v.optional(v.id("comments")),
+    latestActivityAt: v.number(),
+    threadRevision: v.number(),
+    updatedAt: v.number(),
+  }).index("by_postId", ["postId"]),
+
+  /** bible l.106 — jump-to-unread / "new since you left". */
+  threadReadStates: defineTable({
+    userId: v.id("users"),
+    postId: v.id("posts"),
+    lastReadCommentId: v.optional(v.id("comments")),
+    lastReadAt: v.number(),
+    lastSeenHumanCommentCount: v.number(),
+    lastSeenThreadRevision: v.number(),
+    updatedAt: v.number(),
+  }).index("by_user_post", ["userId", "postId"]),
+
+  /** bible l.115 — reading-based trust; feeds M7/M12. */
+  userReadingProgress: defineTable({
+    userId: v.id("users"),
+    topicsViewedCount: v.number(),
+    postsReadCount: v.number(),
+    totalReadTimeSeconds: v.number(),
+    updatedAt: v.number(),
+  }).index("by_user", ["userId"]),
+
+  /** bible l.109 — per-type thread-feature registry (typed keys only;
+   *  may NEVER redefine depth/authorship/moderation/URL/persona/
+   *  pagination). Declares allowedSortModes + overlayComponent +
+   *  pinnedSlotBehavior + threadContextResolver + intelligenceExtensions. */
+  threadPluginConfig: defineTable({
+    postType: v.string(), // post.type literal
+    featureKey: v.string(),
+    enabled: v.boolean(),
+    config: v.any(),
+    updatedByUserId: v.optional(v.id("users")),
+    updatedAt: v.number(),
+  }).index("by_postType_featureKey", ["postType", "featureKey"]),
 
   /** bible l.77 — revision history. */
   postRevisions: defineTable({

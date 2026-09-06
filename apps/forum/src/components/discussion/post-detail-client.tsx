@@ -325,7 +325,7 @@ function HelpActions({ postId, resolved }: { postId: string; resolved: boolean }
   ) : (
     <span className="flex items-center gap-1">
       <Input value={commentId} onChange={(e) => setCommentId(e.target.value)} placeholder="accepted comment id (Phase 5)" className="h-7 w-52 text-xs" />
-      <Button variant="secondary" size="sm" disabled={!commentId.trim()} onClick={() => void accept({ postId: postId as any, acceptedCommentId: commentId.trim() })}>
+      <Button variant="secondary" size="sm" disabled={!commentId.trim()} onClick={() => void accept({ postId: postId as any, acceptedCommentId: commentId.trim() as any })}>
         Accept (CAP-098)
       </Button>
     </span>

@@ -6,8 +6,8 @@
  * CAP-099 Notes (quoted): "`help.reopen`."
  * The accept affordance may ship with no visible thread until P5-03
  * (contract OQ#6 — the mutation exists; the UI target arrives with M6's
- * comments). CAP-098 targets a comments id — pre-P5 the arg stays a string
- * the comment engine will own.
+ * comments). CAP-098 targets a comments id — the FK tightened from its
+ * pre-P5 string placeholder when the M6 spine landed (P5-01).
  */
 
 import { mutation } from "../_generated/server";
@@ -25,7 +25,8 @@ async function helpRow(ctx: any, postId: Id<"posts">): Promise<any> {
 
 /** CAP-098 — accept: single accepted, replaces the prior ref. */
 export const accept = mutation({
-  args: { postId: v.id("posts"), acceptedCommentId: v.string() },
+  args: { postId: v.id("posts"), acceptedCommentId: v.id("comments") },
+  returns: v.object({ resolved: v.boolean() }),
   handler: async (ctx, args) => {
     const userId = (await getAuthUserId(ctx)) as Id<"users">;
     if (!userId) throw new Error("help.accept: authentication required");
@@ -62,6 +63,7 @@ export const accept = mutation({
  *  the row's audit fields; CAP-106's read tolerance governs cleared refs). */
 export const reopen = mutation({
   args: { postId: v.id("posts") },
+  returns: v.object({ resolved: v.boolean() }),
   handler: async (ctx, args) => {
     const userId = (await getAuthUserId(ctx)) as Id<"users">;
     if (!userId) throw new Error("help.reopen: authentication required");
