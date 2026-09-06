@@ -100,6 +100,7 @@ import type * as seed from "../seed.js";
 import type * as setup from "../setup.js";
 import type * as sources from "../sources.js";
 import type * as sourcesValidate from "../sourcesValidate.js";
+import type * as store_apply from "../store/apply.js";
 import type * as store_seed from "../store/seed.js";
 import type * as tags from "../tags.js";
 import type * as toolRatings from "../toolRatings.js";
@@ -205,6 +206,7 @@ declare const fullApi: ApiFromModules<{
   setup: typeof setup;
   sources: typeof sources;
   sourcesValidate: typeof sourcesValidate;
+  "store/apply": typeof store_apply;
   "store/seed": typeof store_seed;
   tags: typeof tags;
   toolRatings: typeof toolRatings;
