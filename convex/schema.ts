@@ -2207,6 +2207,250 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_root", ["rootTakedownId"]),
 
+  /* ── M11 affiliate storefront (SLICE-P6-12; bible l.215-227) + the
+   * distributions FK target (l.343 — create-writer is CAP-565 here;
+   * M12 economy enrichment is Phase 7). F-01 guard: storefrontLinks has
+   * validationState ONLY — no status field (stale sheet text). */
+
+  /** bible l.343 (create-half) — the creator channel. CAP-565 creates the
+   *  row at bootstrap-complete (ownershipMode=single, initial state);
+   *  economy fields (might/levels/awards) stay unwritten until Phase 7. */
+  distributions: defineTable({
+    ownerUserId: v.id("users"),
+    ownershipMode: v.union(v.literal("single"), v.literal("collaborative")),
+    name: v.string(),
+    memberCount: v.number(), // = the PUBLIC "Reach"
+    reachFactor: v.number(),
+    activeSignalFactor: v.number(),
+    might: v.number(),
+    mightPercentile: v.number(),
+    currentLevel: v.string(), // signal.level literal
+    highestLevelAchieved: v.string(),
+    awardsCount: v.number(),
+    dormant: v.boolean(),
+    storeEnabled: v.optional(v.boolean()),
+    createdAt: v.number(),
+  }).index("by_owner", ["ownerUserId"]),
+
+  /** bible l.215 — one per verified user; activation = ≥1 approved product. */
+  storefronts: defineTable({
+    ownerUserId: v.id("users"),
+    distributionId: v.id("distributions"),
+    status: v.string(),
+    isPlatformCurated: v.boolean(),
+    disclosureVersion: v.string(),
+    collections: v.array(v.string()),
+    activatedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_owner", ["ownerUserId"])
+    .index("by_status", ["status"]),
+
+  /** bible l.216 — the request gate with the four attestations. */
+  storeRequests: defineTable({
+    userId: v.id("users"),
+    status: v.string(),
+    categories: v.array(v.string()),
+    networks: v.array(v.string()),
+    expectedProductCount: v.number(),
+    experienceNote: v.string(),
+    attestations: v.object({
+      owns: v.boolean(),
+      programPermits: v.boolean(),
+      regionEligible: v.boolean(),
+      willDisclose: v.boolean(),
+    }),
+    termsVersion: v.string(),
+    dataUseVersion: v.string(),
+    reviewerUserId: v.optional(v.id("users")),
+    reasonCode: v.optional(v.string()),
+    decidedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_status", ["status"]),
+
+  /** bible l.217 — the Product-Promotion layer over tools. */
+  storefrontProducts: defineTable({
+    storefrontId: v.id("storefronts"),
+    toolId: v.optional(v.string()), // canonical M5 registry link where one exists
+    name: v.string(),
+    category: v.string(), // Phase-1 allowlist
+    useCase: v.string(),
+    imageAssetId: v.optional(v.id("_storage")),
+    description: v.string(),
+    claims: v.string(),
+    status: v.string(),
+    currentVersionId: v.optional(v.id("storefrontProductVersions")),
+    sortOrder: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_storefront", ["storefrontId"])
+    .index("by_storefront_status", ["storefrontId", "status"]),
+
+  /** bible l.218 — immutable reviewed commercial-package history; edit =
+   *  new version → re-validate. */
+  storefrontProductVersions: defineTable({
+    storefrontProductId: v.id("storefrontProducts"),
+    versionNo: v.number(),
+    packageHash: v.string(),
+    name: v.string(),
+    merchant: v.string(),
+    image: v.string(),
+    description: v.string(),
+    claims: v.string(),
+    disclosureClass: v.string(),
+    ctaLabel: v.string(),
+    regions: v.array(v.string()),
+    category: v.string(),
+    storefrontLinkId: v.id("storefrontLinks"),
+    approvedByUserId: v.optional(v.id("users")),
+    approvedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  }).index("by_product_version", ["storefrontProductId", "versionNo"]),
+
+  /** bible l.219 — the approved IMMUTABLE destination. validationState is
+   *  THE gate field (F-01: NO status field); a write to a locked field
+   *  when approved_locked THROWS (enforced in the P6-14 mutations). */
+  storefrontLinks: defineTable({
+    submittedUrl: v.string(),
+    finalRegistrableDomain: v.string(),
+    redirectChainHash: v.string(),
+    network: v.string(),
+    programName: v.string(),
+    affiliateAccountRefMasked: v.string(), // NEVER exposes the affiliate id
+    permittedChannels: v.array(v.string()),
+    geoEligibility: v.array(v.string()),
+    selfReferralPolicy: v.string(),
+    subAffiliatePolicy: v.string(),
+    validationState: v.union(
+      v.literal("pending"), v.literal("approved_locked"),
+      v.literal("under_review"), v.literal("rejected"),
+    ),
+    fingerprintId: v.string(),
+    lockedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_fingerprint", ["fingerprintId"])
+    .index("by_validationState", ["validationState"]),
+
+  /** bible l.220 — validation + re-scan audit (SSRF-safe headless). */
+  linkValidations: defineTable({
+    storefrontLinkId: v.id("storefrontLinks"),
+    runType: v.union(v.literal("initial"), v.literal("rescan")),
+    disposition: v.union(v.literal("pass"), v.literal("needs_human"), v.literal("fail"), v.literal("drift_detected")),
+    fingerprint: v.any(), // {finalHost, redirectHash, titleHash, contentHash, ...}
+    safeBrowsing: v.string(),
+    phishtank: v.string(),
+    reviewerUserId: v.optional(v.id("users")),
+    createdAt: v.number(),
+  }).index("by_link", ["storefrontLinkId"]),
+
+  /** bible l.221 — append-only BUY log → feeds M12. */
+  storefrontClicks: defineTable({
+    storefrontLinkId: v.id("storefrontLinks"),
+    storefrontProductId: v.id("storefrontProducts"),
+    promoterUserId: v.id("users"),
+    sourcePostId: v.optional(v.id("posts")),
+    sourceSurface: v.union(v.literal("post"), v.literal("storefront")),
+    clickId: v.string(),
+    actorUserId: v.optional(v.id("users")),
+    anonymousSessionId: v.string(),
+    qualification: v.union(v.literal("raw"), v.literal("qualified"), v.literal("excluded")),
+    integrityStatus: v.string(),
+    occurredAt: v.number(),
+  })
+    .index("by_link_occurred", ["storefrontLinkId", "occurredAt"])
+    .index("by_clickId", ["clickId"]),
+
+  /** bible l.222 — PRIVATE; aggregate count only; ZERO Signal. */
+  wishlists: defineTable({
+    userId: v.id("users"),
+    storefrontProductId: v.id("storefrontProducts"),
+    createdAt: v.number(),
+  }).index("by_user_product", ["userId", "storefrontProductId"]),
+
+  /** bible l.223 — AGGREGATE-ONLY projection (the fixed privacy-query
+   *  contract lives on the P6-16 read path; k≥5, ≥1d buckets, ≥24h delay). */
+  storefrontAnalytics: defineTable({
+    subjectType: v.union(v.literal("store"), v.literal("product")),
+    subjectId: v.string(),
+    window: v.string(),
+    storeViews: v.number(),
+    productViews: v.number(),
+    uniqueQualifiedViewers: v.number(),
+    qualifiedClicks: v.number(),
+    ctr: v.number(),
+    wishlistAdds: v.number(),
+    verifiedConversions: v.optional(v.number()),
+    conversionValue: v.optional(v.number()),
+    computedAt: v.number(),
+  }).index("by_subject_window", ["subjectType", "subjectId", "window"]),
+
+  /** bible l.224 — the review-conflict graph (DEC-M5-AGG extension). */
+  reviewConflicts: defineTable({
+    toolRatingId: v.id("toolRatings"),
+    reviewerUserId: v.id("users"),
+    sellerUserId: v.id("users"),
+    conflictType: v.string(),
+    state: v.union(
+      v.literal("declared"), v.literal("suspected"), v.literal("confirmed"), v.literal("cleared"),
+    ),
+    evidence: v.any(),
+    resolvedByUserId: v.optional(v.id("users")),
+    resolvedAt: v.optional(v.number()),
+  }).index("by_rating", ["toolRatingId"]),
+
+  /** bible l.225 — sales-confirmation intake. CAP-525 two-field rule:
+   *  self-report = type=self_report AND status=unverified (no collapsed
+   *  literal exists in this enum). */
+  salesEvidence: defineTable({
+    storefrontProductId: v.id("storefrontProducts"),
+    promoterUserId: v.id("users"),
+    type: v.union(v.literal("subid"), v.literal("coupon"), v.literal("self_report"), v.literal("postback")),
+    status: v.union(v.literal("unverified"), v.literal("network_verified"), v.literal("refunded")),
+    conversionRef: v.optional(v.string()),
+    amount: v.optional(v.number()),
+    currency: v.optional(v.string()),
+    occurredAt: v.number(),
+    verifiedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_product", ["storefrontProductId"])
+    .index("by_promoter", ["promoterUserId"]),
+
+  /** bible l.226 — per-network SubID capability dictionary (CAP-572
+   *  seeds it; P6-17 fail-closes on empty — never appends unknown params). */
+  subIdRegistry: defineTable({
+    network: v.string(),
+    paramName: v.string(),
+    valueFormat: v.string(),
+    maxLength: v.number(),
+    returnedInReport: v.boolean(),
+    permitted: v.boolean(),
+    ccGenerates: v.boolean(),
+    breaksSignature: v.boolean(),
+  }).index("by_network", ["network"]),
+
+  /** bible l.227a — the strike ledger (circuit-breaker + revoke input). */
+  storeStrikes: defineTable({
+    storefrontId: v.id("storefronts"),
+    reasonCode: v.string(),
+    evidence: v.any(),
+    actorUserId: v.id("users"),
+    createdAt: v.number(),
+  }).index("by_storefront", ["storefrontId"]),
+
+  /** bible l.227b — vendor complaint intake (routes to takedown). */
+  merchantComplaints: defineTable({
+    complainantUserId: v.optional(v.id("users")),
+    targetProductId: v.id("storefrontProducts"),
+    reason: v.string(),
+    status: v.string(),
+    createdAt: v.number(),
+  }).index("by_product", ["targetProductId"]),
+
+
 
 
 

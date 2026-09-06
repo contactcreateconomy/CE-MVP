@@ -19,6 +19,7 @@ import { WAITLIST_EVENT_CATALOG_ROW } from "./waitlist";
 import { INTEREST_TILE_DEFS, INTEREST_TAXONOMY_VERSION } from "./setup";
 import { COMMENT_EVENT_CATALOG_ROWS } from "./comments";
 import { REACTION_EVENT_CATALOG_ROWS } from "./reactions";
+import { seedPlatformStores, seedSubIdRegistry } from "./store/seed";
 
 // Bible l.86 (quoted): "All 10 types admin-toggleable. 8 ship `active`;
 // `launch_pad`,`gigs` ship `locked` (flip at ~1000 DAU = admin action, not
@@ -314,8 +315,16 @@ export const bootstrap = internalMutation({
       result.push(`jobCatalog:${row.jobKey}: seeded`);
     }
 
+    // 8. Store seeders (SLICE-P6-12): CAP-571 platform-curated store
+    //    (reserved isStaff identity + locked fixture links) + CAP-572
+    //    subIdRegistry dictionary. Idempotent throughout.
+    for (const line of await seedPlatformStores(ctx)) result.push(line);
+    for (const line of await seedSubIdRegistry(ctx)) result.push(line);
+
     // R-FOUNDER boundary: no users, no roleAssignments, no founder grants —
-    // verified by the module surface (this is the only export).
+    // verified by the module surface (this is the only export). The ONE
+    // deliberate exception is CAP-571's reserved isStaff platform identity
+    // (never Founder, never roleAssignments) — quoted in store/seed.ts.
     return result;
   },
 });

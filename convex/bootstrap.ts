@@ -15,6 +15,7 @@
 import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { captureEvent } from "./lib/events";
+import { ensureDistributionTx } from "./distributions";
 
 // CAP-004: eventName "signup" per the welcome contract §5 — this seed row
 // satisfies CAP-437's catalog gate so captureEvent doesn't reject.
@@ -116,6 +117,11 @@ export const finalizeBootstrap = internalMutation({
       isCountableAtWrite: true,
       analyticsSubjectId: user.analyticsSubjectId ?? undefined,
     });
+
+    // CAP-565 (SLICE-P6-12): ensure the 1:1 Distribution exists before the
+    // member could reach /u/[handle] — follow-on (quoted: "NOT the same
+    // atomic transaction"), invoked directly for the same-tx guarantees.
+    await ensureDistributionTx(ctx, userId);
 
     return { userId, timezone };
   },
