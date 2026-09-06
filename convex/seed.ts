@@ -72,6 +72,11 @@ const REGISTRY_ROWS = [
   // SLICE-P5-08 (CAP-168): persona weekly comment budget — register-unnamed,
   // flagged default 10 (mirrors the literal in persona/generate.ts).
   { key: "persona.cadence.weeklyBudget", module: "m8", valueType: "number" as const, default: 10, min: 1, max: 100, editTier: "tier2" as const, blastRadius: "Per-persona weekly generation budget (selectivity lever).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  // SLICE-P5-10: lifecycle thresholds — all register-unnamed, flagged
+  // defaults (mirrors persona/lifecycle.ts LIFECYCLE_DEFAULTS).
+  { key: "persona.activation.trialDays", module: "m8", valueType: "number" as const, default: 7, min: 1, max: 90, editTier: "tier2" as const, blastRadius: "Nascent→active trial window (CAP-160).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "persona.wane.noSelectionDays", module: "m8", valueType: "number" as const, default: 14, min: 1, max: 365, editTier: "tier2" as const, blastRadius: "Waning trigger: days without selection (CAP-163 branch 4).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "persona.revival.threshold", module: "m8", valueType: "number" as const, default: 25, min: 1, max: 10000, editTier: "tier2" as const, blastRadius: "Community revival vote threshold (CAP-165 snapshots at approval).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   // permission keys (M1 §6 "Seeds: … permission keys") — read by future authz
   { key: "media.upload.maxBytes", module: "m1", valueType: "number" as const, default: 5242880, min: 1024, max: 104857600, editTier: "tier1" as const, blastRadius: "Maximum upload size for avatars and media.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   // SLICE-P4-03: CAP-534's Admin-Config flag (row owned by convex/tags.ts)

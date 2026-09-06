@@ -65,6 +65,7 @@ import type * as lib_rateLimit from "../lib/rateLimit.js";
 import type * as lib_safeFetch from "../lib/safeFetch.js";
 import type * as lib_urlGuards from "../lib/urlGuards.js";
 import type * as persona_generate from "../persona/generate.js";
+import type * as persona_lifecycle from "../persona/lifecycle.js";
 import type * as persona_public from "../persona/public.js";
 import type * as posts from "../posts.js";
 import type * as posts_debate from "../posts/debate.js";
@@ -153,6 +154,7 @@ declare const fullApi: ApiFromModules<{
   "lib/safeFetch": typeof lib_safeFetch;
   "lib/urlGuards": typeof lib_urlGuards;
   "persona/generate": typeof persona_generate;
+  "persona/lifecycle": typeof persona_lifecycle;
   "persona/public": typeof persona_public;
   posts: typeof posts;
   "posts/debate": typeof posts_debate;

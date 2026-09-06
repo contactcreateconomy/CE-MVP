@@ -82,3 +82,19 @@ crons.cron(
   internal.jobs.infer.inferBatch,
   {},
 );
+
+// SLICE-P5-10 (CAP-166/167): persona population + drift crons. Both are
+// OUTPUT-ONLY (recommendation queue / flags — no direct persona writes,
+// quoted); the operator executes via /admin/personas.
+crons.cron(
+  "persona population recommend",
+  "30 5 * * *",
+  internal.persona.lifecycle.populationRecommend,
+  {},
+);
+crons.cron(
+  "persona drift check",
+  "0 6 * * 1",
+  internal.persona.lifecycle.driftCheck,
+  {},
+);
