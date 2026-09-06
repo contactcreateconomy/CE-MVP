@@ -31,6 +31,7 @@ import type * as editorial_inject from "../editorial/inject.js";
 import type * as editorial_publish from "../editorial/publish.js";
 import type * as editorial_review from "../editorial/review.js";
 import type * as eligibility from "../eligibility.js";
+import type * as feed from "../feed.js";
 import type * as forge from "../forge.js";
 import type * as forum_constants from "../forum/constants.js";
 import type * as forum_discussionRoute from "../forum/discussionRoute.js";
@@ -127,6 +128,7 @@ declare const fullApi: ApiFromModules<{
   "editorial/publish": typeof editorial_publish;
   "editorial/review": typeof editorial_review;
   eligibility: typeof eligibility;
+  feed: typeof feed;
   forge: typeof forge;
   "forum/constants": typeof forum_constants;
   "forum/discussionRoute": typeof forum_discussionRoute;

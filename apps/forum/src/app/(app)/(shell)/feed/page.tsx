@@ -1,20 +1,23 @@
 /**
- * Route: /feed
- * Data: Convex listFeedPage + listCategories (client; URL query is read in FeedRouteClient so sort/category changes do not refetch this RSC or flash loading.tsx).
- *
- * ISR: Revalidate every 60 seconds so anonymous visitors and crawlers get a
- * fresh static shell without hitting the Convex backend on every request.
+ * Route: /feed — the CANONICAL M9 feed (SLICE-P6-03). Four sorts over
+ * postDistributionScores + cardSummaries; hero/Vibing/Featured/Podium
+ * chrome; per-card controls. The legacy demo feed is retired from this
+ * route (00-TRANSITION). noindex per CAP-486.
  */
+import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { FeedRouteClient } from "@/components/feed/feed-route-client";
+import { CanonicalFeedClient } from "@/components/feed/canonical-feed-client";
 
-export const revalidate = 60;
+export const metadata: Metadata = {
+  title: "Feed — Createconomy",
+  robots: { index: false, follow: true },
+};
 
 export default function FeedPage() {
   return (
     <Suspense fallback={null}>
-      <FeedRouteClient />
+      <CanonicalFeedClient />
     </Suspense>
   );
 }

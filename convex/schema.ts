@@ -2006,14 +2006,52 @@ export default defineSchema({
   }).index("by_category_window", ["category", "window"]),
 
   /** bible l.139 — ordering continuity. */
+  /** bible l.82 — post saves (bible region table that had no writer until
+   *  P6-03's Fav sort read it; unique (userId, postId) lookup). Distinct
+   *  from commentSaves (M6). */
+  saves: defineTable({
+    userId: v.id("users"),
+    postId: v.id("posts"),
+    createdAt: v.number(),
+  })
+    .index("by_user_post", ["userId", "postId"])
+    .index("by_user", ["userId"]),
+
+  /** bible l.139 — ordering continuity. hide/mute state rides the session
+   *  per CONTRACT-6-feed §2/§4 (CAP-200 writes, CAP-553 reverses) — the
+   *  contract-derived arrays extend the l.139 bullet (flagged). */
   feedSessions: defineTable({
     sessionId: v.string(),
     userId: v.optional(v.id("users")),
     sortMode: v.string(),
     rankingVersion: v.number(),
+    hiddenPostIds: v.optional(v.array(v.id("posts"))), // CAP-200 hide
+    mutedPostIds: v.optional(v.array(v.id("posts"))), // CAP-200 mute
     createdAt: v.number(),
     expiresAt: v.number(),
-  }).index("by_sessionId", ["sessionId"]),
+  })
+    .index("by_sessionId", ["sessionId"])
+    .index("by_user", ["userId"]),
+
+  /** bible l.239 (M13) — immutable report intake. Table lands here because
+   *  CAP-200's report branch is its first canonical writer (CONTRACT-6-feed
+   *  §4); the M13 console that READS it ships in Phase 7. Many reports →
+   *  one open case per target+policyFamily+window; volume ≠ guilt. */
+  reports: defineTable({
+    targetType: v.string(),
+    targetId: v.string(),
+    reporterId: v.id("users"),
+    reasonCode: v.string(),
+    reporterTrustAtTime: v.optional(v.string()),
+    dedupeKey: v.string(),
+    caseId: v.optional(v.id("moderationCases")),
+    severityHint: v.optional(v.string()),
+    status: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_target", ["targetType", "targetId"])
+    .index("by_dedupe", ["dedupeKey"]),
+
 
   /* ── M10 resource store / Constellation (SLICE-P6-06; bible l.190-202) ─
    * Soft beta: constellation.ugc.enabled=false — in-house/operator only;
