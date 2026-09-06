@@ -157,18 +157,28 @@ export const createPost = mutation({
       }
     }
 
-    const lifecycleStatus =
-      publishing && !preservedAsDraft && rejectionReasons.length === 0 ? "ready" : "draft";
-
-    // CAP-154 — full safety moderation pre-publish (fail-closed): the
-    // classifier seam (G4) unavailable ⇒ pending hold + a case; unsafe ⇒
-    // held + a case; safe ⇒ passed. Drafts are not_required.
+    // B1 RESOLVED (founder, 2026-09-06): member posts AUTO-PUBLISH at create
+    // when the safety classifier passes (lifecycleStatus=published +
+    // moderationStatus=passed, same transaction). Held paths stay ready/
+    // draft + a moderation case — M13 owns disposition. Founder decision
+    // recorded in the wiki Founder-Review-Queue (B1 struck).
+    let lifecycleStatus: "draft" | "ready" | "published" = "draft";
     let moderationStatus: "not_required" | "passed" | "pending" | "held" = "not_required";
-    if (lifecycleStatus === "ready") {
+    if (publishing && !preservedAsDraft && rejectionReasons.length === 0) {
+      // CAP-154 — full safety moderation pre-publish (fail-closed): the
+      // classifier seam (G4) unavailable ⇒ pending hold + a case; unsafe ⇒
+      // held + a case; safe ⇒ published.
       const safety = await classifySafety(`${args.title}\n${args.body}`);
-      if (!safety.available) moderationStatus = "pending";
-      else if (safety.unsafe) moderationStatus = "held";
-      else moderationStatus = "passed";
+      if (!safety.available) {
+        moderationStatus = "pending";
+        lifecycleStatus = "ready";
+      } else if (safety.unsafe) {
+        moderationStatus = "held";
+        lifecycleStatus = "ready";
+      } else {
+        moderationStatus = "passed";
+        lifecycleStatus = "published";
+      }
     }
 
     let createdPostId: Id<"posts"> | undefined;
@@ -185,6 +195,7 @@ export const createPost = mutation({
         lifecycleStatus,
         moderationStatus,
         visibility: lifecycleStatus === "draft" ? "private" : "public",
+        publishedAt: lifecycleStatus === "published" ? Date.now() : undefined,
         createdAt: Date.now(),
       });
       createdPostId = postId;
@@ -218,9 +229,8 @@ export const createPost = mutation({
       });
 
       // 4. CAP-570 call-site: post_published Journal append at the member
-      //    publish attempt (meta tagged; feed surfacing is the feed slice's
-      //    concern — the member's action is recorded here)
-      if (lifecycleStatus === "ready") {
+      //    publish (B1: published = classifier-passed, live immediately)
+      if (lifecycleStatus === "published") {
         await appendActivity(actx, {
           userId,
           eventType: "post_published",

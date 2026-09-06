@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { CanonicalThread } from "./canonical-thread";
 import { api } from "@/lib/convex";
 
 const TYPE_LABELS: Record<string, string> = {
@@ -241,10 +242,8 @@ export function PostDetailClient({ detail }: { detail: any }) {
         </aside>
       ) : null}
 
-      {/* M6 thread placeholder — honest empty state (Phase 5) */}
-      <section className="rounded-lg border border-dashed border-(--border-default) p-6 text-center">
-        <p className="text-sm text-(--text-muted)">The discussion thread arrives with the comments engine (Phase 5).</p>
-      </section>
+      {/* M6 thread — SLICE-P5-03: the canonical comment engine (CAP-123…131) */}
+      <CanonicalThread postId={post._id} archived={Boolean(threadContext?.archived)} />
     </article>
   );
 }

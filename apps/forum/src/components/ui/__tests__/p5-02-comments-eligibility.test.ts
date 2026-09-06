@@ -146,7 +146,9 @@ describe("SLICE-P5-02 — composer gate chain (CAP-152/153/154) source assertion
   it("CAP-140: preserve-draft outcome + missing decisions in the return contract", () => {
     expect(postsSource).toContain("preservedAsDraft");
     expect(postsSource).toContain("missingBasic");
-    expect(postsSource).toContain('lifecycleStatus =\n      publishing && !preservedAsDraft');
+    expect(postsSource).toMatch(/publishing && !preservedAsDraft/);
+    // B1 resolved (founder 2026-09-06): classifier-pass ⇒ auto-publish
+    expect(postsSource).toMatch(/moderationStatus = "passed";\n        lifecycleStatus = "published"/);
   });
 
   it("CAP-153: deterministic length + exact-dup gates present", () => {

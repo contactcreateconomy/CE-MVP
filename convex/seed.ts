@@ -18,6 +18,7 @@ import { SIGNUP_EVENT_CATALOG_ROW } from "./bootstrap";
 import { WAITLIST_EVENT_CATALOG_ROW } from "./waitlist";
 import { INTEREST_TILE_DEFS, INTEREST_TAXONOMY_VERSION } from "./setup";
 import { COMMENT_EVENT_CATALOG_ROWS } from "./comments";
+import { REACTION_EVENT_CATALOG_ROWS } from "./reactions";
 
 // Bible l.86 (quoted): "All 10 types admin-toggleable. 8 ship `active`;
 // `launch_pad`,`gigs` ship `locked` (flip at ~1000 DAU = admin action, not
@@ -84,7 +85,12 @@ const REGISTRY_ROWS = [
 // catalog row is missing (fail-closed rolls back the domain mutation), so
 // the rows must exist in the deployment before the surfaces run. Idempotent
 // by eventName.
-const EVENT_CATALOG_ROWS = [SIGNUP_EVENT_CATALOG_ROW, WAITLIST_EVENT_CATALOG_ROW, ...COMMENT_EVENT_CATALOG_ROWS];
+const EVENT_CATALOG_ROWS = [
+  SIGNUP_EVENT_CATALOG_ROW,
+  WAITLIST_EVENT_CATALOG_ROW,
+  ...COMMENT_EVENT_CATALOG_ROWS,
+  ...REACTION_EVENT_CATALOG_ROWS,
+];
 
 // SLICE-P5-04: the three M6 rank-engine jobs (CAP-129/130/145) registered
 // in the P1-04 catalog (internalFunctionKey doubles as the execution
