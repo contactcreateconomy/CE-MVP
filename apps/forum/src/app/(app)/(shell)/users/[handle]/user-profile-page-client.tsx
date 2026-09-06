@@ -3,6 +3,7 @@
 import { useQuery } from "convex/react";
 import { useMemo } from "react";
 
+import { CanonicalProfile } from "@/components/profile/canonical-profile";
 import { FeedClient } from "@/components/feed/feed-client";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { api } from "@/lib/convex";
@@ -15,22 +16,43 @@ interface UserProfilePageClientProps {
   handle: string;
 }
 
-function mergeUsers(a: User[], b: User[]): User[] {
-  const byId = new Map<string, User>();
-  for (const u of [...a, ...b]) {
-    if (!byId.has(u.id)) {
-      byId.set(u.id, u);
-    }
+/** 00-TRANSITION strangler: the canonical users.username row resolves
+ *  first (P5-07, CAP-526/527/528); the legacy forum profile is the
+ *  fallback for demo-era handles. */
+function UserProfilePageWithConvex({ handle }: { handle: string }) {
+  const canonical = useQuery(api.profile.page.getProfilePage, { handle });
+
+  if (canonical !== undefined) {
+    // Canonical resolution decided — render it either way (null = not-found)
+    return canonical === null ? (
+      <section className="animate-route-emerge space-y-2">
+        <h1 className="text-xl font-semibold text-(--text-primary)">User not found</h1>
+        <p className="text-sm text-(--text-muted)">No profile matches @{handle}.</p>
+      </section>
+    ) : (
+      <CanonicalProfile data={canonical} />
+    );
   }
-  return [...byId.values()];
+
+  return <LegacyUserProfile handle={handle} />;
 }
 
-function UserProfilePageWithConvex({ handle }: UserProfilePageClientProps) {
+function LegacyUserProfile({ handle }: { handle: string }) {
   const user = useQuery(api.forum.queries.getProfileByHandle, { handle });
   const authorPosts = useQuery(
     api.forum.queries.getPostsByAuthorProfileId,
     user ? { profileId: user.id } : "skip",
   );
+
+  const mergeUsers = (a: User[], b: User[]): User[] => {
+    const byId = new Map<string, User>();
+    for (const u of [...a, ...b]) {
+      if (!byId.get(u.id)) {
+        byId.set(u.id, u);
+      }
+    }
+    return [...byId.values()];
+  };
 
   const postIds = useMemo(() => {
     if (!authorPosts) {

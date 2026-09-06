@@ -27,6 +27,7 @@ import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { reserveHandleTx } from "./profile/page";
 
 /* ── interestTaxonomy derivation (bible l.64: "derived from the post-type
  * / M5 registry so interests & post types share a taxonomy") ──
@@ -157,6 +158,9 @@ export const upsertBasic = mutation({
         createdAt: now,
         updatedAt: now,
       });
+      // CAP-550: the System handle reserve fires at profile creation, in
+      // this same transaction (no client surface; FUTURE-M7-01 = immutable)
+      await reserveHandleTx(ctx, userId, name);
     }
 
     // 2. userInterests — direct set replace (select taps overwrite the
