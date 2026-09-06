@@ -22,6 +22,7 @@ import { REACTION_EVENT_CATALOG_ROWS } from "./reactions";
 import { seedPlatformStores, seedSubIdRegistry } from "./store/seed";
 import { FEED_CARD_ACTION_EVENT_ROW } from "./feed";
 import { SEARCH_EVENT_ROW } from "./search";
+import { RESOURCE_VIEW_EVENT_ROW } from "./resources/view";
 
 // Bible l.86 (quoted): "All 10 types admin-toggleable. 8 ship `active`;
 // `launch_pad`,`gigs` ship `locked` (flip at ~1000 DAU = admin action, not
@@ -112,6 +113,7 @@ const EVENT_CATALOG_ROWS = [
   ...REACTION_EVENT_CATALOG_ROWS,
   FEED_CARD_ACTION_EVENT_ROW,
   SEARCH_EVENT_ROW,
+  RESOURCE_VIEW_EVENT_ROW,
 ];
 
 // SLICE-P5-04: the three M6 rank-engine jobs (CAP-129/130/145) registered

@@ -97,8 +97,6 @@ function HeroForm({ onSubmit, busy }: { onSubmit: (args: Record<string, unknown>
   const [postId, setPostId] = useState("");
   const [headline, setHeadline] = useState("");
   const [days, setDays] = useState("2");
-  const start = Date.now();
-  const end = start + Number(days || 2) * 24 * 3_600_000;
   return (
     <Card>
       <CardHeader><h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">Schedule hero slot (CAP-192)</h2></CardHeader>
@@ -108,12 +106,15 @@ function HeroForm({ onSubmit, busy }: { onSubmit: (args: Record<string, unknown>
         <Input value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="headline override (optional)" className="w-56" aria-label="Headline override" />
         <Input value={days} onChange={(e) => setDays(e.target.value)} placeholder="days live" className="w-20" aria-label="Days live" />
         <Button size="sm" disabled={busy || !postId.trim()}
-          onClick={() => onSubmit({
-            slotOrder: Number(slotOrder), postId: postId.trim(),
-            headlineOverride: headline.trim() || undefined,
-            startAt: start, endAt: end,
-            desktopEnabled: true, mobileEnabled: true, status: "active",
-          })}>
+          onClick={() => {
+            const start = Date.now();
+            onSubmit({
+              slotOrder: Number(slotOrder), postId: postId.trim(),
+              headlineOverride: headline.trim() || undefined,
+              startAt: start, endAt: start + Number(days || 2) * 24 * 3_600_000,
+              desktopEnabled: true, mobileEnabled: true, status: "active",
+            });
+          }}>
           Schedule
         </Button>
       </CardContent>
@@ -125,8 +126,6 @@ function FeaturedForm({ onSubmit, busy }: { onSubmit: (args: Record<string, unkn
   const [postId, setPostId] = useState("");
   const [label, setLabel] = useState("");
   const [days, setDays] = useState("1");
-  const start = Date.now();
-  const end = start + Number(days || 1) * 24 * 3_600_000;
   return (
     <Card>
       <CardHeader><h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">Book Featured (CAP-191 — ≤1/cycle, ≤1–2 active)</h2></CardHeader>
@@ -135,7 +134,10 @@ function FeaturedForm({ onSubmit, busy }: { onSubmit: (args: Record<string, unkn
         <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="label (renders as ‘Featured’)" className="w-56" aria-label="Label" />
         <Input value={days} onChange={(e) => setDays(e.target.value)} placeholder="days live" className="w-20" aria-label="Days live" />
         <Button size="sm" disabled={busy || !postId.trim() || !label.trim()}
-          onClick={() => onSubmit({ postId: postId.trim(), label: label.trim(), startAt: start, endAt: end })}>
+          onClick={() => {
+            const start = Date.now();
+            onSubmit({ postId: postId.trim(), label: label.trim(), startAt: start, endAt: start + Number(days || 1) * 24 * 3_600_000 });
+          }}>
           Book
         </Button>
       </CardContent>
