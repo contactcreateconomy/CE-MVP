@@ -153,6 +153,21 @@ crons.interval(
   {},
 );
 
+// SLICE-P6-15 (CAP-265/271): store circuit breaker (config-keyed N/M) +
+// revocation notices (public + consented-buyer branches only).
+crons.interval(
+  "store circuit breaker",
+  { hours: 1 },
+  internal.admin.storeEnforce.circuitBreaker,
+  {},
+);
+crons.interval(
+  "store revocation notices",
+  { hours: 1 },
+  internal.admin.storeEnforce.notifyRevocations,
+  {},
+);
+
 // SLICE-P6-11 (CAP-220): kill-gate evaluation — appends
 // pilotKillGateEvaluations ONLY (never flips the UGC flag; CAP-221 is
 // the Administrator-only switch).

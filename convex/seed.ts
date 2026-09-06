@@ -23,6 +23,7 @@ import { seedPlatformStores, seedSubIdRegistry } from "./store/seed";
 import { FEED_CARD_ACTION_EVENT_ROW } from "./feed";
 import { SEARCH_EVENT_ROW } from "./search";
 import { RESOURCE_VIEW_EVENT_ROW } from "./resources/view";
+import { GO_CLICK_EVENT_ROW } from "./go";
 
 // Bible l.86 (quoted): "All 10 types admin-toggleable. 8 ship `active`;
 // `launch_pad`,`gigs` ship `locked` (flip at ~1000 DAU = admin action, not
@@ -89,6 +90,9 @@ const REGISTRY_ROWS = [
   // SLICE-P6-07/08: the M10 library/viewer flags (browse public-on; viewer
   // routes fail-closed when false).
   { key: "resources.library.enabled", module: "m10", valueType: "boolean" as const, default: true, editTier: "tier1" as const, blastRadius: "The /resources library browse surface.", failDirection: "closed" as const, effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  // SLICE-P6-15 (CAP-265 Finding 4): breaker N/M — admin-configurable, never hardcoded
+  { key: "store.circuitbreaker.complaintCountN", module: "m11", valueType: "number" as const, default: 3, min: 1, max: 1000, editTier: "tier2" as const, blastRadius: "Complaint count that trips the store circuit breaker.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "store.circuitbreaker.windowHoursM", module: "m11", valueType: "number" as const, default: 72, min: 1, max: 720, editTier: "tier2" as const, blastRadius: "Breaker window (hours).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   { key: "resources.view.enabled", module: "m10", valueType: "boolean" as const, default: true, editTier: "tier1" as const, blastRadius: "The sandboxed resource viewer route.", failDirection: "closed" as const, effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   // permission keys (M1 §6 "Seeds: … permission keys") — read by future authz
   { key: "media.upload.maxBytes", module: "m1", valueType: "number" as const, default: 5242880, min: 1024, max: 104857600, editTier: "tier1" as const, blastRadius: "Maximum upload size for avatars and media.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
@@ -114,6 +118,7 @@ const EVENT_CATALOG_ROWS = [
   FEED_CARD_ACTION_EVENT_ROW,
   SEARCH_EVENT_ROW,
   RESOURCE_VIEW_EVENT_ROW,
+  GO_CLICK_EVENT_ROW,
 ];
 
 // SLICE-P5-04: the three M6 rank-engine jobs (CAP-129/130/145) registered

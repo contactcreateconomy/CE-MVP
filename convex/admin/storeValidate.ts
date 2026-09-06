@@ -16,13 +16,18 @@ async function inspect(url: string): Promise<{ disposition: string; fingerprint:
   let disposition = "needs_human";
   const fingerprint: Record<string, unknown> = { ts: Date.now() };
   try {
-    const result = await safeFetchText(url, { timeoutMs: 10_000 });
-    if (result.ok) {
-      fingerprint.titleHash = `${result.text.length}:${result.text.slice(0, 64)}`;
-      fingerprint.contentHash = `${result.text.length}`;
+    // CAP-010: unpinned probe = "disabled" → needs_human (manual review
+    // degrade — the P6-14 human lane gates CAP-237 either way)
+    const result = await safeFetchText(url, { mode: "external_destination_probe", timeoutMs: 10_000 });
+    const text = result.text ?? "";
+    if (result.status === "ok" && text.length > 0) {
+      fingerprint.titleHash = `${text.length}:${text.slice(0, 64)}`;
+      fingerprint.contentHash = `${text.length}`;
       disposition = "pass";
-    } else {
+    } else if (result.status === "blocked" || result.status === "error") {
       disposition = "fail";
+    } else {
+      disposition = "needs_human"; // disabled probe degrades — never a silent pass
     }
   } catch {
     disposition = "needs_human"; // probe failure degrades — never a silent pass (CAP-011)
@@ -35,13 +40,13 @@ export const inspectLinkAction = action({
   args: { storefrontLinkId: v.id("storefrontLinks") },
   returns: v.object({ disposition: v.string() }),
   handler: async (ctx, args) => {
-    const link = await ctx.db.get(args.storefrontLinkId);
+    const link: any = await ctx.runMutation(internal.admin.store.loadLinkForInspection, { storefrontLinkId: args.storefrontLinkId });
     if (!link) throw new Error("inspect: link not found");
     const result = await inspect(link.submittedUrl);
     await ctx.runMutation(internal.admin.store.recordInspection, {
       storefrontLinkId: args.storefrontLinkId,
       runType: "initial",
-      disposition: result.disposition,
+      disposition: result.disposition as "pass" | "needs_human" | "fail",
       fingerprint: { ...result.fingerprint, finalHost: link.finalRegistrableDomain, redirectHash: link.redirectChainHash },
     });
     return { disposition: result.disposition };
@@ -53,30 +58,21 @@ export const rescanLinksAction = action({
   args: {},
   returns: v.object({ rescanned: v.number(), flagged: v.number() }),
   handler: async (ctx) => {
-    const locked = await ctx.db
-      .query("storefrontLinks")
-      .withIndex("by_validationState", (q: any) => q.eq("validationState", "approved_locked"))
-      .take(10); // 24h-high/7d-normal cadence — bounded batch per pass
+    const batch: any[] = await ctx.runMutation(internal.admin.store.loadRescanBatch, {});
     let rescanned = 0;
     let flagged = 0;
-    for (const link of locked) {
-      const prior = await ctx.db
-        .query("linkValidations")
-        .withIndex("by_link", (q: any) => q.eq("storefrontLinkId", link._id))
-        .order("desc")
-        .take(1);
+    for (const link of batch) {
       const result = await inspect(link.submittedUrl);
       rescanned += 1;
       await ctx.runMutation(internal.admin.store.recordInspection, {
-        storefrontLinkId: link._id,
+        storefrontLinkId: link.linkId,
         runType: "rescan",
-        disposition: result.disposition,
+        disposition: result.disposition as "pass" | "needs_human" | "fail",
         fingerprint: { ...result.fingerprint, finalHost: link.finalRegistrableDomain, redirectHash: link.redirectChainHash },
       });
-      const priorFp = (prior[0]?.fingerprint ?? {}) as any;
-      if (priorFp.titleHash && result.fingerprint.titleHash && priorFp.titleHash !== result.fingerprint.titleHash) {
-        // CAP-242 (quoted): "material intermediate change triggers review"
-        await ctx.runMutation(internal.admin.store.recordDriftFlip, { storefrontLinkId: link._id });
+      // CAP-242 (quoted): "material intermediate change triggers review"
+      if (link.priorTitleHash && result.fingerprint.titleHash && link.priorTitleHash !== result.fingerprint.titleHash) {
+        await ctx.runMutation(internal.admin.store.recordDriftFlip, { storefrontLinkId: link.linkId });
         flagged += 1;
       }
     }

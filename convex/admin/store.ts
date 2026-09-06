@@ -309,6 +309,46 @@ export const getQueue = query({
   },
 });
 
+/** The link row needed by an inspection (actions can't touch ctx.db in
+ *  convex 1.34 — the V8 mutation feeds the action its inputs). */
+export const loadLinkForInspection = internalMutation({
+  args: { storefrontLinkId: v.id("storefrontLinks") },
+  returns: v.any(),
+  handler: async (ctx, args) => {
+    const link = await ctx.db.get(args.storefrontLinkId);
+    if (!link) return null;
+    return { submittedUrl: link.submittedUrl, finalRegistrableDomain: link.finalRegistrableDomain, redirectChainHash: link.redirectChainHash };
+  },
+});
+
+/** The rescan batch input (V8 feeder). */
+export const loadRescanBatch = internalMutation({
+  args: {},
+  returns: v.any(),
+  handler: async (ctx) => {
+    const locked = await ctx.db
+      .query("storefrontLinks")
+      .withIndex("by_validationState", (q: any) => q.eq("validationState", "approved_locked"))
+      .take(10); // 24h-high/7d-normal cadence — bounded batch per pass
+    const batch = [];
+    for (const link of locked) {
+      const prior = await ctx.db
+        .query("linkValidations")
+        .withIndex("by_link", (q: any) => q.eq("storefrontLinkId", link._id))
+        .order("desc")
+        .take(1);
+      batch.push({
+        linkId: link._id,
+        submittedUrl: link.submittedUrl,
+        finalRegistrableDomain: link.finalRegistrableDomain,
+        redirectChainHash: link.redirectChainHash,
+        priorTitleHash: ((prior[0]?.fingerprint ?? {}) as any)?.titleHash ?? null,
+      });
+    }
+    return batch;
+  },
+});
+
 /** Exported for the P6-17 tests: the THROW guard contract. */
 export function assertNotLocked(link: any, field: string): void {
   if (link?.validationState === "approved_locked" && (LOCKED_LINK_FIELDS as readonly string[]).includes(field)) {

@@ -17,6 +17,7 @@ import type * as admin_roles from "../admin/roles.js";
 import type * as admin_shell from "../admin/shell.js";
 import type * as admin_stop from "../admin/stop.js";
 import type * as admin_store from "../admin/store.js";
+import type * as admin_storeEnforce from "../admin/storeEnforce.js";
 import type * as admin_storeValidate from "../admin/storeValidate.js";
 import type * as admin_widgetsCatalog from "../admin/widgetsCatalog.js";
 import type * as admission from "../admission.js";
@@ -56,6 +57,7 @@ import type * as forum_seed_discussionThreads from "../forum/seed/discussionThre
 import type * as forum_seed_ensureCategoryRows from "../forum/seed/ensureCategoryRows.js";
 import type * as forum_seed_generatePosts from "../forum/seed/generatePosts.js";
 import type * as forum_validators from "../forum/validators.js";
+import type * as go from "../go.js";
 import type * as http from "../http.js";
 import type * as ingest_extract from "../ingest/extract.js";
 import type * as ingest_pollers from "../ingest/pollers.js";
@@ -104,6 +106,7 @@ import type * as sources from "../sources.js";
 import type * as sourcesValidate from "../sourcesValidate.js";
 import type * as store_apply from "../store/apply.js";
 import type * as store_seed from "../store/seed.js";
+import type * as store_sell from "../store/sell.js";
 import type * as tags from "../tags.js";
 import type * as toolRatings from "../toolRatings.js";
 import type * as tools from "../tools.js";
@@ -125,6 +128,7 @@ declare const fullApi: ApiFromModules<{
   "admin/shell": typeof admin_shell;
   "admin/stop": typeof admin_stop;
   "admin/store": typeof admin_store;
+  "admin/storeEnforce": typeof admin_storeEnforce;
   "admin/storeValidate": typeof admin_storeValidate;
   "admin/widgetsCatalog": typeof admin_widgetsCatalog;
   admission: typeof admission;
@@ -164,6 +168,7 @@ declare const fullApi: ApiFromModules<{
   "forum/seed/ensureCategoryRows": typeof forum_seed_ensureCategoryRows;
   "forum/seed/generatePosts": typeof forum_seed_generatePosts;
   "forum/validators": typeof forum_validators;
+  go: typeof go;
   http: typeof http;
   "ingest/extract": typeof ingest_extract;
   "ingest/pollers": typeof ingest_pollers;
@@ -212,6 +217,7 @@ declare const fullApi: ApiFromModules<{
   sourcesValidate: typeof sourcesValidate;
   "store/apply": typeof store_apply;
   "store/seed": typeof store_seed;
+  "store/sell": typeof store_sell;
   tags: typeof tags;
   toolRatings: typeof toolRatings;
   tools: typeof tools;
