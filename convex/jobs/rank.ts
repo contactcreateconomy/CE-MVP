@@ -177,3 +177,83 @@ export const decayLiveScores = internalMutation({
     return { decayed, configVersion: RANK_CONFIG_VERSION };
   },
 });
+
+/* ═══ SLICE-P6-02: the M9 POST-distribution recompute (CAP-187) ═══════
+ * Quoted: "M6 pattern (dirty-flag + leased bounded workers). Refresh
+ * tiers by age. Selective reranking (not global)." Same clear-first lease
+ * as the comment recompute above; topScore = Bayesian confidence-damped
+ * positive (NOT Wilson — l.129), hotScore = engagement × decay, trendScore
+ * from bucket deltas. Personas/staff = ZERO in core ranking (l.128): the
+ * inputs are human counters maintained by the same-mutation writers. */
+
+export const DISTRIBUTION_CONFIG_VERSION = "calibration_pending.v1";
+const DIST_DEFAULTS = { topPriorWeight: 5, topPriorMean: 0.3, hotHalfLifeHours: 12 };
+type DistConfig = typeof DIST_DEFAULTS;
+const DIST_KEYS: Record<keyof DistConfig, string> = {
+  topPriorWeight: "feed.top.priorWeight",
+  topPriorMean: "feed.top.priorMean",
+  hotHalfLifeHours: "feed.hot.halfLifeHours",
+};
+
+async function loadDistConfig(ctx: any): Promise<DistConfig> {
+  const out: Record<string, number> = { ...DIST_DEFAULTS };
+  for (const key of Object.keys(DIST_DEFAULTS) as (keyof DistConfig)[]) {
+    const row = await ctx.db.query("systemConfig").withIndex("by_key", (q: any) => q.eq("key", DIST_KEYS[key])).first();
+    if (row && typeof row.value === "number" && Number.isFinite(row.value)) out[key] = row.value;
+  }
+  return out as DistConfig;
+}
+
+/** CAP-187 — leased bounded batch over dirty postDistributionScores. */
+export const distributionRecompute = internalMutation({
+  args: {},
+  returns: v.object({ claimed: v.number(), recomputed: v.number(), configVersion: v.string() }),
+  handler: async (ctx) => {
+    const config = await loadDistConfig(ctx);
+    const now = Date.now();
+
+    // Claim (clear-first lease — M6 pattern, quoted)
+    const claimed = await ctx.db
+      .query("postDistributionScores")
+      .withIndex("by_dirtySince", (q: any) => q.neq("dirtySince", null))
+      .take(50);
+    for (const row of claimed) {
+      await ctx.db.patch(row._id, { dirtySince: undefined });
+    }
+
+    let recomputed = 0;
+    for (const row of claimed) {
+      const post = await ctx.db.get(row.postId);
+      if (!post || post.lifecycleStatus !== "published") continue; // stale rows freeze
+
+      // Bayesian confidence-damped positive (one numerator: valuableWeighted)
+      const denominator = row.valuableWeighted + config.topPriorWeight; // confidence damping
+      const topScore = (row.valuableWeighted * row.integrityMultiplier + config.topPriorMean * config.topPriorWeight) / denominator
+        * (1 + Math.min(0.5, row.distinctCommenters * 0.05)); // corroboration
+      // Hot = engagement × time-decay (l.129; gravity config-keyed)
+      const engagement = row.valuableWeighted + row.replyCount + row.saveCount + row.qualifiedReads;
+      const hours = Math.max(0, (now - row.lastEligibleInteractionAt) / 3_600_000);
+      const hotScore = engagement * Math.pow(2, -hours / config.hotHalfLifeHours);
+      // Trend = recent-window velocity delta from the day buckets (CAP-187 tiers)
+      const buckets = await ctx.db
+        .query("postDistributionBuckets")
+        .withIndex("by_post_bucket", (q: any) => q.eq("postId", row.postId))
+        .order("desc")
+        .take(2);
+      const trendDelta =
+        buckets.length === 2
+          ? (buckets[0].valuableWeighted + buckets[0].replyCount) - (buckets[1].valuableWeighted + buckets[1].replyCount)
+          : (buckets[0]?.valuableWeighted ?? 0) + (buckets[0]?.replyCount ?? 0);
+
+      await ctx.db.patch(row._id, {
+        topScore: Math.round(topScore * 1000) / 1000,
+        hotScore: Math.round(hotScore * 1000) / 1000,
+        trendScore: Math.round(trendDelta * 1000) / 1000,
+        scoreVersion: row.scoreVersion + 1,
+        computedAt: now,
+      });
+      recomputed += 1;
+    }
+    return { claimed: claimed.length, recomputed, configVersion: DISTRIBUTION_CONFIG_VERSION };
+  },
+});

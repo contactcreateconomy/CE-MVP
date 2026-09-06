@@ -108,3 +108,37 @@ crons.interval(
   internal.persona.queue.sweepScheduled,
   {},
 );
+
+// SLICE-P6-02 (CAP-187/188/189/193): the M9 distribution engine. All
+// writes-only-to-projections (cards never touch rank); hero fill draws
+// from TOP labeled "Community Top" (never Recognition).
+crons.interval(
+  "distribution rank recompute",
+  { minutes: 1 },
+  internal.jobs.rank.distributionRecompute,
+  {},
+);
+crons.interval(
+  "exploration refresh",
+  { minutes: 5 },
+  internal.jobs.explore.explorationRefresh,
+  {},
+);
+crons.interval(
+  "vibing compute",
+  { minutes: 5 },
+  internal.jobs.vibing.vibingCompute,
+  {},
+);
+crons.interval(
+  "card summaries refresh",
+  { minutes: 5 },
+  internal.cards.refreshCards,
+  {},
+);
+crons.interval(
+  "hero stale auto-fill",
+  { hours: 1 },
+  internal.cards.heroStaleFill,
+  {},
+);
