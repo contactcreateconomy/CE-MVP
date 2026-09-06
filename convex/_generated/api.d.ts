@@ -50,6 +50,8 @@ import type * as http from "../http.js";
 import type * as ingest_extract from "../ingest/extract.js";
 import type * as ingest_pollers from "../ingest/pollers.js";
 import type * as ingest_pollersData from "../ingest/pollersData.js";
+import type * as jobs_infer from "../jobs/infer.js";
+import type * as jobs_rank from "../jobs/rank.js";
 import type * as legalContent from "../legalContent.js";
 import type * as legalContentSeed from "../legalContentSeed.js";
 import type * as lib_audit from "../lib/audit.js";
@@ -130,6 +132,8 @@ declare const fullApi: ApiFromModules<{
   "ingest/extract": typeof ingest_extract;
   "ingest/pollers": typeof ingest_pollers;
   "ingest/pollersData": typeof ingest_pollersData;
+  "jobs/infer": typeof jobs_infer;
+  "jobs/rank": typeof jobs_rank;
   legalContent: typeof legalContent;
   legalContentSeed: typeof legalContentSeed;
   "lib/audit": typeof lib_audit;

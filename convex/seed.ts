@@ -61,6 +61,13 @@ const REGISTRY_ROWS = [
   // SLICE-P5-02 (CAP-152): posts/hour rolling-limit N — register-unnamed,
   // flagged default 10 (mirrors the literal in lib/rateLimit.ts).
   { key: "member.posts.perHour", module: "m7", valueType: "number" as const, default: 10, min: 1, max: 1000, editTier: "tier2" as const, blastRadius: "Composer rate window (CAP-152; tier-independent).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  // SLICE-P5-04 (DECISIONS-LOCKED #11): rank/score constants — versioned
+  // config defaults tagged calibration_pending; real calibration post-beta
+  // is Readiness Category 8. The jobs read these with safe fallbacks.
+  { key: "rank.best.priorWeight", module: "m6", valueType: "number" as const, default: 5, min: 0.1, max: 100, editTier: "tier2" as const, blastRadius: "Best-sort Bayesian damping weight (calibration_pending.v1).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "rank.best.priorMean", module: "m6", valueType: "number" as const, default: 0.3, min: 0, max: 1, editTier: "tier2" as const, blastRadius: "Best-sort prior mean positive rate (calibration_pending.v1).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "rank.best.minCategorySamples", module: "m6", valueType: "number" as const, default: 10, min: 1, max: 1000, editTier: "tier2" as const, blastRadius: "Category-scoped prior minimum samples (calibration_pending.v1).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "rank.live.halfLifeHours", module: "m6", valueType: "number" as const, default: 6, min: 0.5, max: 168, editTier: "tier2" as const, blastRadius: "Live-sort time-decay gravity half-life (calibration_pending.v1).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   // permission keys (M1 §6 "Seeds: … permission keys") — read by future authz
   { key: "media.upload.maxBytes", module: "m1", valueType: "number" as const, default: 5242880, min: 1024, max: 104857600, editTier: "tier1" as const, blastRadius: "Maximum upload size for avatars and media.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   // SLICE-P4-03: CAP-534's Admin-Config flag (row owned by convex/tags.ts)
@@ -78,6 +85,63 @@ const REGISTRY_ROWS = [
 // the rows must exist in the deployment before the surfaces run. Idempotent
 // by eventName.
 const EVENT_CATALOG_ROWS = [SIGNUP_EVENT_CATALOG_ROW, WAITLIST_EVENT_CATALOG_ROW, ...COMMENT_EVENT_CATALOG_ROWS];
+
+// SLICE-P5-04: the three M6 rank-engine jobs (CAP-129/130/145) registered
+// in the P1-04 catalog (internalFunctionKey doubles as the execution
+// allowlist). Cadence lives in crons.ts.
+const JOB_CATALOG_ROWS = [
+  {
+    jobKey: "m6.rank.recompute",
+    ownerModule: "m6",
+    kind: "cron_mutation" as const,
+    internalFunctionKey: "jobs/rank:recomputeDirtyBatch",
+    executionAuthority: "system" as const,
+    timeoutMs: 30_000,
+    retryClass: "mutation_native" as const,
+    maxAttempts: 3,
+    backoffSeconds: [10, 60],
+    idempotencyScope: "runKey",
+    importance: "high",
+    healthFreshnessSeconds: 300,
+    deadLetterAfterSeconds: 3_600,
+    status: "active" as const,
+    catalogVersion: 1,
+  },
+  {
+    jobKey: "m6.rank.decay",
+    ownerModule: "m6",
+    kind: "cron_mutation" as const,
+    internalFunctionKey: "jobs/rank:decayLiveScores",
+    executionAuthority: "system" as const,
+    timeoutMs: 30_000,
+    retryClass: "mutation_native" as const,
+    maxAttempts: 3,
+    backoffSeconds: [10, 60],
+    idempotencyScope: "runKey",
+    importance: "medium",
+    healthFreshnessSeconds: 1_800,
+    deadLetterAfterSeconds: 10_800,
+    status: "active" as const,
+    catalogVersion: 1,
+  },
+  {
+    jobKey: "m6.infer.batch",
+    ownerModule: "m6",
+    kind: "cron_mutation" as const,
+    internalFunctionKey: "jobs/infer:inferBatch",
+    executionAuthority: "system" as const,
+    timeoutMs: 60_000,
+    retryClass: "mutation_native" as const,
+    maxAttempts: 3,
+    backoffSeconds: [60, 300],
+    idempotencyScope: "runKey",
+    importance: "low",
+    healthFreshnessSeconds: 172_800,
+    deadLetterAfterSeconds: 604_800,
+    status: "active" as const,
+    catalogVersion: 1,
+  },
+];
 
 export const bootstrap = internalMutation({
   args: {},
@@ -220,6 +284,20 @@ export const bootstrap = internalMutation({
       } else {
         result.push(`interestTaxonomy:${def.slug}: skipped`);
       }
+    }
+
+    // 7. jobCatalog (SLICE-P5-04) — the M6 rank-engine jobs, idempotent by jobKey
+    for (const row of JOB_CATALOG_ROWS) {
+      const existing = await ctx.db
+        .query("jobCatalog")
+        .withIndex("by_jobKey", (q: any) => q.eq("jobKey", row.jobKey))
+        .unique();
+      if (existing) {
+        result.push(`jobCatalog:${row.jobKey}: skipped`);
+        continue;
+      }
+      await ctx.db.insert("jobCatalog", { ...row, jitterPct: 20 });
+      result.push(`jobCatalog:${row.jobKey}: seeded`);
     }
 
     // R-FOUNDER boundary: no users, no roleAssignments, no founder grants —

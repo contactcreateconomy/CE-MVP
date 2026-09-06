@@ -58,3 +58,27 @@ crons.interval(
   internal.editorial.publish.sweepScheduled,
   {},
 );
+
+// SLICE-P5-04 (CAP-129/130/145): the M6 rank engine. The register's ~3s
+// recompute cadence is unattainable on Convex crons (1/min floor) — every
+// minute, flagged deviation; the clear-first lease keeps overlap-safe
+// semantics regardless of cadence. Decay = liveScore only (CAP-130).
+// Inference batch runs pre-dawn (CAP-145 "never blocks").
+crons.interval(
+  "rank recompute dirty batch",
+  { minutes: 1 },
+  internal.jobs.rank.recomputeDirtyBatch,
+  {},
+);
+crons.interval(
+  "rank decay live scores",
+  { minutes: 5 },
+  internal.jobs.rank.decayLiveScores,
+  {},
+);
+crons.cron(
+  "inference batch",
+  "15 4 * * *",
+  internal.jobs.infer.inferBatch,
+  {},
+);
