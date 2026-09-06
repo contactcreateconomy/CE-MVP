@@ -10,6 +10,7 @@
 
 import type * as activity from "../activity.js";
 import type * as admin_audit from "../admin/audit.js";
+import type * as admin_curation from "../admin/curation.js";
 import type * as admin_roles from "../admin/roles.js";
 import type * as admin_shell from "../admin/shell.js";
 import type * as admin_stop from "../admin/stop.js";
@@ -88,6 +89,7 @@ import type * as qualify_rules from "../qualify/rules.js";
 import type * as qualify_similarity from "../qualify/similarity.js";
 import type * as reactions from "../reactions.js";
 import type * as rulebook from "../rulebook.js";
+import type * as search from "../search.js";
 import type * as seed from "../seed.js";
 import type * as setup from "../setup.js";
 import type * as sources from "../sources.js";
@@ -107,6 +109,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   activity: typeof activity;
   "admin/audit": typeof admin_audit;
+  "admin/curation": typeof admin_curation;
   "admin/roles": typeof admin_roles;
   "admin/shell": typeof admin_shell;
   "admin/stop": typeof admin_stop;
@@ -185,6 +188,7 @@ declare const fullApi: ApiFromModules<{
   "qualify/similarity": typeof qualify_similarity;
   reactions: typeof reactions;
   rulebook: typeof rulebook;
+  search: typeof search;
   seed: typeof seed;
   setup: typeof setup;
   sources: typeof sources;
