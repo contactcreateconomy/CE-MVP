@@ -22,7 +22,8 @@
  *   does NOT re-lock posting (OQ7 unstated → no invented re-lock).
  */
 
-import { mutation, query } from "./_generated/server";
+import { mutation, query, action, internalMutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
@@ -391,5 +392,120 @@ export const listInterestTiles = query({
     return tiles.sort((a: any, b: any) =>
       a.category === b.category ? a.label.localeCompare(b.label) : a.category.localeCompare(b.category),
     );
+  },
+});
+
+/* ── CAP-551 mobile OTP (DECISIONS-LOCKED #1: Twilio Verify) ──────────
+ * "send/verify/expire/retry via Twilio API; no custom OTP logic; no
+ * provider abstraction." REST via fetch (actions) — no SDK dependency.
+ * FAIL-CLOSED on missing TWILIO_* env (gate G6): the mutations throw
+ * `mobile_otp.not_configured` until the founder sets the env — the
+ * CAP-141 comment gate then holds at mobile_unverified. Correct posture.
+ * Writes (quoted): users.mobileVerified=true + mobileVerifiedAt;
+ * privateUserData.mobileNumber (never on the public row — CAP-002 split). */
+
+interface TwilioVerifyConfig {
+  accountSid: string;
+  authToken: string;
+  serviceSid: string;
+}
+
+function twilioConfig(): TwilioVerifyConfig | null {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
+  if (!accountSid || !authToken || !serviceSid) return null;
+  return { accountSid, authToken, serviceSid };
+}
+
+async function twilioVerifyCall(
+  config: TwilioVerifyConfig,
+  path: string,
+  params: Record<string, string>,
+): Promise<{ ok: boolean; status?: string }> {
+  try {
+    const response = await fetch(
+      `https://verify.twilio.com/v2/Services/${config.serviceSid}/${path}`,
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+          authorization: `Basic ${Buffer.from(`${config.accountSid}:${config.authToken}`).toString("base64")}`,
+        },
+        body: new URLSearchParams(params).toString(),
+      },
+    );
+    if (!response.ok) return { ok: false };
+    const result = (await response.json()) as { status?: string; valid?: boolean };
+    return { ok: true, status: result.status };
+  } catch {
+    return { ok: false };
+  }
+}
+
+/** CAP-551 send — start a Twilio Verify SMS challenge (Twilio owns
+ *  expiry/retry; no OTP code ever touches our backend). */
+export const mobileSendOtp = action({
+  args: { mobileNumber: v.string() },
+  returns: v.object({ sent: v.boolean(), notConfigured: v.optional(v.boolean()) }),
+  handler: async (ctx, args) => {
+    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
+    if (!userId) throw new Error("mobile.sendOtp: authentication required");
+    const config = twilioConfig();
+    if (!config) return { sent: false, notConfigured: true };
+    const result = await twilioVerifyCall(config, "Verifications", {
+      To: args.mobileNumber,
+      Channel: "sms",
+    });
+    if (!result.ok) throw new Error("mobile.sendOtp: Twilio Verify rejected the request");
+    return { sent: true };
+  },
+});
+
+/** CAP-551 verify — check the code; on approval persist the two writes. */
+export const mobileVerify = action({
+  args: { mobileNumber: v.string(), code: v.string() },
+  returns: v.object({ verified: v.boolean(), notConfigured: v.optional(v.boolean()) }),
+  handler: async (ctx, args) => {
+    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
+    if (!userId) throw new Error("mobile.verify: authentication required");
+    const config = twilioConfig();
+    if (!config) return { verified: false, notConfigured: true };
+    const result = await twilioVerifyCall(config, "VerificationCheck", {
+      To: args.mobileNumber,
+      Code: args.code,
+    });
+    if (!result.ok || result.status !== "approved") {
+      return { verified: false };
+    }
+    await ctx.runMutation(internal.setup.mobileVerifyPersist, {
+      userId,
+      mobileNumber: args.mobileNumber,
+    });
+    return { verified: true };
+  },
+});
+
+/** The CAP-551 writes, transactional: public flag + private number split. */
+export const mobileVerifyPersist = internalMutation({
+  args: { userId: v.id("users"), mobileNumber: v.string() },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.userId, {
+      mobileVerified: true,
+      mobileVerifiedAt: Date.now(),
+    });
+    const existing = await ctx.db
+      .query("privateUserData")
+      .withIndex("by_user", (q: any) => q.eq("userId", args.userId))
+      .unique();
+    if (existing) {
+      await ctx.db.patch(existing._id, { mobileNumber: args.mobileNumber });
+    } else {
+      await ctx.db.insert("privateUserData", {
+        userId: args.userId,
+        mobileNumber: args.mobileNumber,
+      });
+    }
   },
 });

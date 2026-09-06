@@ -17,6 +17,7 @@ import { RULEBOOK_REGISTRY_ROWS } from "./rulebook";
 import { SIGNUP_EVENT_CATALOG_ROW } from "./bootstrap";
 import { WAITLIST_EVENT_CATALOG_ROW } from "./waitlist";
 import { INTEREST_TILE_DEFS, INTEREST_TAXONOMY_VERSION } from "./setup";
+import { COMMENT_EVENT_CATALOG_ROWS } from "./comments";
 
 // Bible l.86 (quoted): "All 10 types admin-toggleable. 8 ship `active`;
 // `launch_pad`,`gigs` ship `locked` (flip at ~1000 DAU = admin action, not
@@ -57,6 +58,9 @@ const REGISTRY_ROWS = [
   // when missing; empty default rejects all hosts until an administrator
   // populates it (the correct pre-configuration posture).
   { key: "showcase.allowedDomains", module: "m4", valueType: "json" as const, default: [], editTier: "tier2" as const, blastRadius: "Which hosts a showcase projectUrl may point at.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  // SLICE-P5-02 (CAP-152): posts/hour rolling-limit N — register-unnamed,
+  // flagged default 10 (mirrors the literal in lib/rateLimit.ts).
+  { key: "member.posts.perHour", module: "m7", valueType: "number" as const, default: 10, min: 1, max: 1000, editTier: "tier2" as const, blastRadius: "Composer rate window (CAP-152; tier-independent).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   // permission keys (M1 §6 "Seeds: … permission keys") — read by future authz
   { key: "media.upload.maxBytes", module: "m1", valueType: "number" as const, default: 5242880, min: 1024, max: 104857600, editTier: "tier1" as const, blastRadius: "Maximum upload size for avatars and media.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   // SLICE-P4-03: CAP-534's Admin-Config flag (row owned by convex/tags.ts)
@@ -73,7 +77,7 @@ const REGISTRY_ROWS = [
 // catalog row is missing (fail-closed rolls back the domain mutation), so
 // the rows must exist in the deployment before the surfaces run. Idempotent
 // by eventName.
-const EVENT_CATALOG_ROWS = [SIGNUP_EVENT_CATALOG_ROW, WAITLIST_EVENT_CATALOG_ROW];
+const EVENT_CATALOG_ROWS = [SIGNUP_EVENT_CATALOG_ROW, WAITLIST_EVENT_CATALOG_ROW, ...COMMENT_EVENT_CATALOG_ROWS];
 
 export const bootstrap = internalMutation({
   args: {},

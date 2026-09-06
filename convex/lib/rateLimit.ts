@@ -48,6 +48,11 @@ export const RATE_LIMITS: Record<string, RateLimit[]> = {
   ],
   // CAP-013: "5 / 1h per user"
   "media.upload": [{ name: "media.upload", max: 5, periodMs: 60 * 60_000, subject: "user" }],
+  // CAP-152 (SLICE-P5-02): "N posts/hour, tier-independent. O(1) rolling
+  // counter, compute-at-write." N is register-unnamed — 10/h is a FLAGGED
+  // default, documented as the configKeyRegistry row member.posts.perHour
+  // (change = registry edit + this literal; never a silent tune).
+  "member.posts.hour": [{ name: "member.posts.hour", max: 10, periodMs: 60 * 60_000, subject: "user" }],
 };
 
 /** Typed rejection — consumers see this shape, never a silent pass. */

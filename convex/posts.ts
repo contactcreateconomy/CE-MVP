@@ -13,9 +13,15 @@
 
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertCustomerCapability } from "./lib/authz";
 import { writeAudited, newCorrelationId } from "./lib/audit";
+import { checkRateLimit } from "./lib/rateLimit";
+import { checkPostEligibility } from "./eligibility";
+import { classifySafety } from "./lib/classifier";
+import { captureEvent } from "./lib/events";
+import { appendActivity } from "./activity";
 
 // ── R-URL pattern (CAP-087): https?://, www., bare domain.tld, obfuscation ──
 const URL_PATTERNS = [
@@ -79,6 +85,14 @@ export const createPost = mutation({
     // Draft or publish
     asDraft: v.optional(v.boolean()),
   },
+  returns: v.object({
+    postId: v.optional(v.id("posts")),
+    lifecycleStatus: v.string(),
+    moderationStatus: v.string(),
+    preservedAsDraft: v.boolean(),
+    missingBasic: v.array(v.string()),
+    rejectionReasons: v.array(v.string()),
+  }),
   handler: async (ctx, args) => {
     // R-GATE: assertCustomerCapability with the create_post key
     await assertCustomerCapability(ctx, "create_post");
@@ -101,9 +115,64 @@ export const createPost = mutation({
     const userId = await getAuthUserId(ctx) as any;
     if (!userId) throw new Error("posts.create: authentication required");
 
-    const lifecycleStatus = args.asDraft ? "draft" : "ready";
+    // ── SLICE-P5-02: the composer-boundary gate chain (CAP-140/152/153/154)
+    // — the gates P4-02 stubbed. Drafts bypass: one draft state, three
+    // entry triggers (CAP-531/CAP-140/CAP-153 all land lifecycleStatus=draft).
+    const publishing = !args.asDraft;
+    let preservedAsDraft = false;
+    const missingBasic: string[] = [];
+    const rejectionReasons: string[] = [];
 
-    return await writeAudited(ctx, async (actx) => {
+    if (publishing) {
+      // CAP-152 — "N posts/hour, tier-independent. O(1) rolling counter,
+      // compute-at-write" (rate-limiter fixed window; N config-documented).
+      await checkRateLimit(ctx, "member.posts.hour", { kind: "user", value: userId });
+
+      // CAP-140 — post-path eligibility; incomplete → PRESERVE the draft +
+      // return the missing basic decisions (quoted outcome, not a rejection)
+      const eligibility = await checkPostEligibility(ctx, userId);
+      if (!eligibility.eligible) {
+        preservedAsDraft = true;
+        missingBasic.push(...eligibility.missing);
+      }
+
+      // CAP-153 — deterministic pre-publish checks (quoted class: "Body-
+      // length, no-user-URL, dup… repeated-title, nonsense, mention limits,
+      // required fields, velocity, account-state"). Implemented: length +
+      // exact dup vs the member's recent posts. Near-dup/nonsense/mention
+      // mechanics are register-unnamed — NOT invented (flagged).
+      if (args.title.trim().length === 0) rejectionReasons.push("title_required");
+      if (args.title.length > 300) rejectionReasons.push("title_too_long");
+      if (args.body.length > 50_000) rejectionReasons.push("body_too_long");
+      if (!preservedAsDraft && rejectionReasons.length === 0) {
+        const recent = await ctx.db
+          .query("posts")
+          .withIndex("by_author_type_authorUserId", (q: any) =>
+            q.eq("authorType", "user").eq("authorUserId", userId))
+          .order("desc")
+          .take(10);
+        if (recent.some((p: any) => p.title === args.title && p.body === args.body)) {
+          rejectionReasons.push("duplicate_post");
+        }
+      }
+    }
+
+    const lifecycleStatus =
+      publishing && !preservedAsDraft && rejectionReasons.length === 0 ? "ready" : "draft";
+
+    // CAP-154 — full safety moderation pre-publish (fail-closed): the
+    // classifier seam (G4) unavailable ⇒ pending hold + a case; unsafe ⇒
+    // held + a case; safe ⇒ passed. Drafts are not_required.
+    let moderationStatus: "not_required" | "passed" | "pending" | "held" = "not_required";
+    if (lifecycleStatus === "ready") {
+      const safety = await classifySafety(`${args.title}\n${args.body}`);
+      if (!safety.available) moderationStatus = "pending";
+      else if (safety.unsafe) moderationStatus = "held";
+      else moderationStatus = "passed";
+    }
+
+    let createdPostId: Id<"posts"> | undefined;
+    await writeAudited(ctx, async (actx) => {
       // 1. Insert the posts row
       const postId = await actx.db.insert("posts", {
         authorType: "user",
@@ -114,10 +183,30 @@ export const createPost = mutation({
         categoryId: args.categoryId,
         toolIds: args.toolIds ?? [],
         lifecycleStatus,
-        moderationStatus: lifecycleStatus === "draft" ? "not_required" : "pending",
+        moderationStatus,
         visibility: lifecycleStatus === "draft" ? "private" : "public",
         createdAt: Date.now(),
       });
+      createdPostId = postId;
+
+      // CAP-154 case rows for the hold outcomes (M13 owns disposition)
+      if (moderationStatus === "pending" || moderationStatus === "held") {
+        await actx.db.insert("moderationCases", {
+          caseType: "ugc_safety",
+          targetType: "post",
+          targetId: postId,
+          policyFamily: "quality_guidelines",
+          severity: moderationStatus === "held" ? "s2_medium" : "s3_low",
+          priority: moderationStatus === "held" ? 2 : 3,
+          status: "open",
+          reasonCode: moderationStatus === "held" ? "classifier_unsafe" : "classifier_unavailable",
+          policyVersion: "m7.v1",
+          reporterCountDistinct: 0,
+          reporterClusterCount: 0,
+          agingLevel: 0,
+          createdAt: Date.now(),
+        });
+      }
 
       // 2. Insert the matching extension row (transactional 1:1 — CAP-086)
       await insertExtensionRow(actx, postId, args);
@@ -128,16 +217,45 @@ export const createPost = mutation({
         changeType: "create", changedByUserId: userId, createdAt: Date.now(),
       });
 
+      // 4. CAP-570 call-site: post_published Journal append at the member
+      //    publish attempt (meta tagged; feed surfacing is the feed slice's
+      //    concern — the member's action is recorded here)
+      if (lifecycleStatus === "ready") {
+        await appendActivity(actx, {
+          userId,
+          eventType: "post_published",
+          targetType: "post",
+          targetId: postId,
+          summary: `Published a ${args.type} post`,
+          meta: {
+            postType: { value: args.type, privacy: "safe_for_public" },
+            moderationStatus: { value: moderationStatus, privacy: "safe_for_public" },
+          },
+        });
+      }
+
       return {
         actorId: userId,
         action: "posts.create",
         target: `post:${postId}`,
         prev: null,
-        next: { type: args.type, lifecycleStatus },
+        next: { type: args.type, lifecycleStatus, moderationStatus },
         correlationId: newCorrelationId(),
         reversible: true,
       };
     });
+
+    // Domain result (CAP-140: "return missing basic decisions"; CAP-153:
+    // "UI: inline rejection reason" — the preserved-draft outcomes ride the
+    // same response, never a throw)
+    return {
+      postId: createdPostId,
+      lifecycleStatus,
+      moderationStatus,
+      preservedAsDraft,
+      missingBasic,
+      rejectionReasons,
+    };
   },
 });
 
@@ -327,6 +445,6 @@ export const listActiveTypes = query({
     return await ctx.db
       .query("postTypeConfig")
       .filter((q: any) => q.eq(q.field("state"), "active"))
-      .collect();
+      .take(12); // bounded: 10 registry rows max (bible l.86)
   },
 });
