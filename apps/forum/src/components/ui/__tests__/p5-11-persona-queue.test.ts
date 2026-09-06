@@ -84,7 +84,7 @@ describe("SLICE-P5-11 — the queue mutations", () => {
   });
 
   it("queue list degrades to null for non-staff (never throws)", () => {
-    const fn = src.split("export const listQueue")[1] ?? "";
+    const fn = (src.split("export const listQueue")[1] ?? "").split("export const regen")[0];
     expect(fn).toContain("return null");
     expect(fn).not.toContain("throw new Error");
   });
