@@ -69,6 +69,9 @@ const REGISTRY_ROWS = [
   { key: "rank.best.priorMean", module: "m6", valueType: "number" as const, default: 0.3, min: 0, max: 1, editTier: "tier2" as const, blastRadius: "Best-sort prior mean positive rate (calibration_pending.v1).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   { key: "rank.best.minCategorySamples", module: "m6", valueType: "number" as const, default: 10, min: 1, max: 1000, editTier: "tier2" as const, blastRadius: "Category-scoped prior minimum samples (calibration_pending.v1).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   { key: "rank.live.halfLifeHours", module: "m6", valueType: "number" as const, default: 6, min: 0.5, max: 168, editTier: "tier2" as const, blastRadius: "Live-sort time-decay gravity half-life (calibration_pending.v1).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  // SLICE-P5-08 (CAP-168): persona weekly comment budget — register-unnamed,
+  // flagged default 10 (mirrors the literal in persona/generate.ts).
+  { key: "persona.cadence.weeklyBudget", module: "m8", valueType: "number" as const, default: 10, min: 1, max: 100, editTier: "tier2" as const, blastRadius: "Per-persona weekly generation budget (selectivity lever).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   // permission keys (M1 §6 "Seeds: … permission keys") — read by future authz
   { key: "media.upload.maxBytes", module: "m1", valueType: "number" as const, default: 5242880, min: 1024, max: 104857600, editTier: "tier1" as const, blastRadius: "Maximum upload size for avatars and media.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   // SLICE-P4-03: CAP-534's Admin-Config flag (row owned by convex/tags.ts)

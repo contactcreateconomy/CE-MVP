@@ -13,6 +13,45 @@ export interface GlmScore {
   evidence: string;
 }
 
+/** SLICE-P5-08: free-text generation for the persona engine (CAP-170) —
+ *  same seam, same fail-closed contract; forge/generation extend this,
+ *  never fork. */
+export async function glmGenerate(
+  ruleKey: string,
+  systemPrompt: string,
+  userPrompt: string,
+  opts?: { temperature?: number; maxTokens?: number },
+): Promise<string> {
+  const apiKey = process.env.GLM_API_KEY;
+  const baseUrl = process.env.GLM_API_BASE ?? "https://open.bigmodel.cn/api/paas/v4";
+  const model = process.env.GLM_MODEL ?? "glm-4";
+  if (!apiKey) {
+    throw new Error(`glm: GLM_API_KEY unset — ${ruleKey} cannot generate (dependency error, fail-closed)`);
+  }
+  const response = await fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      temperature: opts?.temperature ?? 0.7,
+      max_tokens: opts?.maxTokens ?? 600,
+    }),
+  });
+  if (!response.ok) {
+    throw new Error(`glm: provider error ${response.status} for ${ruleKey} (fail-closed)`);
+  }
+  const data = (await response.json()) as { choices?: { message?: { content?: string } }[] };
+  const content = data.choices?.[0]?.message?.content ?? "";
+  if (content.trim().length === 0) {
+    throw new Error(`glm: empty generation for ${ruleKey} (fail-closed)`);
+  }
+  return content.trim();
+}
+
 export async function glmScore(ruleKey: string, prompt: string): Promise<GlmScore> {
   const apiKey = process.env.GLM_API_KEY;
   const baseUrl = process.env.GLM_API_BASE ?? "https://open.bigmodel.cn/api/paas/v4";

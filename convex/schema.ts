@@ -1009,7 +1009,7 @@ export default defineSchema({
   posts: defineTable({
     authorType: v.union(v.literal("editorial"), v.literal("persona"), v.literal("user")),
     authorUserId: v.optional(v.id("users")),
-    authorPersonaId: v.optional(v.string()), // persona id (M8 table later)
+    authorPersonaId: v.optional(v.id("personas")), // M8 (P5-08) — tightened from the P4 string placeholder
     approvingUserId: v.optional(v.id("users")),
     responsiblePublisherUserId: v.optional(v.id("users")),
     editorialByline: v.optional(v.string()),
@@ -1279,7 +1279,7 @@ export default defineSchema({
     depth: v.union(v.literal(0), v.literal(1)),
     authorType: v.union(v.literal("editorial"), v.literal("persona"), v.literal("user")),
     authorUserId: v.optional(v.id("users")),
-    authorPersonaId: v.optional(v.string()), // persona id (M8 tables land P5-08)
+    authorPersonaId: v.optional(v.id("personas")), // M8 (P5-08) — tightened from the P5-01 string placeholder
     body: v.string(),
     authorIntent: v.optional(v.union(
       v.literal("question"), v.literal("answer"), v.literal("evidence"),
@@ -1573,6 +1573,256 @@ export default defineSchema({
   })
     .index("by_user_created", ["userId", "createdAt"])
     .index("by_user_type_created", ["userId", "eventType", "createdAt"]),
+
+  /* ── M8 persona spine (SLICE-P5-08; bible l.165, l.172-186) ─────────
+   * SEALED-field firewall (l.173/178, CAP-180 E-H): personas.systemPrompt
+   * + name + the full genome NEVER appear in public queries — projection
+   * allowlists live in persona/public.ts (P5-09). Admin genome reads are
+   * /admin/personas/genome (P5-12), Administrator-only. */
+
+  /** bible l.172 — identity + lifecycle. systemPrompt is COMPILED from
+   *  the genome (CAP-158) and SEALED; identityCharter is public copy but
+   *  NEVER fed into the generation prompt. Permanent AI label. */
+  personas: defineTable({
+    name: v.string(), // internal id — SEALED
+    displayName: v.string(),
+    avatarAssetId: v.optional(v.id("_storage")),
+    bio: v.string(), // one factual sentence — no fictional biography
+    identityCharter: v.string(), // purpose/lens/values/blind-spot — public
+    voice: v.string(),
+    domain: v.string(),
+    domainLevels: v.any(), // 0-3 per category
+    systemPrompt: v.optional(v.string()), // SEALED — compiled, never hand-written
+    genomeVersion: v.optional(v.number()),
+    humorLevel: v.union(v.literal("none"), v.literal("dry"), v.literal("light"), v.literal("sharp")),
+    sarcasmLevel: v.union(v.literal("none"), v.literal("mild"), v.literal("pointed")),
+    lifecycleStatus: v.union(
+      v.literal("draft"), v.literal("nascent"), v.literal("active"),
+      v.literal("waning"), v.literal("retired"),
+    ),
+    paused: v.boolean(),
+    pauseReason: v.optional(v.string()),
+    createdByUserId: v.id("users"),
+    approvedByUserId: v.optional(v.id("users")),
+    activatedAt: v.optional(v.number()),
+    waningAt: v.optional(v.number()),
+    retiredAt: v.optional(v.number()),
+    retirementReason: v.optional(v.string()),
+    revivedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_lifecycleStatus", ["lifecycleStatus"])
+    .index("by_name", ["name"]),
+
+  /** bible l.174 — DEC-A07 consistency substrate; position-ledger source. */
+  personaEngagements: defineTable({
+    personaId: v.id("personas"),
+    postId: v.id("posts"),
+    commentId: v.optional(v.id("comments")),
+    stanceSummary: v.string(),
+    stanceEmbedding: v.optional(v.array(v.float64())),
+    contributionIntent: v.string(),
+    isFollowUp: v.boolean(),
+    isEvolution: v.boolean(),
+    threadRevision: v.optional(v.number()),
+    relevanceScore: v.optional(v.number()),
+    qualityScore: v.optional(v.number()),
+    publishedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_personaId", ["personaId"])
+    .index("by_postId", ["postId"]),
+
+  /** bible l.177 — the config back-door: templates + per-persona
+   *  instances. SEALED IN FULL for public queries (l.178). */
+  personaGenomes: defineTable({
+    personaId: v.optional(v.id("personas")),
+    version: v.number(),
+    scope: v.union(v.literal("template"), v.literal("instance")),
+    analyticalLens: v.string(),
+    secondaryLenses: v.array(v.string()),
+    disagreementStyle: v.string(),
+    confidenceCalibration: v.string(),
+    register: v.string(),
+    verbosity: v.string(),
+    domainLevels: v.any(),
+    evidencePosture: v.string(),
+    rankedValues: v.array(v.string()), // exactly 3
+    triggerConditions: v.array(v.string()),
+    signatureMoves: v.array(v.string()), // ≤2
+    contributionArchetypes: v.array(v.string()),
+    humorLevel: v.string(),
+    sarcasmLevel: v.string(),
+    blindSpot: v.string(),
+    counterweight: v.string(),
+    abstentionTopics: v.array(v.string()),
+    prohibitedOverreach: v.string(),
+    embedding: v.optional(v.array(v.float64())), // diversity check
+    createdByUserId: v.id("users"),
+    createdAt: v.number(),
+  })
+    .index("by_personaId", ["personaId"])
+    .index("by_scope_version", ["scope", "version"]),
+
+  /** bible l.179 — position ledger (consistency). */
+  personaPositions: defineTable({
+    personaId: v.id("personas"),
+    topicKey: v.string(),
+    categoryId: v.optional(v.string()),
+    toolId: v.optional(v.string()),
+    positionSummary: v.string(),
+    stance: v.union(
+      v.literal("supportive"), v.literal("skeptical"), v.literal("neutral"),
+      v.literal("nuanced"), v.literal("reframed"),
+    ),
+    confidence: v.number(),
+    status: v.union(
+      v.literal("current"), v.literal("evolved"), v.literal("superseded"), v.literal("withdrawn"),
+    ),
+    supersedesPositionId: v.optional(v.id("personaPositions")),
+    sourceCommentId: v.optional(v.id("comments")),
+    firstExpressedAt: v.number(),
+    lastExpressedAt: v.number(),
+    expressionCount: v.number(),
+  })
+    .index("by_persona_topic", ["personaId", "topicKey"])
+    .index("by_persona_status", ["personaId", "status"]),
+
+  /** bible l.180 — memory retrieval HARD-scoped to one persona via the
+   *  vector index filter (cross-persona leakage prevention, INV-4).
+   *  Dimensions 1536 (openai-compatible embedding default — a config
+   *  choice; the embedding model is stamped per row). */
+  personaMemoryEmbeddings: defineTable({
+    personaId: v.id("personas"),
+    memoryType: v.union(v.literal("stance"), v.literal("position"), v.literal("comment")),
+    refId: v.string(),
+    contentText: v.string(),
+    embedding: v.array(v.float64()),
+    embeddingModel: v.string(),
+    createdAt: v.number(),
+  })
+    .vectorIndex("by_persona_embedding", {
+      vectorField: "embedding",
+      dimensions: 1536,
+      filterFields: ["personaId"], // INV-4 — HARD scope
+    })
+    .index("by_personaId", ["personaId"]), // keyword-scoped v1 retrieval (vector search activates with the embedding provider)
+
+  /** bible l.181 — voice-consistency centroid. */
+  personaStyleBaseline: defineTable({
+    personaId: v.id("personas"),
+    styleEmbedding: v.array(v.float64()),
+    sampleCommentIds: v.array(v.id("comments")),
+    lastRecomputedAt: v.number(),
+  }).index("by_personaId", ["personaId"]),
+
+  /** bible l.182 — lifecycle + budget + quality projection (rebuildable). */
+  personaCadenceState: defineTable({
+    personaId: v.id("personas"),
+    lifecycleStatus: v.string(),
+    weeklyBudget: v.number(),
+    weeklyUsed: v.number(),
+    weekResetAt: v.number(),
+    lastPublishedAt: v.optional(v.number()),
+    publishedLast24h: v.number(),
+    recentApprovalRate: v.number(),
+    recentRejectionReasons: v.array(v.string()),
+    lastDriftScore: v.optional(v.number()),
+    lastDriftCheckAt: v.optional(v.number()),
+    updatedAt: v.number(),
+  }).index("by_personaId", ["personaId"]),
+
+  /** bible l.165 — M8-owned drafts (regen/rejected kept separate from
+   *  published comments). genomeVersion snapshots at generation (in-flight
+   *  drafts insulated from later genome edits — CAP-547 contract §3). */
+  personaCommentDrafts: defineTable({
+    postId: v.id("posts"),
+    personaId: v.id("personas"),
+    contributionIntent: v.string(),
+    generationRunId: v.string(),
+    genomeVersion: v.number(),
+    memoryIds: v.array(v.string()),
+    positionIds: v.array(v.string()),
+    evaluationId: v.optional(v.id("personaCommentEvaluations")),
+    body: v.string(),
+    editedBody: v.optional(v.string()),
+    status: v.union(
+      v.literal("generated"), v.literal("edited"), v.literal("approved"),
+      v.literal("rejected"), v.literal("published"), v.literal("scheduled"),
+    ),
+    scheduledFor: v.optional(v.number()), // required when status=scheduled (CAP-175)
+    supersededByDraftId: v.optional(v.id("personaCommentDrafts")),
+    earliestPublishAt: v.optional(v.number()),
+    editedByUserId: v.optional(v.id("users")),
+    approvedByUserId: v.optional(v.id("users")),
+    publishedCommentId: v.optional(v.id("comments")),
+    createdAt: v.number(),
+  })
+    .index("by_post_persona", ["postId", "personaId"])
+    .index("by_status", ["status"])
+    .index("by_persona_status_created", ["personaId", "status", "createdAt"]),
+
+  /** bible l.183 — immutable quality run per draft. Hard-kill BEFORE
+   *  operator (INV-5); soft 0-5 advisory, never gates. */
+  personaCommentEvaluations: defineTable({
+    personaCommentDraftId: v.id("personaCommentDrafts"),
+    hardRuleResults: v.array(v.any()),
+    autoKilled: v.boolean(),
+    killReason: v.optional(v.string()),
+    softScores: v.object({
+      substance: v.number(), specificity: v.number(), advancesThread: v.number(),
+      voiceConsistency: v.number(), naturalness: v.number(),
+    }),
+    contributionType: v.string(),
+    hasClearPosition: v.boolean(),
+    claimsPersonalExperience: v.boolean(),
+    voiceDistance: v.optional(v.number()),
+    crossPersonaSimilarity: v.optional(v.number()),
+    generationRunId: v.string(),
+    createdAt: v.number(),
+  }).index("by_draft", ["personaCommentDraftId"]),
+
+  /** bible l.184 — append-only population audit. */
+  personaLifecycleEvents: defineTable({
+    personaId: v.id("personas"),
+    fromStatus: v.string(),
+    toStatus: v.string(),
+    eventType: v.union(
+      v.literal("birth"), v.literal("activation"), v.literal("waning"),
+      v.literal("retirement"), v.literal("pause"), v.literal("resume"), v.literal("revival"),
+    ),
+    reasonCode: v.string(),
+    evidence: v.any(),
+    triggeredBy: v.union(v.literal("system"), v.literal("operator"), v.literal("community")),
+    actedByUserId: v.optional(v.id("users")),
+    createdAt: v.number(),
+  }).index("by_persona_created", ["personaId", "createdAt"]),
+
+  /** bible l.185 — community revival demand (gated; tally SNAPSHOTTED at
+   *  operator approval — never auto-revive). Vote writes land in P5-09. */
+  personaRevivalVotes: defineTable({
+    retiredPersonaId: v.id("personas"),
+    userId: v.id("users"),
+    createdAt: v.number(),
+  })
+    .index("by_persona_user", ["retiredPersonaId", "userId"])
+    .index("by_persona", ["retiredPersonaId"]),
+
+  /** bible l.186 — append-only genome audit (the back-door trail).
+   *  CAP-547 invalidation fires in the SAME transaction as every edit +
+   *  rollback (P5-12 — never split from the write path). */
+  personaGenomeEdits: defineTable({
+    personaId: v.optional(v.id("personas")),
+    genomeVersion: v.number(),
+    field: v.string(),
+    oldValue: v.any(),
+    newValue: v.any(),
+    scope: v.union(v.literal("template"), v.literal("instance")),
+    adminId: v.id("users"),
+    previewFixtureRef: v.optional(v.string()), // CAP-548 writes this field
+    createdAt: v.number(),
+  }).index("by_persona_version", ["personaId", "genomeVersion"]),
+
 
   /** bible l.77 — revision history. */
   postRevisions: defineTable({
