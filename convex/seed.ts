@@ -10,11 +10,13 @@
  */
 
 import { internalMutation } from "./_generated/server";
+import { v } from "convex/values";
 import { TAXONOMY_REGISTRY_ROW } from "./tags";
 import { AUTOFLAG_REGISTRY_ROWS } from "./toolRatings";
 import { RULEBOOK_REGISTRY_ROWS } from "./rulebook";
 import { SIGNUP_EVENT_CATALOG_ROW } from "./bootstrap";
 import { WAITLIST_EVENT_CATALOG_ROW } from "./waitlist";
+import { INTEREST_TILE_DEFS, INTEREST_TAXONOMY_VERSION } from "./setup";
 
 // Bible l.86 (quoted): "All 10 types admin-toggleable. 8 ship `active`;
 // `launch_pad`,`gigs` ship `locked` (flip at ~1000 DAU = admin action, not
@@ -75,6 +77,7 @@ const EVENT_CATALOG_ROWS = [SIGNUP_EVENT_CATALOG_ROW, WAITLIST_EVENT_CATALOG_ROW
 
 export const bootstrap = internalMutation({
   args: {},
+  returns: v.array(v.string()),
   handler: async (ctx) => {
     const result: string[] = [];
 
@@ -172,6 +175,47 @@ export const bootstrap = internalMutation({
       }
       await ctx.db.insert("eventCatalog", { ...row });
       result.push(`eventCatalog:${row.eventName}: seeded`);
+    }
+
+    // 6. interestTaxonomy (SLICE-P5-05) — tiles derive from the post-type /
+    //    DEC-C01 registries (bible l.64 derivation note; contract OQ4: no
+    //    CAP seeds these). Two idempotent steps: tags by slug (tagType
+    //    "interest"), then interestTaxonomy by tagId. No new systemConfig
+    //    key is invented — CAP-389 admin-disable flips isActive (Phase 7).
+    for (const def of INTEREST_TILE_DEFS) {
+      let tag = await ctx.db
+        .query("tags")
+        .withIndex("by_slug", (q: any) => q.eq("slug", def.slug))
+        .unique();
+      if (!tag) {
+        const tagId = await ctx.db.insert("tags", {
+          slug: def.slug,
+          name: def.name,
+          tagType: "interest",
+          sortOrder: INTEREST_TILE_DEFS.findIndex((d) => d.slug === def.slug),
+          status: "active",
+        });
+        tag = await ctx.db.get(tagId);
+        result.push(`tags:${def.slug}: seeded`);
+      } else {
+        result.push(`tags:${def.slug}: skipped`);
+      }
+      const tile = await ctx.db
+        .query("interestTaxonomy")
+        .withIndex("by_tagId", (q: any) => q.eq("tagId", tag!._id))
+        .unique();
+      if (!tile) {
+        await ctx.db.insert("interestTaxonomy", {
+          tagId: tag!._id,
+          label: def.name,
+          category: def.category,
+          taxonomyVersion: INTEREST_TAXONOMY_VERSION,
+          isActive: true,
+        });
+        result.push(`interestTaxonomy:${def.slug}: seeded`);
+      } else {
+        result.push(`interestTaxonomy:${def.slug}: skipped`);
+      }
     }
 
     // R-FOUNDER boundary: no users, no roleAssignments, no founder grants —

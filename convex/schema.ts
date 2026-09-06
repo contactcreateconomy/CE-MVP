@@ -1415,6 +1415,165 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_postType_featureKey", ["postType", "featureKey"]),
 
+  /* ── M7 profile & onboarding (SLICE-P5-05; bible l.58-67, l.230-231) ──
+   * users already carries the M7 eligibility block (P1-01b). trustHistory
+   * (l.65) is M12-reputation-owned (Phase 7) — deliberately NOT defined
+   * here. CAP-551 mobile OTP stays fenced on TWILIO_* env (G6): the
+   * users.mobileVerified read path exists; the OTP writer is not built. */
+
+  /** bible l.58 — the common/stable profile layer. firstTapOrder = tap
+   *  salience, CANNOT be backfilled (append-only order). toolsUsed is a
+   *  direct tool-affinity attribute — never a financial proxy (no
+   *  income/spend derived). Feeds Recognition only (DEC-SIGNAL-FIREWALL). */
+  profiles: defineTable({
+    userId: v.id("users"),
+    roleArchetype: v.optional(v.union(
+      v.literal("solo_creator"), v.literal("small_team"),
+      v.literal("agency"), v.literal("exploring"), v.literal("prefer_not_to_say"),
+    )),
+    ageBand: v.optional(v.string()), // banded, optional; Phase-2 additions NOT here
+    toolsUsed: v.array(v.string()), // M5 tool ids
+    firstTapOrder: v.array(v.id("tags")), // ordered interest taps — salience
+    consentFlags: v.object({
+      interestsPersonalization: v.boolean(),
+      demographicsPersonalization: v.boolean(),
+      behavioralInference: v.boolean(),
+      publicProfileVisibility: v.boolean(),
+    }),
+    completionVersion: v.number(),
+    extendedData: v.optional(v.any()),
+    profileVersion: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_user", ["userId"]),
+
+  /** bible l.59 — versioned, consent-bound structured declarations.
+   *  "prefer not to say" MUST stay distinguishable from "never asked". */
+  userProfileAttributes: defineTable({
+    userId: v.id("users"),
+    attributeType: v.string(),
+    value: v.any(),
+    valueVersion: v.number(),
+    visibility: v.string(),
+    consentStatus: v.string(),
+    providedAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  }).index("by_user_type", ["userId", "attributeType"]),
+
+  /** bible l.60 — direct selections always priority; inferred fills gaps. */
+  userInterests: defineTable({
+    userId: v.id("users"),
+    tagId: v.id("tags"),
+    source: v.union(v.literal("direct"), v.literal("inferred"), v.literal("both")),
+    affinityScore: v.number(),
+    status: v.string(),
+    firstObservedAt: v.number(),
+    lastObservedAt: v.number(),
+    confirmedAt: v.optional(v.number()),
+    removedAt: v.optional(v.number()),
+  })
+    .index("by_user_tag", ["userId", "tagId"])
+    .index("by_user_source", ["userId", "source"]),
+
+  /** bible l.61 — system estimates kept SEPARATE from self-declared truth.
+   *  Allowed: topic/post-type/tool-category affinity, engagement archetype,
+   *  expertise. PROHIBITED: age/gender/income/revenue/purchasing-power/
+   *  employment/sensitive identity (enforced by the P5-04 inference job). */
+  userInferences: defineTable({
+    userId: v.id("users"),
+    inferenceType: v.string(),
+    value: v.any(),
+    confidence: v.number(),
+    evidenceWindowStart: v.number(),
+    evidenceWindowEnd: v.number(),
+    modelOrRuleVersion: v.string(),
+    status: v.string(),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  }).index("by_user_type_status", ["userId", "inferenceType", "status"]),
+
+  /** bible l.62 — Phase-1 = stored handles only; no fetch without explicit
+   *  OAuth + disclosure + revocation. No tokens here, ever. */
+  userSocialAccounts: defineTable({
+    userId: v.id("users"),
+    platform: v.string(),
+    handle: v.string(),
+    profileUrl: v.string(),
+    verificationStatus: v.string(),
+    visibility: v.union(v.literal("private"), v.literal("public"), v.literal("future_marketplace_only")),
+    oauthConnectionId: v.optional(v.string()),
+    connectedAt: v.number(),
+    revokedAt: v.optional(v.number()),
+    deletedAt: v.optional(v.number()),
+  }).index("by_user_platform", ["userId", "platform"]),
+
+  /** bible l.63 — append-only; withdrawal overrides analytics/
+   *  personalization/marketplace/completion use. */
+  userConsentRecords: defineTable({
+    userId: v.id("users"),
+    purpose: v.string(),
+    policyVersion: v.string(),
+    status: v.string(),
+    collectionSurface: v.string(),
+    occurredAt: v.number(),
+    withdrawnAt: v.optional(v.number()),
+  }).index("by_user_purpose", ["userId", "purpose"]),
+
+  /** bible l.64 — versioned tiles derived from the post-type/M5 registry
+   *  so interests & post types share a taxonomy (seeder: SLICE-P5-05). */
+  interestTaxonomy: defineTable({
+    tagId: v.id("tags"),
+    label: v.string(),
+    iconAssetId: v.optional(v.id("_storage")),
+    category: v.string(),
+    taxonomyVersion: v.number(),
+    isActive: v.boolean(),
+  })
+    .index("by_tagId", ["tagId"])
+    .index("by_active_category", ["isActive", "category"]),
+
+  /** bible l.66 — append-only Recognition history. */
+  profileCompletionEvents: defineTable({
+    userId: v.id("users"),
+    completionVersion: v.number(),
+    badgeField: v.string(),
+    awarded: v.boolean(),
+    occurredAt: v.number(),
+  }).index("by_user", ["userId"]),
+
+  /** bible l.67 — append-only CAP-140 state transitions. */
+  postingEligibilityEvents: defineTable({
+    userId: v.id("users"),
+    previousState: v.string(), // postingEligibilityState literal
+    nextState: v.string(),
+    reasonCode: v.string(),
+    triggerType: v.string(),
+    actorUserId: v.optional(v.id("users")),
+    occurredAt: v.number(),
+  }).index("by_user", ["userId"]),
+
+  /** bible l.231 — the Journal seed (B4-revised). Append-only; each meta
+   *  field MUST be tagged safe-for-public vs always-private (enforced by
+   *  the single shared writer, convex/activity.ts — CAP-570). Reputation
+   *  DERIVES from this ledger (Wave 4); private for all users now. */
+  activityLedger: defineTable({
+    userId: v.id("users"),
+    eventType: v.union(
+      v.literal("post_published"), v.literal("comment_created"),
+      v.literal("upvote_given"), v.literal("save_added"),
+      v.literal("resource_acquired"), v.literal("tier_unlocked"),
+    ), // v1 starter set, extensible — widen on registered v2 names
+    targetType: v.string(),
+    targetId: v.string(),
+    summary: v.string(), // human text
+    meta: v.any(), // Record<field, {value, privacy}> — tagged at write
+    visibility: v.union(v.literal("private"), v.literal("public")),
+    createdAt: v.number(),
+  })
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_user_type_created", ["userId", "eventType", "createdAt"]),
+
   /** bible l.77 — revision history. */
   postRevisions: defineTable({
     postId: v.id("posts"),
