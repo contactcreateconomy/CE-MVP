@@ -98,3 +98,13 @@ crons.cron(
   internal.persona.lifecycle.driftCheck,
   {},
 );
+
+// SLICE-P5-11 (CAP-175): due scheduled persona comments publish ONLY if
+// the persona is still active+unpaused — otherwise fail-closed hold +
+// queue alert (never force-publish).
+crons.interval(
+  "sweep due scheduled persona comments",
+  { minutes: 5 },
+  internal.persona.queue.sweepScheduled,
+  {},
+);

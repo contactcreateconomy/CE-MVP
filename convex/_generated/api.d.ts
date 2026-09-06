@@ -67,6 +67,7 @@ import type * as lib_urlGuards from "../lib/urlGuards.js";
 import type * as persona_generate from "../persona/generate.js";
 import type * as persona_lifecycle from "../persona/lifecycle.js";
 import type * as persona_public from "../persona/public.js";
+import type * as persona_queue from "../persona/queue.js";
 import type * as posts from "../posts.js";
 import type * as posts_debate from "../posts/debate.js";
 import type * as posts_detail from "../posts/detail.js";
@@ -156,6 +157,7 @@ declare const fullApi: ApiFromModules<{
   "persona/generate": typeof persona_generate;
   "persona/lifecycle": typeof persona_lifecycle;
   "persona/public": typeof persona_public;
+  "persona/queue": typeof persona_queue;
   posts: typeof posts;
   "posts/debate": typeof posts_debate;
   "posts/detail": typeof posts_detail;
