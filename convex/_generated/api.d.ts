@@ -71,6 +71,7 @@ import type * as posts_help from "../posts/help.js";
 import type * as posts_listItems from "../posts/listItems.js";
 import type * as posts_showcase from "../posts/showcase.js";
 import type * as profile from "../profile.js";
+import type * as profile_settings from "../profile/settings.js";
 import type * as qualify_orchestrator from "../qualify/orchestrator.js";
 import type * as qualify_rules from "../qualify/rules.js";
 import type * as qualify_similarity from "../qualify/similarity.js";
@@ -155,6 +156,7 @@ declare const fullApi: ApiFromModules<{
   "posts/listItems": typeof posts_listItems;
   "posts/showcase": typeof posts_showcase;
   profile: typeof profile;
+  "profile/settings": typeof profile_settings;
   "qualify/orchestrator": typeof qualify_orchestrator;
   "qualify/rules": typeof qualify_rules;
   "qualify/similarity": typeof qualify_similarity;
