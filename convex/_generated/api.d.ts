@@ -16,6 +16,8 @@ import type * as admin_resourcesLifecycle from "../admin/resourcesLifecycle.js";
 import type * as admin_roles from "../admin/roles.js";
 import type * as admin_shell from "../admin/shell.js";
 import type * as admin_stop from "../admin/stop.js";
+import type * as admin_store from "../admin/store.js";
+import type * as admin_storeValidate from "../admin/storeValidate.js";
 import type * as admin_widgetsCatalog from "../admin/widgetsCatalog.js";
 import type * as admission from "../admission.js";
 import type * as affiliateInventory from "../affiliateInventory.js";
@@ -122,6 +124,8 @@ declare const fullApi: ApiFromModules<{
   "admin/roles": typeof admin_roles;
   "admin/shell": typeof admin_shell;
   "admin/stop": typeof admin_stop;
+  "admin/store": typeof admin_store;
+  "admin/storeValidate": typeof admin_storeValidate;
   "admin/widgetsCatalog": typeof admin_widgetsCatalog;
   admission: typeof admission;
   affiliateInventory: typeof affiliateInventory;
