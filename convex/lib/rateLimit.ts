@@ -53,6 +53,9 @@ export const RATE_LIMITS: Record<string, RateLimit[]> = {
   // default, documented as the configKeyRegistry row member.posts.perHour
   // (change = registry edit + this literal; never a silent tune).
   "member.posts.hour": [{ name: "member.posts.hour", max: 10, periodMs: 60 * 60_000, subject: "user" }],
+  // CAP-176 (SLICE-P5-09): "rate-limited" with no literal — 5/day is a
+  // FLAGGED default per member (revival-vote integrity).
+  "revival.vote": [{ name: "revival.vote", max: 5, periodMs: 24 * 60 * 60_000, subject: "user" }],
 };
 
 /** Typed rejection — consumers see this shape, never a silent pass. */
