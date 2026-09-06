@@ -2321,6 +2321,9 @@ export default defineSchema({
     claims: v.string(),
     status: v.string(),
     currentVersionId: v.optional(v.id("storefrontProductVersions")),
+    // CAP-560 write target (register, quoted): "storefrontProducts (link to
+    // the shadow post's ID)" — set at approval by createShadowPost.
+    shadowPostId: v.optional(v.id("posts")),
     sortOrder: v.number(),
     createdAt: v.number(),
   })

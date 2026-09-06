@@ -50,6 +50,11 @@ import { signalNavigationStart } from "@/providers/navigation-progress-provider"
 import { MEMBER_COMPOSABLE_CATEGORY_KEYS, type Category, type CategoryKey } from "@/types";
 import { useAuth } from "@cemvp/auth-ui";
 import { isConvexConfigured } from "@cemvp/convex-client";
+import {
+  ComposerProductBlock,
+  productTokens,
+  type TaggedProduct,
+} from "@/components/new-post/composer-product-block";
 
 const categoryIconMap: Record<CategoryKey, ComponentType<{ className?: string; strokeWidth?: number }>> = {
   news: Newspaper,
@@ -133,6 +138,8 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
   const [categoryKey, setCategoryKey] = useState<CategoryKey>(defaultCategory);
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
+  // CAP-244 — tagged own approved products (≤5; structured token at publish)
+  const [taggedProducts, setTaggedProducts] = useState<TaggedProduct[]>([]);
   const [categoryFields, setCategoryFields] = useState<Record<string, unknown>>({});
   const [coverImage, setCoverImage] = useState<string | undefined>(undefined);
   const [toast, setToast] = useState<string | null>(null);
@@ -312,7 +319,9 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
       return;
     }
     const bodyHtml = editor?.getHTML().trim() ?? "";
-    const body = bodyHtml || `<p>${bodyText}</p>`;
+    // CAP-244 structured token — internal id only, never a raw URL
+    const tokens = productTokens(taggedProducts);
+    const body = `${bodyHtml || `<p>${bodyText}</p>`}${tokens ? `<p>${tokens}</p>` : ""}`;
     publishingRef.current = true;
     try {
       await createPost({
@@ -347,6 +356,7 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
     router,
     showToast,
     summary,
+    taggedProducts,
     title,
   ]);
 
@@ -536,6 +546,18 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
           })()}
         </div>
       )}
+
+      {/* CAP-244 - tag own approved store products (max 5; structured token) */}
+      <ComposerProductBlock
+        selected={taggedProducts}
+        onToggle={(product) =>
+          setTaggedProducts((prev) =>
+            prev.some((p) => p.productId === product.productId)
+              ? prev.filter((p) => p.productId !== product.productId)
+              : [...prev, product],
+          )
+        }
+      />
 
       {editor ? (
         <div

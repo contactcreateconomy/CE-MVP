@@ -168,6 +168,13 @@ crons.interval(
   {},
 );
 
+// SLICE-P6-18: settlement crons (qualification values only — a click is
+// never a verified conversion; Amazon excluded from reconcile).
+crons.interval("store click settle", { hours: 1 }, internal.store.public.clickSettle, {});
+crons.interval("store sales reconcile", { hours: 6 }, internal.store.public.salesReconcile, {});
+crons.interval("store analytics rollup", { hours: 6 }, internal.store.public.analyticsRollup, {});
+crons.interval("review conflict detect", { hours: 12 }, internal.store.public.conflictDetect, {});
+
 // SLICE-P6-11 (CAP-220): kill-gate evaluation — appends
 // pilotKillGateEvaluations ONLY (never flips the UGC flag; CAP-221 is
 // the Administrator-only switch).
