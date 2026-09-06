@@ -2015,6 +2015,199 @@ export default defineSchema({
     expiresAt: v.number(),
   }).index("by_sessionId", ["sessionId"]),
 
+  /* ── M10 resource store / Constellation (SLICE-P6-06; bible l.190-202) ─
+   * Soft beta: constellation.ugc.enabled=false — in-house/operator only;
+   * UGC tables dormant/forward-compatible. NO dmcaNotices table (absorbed
+   * by M13 legalIntake — Wave 6B E1; enforced by test). */
+
+  /** bible l.190 — private intake; NEVER public CDN. One→many forge only
+   *  for non-user_ugc source classes. */
+  resourceReferences: defineTable({
+    uploaderUserId: v.optional(v.id("users")),
+    sourceClass: v.union(
+      v.literal("user_ugc"), v.literal("in_house"), v.literal("operator"), v.literal("rights_verified"),
+    ),
+    originalFileHash: v.string(),
+    storageKeyQuarantine: v.string(),
+    mimeClaimed: v.string(),
+    magicBytesOk: v.boolean(),
+    sizeBytes: v.number(),
+    rightsBasis: v.optional(v.union(
+      v.literal("own"), v.literal("authorized"), v.literal("compatible_licence"), v.literal("public_domain"),
+    )),
+    compatibleLicenceKind: v.optional(v.string()),
+    status: v.union(
+      v.literal("uploading"), v.literal("quarantined"), v.literal("scanning"),
+      v.literal("rights_review"), v.literal("content_review"), v.literal("accepted_for_forge"),
+      v.literal("rejected"), v.literal("forge_consumed"), v.literal("legal_hold"), v.literal("deleted"),
+    ),
+    rejectionReason: v.optional(v.string()),
+    parseJobId: v.optional(v.string()),
+    createdAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_status", ["status"])
+    .index("by_uploader", ["uploaderUserId"]),
+
+  /** bible l.191 — append-only licence evidence. */
+  resourceReferenceGrants: defineTable({
+    referenceId: v.id("resourceReferences"),
+    grantVersion: v.number(),
+    termsHash: v.string(),
+    rightsBasis: v.string(),
+    licenceTextVersion: v.string(),
+    contributorUserId: v.optional(v.id("users")),
+    attestedAt: v.number(),
+    ipHash: v.optional(v.string()),
+    userAgentHash: v.optional(v.string()),
+  }).index("by_reference", ["referenceId"]),
+
+  /** bible l.192 — contribution weights; Σ ≤ 1.0 per resource, duplicates
+   *  0, order ≠ weight. Unique (resourceId, referenceId). */
+  resourceContributions: defineTable({
+    resourceId: v.id("resources"),
+    referenceId: v.id("resourceReferences"),
+    contributorUserId: v.optional(v.id("users")), // nullable after erasure detach
+    role: v.union(
+      v.literal("primary"), v.literal("supporting"), v.literal("duplicate"),
+      v.literal("independent"), v.literal("source_only"),
+    ),
+    weight: v.number(), // 0-1 — Σ enforced server-side in P6-10
+    weightVersion: v.number(),
+    isDuplicate: v.boolean(),
+    signalEligible: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_resource", ["resourceId"])
+    .index("by_resource_reference", ["resourceId", "referenceId"]),
+
+  /** bible l.193 — structured post↔resource token target (not body text). */
+  postResources: defineTable({
+    postId: v.id("posts"),
+    resourceId: v.id("resources"),
+    relationType: v.union(
+      v.literal("mentions"), v.literal("explains"), v.literal("compares"),
+      v.literal("uses"), v.literal("related"),
+    ),
+    sortOrder: v.number(),
+    createdAt: v.number(),
+  }).index("by_postId", ["postId"]),
+
+  /** bible l.194 — the library row. */
+  resources: defineTable({
+    title: v.string(),
+    slug: v.string(),
+    categoryIds: v.array(v.string()),
+    license: v.string(), // DEC-S20 OPEN until legal — terms pointer
+    status: v.union(
+      v.literal("draft"), v.literal("review"), v.literal("scheduled"), v.literal("published"),
+      v.literal("paused"), v.literal("under_legal_review"), v.literal("removed"), v.literal("archived"),
+    ),
+    forgeDisclosure: v.string(),
+    attributionLine: v.string(), // CAP-229 quoted line
+    releaseBatch: v.optional(v.string()),
+    releaseDate: v.optional(v.number()),
+    currentVersionId: v.optional(v.id("resourceVersions")),
+    createdAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_status", ["status"]),
+
+  /** bible l.195 — immutable version history; exactly one isCurrent when
+   *  published (enforced in P6-11). */
+  resourceVersions: defineTable({
+    resourceId: v.id("resources"),
+    versionNo: v.number(),
+    status: v.union(
+      v.literal("generating"), v.literal("validation_failed"), v.literal("editorial_review"),
+      v.literal("approved"), v.literal("current"), v.literal("superseded"),
+      v.literal("withdrawn"), v.literal("removed"),
+    ),
+    isCurrent: v.boolean(),
+    format: v.literal("pdf"), // launch consumer; docx intake only
+    fileAssetId: v.optional(v.id("_storage")), // clean bucket only
+    pageCount: v.optional(v.number()),
+    sizeBytes: v.number(),
+    contentFingerprint: v.string(),
+    artifactSafetyPassed: v.boolean(),
+    previewAssetId: v.optional(v.id("_storage")),
+    releaseNotes: v.string(),
+    publishedAt: v.optional(v.number()),
+    createdByUserId: v.id("users"),
+  })
+    .index("by_resource_version", ["resourceId", "versionNo"])
+    .index("by_resource_current", ["resourceId", "isCurrent"]),
+
+  /** bible l.196 — the QUOTA unit. View never creates a row; no type=view
+   *  (INV-6/DEC-S15). Unique (userId, resourceId). */
+  acquisitions: defineTable({
+    userId: v.id("users"),
+    resourceId: v.id("resources"),
+    acquiredAt: v.number(),
+    quotaDayKey: v.string(), // YYYY-MM-DD user-local (DEC-S19)
+    quotaWeekKey: v.string(), // ISO week Mon 00:00 user-local
+  })
+    .index("by_user_resource", ["userId", "resourceId"])
+    .index("by_user_day", ["userId", "quotaDayKey"]),
+
+  /** bible l.197 — downloads do NOT consume quota; feed M12 Signal. */
+  downloads: defineTable({
+    acquisitionId: v.id("acquisitions"),
+    userId: v.id("users"),
+    resourceId: v.id("resources"),
+    resourceVersionId: v.id("resourceVersions"),
+    downloadedAt: v.number(),
+    integrityClass: v.string(),
+  }).index("by_user_resource", ["userId", "resourceId"]),
+
+  /** bible l.198 — atomic with acquire; user-local windows (DEC-S19). */
+  resourceQuotaLedgers: defineTable({
+    userId: v.id("users"),
+    dayKey: v.string(),
+    weekKey: v.string(),
+    acquisitionsUsedDay: v.number(),
+    acquisitionsUsedWeek: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_day", ["userId", "dayKey"]),
+
+  /** bible l.200 — takedown execution trail (dmcaNotices ABSORBED into
+   *  legalIntake — the id here IS a legalIntake id). */
+  resourceTakedownActions: defineTable({
+    legalIntakeId: v.optional(v.id("legalIntake")),
+    targetType: v.string(),
+    targetId: v.string(),
+    action: v.union(v.literal("unpublish"), v.literal("legal_hold"), v.literal("remove")),
+    reasonCode: v.string(),
+    actorUserId: v.id("users"),
+    createdAt: v.number(),
+  }).index("by_target", ["targetType", "targetId"]),
+
+  /** bible l.201 — append-only kill-gate outcomes; CAP-220 writes ONLY
+   *  these rows (never flips the UGC flag — CAP-221 does, Administrator). */
+  pilotKillGateEvaluations: defineTable({
+    evaluatedAt: v.number(),
+    trigger: v.union(v.literal("refs_threshold"), v.literal("days_threshold")),
+    cohortBasis: v.string(),
+    outcome: v.union(v.literal("continue"), v.literal("ditch_recommend")),
+    metricsSnapshot: v.any(),
+    thresholdKeysUsed: v.array(v.string()),
+    configVersion: v.optional(v.string()),
+  }).index("by_evaluatedAt", ["evaluatedAt"]),
+
+  /** bible l.202 — cascade BFS review trail (≤5 hops). */
+  resourceCascadeReviews: defineTable({
+    rootTakedownId: v.id("resourceTakedownActions"),
+    nodeType: v.string(),
+    nodeId: v.string(),
+    hopDepth: v.number(),
+    disposition: v.string(),
+    reviewerUserId: v.optional(v.id("users")),
+    createdAt: v.number(),
+  }).index("by_root", ["rootTakedownId"]),
+
+
 
 
   /** bible l.77 — revision history. */
