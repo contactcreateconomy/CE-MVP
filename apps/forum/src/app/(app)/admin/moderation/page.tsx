@@ -14,6 +14,7 @@ import { useMutation, useQuery } from "convex/react";
 
 import { api } from "../../../../../../../convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
+import { formatRelativeDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { QueueBoard, type QueueCase } from "@/components/ui/queue-board";
@@ -43,7 +44,7 @@ export default function AdminModerationPage() {
       : c.severity === "s2_medium" ? "s2_medium"
       : "s3_low",
     statusLabel: c.leaseExpired ? `${c.status} (lease expired)` : c.status,
-    ageLabel: `${Math.max(0, Math.round((Date.now() - c.createdAt) / 60000))}m old · ${c.reporterCountDistinct} reporter(s)`,
+    ageLabel: `${formatRelativeDate(c.createdAt)} · ${c.reporterCountDistinct} reporter(s)`,
     agedOut: c.agingLevel >= 2,
     leaseExpired: Boolean(c.leaseExpired),
   }));

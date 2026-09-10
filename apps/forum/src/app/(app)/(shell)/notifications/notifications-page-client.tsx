@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- Convex boundary */
 "use client";
 
 import Link from "next/link";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { Bell } from "lucide-react";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -17,10 +18,14 @@ function NotificationsPageWithConvex({
   authStatus: AuthStatus;
   openAuthModal: (mode?: AuthMode) => void;
 }) {
+  // SLICE-P7T-01 (CAP-568): the CANONICAL list — recipient-private,
+  // newest-first; the legacy forum read is retired on this surface.
   const viewerNotifications = useQuery(
-    api.forum.queries.listNotificationsForViewer,
+    api.notifications.reads.list,
     authStatus === "authenticated" ? {} : "skip",
   );
+  const markRead = useMutation(api.notifications.reads.markRead);
+  const items = (viewerNotifications as any)?.page ?? [];
 
   if (authStatus !== "authenticated") {
     return (
@@ -60,33 +65,42 @@ function NotificationsPageWithConvex({
         </CardHeader>
 
         <CardContent className="space-y-2">
-          {viewerNotifications.map((notification: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-            const wrapperClass = notification.read
-              ? "rounded-md border border-(--border-default) bg-(--bg-surface) p-3"
-              : "rounded-md border border-(--border-active) bg-(--bg-overlay) p-3";
-
-            const content = (
-              <>
-                <p className="text-sm font-semibold text-(--text-primary)">{notification.title}</p>
-                <p className="mt-1 text-xs text-(--text-secondary)">{notification.message}</p>
-                <p className="mt-2 text-label-sm text-(--text-muted)">{formatRelativeDate(notification.createdAt)}</p>
-              </>
-            );
-
-            if (!notification.postSlug) {
+          {items.length === 0 ? (
+            <p className="py-6 text-center text-sm text-(--text-muted)">
+              You&apos;re all caught up — nothing new right now.
+            </p>
+          ) : (
+            items.map((notification: any) => {
+              const unread = !notification.readAt;
+              const wrapperClass = unread
+                ? "rounded-md border border-(--border-active) bg-(--bg-overlay) p-3"
+                : "rounded-md border border-(--border-default) bg-(--bg-surface) p-3";
+              const actors = notification.actorCount > 1 ? `${notification.actorCount} members` : "Someone";
+              const plural = notification.eventCount > 1 ? ` · ${notification.eventCount} events` : "";
               return (
                 <div key={notification.id} className={wrapperClass}>
-                  {content}
+                  <p className="text-sm font-semibold text-(--text-primary)">
+                    {notification.notificationType.replace(/_/g, " ")}
+                  </p>
+                  <p className="mt-1 text-xs text-(--text-secondary)">
+                    {actors}{plural}
+                  </p>
+                  <div className="mt-2 flex items-center justify-between">
+                    <p className="text-label-sm text-(--text-muted)">{formatRelativeDate(notification.createdAt)}</p>
+                    {unread ? (
+                      <button
+                        type="button"
+                        className="text-xs text-(--brand-primary) underline-offset-2 hover:underline"
+                        onClick={() => void markRead({ notificationId: notification.id })}
+                      >
+                        Mark read
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
               );
-            }
-
-            return (
-              <Link key={notification.id} href={`/discussions/${notification.postSlug}`} className={`${wrapperClass} block`}>
-                {content}
-              </Link>
-            );
-          })}
+            })
+          )}
         </CardContent>
       </Card>
     </section>

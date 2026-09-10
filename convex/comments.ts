@@ -36,6 +36,7 @@ import { checkNoUrls } from "./posts";
 import { checkCommentEligibility } from "./eligibility";
 import { appendActivity } from "./activity";
 import { autoGateTx } from "./moderation/autoGate";
+import { notifyBatched } from "./notifications/batch";
 
 /** Input bound only — comment body-length product rules are unspecified
  *  (contract OQ8); this is a server input ceiling, not a product rule. */
@@ -351,6 +352,32 @@ export const create = mutation({
       },
     });
 
+    // SLICE-P7T-03 (CAP-382): same-mutation batched notifications — reply
+    // 15m window to the parent author; post-comment to the post author.
+    // Self-actions never notify; persona authors never receive (excluded
+    // platform-wide). The reply itself is NEVER dropped (CAP-383 quoted).
+    const hostPost = await ctx.db.get(args.postId);
+    if (hostPost?.authorType === "user" && hostPost.authorUserId && hostPost.authorUserId !== userId) {
+      await notifyBatched(ctx, {
+        recipientUserId: hostPost.authorUserId as Id<"users">,
+        notificationType: args.parentCommentId ? "comment_reply" : "post_comment",
+        objectType: "post",
+        objectId: args.postId,
+        actorUserId: userId,
+      });
+    }
+    if (args.parentCommentId) {
+      const parent = await ctx.db.get(args.parentCommentId);
+      if (parent?.authorType === "user" && parent.authorUserId && parent.authorUserId !== userId) {
+        await notifyBatched(ctx, {
+          recipientUserId: parent.authorUserId as Id<"users">,
+          notificationType: "comment_reply",
+          objectType: "comment",
+          objectId: args.parentCommentId,
+          actorUserId: userId,
+        });
+      }
+    }
     return { commentId, moderationStatus };
   },
 });

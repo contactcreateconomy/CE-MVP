@@ -36,6 +36,7 @@ import { assertCustomerCapability } from "./lib/authz";
 import { captureEvent } from "./lib/events";
 import { checkCommentEligibility } from "./eligibility";
 import { appendActivity } from "./activity";
+import { notifyBatched } from "./notifications/batch";
 
 export const REACTION_EVENT_CATALOG_ROWS = [
   { eventName: "comment.reacted", description: "Member toggles a valuable/negative reaction (CAP-125/128)" },
@@ -309,6 +310,18 @@ export const toggleSave = mutation({
       isStaff: false, isPersona: false, isCountableAtWrite: true,
       postId: comment.postId, removed: false,
     } as any);
+
+    // SLICE-P7T-03 (CAP-382): same-mutation batched save notification —
+    // 24h window to the comment author (social kind; never legal/mod)
+    if (comment.authorType === "user" && comment.authorUserId && comment.authorUserId !== userId) {
+      await notifyBatched(ctx, {
+        recipientUserId: comment.authorUserId,
+        notificationType: "saved_post_activity",
+        objectType: "comment",
+        objectId: args.commentId,
+        actorUserId: userId,
+      });
+    }
 
     // CAP-570 save_added — fires on the ADD
     await appendActivity(ctx, {

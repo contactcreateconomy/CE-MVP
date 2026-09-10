@@ -146,7 +146,7 @@ export default function AdminConfigPage() {
   const reasonCodes = useQuery(api.moderation.reasonCodes.listLatest, {});
   const editCodeCopy = useMutation(api.moderation.reasonCodes.editCopy);
   const founderBump = useMutation(api.moderation.reasonCodes.founderBumpAll);
-  const [legalCode, setLegalCode] = useState<ConfigRow | null>(null);
+  const [legalCode, setLegalCode] = useState<ConfigRow | null>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
   const [legalTitle, setLegalTitle] = useState("");
   const [legalBody, setLegalBody] = useState("");
   const [legalNote, setLegalNote] = useState<string | null>(null);
@@ -292,7 +292,7 @@ export default function AdminConfigPage() {
           <SkeletonText className="w-full" />
         ) : (
           <div className="space-y-1">
-            {(reasonCodes.codes as any[]).map((c) => (
+            {(reasonCodes.codes as any[]).map((c) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
               <button
                 key={c._id}
                 type="button"
@@ -349,7 +349,7 @@ export default function AdminConfigPage() {
               onClick={() => {
                 if (!legalCode) return;
                 void editCodeCopy({
-                  code: (legalCode as any).code,
+                  code: (legalCode as any).code, // eslint-disable-line @typescript-eslint/no-explicit-any
                   userFacingTitle: legalTitle,
                   userFacingBody: legalBody,
                 })

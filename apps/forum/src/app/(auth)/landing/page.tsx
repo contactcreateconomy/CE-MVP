@@ -9,7 +9,7 @@
  * distinguishes anon from authed visitors.
  */
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { ArrowRight, BookOpen, MessageSquare } from "lucide-react";
 
@@ -22,6 +22,12 @@ import { CreateconomyLogoMark } from "@/components/ui/createconomy-logo-mark";
 export default function LandingPage() {
   // Query effectiveSignupMode (FATAL-M1A-02)
   const admissionMode = useQuery(api.admission.getEffectiveMode);
+  // SLICE-P7T-12 (F-14 close): the waitlist-mode CTA delegates DIRECTLY to
+  // CAP-014 waitlist.join — the same public mutation /waitlist calls; no
+  // second waitlist surface, no users/role write (CAP-014 invariant).
+  const [wlEmail, setWlEmail] = useState("");
+  const [wlNote, setWlNote] = useState<string | null>(null);
+  const [wlBusy, setWlBusy] = useState(false);
 
   // CAP-465: UTM capture — first-touch-once, canonical URL strips UTMs
   useEffect(() => {
@@ -84,10 +90,45 @@ export default function LandingPage() {
         </div>
 
         <div className="space-y-3">
-          <Button size="lg" className="w-full max-w-xs" onClick={() => window.location.href = cta.href}>
-            {cta.label}
-            <ArrowRight className="size-4" />
-          </Button>
+          {mode === "waitlist" ? (
+            <div className="mx-auto w-full max-w-xs space-y-2">
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  value={wlEmail}
+                  onChange={(e) => setWlEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  aria-label="Email for the waitlist"
+                  className="h-10 flex-1 rounded-md border border-border-default bg-bg-surface px-3 text-sm text-text-primary"
+                />
+                <Button
+                  size="lg"
+                  disabled={wlBusy || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(wlEmail)}
+                  onClick={() => {
+                    setWlBusy(true);
+                    void fetch("/api/convex/waitlist.join", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email: wlEmail.trim() }),
+                    })
+                      .then((r) => r.json())
+                      .then((r) => setWlNote(r.alreadyOnList ? "You're already on the list." : "You're on the list — we'll be in touch."))
+                      .catch(() => setWlNote("Could not join right now — try the waitlist page."))
+                      .finally(() => setWlBusy(false));
+                  }}
+                >
+                  {cta.label}
+                  <ArrowRight className="size-4" />
+                </Button>
+              </div>
+              {wlNote ? <p className="text-xs text-text-muted">{wlNote}</p> : null}
+            </div>
+          ) : (
+            <Button size="lg" className="w-full max-w-xs" onClick={() => window.location.href = cta.href}>
+              {cta.label}
+              <ArrowRight className="size-4" />
+            </Button>
+          )}
 
           {mode !== "open" && (
             <Button size="lg" variant="secondary" className="w-full max-w-xs" onClick={() => window.location.href = "/feed"}>

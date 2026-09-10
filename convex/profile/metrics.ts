@@ -29,6 +29,7 @@ import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertCustomerCapability } from "../lib/authz";
+import { notifyBatched } from "../notifications/batch";
 
 export const getMetrics = query({
   args: { handle: v.string() },
@@ -179,6 +180,14 @@ export const join = mutation({
       memberLegitimacySnapshot: legitimacy?.value ?? 0.05, // CAP-300 snapshot (quoted); bots at 0.05 negligible (CAP-303)
       eligibilityStatus: "qualified",
       joinedAt: Date.now(),
+    });
+    // SLICE-P7T-03 (CAP-382): join notification — 6h window to the owner
+    await notifyBatched(ctx, {
+      recipientUserId: owner._id,
+      notificationType: "distribution_joined",
+      objectType: "distribution",
+      objectId: dist._id,
+      actorUserId: userId,
     });
     return { joined: true };
   },

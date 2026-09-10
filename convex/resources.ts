@@ -28,6 +28,7 @@ import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertCustomerCapability } from "./lib/authz";
 import { appendActivity } from "./activity";
+import { onQuotaExhausted } from "./notifications/quota";
 
 export const QUOTA_DAY = 5;
 export const QUOTA_WEEK = 20;
@@ -147,9 +148,17 @@ export const acquire = mutation({
       usedWeek = rolledWeek ? 0 : ledger.acquisitionsUsedWeek;
     }
 
-    // CAP-215 — the SERVER counts, never the client
-    if (usedDay >= QUOTA_DAY) throw new Error(`resource.acquire: daily quota reached (${QUOTA_DAY}/day)`);
-    if (usedWeek >= QUOTA_WEEK) throw new Error(`resource.acquire: weekly quota reached (${QUOTA_WEEK}/week)`);
+    // CAP-215 — the SERVER counts, never the client.
+    // SLICE-P7T-02 (CAP-378): the blocked-acquire notify + marker land
+    // same-mutation BEFORE the throw (no "almost gone" nag — quoted).
+    if (usedDay >= QUOTA_DAY) {
+      await onQuotaExhausted(ctx, userId, keys.dayKey);
+      throw new Error(`resource.acquire: daily quota reached (${QUOTA_DAY}/day)`);
+    }
+    if (usedWeek >= QUOTA_WEEK) {
+      await onQuotaExhausted(ctx, userId, keys.weekKey);
+      throw new Error(`resource.acquire: weekly quota reached (${QUOTA_WEEK}/week)`);
+    }
 
     const now = Date.now();
     const resource = await ctx.db.get(args.resourceId);

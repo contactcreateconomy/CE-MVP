@@ -46,6 +46,11 @@ export const RATE_LIMITS: Record<string, RateLimit[]> = {
   "report.critical": [
     { name: "report.critical.hourly", max: 5, periodMs: 60 * 60_000, subject: "user" },
   ],
+  // DECISIONS-LOCKED #6 (SLICE-P7T-05): DMCA intake "5/24h per email+IP" —
+  // the email half here; the IP half rides the edge layer's session id.
+  "legal.dmca.email": [
+    { name: "legal.dmca.email.daily", max: 5, periodMs: 24 * 60 * 60_000, subject: "email_hash" },
+  ],
   // CAP-015: waitlist join "10/h ip + 3/24h email"
   "waitlist.join": [
     { name: "waitlist.join.ip", max: 10, periodMs: 60 * 60_000, subject: "ip_hash" },

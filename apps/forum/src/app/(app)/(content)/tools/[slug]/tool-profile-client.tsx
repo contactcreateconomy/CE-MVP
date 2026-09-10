@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/convex";
+import { ProvenanceFooter } from "@/components/trust/provenance-footer";
 
 const DIMENSION_LABELS: Record<string, string> = {
   ease_of_use: "Ease of use",
@@ -193,6 +194,9 @@ export function ToolProfileClient({ slug }: ToolProfileClientProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* SLICE-P7T-11 (CAP-468): provenance + trust footer on tool hosts */}
+      <ProvenanceFooter />
     </div>
   );
 }

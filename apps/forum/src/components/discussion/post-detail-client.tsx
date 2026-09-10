@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { ProvenanceFooter } from "@/components/trust/provenance-footer";
 import { CanonicalThread } from "./canonical-thread";
 import { api } from "@/lib/convex";
 
@@ -244,6 +245,10 @@ export function PostDetailClient({ detail }: { detail: any }) {
 
       {/* M6 thread — SLICE-P5-03: the canonical comment engine (CAP-123…131) */}
       <CanonicalThread postId={post._id} archived={Boolean(threadContext?.archived)} />
+
+      {/* SLICE-P7T-11 (CAP-468): provenance block + trust footer — always
+          rendered on indexable hosts; persona-authored posts carry the AI label */}
+      <ProvenanceFooter aiGenerated={post.authorType === "persona"} aiAssisted={Boolean((post as any).aiAssisted)} />
     </article>
   );
 }

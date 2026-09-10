@@ -14,6 +14,7 @@ import { useMutation, useQuery } from "convex/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { api } from "@/lib/convex";
 import { isConvexConfigured } from "@cemvp/convex-client";
+import { ProvenanceFooter } from "@/components/trust/provenance-footer";
 
 export function ResourceViewClient({ slug }: { slug: string }) {
   const configured = isConvexConfigured();
@@ -81,6 +82,7 @@ export function ResourceViewClient({ slug }: { slug: string }) {
       ) : (
         <div className="flex min-h-[30vh] items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-(--border-default) border-t-(--brand-primary)" /></div>
       )}
-    </section>
+          <ProvenanceFooter />
+</section>
   );
 }

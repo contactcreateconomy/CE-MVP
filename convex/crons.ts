@@ -215,3 +215,7 @@ crons.interval("sustained promotion check", { hours: 24 }, internal.signal.promo
 crons.interval("annual demotion (boundary-gated)", { hours: 24 }, internal.signal.promoteDemote.demoteAnnual, {});
 crons.interval("discoverer check", { hours: 24 }, internal.signal.promoteDemote.discovererCheck, {});
 crons.interval("store metrics skeleton", { hours: 24 }, internal.signal.promoteDemote.storeMetricsSkeleton, {});
+
+// SLICE-P7T-09 (CAP-338): repeat-infringer policy evaluation — 3 valid
+// copyright strikes/12mo → terminated; voided strikes reinstate.
+crons.interval("repeat-infringer evaluate", { hours: 24 }, internal.jobs.repeatInfringer.evaluate, {});

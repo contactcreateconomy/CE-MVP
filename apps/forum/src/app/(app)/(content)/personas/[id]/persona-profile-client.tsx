@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { api } from "@/lib/convex";
 import { isConvexConfigured } from "@cemvp/convex-client";
+import { ProvenanceFooter } from "@/components/trust/provenance-footer";
 
 export function PersonaProfileClient({ personaId }: { personaId: string }) {
   const configured = isConvexConfigured();
@@ -121,6 +122,8 @@ export function PersonaProfileClient({ personaId }: { personaId: string }) {
           ) : null}
         </CardContent>
       </Card>
-    </section>
+          {/* SLICE-P7T-11 (CAP-469): persona hosts carry the visible AI label */}
+      <ProvenanceFooter aiGenerated />
+</section>
   );
 }

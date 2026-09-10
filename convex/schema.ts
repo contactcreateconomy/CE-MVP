@@ -2883,7 +2883,9 @@ export default defineSchema({
     relationshipType: v.string(),
     extractionId: v.id("contentExtractions"),
     createdAt: v.number(),
-  }).index("by_candidate", ["contentCandidateId"]),
+  })
+    .index("by_candidate", ["contentCandidateId"])
+    .index("by_source", ["sourceId"]),
 
   /** bible l.151 — GLM/generation run records. [BIBLE-FIX 2026-09-05,
    *  SLICE-P4-08] contentCandidateId made optional: CAP-036 writes
@@ -3224,6 +3226,36 @@ export default defineSchema({
 
   // ── SLICE-P7E-17 — MAX layer (bible l.110-113; P5-01 omitted, defined
   //  here per the catalog's flag). Runs are immutable audit rows. ──
+
+  /** DECISIONS-LOCKED #7 outbox — vendor deletion requests (CAP-506
+   *  writes pending rows; P7O-08's background job calls the deletion API
+   *  with retry and flips status). NOT a second erasure pipeline. */
+  analyticsDeletionRequests: defineTable({
+    userId: v.id("users"),
+    scope: v.union(v.literal("purposes"), v.literal("all")),
+    purposes: v.array(v.string()),
+    status: v.union(v.literal("pending"), v.literal("confirmed")),
+    requestedAt: v.number(),
+    confirmedAt: v.optional(v.number()),
+  }).index("by_user_status", ["userId", "status"]),
+
+  /** bible l.305 (back-filled from M18 l.74, P7T-13) — CMP consent.
+   *  PostHog gated; rawEvents NEVER consent-gated (quoted). */
+  consentRecords: defineTable({
+    userId: v.optional(v.id("users")),
+    anonymousConsentId: v.optional(v.string()), // CAP-387 stitch — fenced (member path ships)
+    policyVersion: v.string(),
+    purposesGranted: v.array(v.string()),
+    purposesDenied: v.array(v.string()),
+    jurisdictionClass: v.string(),
+    collectionSurface: v.string(),
+    grantedAt: v.number(),
+    withdrawnAt: v.optional(v.number()),
+    supersededAt: v.optional(v.number()),
+    evidenceHash: v.string(),
+  })
+    .index("by_user_grantedAt", ["userId", "grantedAt"])
+    .index("by_surface", ["collectionSurface"]),
 
   /** bible l.110 — MAX run audit (status incl. the empty-success class
    *  while the model vendor is unnamed — flagged). */
