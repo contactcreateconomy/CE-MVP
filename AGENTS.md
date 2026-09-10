@@ -26,6 +26,8 @@ The `Brainstorm/` folder referenced by AGENT-START-HERE does not exist in this r
 
 ## 3. Mandatory read order before starting any slice/screen
 
+0. `docs/AGENT-MEMORY.md` — section headers only (cheap scan); read full entries of any section relevant to the current task. Append new lessons there when you learn one (append-only, see its rules).
+
 From `docs/AGENT-START-HERE.md` §2 — in this order, every time:
 
 1. `docs/01-product-spec/_data-model.md` — canonical entities and enums; every table, field, and enum literal must match it verbatim.
