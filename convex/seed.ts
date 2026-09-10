@@ -20,6 +20,8 @@ import { INTEREST_TILE_DEFS, INTEREST_TAXONOMY_VERSION } from "./setup";
 import { COMMENT_EVENT_CATALOG_ROWS } from "./comments";
 import { REACTION_EVENT_CATALOG_ROWS } from "./reactions";
 import { seedPlatformStores, seedSubIdRegistry } from "./store/seed";
+import { seedFoundingSeason } from "./economy/seed";
+import { seedReasonCodes } from "./moderation/reasonCodesSeed";
 import { FEED_CARD_ACTION_EVENT_ROW } from "./feed";
 import { SEARCH_EVENT_ROW } from "./search";
 import { RESOURCE_VIEW_EVENT_ROW } from "./resources/view";
@@ -104,6 +106,15 @@ const REGISTRY_ROWS = [
   // Bounds ONLY: no systemConfig live row is seeded for these (step 3 skips
   // rulebook.* — live values live in qualificationRules.thresholdConfig).
   ...RULEBOOK_REGISTRY_ROWS,
+  // SLICE-P7E-01 (DECISIONS-LOCKED #11): M12 economy constants — versioned
+  // config defaults tagged calibration_pending; real calibration post-beta
+  // is Readiness Category 8. Jobs read these with safe fallbacks.
+  { key: "signal.settle.windowDays", module: "m12", valueType: "number" as const, default: 7, min: 1, max: 30, editTier: "tier2" as const, blastRadius: "CAP-276 provisional settle window.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "signal.level.sustainDays", module: "m12", valueType: "number" as const, default: 30, min: 1, max: 365, editTier: "tier2" as const, blastRadius: "CAP-306 sustained-above-line window for promotion.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "signal.season.coldStartPool", module: "m12", valueType: "number" as const, default: 1000, min: 10, max: 100000, editTier: "tier2" as const, blastRadius: "CAP-315 fixed-threshold pool size below which the Founding Season runs fixed.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "signal.dormant.mightZeroDays", module: "m12", valueType: "number" as const, default: 180, min: 30, max: 365, editTier: "tier2" as const, blastRadius: "CAP-316 dormancy window at Might=0.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "signal.legitimacy.modelVersion", module: "m12", valueType: "string" as const, default: "legitimacy.v1", editTier: "tier2" as const, blastRadius: "Legitimacy model version stamp (CAP-283).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "signal.attribution.modelVersion", module: "m12", valueType: "string" as const, default: "positional.v1", editTier: "tier2" as const, blastRadius: "Attribution model version stamp (CAP-279).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
 ];
 
 // P1-07 mechanism + P2 rows: CAP-437 rejects capture of any event whose
@@ -426,6 +437,14 @@ export const bootstrap = internalMutation({
     //    subIdRegistry dictionary. Idempotent throughout.
     for (const line of await seedPlatformStores(ctx)) result.push(line);
     for (const line of await seedSubIdRegistry(ctx)) result.push(line);
+
+    // 9. Economy seeder (SLICE-P7E-01): Founding Season + ten
+    //    signalLevelDefinitions bands (bible l.344, transcribed).
+    for (const line of await seedFoundingSeason(ctx)) result.push(line);
+
+    // 10. Reason-code catalog (SLICE-P7E-10, CAP-360): policyReasonCodes
+    //     v1 rows incl. the CAP-333 autoRelease allowlist flags.
+    for (const line of await seedReasonCodes(ctx)) result.push(line);
 
     // R-FOUNDER boundary: no users, no roleAssignments, no founder grants —
     // verified by the module surface (this is the only export). The ONE

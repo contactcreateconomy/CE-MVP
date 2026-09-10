@@ -9,6 +9,13 @@
  * finalizeBootstrap, not inside it. M12 economy enrichment
  * (might/levels/awards writes) is Phase 7; this creates the row only,
  * in its initial state (dormant, zeroed, no store yet).
+ *
+ * SLICE-P7E-02: `ensureDistribution` doubles as CAP-299's defensive
+ * path (quoted: "fires only in the edge case where CAP-565 didn't create
+ * one — retry logic, migration, etc."). The CAP-299 mutation name is
+ * register-unnamed (economy OQ5) — kept as `ensureDistribution` rather
+ * than minting `distribution.createDefensive`; flagged. The Metrics tab
+ * never renders a null Distribution after the F-11 backfill.
  */
 
 import { internalMutation } from "./_generated/server";

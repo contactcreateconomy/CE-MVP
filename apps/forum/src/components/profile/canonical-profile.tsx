@@ -11,10 +11,14 @@
  */
 
 import { useState } from "react";
+import { useMutation, useQuery } from "convex/react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { api } from "@/lib/convex";
+import { isConvexConfigured } from "@cemvp/convex-client";
+import { A8Ladder } from "@/components/ladder/a8-ladder";
 
 const FIELD_LABELS: Record<string, string> = {
   roleArchetype: "Role", ageBand: "Age band", toolsUsed: "Tools",
@@ -151,13 +155,125 @@ export function CanonicalProfile({ data }: { data: any }) {
         </div>
       ) : null}
 
-      {tab === "metrics" ? (
+      {tab === "metrics" ? <MetricsTab handle={identity.username} /> : null}
+    </section>
+  );
+}
+
+/**
+ * MetricsTab — SLICE-P7E-09: the public triad Reach·Signals·Awards
+ * (Signals = activeSignals, CAP-281), the A8 ladder v1, join/leave
+ * (CAP-300/301), and the CAP-312 opt-out FULL hide. One query, one
+ * render for anonymous and member (CAP-313) — the viewer branch is
+ * join-state only, never content.
+ */
+function MetricsTab({ handle }: { handle: string }) {
+  const configured = isConvexConfigured();
+  const metrics = useQuery(
+    api.profile.metrics.getMetrics,
+    configured ? ({ handle } as any) : "skip",
+  );
+  const joinDist = useMutation(api.profile.metrics.join);
+  const leaveDist = useMutation(api.profile.metrics.leave);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+
+  if (!configured || metrics === undefined) {
+    return (
+      <Card><CardContent className="py-8 text-center text-sm text-(--text-muted)">Loading metrics…</CardContent></Card>
+    );
+  }
+  if (metrics.state === "not_found") {
+    return (
+      <Card><CardContent className="py-8 text-center text-sm text-(--text-muted)">No metrics found.</CardContent></Card>
+    );
+  }
+  // CAP-312 (quoted): "the opted-out profile shows none of the public
+  // triad + ladder + badges" — math unchanged, surface hidden
+  if (metrics.economyHidden) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-sm text-(--text-muted)">
+          This member doesn&apos;t publicly share economy metrics.
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const triad = metrics.triad ?? { reach: 0, signals: 0, awards: 0 };
+  const awardsShelf = metrics.awardsShelf ?? [];
+  const ladder = metrics.ladder ?? null;
+  const membership = metrics.membership ?? null;
+  return (
+    <div className="space-y-4">
+      {/* The public triad — Signals is the ACTIVE count (CAP-281) */}
+      <div className="grid grid-cols-3 gap-3">
+        {([
+          ["Reach", triad.reach, "verified members"],
+          ["Signals", triad.signals, "active (90d)"],
+          ["Awards", triad.awards, "earned badges"],
+        ] as const).map(([label, value, hint]) => (
+          <Card key={label}>
+            <CardContent className="py-4 text-center">
+              <p className="text-2xl font-semibold text-(--text-primary)">{Number(value ?? 0).toLocaleString()}</p>
+              <p className="text-sm font-medium text-(--text-secondary)">{label}</p>
+              <p className="text-xs text-(--text-muted)">{hint}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {awardsShelf?.length ? (
         <Card>
-          <CardContent className="py-8 text-center text-sm text-(--text-muted)">
-            Reach · Signals · ladder metrics arrive with the Wave-7 reputation enrichment — this tab is reserved, not forgotten.
+          <CardHeader><h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">Awards shelf</h2></CardHeader>
+          <CardContent className="flex flex-wrap gap-1.5">
+            {awardsShelf.map((b: any, i: number) => (
+              <Badge key={i} tone={b.revoked ? "neutral" : "success"}>
+                {b.label}{b.revoked ? " (revoked)" : ""}
+              </Badge>
+            ))}
           </CardContent>
         </Card>
       ) : null}
-    </section>
+
+      <Card>
+        <CardHeader><h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">Ladder</h2></CardHeader>
+        <CardContent>
+          <A8Ladder ladder={ladder} />
+        </CardContent>
+      </Card>
+
+      {membership ? (
+        <div className="flex items-center gap-2">
+          {membership.joined ? (
+            <Button
+              variant="secondary" size="sm" disabled={busy}
+              onClick={() => {
+                setBusy(true);
+                void leaveDist({ handle }).then(() => setNote("You left this distribution."))
+                  .catch((e) => setNote(String(e?.message ?? e)))
+                  .finally(() => setBusy(false));
+              }}
+            >
+              Leave distribution
+            </Button>
+          ) : (
+            // Join is deliberate, never auto (CAP-300, quoted)
+            <Button
+              size="sm" disabled={busy}
+              onClick={() => {
+                setBusy(true);
+                void joinDist({ handle }).then(() => setNote("You joined this distribution."))
+                  .catch((e) => setNote(String(e?.message ?? e)))
+                  .finally(() => setBusy(false));
+              }}
+            >
+              Join distribution
+            </Button>
+          )}
+          {note ? <p className="text-xs text-(--text-muted)">{note}</p> : null}
+        </div>
+      ) : null}
+    </div>
   );
 }

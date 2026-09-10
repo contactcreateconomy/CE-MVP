@@ -184,3 +184,16 @@ crons.interval(
   internal.admin.resourcesLifecycle.killGateEvaluate,
   {},
 );
+
+// SLICE-P7E-03..08: the M12 economy engine. Award sweep → settle →
+// summary → reach/might → monthly Level commit (CAP-570 tier_unlocked
+// rides the commit); legitimacy recompute feeds the snapshots.
+crons.interval("signal award sweep", { minutes: 5 }, internal.signal.award.sweep, {});
+crons.interval("legitimacy recompute", { hours: 24 }, internal.jobs.legitimacy.recompute, {});
+crons.interval("attribution settle", { hours: 1 }, internal.jobs.attributionSettle.settle, {});
+crons.interval("signal summary recompute", { minutes: 15 }, internal.jobs.signalSummary.recompute, {});
+crons.interval("recognition rollup", { hours: 6 }, internal.jobs.recognition.rollup, {});
+crons.interval("badge awards finalize", { hours: 6 }, internal.jobs.recognition.finalizeAwards, {});
+crons.interval("reach refresh", { hours: 1 }, internal.jobs.might.reachRefresh, {});
+crons.interval("might recompute", { minutes: 15 }, internal.jobs.might.mightRecompute, {});
+crons.interval("level commit monthly", { hours: 24 }, internal.jobs.might.levelCommitMonthly, {});

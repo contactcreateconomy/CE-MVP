@@ -140,6 +140,18 @@ export default function AdminConfigPage() {
     }
   }, [editing, editValue, reason, casUpdate]);
 
+  // SLICE-P7E-10 (CAP-358/429): the Legal namespace — policy reason-code
+  // copy. Version-forward only: edits insert a NEW version row; decided
+  // cases keep code+version and never see copy changes.
+  const reasonCodes = useQuery(api.moderation.reasonCodes.listLatest, {});
+  const editCodeCopy = useMutation(api.moderation.reasonCodes.editCopy);
+  const founderBump = useMutation(api.moderation.reasonCodes.founderBumpAll);
+  const [legalCode, setLegalCode] = useState<ConfigRow | null>(null);
+  const [legalTitle, setLegalTitle] = useState("");
+  const [legalBody, setLegalBody] = useState("");
+  const [legalNote, setLegalNote] = useState<string | null>(null);
+  const [bumpLabel, setBumpLabel] = useState("");
+
   const needsReason: boolean = Boolean(editing && (editing.editTier === "tier2" || editing.editTier === "tier3"));
   const needsTier3Confirm = editing?.editTier === "tier3";
   const tier3Confirmed: boolean = !needsTier3Confirm || (tier3Confirm === true && tier3Text === editing?.key);
@@ -240,6 +252,114 @@ export default function AdminConfigPage() {
             >
               <Save className="size-4" />
               Save (CAS v{editing?.liveVersion} → v{(editing?.liveVersion ?? 0) + 1})
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* SLICE-P7E-10 — Legal namespace: policy reason codes (CAP-358/429) */}
+      <div className="card-surface space-y-3 p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-text-muted">Legal — policy reason codes</h2>
+            <p className="text-xs text-text-muted">
+              Copy edits create a new version — decided cases keep their recorded code+version forever.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input
+              value={bumpLabel}
+              onChange={(e) => setBumpLabel(e.target.value)}
+              placeholder="Release label (CAP-429)"
+              className="w-56"
+              aria-label="Policy release label"
+            />
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={!bumpLabel.trim()}
+              onClick={() => {
+                void founderBump({ releaseLabel: bumpLabel.trim() })
+                  .then((r) => setLegalNote(`Policy copy bumped to ${r.releaseLabel} (${r.bumped} codes).`))
+                  .catch((e) => setLegalNote(String(e?.message ?? e)));
+              }}
+            >
+              Founder bump-all
+            </Button>
+          </div>
+        </div>
+        {reasonCodes === undefined ? (
+          <SkeletonText className="w-full" />
+        ) : (
+          <div className="space-y-1">
+            {(reasonCodes.codes as any[]).map((c) => (
+              <button
+                key={c._id}
+                type="button"
+                className="flex w-full items-center justify-between rounded-md border border-border-subtle px-3 py-2 text-left text-sm hover:bg-bg-overlay/50"
+                onClick={() => {
+                  setLegalCode(c);
+                  setLegalTitle(c.userFacingTitle);
+                  setLegalBody(c.userFacingBody);
+                  setLegalNote(null);
+                }}
+              >
+                <span className="font-mono text-xs text-text-primary">{c.code}</span>
+                <span className="flex items-center gap-2">
+                  <Badge tone={c.autoReleaseEligible ? "success" : "neutral"}>
+                    {c.autoReleaseEligible ? "auto-release" : c.severity}
+                  </Badge>
+                  <Badge tone="neutral">v{c.version}</Badge>
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+        {legalNote ? <p className="text-xs text-text-muted">{legalNote}</p> : null}
+      </div>
+
+      {/* Reason-code copy edit dialog (CAP-358 — new version on save) */}
+      <Dialog open={legalCode !== null} onOpenChange={(o) => !o && setLegalCode(null)}>
+        <DialogContent size="sm">
+          <DialogHeader>
+            <DialogTitle>Edit copy — {legalCode?.key ?? legalCode?._id}</DialogTitle>
+            <DialogDescription>
+              Saves as a new version. Historical rows are never overwritten.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium text-text-secondary">User-facing title</label>
+              <Input value={legalTitle} onChange={(e) => setLegalTitle(e.target.value)} aria-label="User-facing title" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-text-secondary">User-facing body</label>
+              <textarea
+                value={legalBody}
+                onChange={(e) => setLegalBody(e.target.value)}
+                rows={4}
+                aria-label="User-facing body"
+                className="mt-1 w-full rounded-md border border-border-default bg-bg-surface px-3 py-2 text-sm text-text-primary"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setLegalCode(null)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                if (!legalCode) return;
+                void editCodeCopy({
+                  code: (legalCode as any).code,
+                  userFacingTitle: legalTitle,
+                  userFacingBody: legalBody,
+                })
+                  .then((r) => setLegalNote(`${r.code} → v${r.version} (new version).`))
+                  .then(() => setLegalCode(null))
+                  .catch((e) => setLegalNote(String(e?.message ?? e)));
+              }}
+            >
+              <Save className="size-4" />
+              Save new version
             </Button>
           </DialogFooter>
         </DialogContent>

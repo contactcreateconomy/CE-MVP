@@ -2908,4 +2908,332 @@ export default defineSchema({
   })
     .index("by_candidate", ["contentCandidateId"])
     .index("by_runType", ["runType"]),
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SLICE-P7E-01 — M12 economy (bible l.122, l.334-348, l.404 ten-literal
+  // level enum). Firewall (CAP-298, quoted): Recognition/Awards/Podium
+  // NEVER feed Signals/Might/Reach; two currencies in different tables.
+  // Sealed keys (legitimacy.medianTarget, signal.eventWeights,
+  // signal.attributionSplit, trust.weightCap) never appear in queries.
+  // ═══════════════════════════════════════════════════════════════════════
+
+  /** bible l.122 — the DYNAMIC versioned outcome basket (Signal consumes
+   *  only eligible, version-matched events; attributionCredits is NOT
+   *  built in MVP-1). */
+  outcomeDefinitions: defineTable({
+    outcomeType: v.string(),
+    weight: v.number(),
+    attributionWindow: v.number(), // per-outcome-type; begins from eligible EXPOSURE
+    isEvergreenTrack: v.boolean(), // DEC-SIGNAL-WINDOW — durable Help/Guide not starved
+    netValueFormula: v.string(),
+    version: v.number(),
+    status: v.string(),
+  })
+    .index("by_type_version", ["outcomeType", "version"])
+    .index("by_status", ["status"]),
+
+  /** bible l.334 — append-only; the authoritative Signals record.
+   *  Reversal/clawback are NEW rows (entryType), never rewrites. */
+  signalLedger: defineTable({
+    // contributionId = the creditable unit (post|comment id) — string
+    // because contributionType discriminates the target table (Convex
+    // v.id cannot be polymorphic across two tables).
+    contributionId: v.string(),
+    contributionType: v.union(v.literal("post"), v.literal("comment")),
+    authorUserId: v.id("users"),
+    outcomeType: v.string(),
+    // the attribution anchor id — rawEvents id for event families,
+    // storefrontClicks id for qualified CTA, salesEvidence id for
+    // verified conversions (table varies by outcome family)
+    outcomeEventId: v.string(),
+    grossValue: v.number(),
+    legitimacyFactor: v.number(), // snapshot at cast time (CAP-284)
+    confidenceFactor: v.number(), // CAP-280 damping
+    attributionModelVersion: v.string(),
+    outcomeDefinitionVersion: v.number(),
+    signalValue: v.number(),
+    state: v.union(
+      v.literal("provisional"), v.literal("finalized"),
+      v.literal("reversed"), v.literal("clawed_back"),
+    ),
+    entryType: v.union(
+      v.literal("award"), v.literal("reversal"),
+      v.literal("clawback"), v.literal("adjustment"),
+    ),
+    reversesLedgerId: v.optional(v.id("signalLedger")),
+    seasonId: v.id("signalSeasons"),
+    provisionalAt: v.number(),
+    finalizedAt: v.optional(v.number()),
+    reversedAt: v.optional(v.number()),
+    // implementation detail: the CAP-274 per-(actor,target) cap tracker
+    // (actorTarget key) — never surfaced by any query
+    meta: v.optional(v.any()),
+  })
+    .index("by_author_state", ["authorUserId", "state"])
+    .index("by_state_provisionalAt", ["state", "provisionalAt"])
+    .index("by_contribution", ["contributionId", "contributionType"])
+    .index("by_season_author", ["seasonId", "authorUserId"]),
+
+  /** bible l.335 — projection; two views of one ledger (per user +
+   *  per distribution). Public triad "Signals" = activeSignals (CAP-281). */
+  signalSummary: defineTable({
+    subjectType: v.union(v.literal("user"), v.literal("distribution")),
+    subjectId: v.string(),
+    totalSignals: v.number(), // lifetime → record + trust capacity
+    activeSignals: v.number(), // 90d decay clamp((90−days)/90,0,1) → Might
+    pendingSignals: v.number(),
+    windowVersion: v.string(),
+    computedAt: v.number(),
+  })
+    .index("by_subject", ["subjectType", "subjectId"]),
+
+  /** bible l.336 — the MOAT. value [0,1] NEVER surfaced by any query;
+   *  geometric mean — one near-zero component tanks it. */
+  legitimacyScores: defineTable({
+    actorUserId: v.id("users"),
+    value: v.number(),
+    componentScores: v.object({
+      account_age: v.number(),
+      activity_diversity: v.number(),
+      interaction_diversity: v.number(),
+      content_quality: v.number(),
+      temporal_humanity: v.number(),
+      device_independence: v.number(),
+      reciprocity_balance: v.number(),
+    }),
+    modelVersion: v.string(),
+    flaggedLow: v.boolean(),
+    computedAt: v.number(),
+  })
+    .index("by_actor", ["actorUserId"]),
+
+  /** bible l.337 — detection graph (batch only); powers coordination/
+  *   velocity detection → weight reduction ONLY; never grants influence. */
+  engagementEdges: defineTable({
+    fromUserId: v.id("users"),
+    toAuthorUserId: v.id("users"),
+    interactionCount: v.number(),
+    reciprocalCount: v.number(),
+    distinctDays: v.number(),
+    sharedDeviceScore: v.number(),
+    velocityZ: v.number(),
+    window: v.string(),
+    updatedAt: v.number(),
+  }).index("by_pair_window", ["fromUserId", "toAuthorUserId", "window"]),
+
+  /** bible l.338 — shadow-damp with NO feedback; detect-and-NEUTRALIZE,
+   *  not ban (human sanction = M13). Recipient neutrality holds. */
+  integrityFlags: defineTable({
+    actorUserId: v.optional(v.id("users")),
+    edgeRef: v.optional(v.id("engagementEdges")),
+    type: v.union(
+      v.literal("velocity"), v.literal("coordination"), v.literal("reciprocity"),
+      v.literal("device"), v.literal("automation"), v.literal("suppression"),
+    ),
+    disposition: v.union(v.literal("monitor"), v.literal("damp"), v.literal("neutralize")),
+    evidence: v.any(),
+    dampFactor: v.number(),
+    opened: v.number(),
+    resolvedAt: v.optional(v.number()),
+    reviewedByUserId: v.optional(v.id("users")),
+  })
+    .index("by_actor_disposition", ["actorUserId", "disposition"]),
+
+  /** bible l.339 — BACKEND status source; computed independently from
+   *  local wins — NEVER reads signalLedger (firewall-reverse). */
+  recognitionEvents: defineTable({
+    userId: v.id("users"),
+    role: v.union(
+      v.literal("overall"), v.literal("commenter"), v.literal("helper"),
+      v.literal("reviewer"), v.literal("creator"), v.literal("debater"),
+      v.literal("rising"),
+    ),
+    weightedValue: v.number(),
+    sourceType: v.string(),
+    sourceId: v.string(),
+    window: v.string(),
+    seasonId: v.id("signalSeasons"),
+    occurredAt: v.number(),
+  })
+    .index("by_user_window", ["userId", "window"])
+    .index("by_season_role", ["seasonId", "role"]),
+
+  /** bible l.340 — Awards shelf. History append-only; revoked stays on
+   *  the public shelf/count; inactivity or a Level DROP never revokes. */
+  badges: defineTable({
+    subjectType: v.union(v.literal("user"), v.literal("distribution")),
+    subjectId: v.string(),
+    type: v.union(
+      v.literal("level_milestone"), v.literal("recognition_role"),
+      v.literal("profile_completion"), v.literal("discoverer"),
+    ),
+    label: v.string(),
+    level: v.optional(v.string()), // signal.level literal
+    seasonId: v.optional(v.id("signalSeasons")),
+    mightAtAward: v.optional(v.number()),
+    isFirstToAchieve: v.boolean(),
+    state: v.union(v.literal("provisional"), v.literal("finalized"), v.literal("revoked")),
+    awardedAt: v.number(),
+    revokedAt: v.optional(v.number()),
+    revokeReason: v.optional(v.string()),
+    // bible l.247 M13 bridge — absence preserves ordinary M12 immutability
+    revocationBasis: v.optional(v.union(
+      v.literal("fraud_confirmed"), v.literal("sanction"),
+    )),
+  })
+    .index("by_subject_state", ["subjectType", "subjectId", "state"])
+    .index("by_type_state", ["type", "state"]),
+
+  /** bible l.342 — Reach = Σ member.legitimacy over qualified members;
+   *  join deliberate, never auto; leave log-scaled (anti-suppression). */
+  distributionMemberships: defineTable({
+    distributionId: v.id("distributions"),
+    memberUserId: v.id("users"),
+    memberLegitimacySnapshot: v.number(),
+    eligibilityStatus: v.string(),
+    joinedAt: v.number(),
+    leftAt: v.optional(v.number()),
+  })
+    .index("by_distribution_member", ["distributionId", "memberUserId"])
+    .index("by_member", ["memberUserId"]),
+
+  /** bible l.343 — annual freeze/recalibration; thresholds keyed by the
+   *  ten signal.level literals (bible l.404) — not a free-form blob.
+   *  Values await calibration_pending config keys (DECISIONS-LOCKED #11). */
+  signalSeasons: defineTable({
+    seasonNumber: v.number(),
+    startAt: v.number(),
+    endAt: v.number(),
+    status: v.union(
+      v.literal("upcoming"), v.literal("announced"),
+      v.literal("active"), v.literal("closed"),
+    ),
+    mode: v.union(v.literal("fixed"), v.literal("percentile"), v.literal("hybrid")),
+    thresholds: v.object({
+      orbit: v.optional(v.number()),
+      comet: v.optional(v.number()),
+      moon: v.optional(v.number()),
+      planet: v.optional(v.number()),
+      star: v.optional(v.number()),
+      supernova: v.optional(v.number()),
+      nebula: v.optional(v.number()),
+      galaxy: v.optional(v.number()),
+      universe: v.optional(v.number()),
+      multiverse: v.optional(v.number()),
+    }),
+    poolSize: v.number(),
+    announcedAt: v.optional(v.number()),
+    recalibratedAt: v.optional(v.number()),
+  }).index("by_seasonNumber", ["seasonNumber"]),
+
+  /** bible l.344 — per season. Bands: Orbit=all · Comet 50% · Moon 20% ·
+   *  Planet 10% · Star 3% · Supernova 1% · Nebula 0.3% · Galaxy 0.1% ·
+   *  Universe 0.03% · Multiverse abs-cap ~top100. Cold-start <1000 pool =
+   *  fixed thresholds; Supernova+ silhouettes until pool grows. */
+  signalLevelDefinitions: defineTable({
+    seasonId: v.id("signalSeasons"),
+    level: v.union(
+      v.literal("orbit"), v.literal("comet"), v.literal("moon"), v.literal("planet"),
+      v.literal("star"), v.literal("supernova"), v.literal("nebula"),
+      v.literal("galaxy"), v.literal("universe"), v.literal("multiverse"),
+    ),
+    percentileBand: v.string(),
+    fixedMightThreshold: v.optional(v.number()),
+    sustainDays: v.number(),
+    revealState: v.union(v.literal("visible"), v.literal("next"), v.literal("silhouette")),
+    identityText: v.string(), // empty until copy is owned — UI renders the level literal
+    milestoneCopyRef: v.string(),
+  }).index("by_season_level", ["seasonId", "level"]),
+
+  /** bible l.347 — history + holdover. Might continuous, Level committed
+   *  monthly; routine demotion only at season boundary, max 1 level. */
+  distributionLevelAssignments: defineTable({
+    distributionId: v.id("distributions"),
+    seasonId: v.id("signalSeasons"),
+    level: v.string(), // signal.level literal
+    status: v.union(
+      v.literal("active"), v.literal("holdover"),
+      v.literal("demoted"), v.literal("dormant"),
+    ),
+    mightAtCommit: v.number(),
+    committedAt: v.number(),
+    holdoverUntil: v.optional(v.number()),
+  })
+    .index("by_distribution_season", ["distributionId", "seasonId"])
+    .index("by_season_level", ["seasonId", "level"]),
+
+  /** bible l.348 — Phase-2 skeleton, unused at MVP-1. */
+  vouches: defineTable({
+    distributionId: v.id("distributions"),
+    voucherUserId: v.id("users"),
+    voucherLegitimacy: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+    revokedAt: v.optional(v.number()),
+    reconfirmDueAt: v.optional(v.number()),
+  }).index("by_distribution_voucher", ["distributionId", "voucherUserId"]),
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SLICE-P7E-10 — M13 remainder (bible l.241-244). moderationCases /
+  //  reports / legalIntake / capabilityRestrictions / trustHistory already
+  //  exist (P1-03 / P6-03 / Phase 3).
+  // ═══════════════════════════════════════════════════════════════════════
+
+  /** bible l.242 — the moderator action record (case-linked, reversible
+   *  flagged, idempotency-keyed). */
+  moderationActions: defineTable({
+    caseId: v.id("moderationCases"),
+    targetType: v.string(),
+    targetId: v.string(),
+    actorUserId: v.id("users"),
+    actorRole: v.string(),
+    action: v.string(),
+    reasonCode: v.string(),
+    policyVersion: v.string(),
+    reversible: v.boolean(),
+    beforeState: v.string(),
+    afterState: v.string(),
+    reportId: v.optional(v.id("reports")),
+    idempotencyKey: v.string(),
+    appealDeadlineAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_case", ["caseId"])
+    .index("by_target", ["targetType", "targetId"]),
+
+  /** bible l.244a — the user strike ledger (distinct from storeStrikes).
+   *  RI: 1 valid notice = 1 provisional strike; 3/12mo → terminated. */
+  strikes: defineTable({
+    userId: v.id("users"),
+    class: v.union(
+      v.literal("content_conduct"), v.literal("spam_manipulation"),
+      v.literal("commercial_integrity"), v.literal("copyright_rights"),
+      v.literal("account_integrity"),
+    ),
+    caseId: v.id("moderationCases"),
+    noticeRef: v.optional(v.string()),
+    active: v.boolean(),
+    voidedByRestore: v.boolean(),
+    provisional: v.optional(v.boolean()),
+    expiresAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_user_active", ["userId", "active"])
+    .index("by_case", ["caseId"]),
+
+  /** bible l.245 — cases store code+version, never rendered copy;
+   *  Legal-mutable via NEW VERSION, never in-place overwrite (CAP-358/429). */
+  policyReasonCodes: defineTable({
+    code: v.string(), // immutable
+    severity: v.string(),
+    defaultAction: v.string(),
+    userFacingTitle: v.string(),
+    userFacingBody: v.string(),
+    policyUrlAnchor: v.string(),
+    appealable: v.boolean(),
+    active: v.boolean(),
+    version: v.number(),
+    effectiveFrom: v.number(),
+    autoReleaseEligible: v.optional(v.boolean()), // C1 — soft allowlist only
+  }).index("by_code_version", ["code", "version"]),
 });
