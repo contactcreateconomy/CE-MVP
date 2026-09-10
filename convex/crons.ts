@@ -219,3 +219,14 @@ crons.interval("store metrics skeleton", { hours: 24 }, internal.signal.promoteD
 // SLICE-P7T-09 (CAP-338): repeat-infringer policy evaluation — 3 valid
 // copyright strikes/12mo → terminated; voided strikes reinstate.
 crons.interval("repeat-infringer evaluate", { hours: 24 }, internal.jobs.repeatInfringer.evaluate, {});
+
+// SLICE-P7A-04/05/06/03: the AdminCore job set — counters refresh (~60s
+// → 1m cron floor), S0 cover + queue-load + drip + seo + rank-integrity
+// sweeps, and the intervention orphan (elapsed snoozes) check.
+crons.interval("admin counters refresh", { minutes: 1 }, internal.admin.counters.refresh, {});
+crons.interval("s0 cover sweep", { minutes: 5 }, internal.admin.homeAlertWriters.s0CoverSweep, {});
+crons.interval("queue load sweep", { minutes: 5 }, internal.admin.homeAlertWriters.queueLoadSweep, {});
+crons.interval("drip supply sweep", { hours: 6 }, internal.admin.homeAlertWriters.dripSupplySweep, {});
+crons.interval("seo health sweep", { hours: 6 }, internal.admin.homeAlertWriters.seoHealthSweep, {});
+crons.interval("rank integrity sweep", { hours: 12 }, internal.admin.homeAlertWriters.rankIntegritySweep, {});
+crons.interval("intervention orphan sweep", { minutes: 5 }, internal.admin.interventions.sweepOrphans, {});

@@ -20,6 +20,10 @@ const DATA_SOURCE_KEYS = [
   "roles.listAssignments",  // /admin/roles
   "audit.query",            // /admin/audit
   "moderation.queueList",    // /admin/moderation (SLICE-P7E-14)
+  "admin.home.compose",     // /admin/home (SLICE-P7A-01)
+  "support.userSummary",    // /admin/support (SLICE-P7A-01)
+  "wiki.get",               // /admin/wiki (SLICE-P7A-01)
+  "readiness.evaluate",     // /admin/readiness (SLICE-P7A-01)
 ] as const;
 
 interface WidgetDef {
@@ -95,6 +99,63 @@ export const ADMIN_WIDGET_CATALOG: WidgetDef[] = [
     wikiSlug: "admin-audit",
     freshnessThresholdSeconds: 0,
     dataSourceKey: "audit.query",
+  },
+  // SLICE-P7A-01 (CAP-569 grow): the four AdminCore routes.
+  {
+    widgetKey: "admin-home",
+    moduleId: "m15",
+    widgetType: "console",
+    title: "Admin Home",
+    routeKey: "/admin/home",
+    requiredPermissionKeys: ["administrator"],
+    status: "active",
+    homeEligible: true,
+    defaultOrder: 1,
+    wikiSlug: "admin-home",
+    freshnessThresholdSeconds: 60,
+    dataSourceKey: "admin.home.compose",
+  },
+  {
+    widgetKey: "admin-support",
+    moduleId: "m15",
+    widgetType: "console",
+    title: "Support Console",
+    routeKey: "/admin/support",
+    requiredPermissionKeys: ["support_operator"],
+    status: "active",
+    homeEligible: false,
+    defaultOrder: 25,
+    wikiSlug: "admin-support",
+    freshnessThresholdSeconds: 120,
+    dataSourceKey: "support.userSummary",
+  },
+  {
+    widgetKey: "admin-wiki",
+    moduleId: "m15",
+    widgetType: "console",
+    title: "Operations Wiki",
+    routeKey: "/admin/wiki",
+    requiredPermissionKeys: ["administrator", "editor", "publisher", "moderator", "store_operator", "support_operator"],
+    status: "active",
+    homeEligible: false,
+    defaultOrder: 35,
+    wikiSlug: "admin-wiki",
+    freshnessThresholdSeconds: 0,
+    dataSourceKey: "wiki.get",
+  },
+  {
+    widgetKey: "admin-readiness",
+    moduleId: "m18",
+    widgetType: "console",
+    title: "Launch Readiness",
+    routeKey: "/admin/readiness",
+    requiredPermissionKeys: ["administrator"],
+    status: "active",
+    homeEligible: false,
+    defaultOrder: 45,
+    wikiSlug: "admin-readiness",
+    freshnessThresholdSeconds: 0,
+    dataSourceKey: "readiness.evaluate",
   },
   {
     widgetKey: "admin-moderation",

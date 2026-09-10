@@ -115,6 +115,11 @@ const REGISTRY_ROWS = [
   { key: "signal.dormant.mightZeroDays", module: "m12", valueType: "number" as const, default: 180, min: 30, max: 365, editTier: "tier2" as const, blastRadius: "CAP-316 dormancy window at Might=0.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   { key: "signal.legitimacy.modelVersion", module: "m12", valueType: "string" as const, default: "legitimacy.v1", editTier: "tier2" as const, blastRadius: "Legitimacy model version stamp (CAP-283).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
   { key: "signal.attribution.modelVersion", module: "m12", valueType: "string" as const, default: "positional.v1", editTier: "tier2" as const, blastRadius: "Attribution model version stamp (CAP-279).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  // SLICE-P7A-05/06: the shared ingest throttle flag (CAP-399/334).
+  { key: "ingest.throttle", module: "m13", valueType: "boolean" as const, default: false, editTier: "tier2" as const, blastRadius: "Throttles new ingest on S0 backlog >4h or queue >500 (never appeals/legal/erasure/safety).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  // SLICE-P7A-10: Readiness Category 8 — ranking calibration reviewed
+  // (gates public launch; founder flips after the calibration pass).
+  { key: "ranking.calibration.reviewed", module: "m12", valueType: "boolean" as const, default: false, editTier: "tier3" as const, blastRadius: "Readiness Category 8 — the public-launch ranking-calibration review.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
 ];
 
 // P1-07 mechanism + P2 rows: CAP-437 rejects capture of any event whose

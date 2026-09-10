@@ -222,7 +222,7 @@ describe("SLICE-P3-03 — adminWidgets catalog + seeder", () => {
   it("every widget has a dataSourceKey (enum→code, no platform-wide enum invented)", () => {
     for (const w of ADMIN_WIDGET_CATALOG) {
       expect(w.dataSourceKey).toBeTruthy();
-      expect(w.dataSourceKey).toMatch(/^[a-z]+\.[a-zA-Z]+$/); // module.function shape
+      expect(w.dataSourceKey).toMatch(/^[a-z]+(\.[a-zA-Z]+)+$/); // dotted path — P7A-01's three-segment keys are catalog-named
     }
   });
 });

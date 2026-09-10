@@ -55,12 +55,10 @@ export const casUpdate = mutation({
     // editor path cannot bypass it (fail-closed for opening up; waitlist/
     // closed remain always settable).
     if (args.key === "signup.mode" && args.value === "open") {
-      const readiness = await ctx.db.query("launchReadinessResults").first();
-      if (!readiness || readiness.overall !== "ready") {
-        throw new Error(
-          `casUpdate: cannot set signup.mode=open — readiness is ${readiness?.overall ?? "unevaluated"} (fail-closed per E5/DEC-M18-READINESS)`,
-        );
-      }
+      // SLICE-P7A-10: CAP-510 invoked synchronously in the write path —
+      // the shared helper reads the LATEST evaluation (fail-closed)
+      const { assertSignupOpenAllowedTx } = await import("./admin/readiness");
+      await assertSignupOpenAllowedTx(ctx);
     }
 
     // CAP-395: reason required for tier2/3

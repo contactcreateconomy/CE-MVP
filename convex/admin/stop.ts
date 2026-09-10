@@ -109,13 +109,10 @@ export const signupModeSet = mutation({
   handler: async (ctx, args) => {
     await assertAdminPermission(ctx);
     if (args.mode === "open") {
-      // E5 fail-closed readiness gate (synchronous, in-transaction)
-      const readiness = await ctx.db.query("launchReadinessResults").first();
-      if (!readiness || readiness.overall !== "ready") {
-        throw new Error(
-          `signupModeSet: cannot set mode=open — readiness is ${readiness?.overall ?? "unevaluated"} (fail-closed per E5/DEC-M18-READINESS)`,
-        );
-      }
+      // SLICE-P7A-10: CAP-510 invoked synchronously (the shared helper —
+      // reads the LATEST evaluation, fail-closed)
+      const { assertSignupOpenAllowedTx } = await import("./readiness");
+      await assertSignupOpenAllowedTx(ctx);
     }
     return await writeAudited(ctx, async (actx) => {
       const live = await _configRow(actx, "signup.mode");

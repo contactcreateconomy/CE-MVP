@@ -3227,6 +3227,98 @@ export default defineSchema({
   // ── SLICE-P7E-17 — MAX layer (bible l.110-113; P5-01 omitted, defined
   //  here per the catalog's flag). Runs are immutable audit rows. ──
 
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SLICE-P7A-01/10 — M15/M18 AdminCore remainder (bible l.257, l.260-262,
+  // l.287, l.304 + Core-enums l.392). adminInterventionAlerts already
+  // exists (Phase 3); launchReadinessResults/jobDeadLetters already exist.
+  // ═══════════════════════════════════════════════════════════════════════
+
+  /** bible l.257 — M18 refreshes; M15 renders; stale ≠ 0 (quoted). */
+  adminCounters: defineTable({
+    counterKey: v.string(),
+    value: v.number(),
+    computedAt: v.number(),
+    health: v.union(v.literal("healthy"), v.literal("stale"), v.literal("failed")),
+  }).index("by_counterKey", ["counterKey"]),
+
+  /** bible l.260 — STOP/coverage/supply incident ledger. */
+  operationalIncidents: defineTable({
+    type: v.union(v.literal("stop"), v.literal("coverage"), v.literal("supply"), v.literal("other")),
+    capabilityKey: v.optional(v.string()),
+    ownerUserId: v.optional(v.id("users")),
+    activatedByUserId: v.optional(v.id("users")),
+    reason: v.string(),
+    reviewAt: v.optional(v.number()),
+    handoffDueAt: v.optional(v.number()),
+    expectedDurationMin: v.optional(v.number()),
+    recoveryCheckKey: v.optional(v.string()),
+    state: v.union(v.literal("active"), v.literal("recovering"), v.literal("closed")),
+    createdAt: v.number(),
+    closedAt: v.optional(v.number()),
+  }).index("by_state_type", ["state", "type"]),
+
+  /** bible l.261 — support quota grants. ≤5 extra acquires · ≤7d · max 1
+   *  active/user · unique incident; NO permanent opsExempt flag (quoted). */
+  quotaGrants: defineTable({
+    userId: v.id("users"),
+    extraAcquires: v.number(),
+    expiresAt: v.number(),
+    grantedByUserId: v.id("users"),
+    reason: v.string(),
+    incidentId: v.optional(v.id("operationalIncidents")),
+    neutralizedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_neutralizedAt", ["userId", "neutralizedAt"]),
+
+  /** bible l.262 — deploy-synced sanitized wiki; never executable HTML. */
+  adminWikiArticles: defineTable({
+    slug: v.string(),
+    title: v.string(),
+    domain: v.string(),
+    bodyMarkdown: v.string(), // sanitized — script/iframe/on* stripped at deploySync
+    relatedWidgetKeys: v.array(v.string()),
+    constraintsSummary: v.string(),
+    version: v.number(),
+    updatedAt: v.number(),
+    updatedBy: v.string(),
+  }).index("by_slug", ["slug"]),
+
+  /** bible l.287 — the CAP-484 monitored predicates (M17 writes; M15 renders). */
+  seoHealth: defineTable({
+    sitemapUrlCount: v.number(),
+    lastSitemapBuildAt: v.number(),
+    coverageErrorCount: v.number(),
+    thinIndexedCount: v.number(),
+    heldIndexedCount: v.number(),
+    lastGscPullAt: v.optional(v.number()),
+    status: v.string(),
+    lastCalculatedAt: v.number(),
+  }).index("by_lastCalculatedAt", ["lastCalculatedAt"]),
+
+  /** bible l.304 (transcribed from M18 l.73) — dependency-health +
+   *  liveness vocabulary on ONE state field (Core-enums l.392, quoted):
+   *  healthy · degraded · unavailable · recovering · stale · dead · never_ran. */
+  platformHealth: defineTable({
+    probeKey: v.string(), // or jobKey
+    state: v.union(
+      v.literal("healthy"), v.literal("degraded"), v.literal("unavailable"),
+      v.literal("recovering"), v.literal("stale"), v.literal("dead"), v.literal("never_ran"),
+    ),
+    severity: v.string(),
+    checkedAt: v.number(),
+    lastSuccessAt: v.optional(v.number()),
+    expectedNextRunAt: v.optional(v.number()),
+    latencyMs: v.optional(v.number()),
+    failureClass: v.optional(v.string()),
+    freshUntil: v.number(),
+    dependency: v.optional(v.string()),
+    affectedCapabilities: v.array(v.string()),
+    deepLinkKey: v.string(),
+  }).index("by_probeKey", ["probeKey"]),
+
   /** DECISIONS-LOCKED #7 outbox — vendor deletion requests (CAP-506
    *  writes pending rows; P7O-08's background job calls the deletion API
    *  with retry and flips status). NOT a second erasure pipeline. */
