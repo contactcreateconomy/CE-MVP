@@ -35,6 +35,7 @@ import { classifySafety } from "./lib/classifier";
 import { checkNoUrls } from "./posts";
 import { checkCommentEligibility } from "./eligibility";
 import { appendActivity } from "./activity";
+import { autoGateTx } from "./moderation/autoGate";
 
 /** Input bound only — comment body-length product rules are unspecified
  *  (contract OQ8); this is a server input ceiling, not a product rule. */
@@ -235,6 +236,19 @@ export const create = mutation({
     if (depth === 0) {
       await ctx.db.patch(commentId, { threadRootCommentId: commentId }); // self-id convention
       threadRoot = commentId;
+    }
+
+    // SLICE-P7E-11 (CAP-321/102): the NAMED auto-gate — deterministic
+    // obfuscation/velocity layer AFTER the P5-02 stack. Not a replacement
+    // for CAP-154 (dedupe holds the line); a gate hold overrides the
+    // status same-tx (fail-closed direction).
+    const gate = await autoGateTx(ctx, {
+      kind: "comment", userId, targetId: commentId, body: args.body,
+    });
+    if (gate.decision !== "pass") {
+      await ctx.db.patch(commentId, { moderationStatus: "held" });
+      moderationStatus = "held";
+      holdReason = gate.reasonCode ?? null;
     }
 
     // Same-mutation: commentScores projection row (dirty for P5-04 recompute)

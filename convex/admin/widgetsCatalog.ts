@@ -19,6 +19,7 @@ const DATA_SOURCE_KEYS = [
   "config.getNamespace",    // /admin/config
   "roles.listAssignments",  // /admin/roles
   "audit.query",            // /admin/audit
+  "moderation.queueList",    // /admin/moderation (SLICE-P7E-14)
 ] as const;
 
 interface WidgetDef {
@@ -94,6 +95,20 @@ export const ADMIN_WIDGET_CATALOG: WidgetDef[] = [
     wikiSlug: "admin-audit",
     freshnessThresholdSeconds: 0,
     dataSourceKey: "audit.query",
+  },
+  {
+    widgetKey: "admin-moderation",
+    moduleId: "m13",
+    widgetType: "console",
+    title: "Moderation Console",
+    routeKey: "/admin/moderation",
+    requiredPermissionKeys: ["moderator", "administrator"],
+    status: "active",
+    homeEligible: false,
+    defaultOrder: 15,
+    wikiSlug: "admin-moderation",
+    freshnessThresholdSeconds: 30,
+    dataSourceKey: "moderation.queueList",
   },
 ];
 

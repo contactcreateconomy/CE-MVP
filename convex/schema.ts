@@ -3199,7 +3199,8 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_case", ["caseId"])
-    .index("by_target", ["targetType", "targetId"]),
+    .index("by_target", ["targetType", "targetId"])
+    .index("by_actor_reasonCode", ["actorUserId", "reasonCode"]),
 
   /** bible l.244a — the user strike ledger (distinct from storeStrikes).
    *  RI: 1 valid notice = 1 provisional strike; 3/12mo → terminated. */
@@ -3220,6 +3221,80 @@ export default defineSchema({
   })
     .index("by_user_active", ["userId", "active"])
     .index("by_case", ["caseId"]),
+
+  // ── SLICE-P7E-17 — MAX layer (bible l.110-113; P5-01 omitted, defined
+  //  here per the catalog's flag). Runs are immutable audit rows. ──
+
+  /** bible l.110 — MAX run audit (status incl. the empty-success class
+   *  while the model vendor is unnamed — flagged). */
+  threadIntelligenceRuns: defineTable({
+    postId: v.id("posts"),
+    fromThreadRevision: v.number(),
+    toThreadRevision: v.number(),
+    generationRunId: v.optional(v.string()),
+    status: v.string(),
+    humanCommentCount: v.number(),
+    startedAt: v.number(),
+    completedAt: v.number(),
+    failureCode: v.optional(v.string()),
+  }).index("by_post", ["postId"]),
+
+  /** bible l.111 — themes with entailment-verified claim spans. */
+  threadThemes: defineTable({
+    threadIntelligenceRunId: v.id("threadIntelligenceRuns"),
+    postId: v.id("posts"),
+    label: v.string(),
+    summary: v.string(),
+    supportingCommentIds: v.array(v.id("comments")),
+    claimSpans: v.array(v.any()),
+    entailment: v.union(v.literal("supported"), v.literal("contradicted"), v.literal("insufficient")),
+    humanCommentCount: v.number(),
+    status: v.string(),
+  }).index("by_run", ["threadIntelligenceRunId"]),
+
+  /** bible l.112 — positions incl. the common-ground map (never labeled
+   *  "consensus"; only with ≥2 genuine stance clusters). */
+  threadPositions: defineTable({
+    threadIntelligenceRunId: v.id("threadIntelligenceRuns"),
+    postId: v.id("posts"),
+    position: v.string(),
+    supportingCommentIds: v.array(v.id("comments")),
+    claimSpans: v.array(v.any()),
+    entailment: v.union(v.literal("supported"), v.literal("contradicted"), v.literal("insufficient")),
+    challengingCommentIds: v.array(v.id("comments")),
+    commonGround: v.optional(v.string()),
+    participantCount: v.number(),
+    status: v.string(),
+  }).index("by_run", ["threadIntelligenceRunId"]),
+
+  /** bible l.113 — open questions. */
+  threadQuestions: defineTable({
+    threadIntelligenceRunId: v.id("threadIntelligenceRuns"),
+    postId: v.id("posts"),
+    question: v.string(),
+    status: v.string(),
+  }).index("by_run", ["threadIntelligenceRunId"]),
+
+  /** bible l.65 + l.246a — append-only tier/moderation/signal timeline
+   *  (cannot be backfilled from trustTier alone). P7E-15 writes the
+   *  standing transitions; P7T owns the consent-tier events. */
+  trustHistory: defineTable({
+    userId: v.id("users"),
+    event: v.string(),
+    fromTier: v.optional(v.string()),
+    toTier: v.optional(v.string()),
+    reason: v.string(),
+    evidenceId: v.optional(v.string()),
+    standingTransition: v.optional(v.object({
+      from: v.string(),
+      to: v.string(),
+      caseId: v.id("moderationCases"),
+      durationDays: v.number(),
+    })),
+    triggerCaseId: v.optional(v.id("moderationCases")),
+    occurredAt: v.number(),
+  })
+    .index("by_user_time", ["userId", "occurredAt"]),
 
   /** bible l.245 — cases store code+version, never rendered copy;
    *  Legal-mutable via NEW VERSION, never in-place overwrite (CAP-358/429). */

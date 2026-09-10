@@ -103,8 +103,8 @@ describe("SLICE-P5-05 — M7 profile schema", () => {
     expect(indexNames(t)).toContain("by_user_created");
   });
 
-  it("trustHistory NOT defined here (M12 reputation, Phase 7)", () => {
-    expect(schema.tables.trustHistory).toBeUndefined();
+  it("trustHistory deferral RESOLVED 2026-09-10: defined by P7E-15 with the l.246a deepening", () => {
+    expect(schema.tables.trustHistory).toBeDefined();
   });
 });
 

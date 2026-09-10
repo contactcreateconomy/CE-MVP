@@ -18,6 +18,7 @@ import { useMutation, useQuery } from "convex/react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ReportModal } from "@/components/discussion/report-modal";
 import { Card, CardContent } from "@/components/ui/card";
 import { api } from "@/lib/convex";
 import { isConvexConfigured } from "@cemvp/convex-client";
@@ -57,6 +58,7 @@ interface CommentCard {
 }
 
 export function CanonicalThread({ postId, archived }: { postId: string; archived: boolean }) {
+  const [reportTarget, setReportTarget] = useState<string | null>(null);
   const configured = isConvexConfigured();
   const thread = useQuery(
     api.comments.reads.getThread,
@@ -145,7 +147,7 @@ export function CanonicalThread({ postId, archived }: { postId: string; archived
       ) : (
         <ul className="space-y-3">
           {comments.map((c) => (
-            <CommentRow key={c.id} comment={c} postId={postId} accepted={thread.help?.acceptedCommentId === c.id} />
+            <CommentRow key={c.id} comment={c} postId={postId} accepted={thread.help?.acceptedCommentId === c.id} onReport={() => setReportTarget(c.id)} />
           ))}
         </ul>
       )}
@@ -165,11 +167,12 @@ export function CanonicalThread({ postId, archived }: { postId: string; archived
           </Button>
         </div>
       ) : null}
+      <ReportModal commentId={reportTarget} open={reportTarget !== null} onOpenChange={(o) => !o && setReportTarget(null)} />
     </section>
   );
 }
 
-function CommentRow({ comment, postId, accepted }: { comment: CommentCard; postId: string; accepted: boolean }) {
+function CommentRow({ comment, postId, accepted, onReport }: { comment: CommentCard; postId: string; accepted: boolean; onReport: () => void }) {
   const [expanded, setExpanded] = useState(false);
   const valuable = useMutation(api.reactions.toggleValuable);
   const negative = useMutation(api.reactions.toggleNegative);
@@ -246,6 +249,12 @@ function CommentRow({ comment, postId, accepted }: { comment: CommentCard; postI
                 onClick={() => void act(() => signal({ commentId: comment.id as any, signalType: "context_needed" }))}
               >
                 Needs context
+              </Button>
+              <Button
+                variant="ghost" size="sm" disabled={busy}
+                onClick={onReport}
+              >
+                Report
               </Button>
               {comment.depth === 0 ? (
                 <Button variant="ghost" size="sm" disabled={busy} onClick={() => setExpanded((v) => !v)}>

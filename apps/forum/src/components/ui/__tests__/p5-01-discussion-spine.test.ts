@@ -132,12 +132,10 @@ describe("SLICE-P5-01 — M6 discussion spine", () => {
     expect(f.kind === "optional" ? f.value.kind : f.kind).toBe("id");
   });
 
-  it("deferred-with-flag: MAX tables + rank snapshots are NOT defined here (Phase-7 owners)", () => {
-    for (const absent of [
-      "threadIntelligenceRuns", "threadThemes", "threadPositions",
-      "threadQuestions", "commentRankSnapshots",
-    ]) {
-      expect(schema.tables[absent], `${absent} must not be defined in P5-01`).toBeUndefined();
+  it("deferred-with-flag RESOLVED 2026-09-10: MAX tables now defined by P7E-17 (bible l.110-113); commentRankSnapshots still deferred (calibration audit, Phase-7 remainder)", () => {
+    for (const present of ["threadIntelligenceRuns", "threadThemes", "threadPositions", "threadQuestions"]) {
+      expect(schema.tables[present], `${present} landed with P7E-17`).toBeDefined();
     }
+    expect(schema.tables.commentRankSnapshots, "still deferred — no owner slice yet").toBeUndefined();
   });
 });

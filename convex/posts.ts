@@ -20,6 +20,7 @@ import { writeAudited, newCorrelationId } from "./lib/audit";
 import { checkRateLimit } from "./lib/rateLimit";
 import { checkPostEligibility } from "./eligibility";
 import { classifySafety } from "./lib/classifier";
+import { autoGateTx } from "./moderation/autoGate";
 import { captureEvent } from "./lib/events";
 import { appendActivity } from "./activity";
 
@@ -199,6 +200,21 @@ export const createPost = mutation({
         createdAt: Date.now(),
       });
       createdPostId = postId;
+
+      // SLICE-P7E-11 (CAP-321/102): the NAMED auto-gate — deterministic
+      // obfuscation/velocity layer AFTER the classifier seam. Not a
+      // replacement for CAP-154 above (dedupe holds the line); a gate
+      // hold overrides the status (fail-closed direction) same-tx.
+      const gate = await autoGateTx(actx, {
+        kind: "post", userId, targetId: postId, body: `${args.title}\n${args.body}`,
+      });
+      if (gate.decision !== "pass") {
+        await actx.db.patch(postId, {
+          moderationStatus: "held",
+          lifecycleStatus: lifecycleStatus === "published" ? "ready" : lifecycleStatus,
+          publishedAt: undefined,
+        });
+      }
 
       // CAP-154 case rows for the hold outcomes (M13 owns disposition)
       if (moderationStatus === "pending" || moderationStatus === "held") {

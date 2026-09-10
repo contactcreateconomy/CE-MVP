@@ -41,6 +41,11 @@ export const RATE_LIMITS: Record<string, RateLimit[]> = {
     { name: "report.daily", max: 10, periodMs: 24 * 60 * 60_000, subject: "user" },
     { name: "report.weekly", max: 30, periodMs: 7 * 24 * 60 * 60_000, subject: "user" },
   ],
+  // CAP-325 (SLICE-P7E-12): "critical ≤5/hr mechanical" — safety_illegal
+  // reports only; never blocks the daily/weekly member channel above.
+  "report.critical": [
+    { name: "report.critical.hourly", max: 5, periodMs: 60 * 60_000, subject: "user" },
+  ],
   // CAP-015: waitlist join "10/h ip + 3/24h email"
   "waitlist.join": [
     { name: "waitlist.join.ip", max: 10, periodMs: 60 * 60_000, subject: "ip_hash" },

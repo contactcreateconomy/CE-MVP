@@ -9,11 +9,15 @@
  */
 
 import type * as activity from "../activity.js";
+import type * as admin_appeals from "../admin/appeals.js";
 import type * as admin_audit from "../admin/audit.js";
 import type * as admin_curation from "../admin/curation.js";
+import type * as admin_moderationDomain from "../admin/moderationDomain.js";
+import type * as admin_moderationQueue from "../admin/moderationQueue.js";
 import type * as admin_resources from "../admin/resources.js";
 import type * as admin_resourcesLifecycle from "../admin/resourcesLifecycle.js";
 import type * as admin_roles from "../admin/roles.js";
+import type * as admin_sanctions from "../admin/sanctions.js";
 import type * as admin_shell from "../admin/shell.js";
 import type * as admin_stop from "../admin/stop.js";
 import type * as admin_store from "../admin/store.js";
@@ -67,6 +71,7 @@ import type * as jobs_attributionSettle from "../jobs/attributionSettle.js";
 import type * as jobs_explore from "../jobs/explore.js";
 import type * as jobs_infer from "../jobs/infer.js";
 import type * as jobs_legitimacy from "../jobs/legitimacy.js";
+import type * as jobs_maxRefresh from "../jobs/maxRefresh.js";
 import type * as jobs_might from "../jobs/might.js";
 import type * as jobs_rank from "../jobs/rank.js";
 import type * as jobs_recognition from "../jobs/recognition.js";
@@ -85,8 +90,10 @@ import type * as lib_rateLimit from "../lib/rateLimit.js";
 import type * as lib_safeFetch from "../lib/safeFetch.js";
 import type * as lib_urlGuards from "../lib/urlGuards.js";
 import type * as migrations_backfillDistributions from "../migrations/backfillDistributions.js";
+import type * as moderation_autoGate from "../moderation/autoGate.js";
 import type * as moderation_reasonCodes from "../moderation/reasonCodes.js";
 import type * as moderation_reasonCodesSeed from "../moderation/reasonCodesSeed.js";
+import type * as moderation_report from "../moderation/report.js";
 import type * as persona_generate from "../persona/generate.js";
 import type * as persona_genome from "../persona/genome.js";
 import type * as persona_lifecycle from "../persona/lifecycle.js";
@@ -113,6 +120,7 @@ import type * as search from "../search.js";
 import type * as seed from "../seed.js";
 import type * as setup from "../setup.js";
 import type * as signal_award from "../signal/award.js";
+import type * as signal_promoteDemote from "../signal/promoteDemote.js";
 import type * as sources from "../sources.js";
 import type * as sourcesValidate from "../sourcesValidate.js";
 import type * as store_apply from "../store/apply.js";
@@ -132,11 +140,15 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   activity: typeof activity;
+  "admin/appeals": typeof admin_appeals;
   "admin/audit": typeof admin_audit;
   "admin/curation": typeof admin_curation;
+  "admin/moderationDomain": typeof admin_moderationDomain;
+  "admin/moderationQueue": typeof admin_moderationQueue;
   "admin/resources": typeof admin_resources;
   "admin/resourcesLifecycle": typeof admin_resourcesLifecycle;
   "admin/roles": typeof admin_roles;
+  "admin/sanctions": typeof admin_sanctions;
   "admin/shell": typeof admin_shell;
   "admin/stop": typeof admin_stop;
   "admin/store": typeof admin_store;
@@ -190,6 +202,7 @@ declare const fullApi: ApiFromModules<{
   "jobs/explore": typeof jobs_explore;
   "jobs/infer": typeof jobs_infer;
   "jobs/legitimacy": typeof jobs_legitimacy;
+  "jobs/maxRefresh": typeof jobs_maxRefresh;
   "jobs/might": typeof jobs_might;
   "jobs/rank": typeof jobs_rank;
   "jobs/recognition": typeof jobs_recognition;
@@ -208,8 +221,10 @@ declare const fullApi: ApiFromModules<{
   "lib/safeFetch": typeof lib_safeFetch;
   "lib/urlGuards": typeof lib_urlGuards;
   "migrations/backfillDistributions": typeof migrations_backfillDistributions;
+  "moderation/autoGate": typeof moderation_autoGate;
   "moderation/reasonCodes": typeof moderation_reasonCodes;
   "moderation/reasonCodesSeed": typeof moderation_reasonCodesSeed;
+  "moderation/report": typeof moderation_report;
   "persona/generate": typeof persona_generate;
   "persona/genome": typeof persona_genome;
   "persona/lifecycle": typeof persona_lifecycle;
@@ -236,6 +251,7 @@ declare const fullApi: ApiFromModules<{
   seed: typeof seed;
   setup: typeof setup;
   "signal/award": typeof signal_award;
+  "signal/promoteDemote": typeof signal_promoteDemote;
   sources: typeof sources;
   sourcesValidate: typeof sourcesValidate;
   "store/apply": typeof store_apply;

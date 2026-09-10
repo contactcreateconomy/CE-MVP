@@ -197,3 +197,21 @@ crons.interval("badge awards finalize", { hours: 6 }, internal.jobs.recognition.
 crons.interval("reach refresh", { hours: 1 }, internal.jobs.might.reachRefresh, {});
 crons.interval("might recompute", { minutes: 15 }, internal.jobs.might.mightRecompute, {});
 crons.interval("level commit monthly", { hours: 24 }, internal.jobs.might.levelCommitMonthly, {});
+
+// SLICE-P7E-14: the moderation queue's crons — lease expiry (CAP-328/401),
+// aging ticks (CAP-331), s3 auto-release @96h (CAP-333).
+crons.interval("moderation lease expire", { minutes: 1 }, internal.admin.moderationQueue.leaseExpire, {});
+crons.interval("moderation queue age", { minutes: 15 }, internal.admin.moderationQueue.queueAge, {});
+crons.interval("moderation s3 auto-release", { minutes: 15 }, internal.admin.moderationQueue.autoRelease, {});
+
+// SLICE-P7E-15/16/17/18: brigade sweep, appeal SLA, MAX refresh + the
+// season engine (recalibrate boundary, sustained promotion, annual
+// demotion at boundary, discoverer, store skeleton).
+crons.interval("brigade detection sweep", { hours: 1 }, internal.admin.sanctions.brigadeSweep, {});
+crons.interval("appeal SLA tick", { hours: 1 }, internal.admin.appeals.slaTick, {});
+crons.interval("max refresh sweep", { minutes: 15 }, internal.jobs.maxRefresh.sweep, {});
+crons.interval("season recalibrate", { hours: 24 }, internal.signal.promoteDemote.seasonRecalibrate, {});
+crons.interval("sustained promotion check", { hours: 24 }, internal.signal.promoteDemote.promoteSustained, {});
+crons.interval("annual demotion (boundary-gated)", { hours: 24 }, internal.signal.promoteDemote.demoteAnnual, {});
+crons.interval("discoverer check", { hours: 24 }, internal.signal.promoteDemote.discovererCheck, {});
+crons.interval("store metrics skeleton", { hours: 24 }, internal.signal.promoteDemote.storeMetricsSkeleton, {});
