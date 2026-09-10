@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [001-default, main]
+  push:
+    branches: [001-default]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Typecheck · Lint · Test · Build · Cap-coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        # pnpm version is pinned via packageManager in package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test:run
+
+      - name: Capability coverage gate (572/572 expected)
+        run: node scripts/cap-coverage.mjs
+
+      - name: Build
+        run: pnpm build
+        # No NEXT_PUBLIC_CONVEX_URL: the codebase guards prerenders with
+        # isConvexConfigured() exactly for CI/Vercel builds without Convex.

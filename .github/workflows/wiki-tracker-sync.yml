@@ -1,0 +1,50 @@
+name: Wiki tracker sync
+
+# Keeps the wiki Progress-Tracker (AGENTS.md §11) in sync automatically:
+# - slice issue closed  -> append log row to Progress-Tracker.md
+# Also posts a reminder comment on the closing PR/issue if the CHANGELOG
+# wasn't touched, since a CHANGELOG entry is part of the definition of done.
+
+on:
+  issues:
+    types: [closed, reopened]
+  pull_request:
+    types: [closed]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Append closed slice to Progress-Tracker
+        if: github.event_name == 'issues' && github.event.action == 'closed' && contains(github.event.issue.labels.*.name, 'slice')
+        run: |
+          set -euo pipefail
+          DATE=$(date -u +%Y-%m-%d)
+          ISSUE="${{ github.event.issue.number }}"
+          TITLE="${{ github.event.issue.title }}"
+          ROW="| ${DATE} | #${ISSUE} ${TITLE} | auto | closed via issue |"
+          git clone "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git" wiki
+          cd wiki
+          grep -q "Progress-Tracker.md" <(ls) || { echo "Progress-Tracker.md missing in wiki"; exit 1; }
+          # Append after the last table row of the log section (simple append-before-footer)
+          printf '%s\n' "$ROW" >> Progress-Tracker.md
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Progress-Tracker.md
+          git commit -m "Tracker: #${ISSUE} closed (auto)" || exit 0
+          git push
+
+      - name: Remind on CHANGELOG (PR merged without changelog change)
+        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && !contains(join(github.event.pull_request.labels.*.name, ','), 'no-changelog')
+        run: |
+          # If no CHANGELOG.md file was in the PR diff, comment a reminder
+          FILES=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --paginate --jq '.[].filename')
+          if ! echo "$FILES" | grep -q '^CHANGELOG.md$'; then
+            gh pr comment "${{ github.event.pull_request.number }}" --body "⚠️ Definition of done (AGENTS.md §11): merged without a CHANGELOG.md entry — please add one or apply the \`no-changelog\` label."
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
