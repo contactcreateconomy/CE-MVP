@@ -106,13 +106,16 @@ export const withdraw = mutation({
     // The outbox record: P7O-08's vendor-delete job consumes these;
     // this module NEVER calls the deletion API itself (OQ#3 fence —
     // DECISIONS-LOCKED #7 wires the background job)
-    await ctx.db.insert("analyticsDeletionRequests", {
-      userId,
-      scope: args.purposes.length > 0 ? "purposes" : "all",
-      purposes: args.purposes,
-      status: "pending",
-      requestedAt: now,
-    });
+    const subject = (await ctx.db.get(userId) as any)?.analyticsSubjectId as string | undefined;
+    if (subject) {
+      await ctx.db.insert("analyticsDeletionRequests", {
+        analyticsSubjectId: subject,
+        userId,
+        purposes: args.purposes,
+        status: "requested",
+        requestedAt: now,
+      });
+    }
     return { withdrawn: true };
   },
 });

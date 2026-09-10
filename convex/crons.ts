@@ -234,3 +234,13 @@ crons.interval("intervention orphan sweep", { minutes: 5 }, internal.admin.inter
 // SLICE-P7G-05 (CAP-380): drip.release — the PRIMARY retention cron.
 // Hourly UTC; the job itself gates on drip.releaseHourUtc (default 9).
 crons.interval("drip release", { minutes: 60 }, internal.jobs.dripRelease.release, {});
+
+// SLICE-P7O-03/04: analytics projections + the health probe. L08/S18/
+// activation/commerce hourly; reconcile + orphan sweep daily; probe 5m.
+crons.interval("analytics l08 core", { minutes: 60 }, internal.analytics.projections.l08Core, {});
+crons.interval("analytics s18 core", { minutes: 60 }, internal.analytics.projections.s18Core, {});
+crons.interval("analytics activation inline", { minutes: 60 }, internal.analytics.projections.activationInline, {});
+crons.interval("analytics commerce funnels", { minutes: 60 }, internal.analytics.projections.commerceFunnels, {});
+crons.interval("analytics reconcile", { minutes: 60 * 24 }, internal.analytics.projections.reconcile, {});
+crons.interval("analytics orphan sweep", { minutes: 60 * 24 }, internal.analytics.projections.orphanSweep, {});
+crons.interval("health probe", { minutes: 5 }, internal.admin.reliability.healthProbe, {});

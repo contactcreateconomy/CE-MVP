@@ -9,6 +9,7 @@
  */
 
 import type * as activity from "../activity.js";
+import type * as admin_analytics from "../admin/analytics.js";
 import type * as admin_appeals from "../admin/appeals.js";
 import type * as admin_audit from "../admin/audit.js";
 import type * as admin_counters from "../admin/counters.js";
@@ -19,6 +20,7 @@ import type * as admin_interventions from "../admin/interventions.js";
 import type * as admin_moderationDomain from "../admin/moderationDomain.js";
 import type * as admin_moderationQueue from "../admin/moderationQueue.js";
 import type * as admin_readiness from "../admin/readiness.js";
+import type * as admin_reliability from "../admin/reliability.js";
 import type * as admin_resources from "../admin/resources.js";
 import type * as admin_resourcesLifecycle from "../admin/resourcesLifecycle.js";
 import type * as admin_roles from "../admin/roles.js";
@@ -29,10 +31,12 @@ import type * as admin_store from "../admin/store.js";
 import type * as admin_storeEnforce from "../admin/storeEnforce.js";
 import type * as admin_storeValidate from "../admin/storeValidate.js";
 import type * as admin_support from "../admin/support.js";
+import type * as admin_utm from "../admin/utm.js";
 import type * as admin_widgetsCatalog from "../admin/widgetsCatalog.js";
 import type * as admin_wiki from "../admin/wiki.js";
 import type * as admission from "../admission.js";
 import type * as affiliateInventory from "../affiliateInventory.js";
+import type * as analytics_projections from "../analytics/projections.js";
 import type * as appeal from "../appeal.js";
 import type * as auth from "../auth.js";
 import type * as bootstrap from "../bootstrap.js";
@@ -159,6 +163,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   activity: typeof activity;
+  "admin/analytics": typeof admin_analytics;
   "admin/appeals": typeof admin_appeals;
   "admin/audit": typeof admin_audit;
   "admin/counters": typeof admin_counters;
@@ -169,6 +174,7 @@ declare const fullApi: ApiFromModules<{
   "admin/moderationDomain": typeof admin_moderationDomain;
   "admin/moderationQueue": typeof admin_moderationQueue;
   "admin/readiness": typeof admin_readiness;
+  "admin/reliability": typeof admin_reliability;
   "admin/resources": typeof admin_resources;
   "admin/resourcesLifecycle": typeof admin_resourcesLifecycle;
   "admin/roles": typeof admin_roles;
@@ -179,10 +185,12 @@ declare const fullApi: ApiFromModules<{
   "admin/storeEnforce": typeof admin_storeEnforce;
   "admin/storeValidate": typeof admin_storeValidate;
   "admin/support": typeof admin_support;
+  "admin/utm": typeof admin_utm;
   "admin/widgetsCatalog": typeof admin_widgetsCatalog;
   "admin/wiki": typeof admin_wiki;
   admission: typeof admission;
   affiliateInventory: typeof affiliateInventory;
+  "analytics/projections": typeof analytics_projections;
   appeal: typeof appeal;
   auth: typeof auth;
   bootstrap: typeof bootstrap;

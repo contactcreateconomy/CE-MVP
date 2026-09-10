@@ -202,7 +202,7 @@ describe("SLICE-P7T-13 — CMP (CAP-504–506)", () => {
   it("withdraw: rawEvents NOT consent-gated; the vendor-delete outbox (P7O-08 consumes) — no direct API call", () => {
     const fn = consentSrc.split("export const withdraw")[1];
     expect(fn).toContain("analyticsDeletionRequests");
-    expect(fn).toContain("pending");
+    expect(fn).toContain('"requested"'); // the bible l.277 lifecycle (reconciled from the pending outbox shape)
     expect(fn).not.toContain("PostHog");
     expect(fn).not.toContain("fetch(");
   });

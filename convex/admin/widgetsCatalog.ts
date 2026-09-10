@@ -24,6 +24,10 @@ const DATA_SOURCE_KEYS = [
   "support.userSummary",    // /admin/support (SLICE-P7A-01)
   "wiki.get",               // /admin/wiki (SLICE-P7A-01)
   "readiness.evaluate",     // /admin/readiness (SLICE-P7A-01)
+  "analytics.founderDashboard", // /admin/analytics (SLICE-P7O-01)
+  "reliability.listDeadLetters", // /admin/reliability (SLICE-P7O-01)
+  "utm.getDictionary",       // /admin/utm (SLICE-P7O-01)
+  "seo.health.view",         // /admin/seo (SLICE-P7O-01)
 ] as const;
 
 interface WidgetDef {
@@ -156,6 +160,63 @@ export const ADMIN_WIDGET_CATALOG: WidgetDef[] = [
     wikiSlug: "admin-readiness",
     freshnessThresholdSeconds: 0,
     dataSourceKey: "readiness.evaluate",
+  },
+  // SLICE-P7O-01 (CAP-569 grow): the four 7-OPS routes.
+  {
+    widgetKey: "admin-analytics",
+    moduleId: "m16",
+    widgetType: "console",
+    title: "Analytics",
+    routeKey: "/admin/analytics",
+    requiredPermissionKeys: ["administrator"],
+    status: "active",
+    homeEligible: false,
+    defaultOrder: 50,
+    wikiSlug: "admin-analytics",
+    freshnessThresholdSeconds: 300,
+    dataSourceKey: "analytics.founderDashboard",
+  },
+  {
+    widgetKey: "admin-reliability",
+    moduleId: "m18",
+    widgetType: "console",
+    title: "Reliability",
+    routeKey: "/admin/reliability",
+    requiredPermissionKeys: ["administrator"],
+    status: "active",
+    homeEligible: false,
+    defaultOrder: 55,
+    wikiSlug: "admin-reliability",
+    freshnessThresholdSeconds: 60,
+    dataSourceKey: "reliability.listDeadLetters",
+  },
+  {
+    widgetKey: "admin-utm",
+    moduleId: "m17",
+    widgetType: "console",
+    title: "UTM Builder",
+    routeKey: "/admin/utm",
+    requiredPermissionKeys: ["administrator"],
+    status: "active",
+    homeEligible: false,
+    defaultOrder: 60,
+    wikiSlug: "admin-utm",
+    freshnessThresholdSeconds: 0,
+    dataSourceKey: "utm.getDictionary",
+  },
+  {
+    widgetKey: "admin-seo",
+    moduleId: "m17",
+    widgetType: "console",
+    title: "SEO Health",
+    routeKey: "/admin/seo",
+    requiredPermissionKeys: ["administrator"],
+    status: "active",
+    homeEligible: false,
+    defaultOrder: 65,
+    wikiSlug: "admin-seo",
+    freshnessThresholdSeconds: 600,
+    dataSourceKey: "seo.health.view",
   },
   {
     widgetKey: "admin-moderation",

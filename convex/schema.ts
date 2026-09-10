@@ -3244,6 +3244,94 @@ export default defineSchema({
   // exists (Phase 3); launchReadinessResults/jobDeadLetters already exist.
   // ═══════════════════════════════════════════════════════════════════════
 
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SLICE-P7O-03 — M16 analytics projections (bible l.272-279 + identityJoins).
+  // rawEvents M16 deepen (tombstoneState envelope) is already on the P1-07
+  // region — additive columns only (union discipline, l.121 kept).
+  // ═══════════════════════════════════════════════════════════════════════
+
+  /** bible l.272 — FATAL class: adjustments APPEND; rawEvents never
+   *  rewritten; projections dirty→recalculating→rebuild. */
+  analyticsEligibilityAdjustments: defineTable({
+    sourceEventId: v.id("rawEvents"),
+    adjustmentType: v.union(
+      v.literal("invalidate"), v.literal("reverse"), v.literal("restore"),
+      v.literal("detach_identity"), v.literal("exclude_staff"), v.literal("exclude_test"),
+    ),
+    resultingEligibility: v.string(),
+    reasonCode: v.string(),
+    sourceModule: v.string(),
+    sourceRecordId: v.optional(v.string()),
+    effectiveAt: v.number(),
+    createdAt: v.number(),
+    idempotencyKey: v.string(),
+  })
+    .index("by_sourceEvent", ["sourceEventId"])
+    .index("by_idempotencyKey", ["idempotencyKey"]),
+
+  /** bible l.275 — the projection store (freshness incl. recalculating). */
+  analyticsProjections: defineTable({
+    projectionKey: v.string(),
+    windowStart: v.number(),
+    windowEnd: v.number(),
+    dimensions: v.any(),
+    metrics: v.any(),
+    sampleStatus: v.string(), // only `directional` is named (CAP-449)
+    definitionVersion: v.number(),
+    computedAt: v.number(),
+    freshness: v.union(
+      v.literal("complete"), v.literal("partial"), v.literal("stale"), v.literal("recalculating"),
+    ),
+    lastCalculatedAt: v.number(),
+  })
+    .index("by_projectionKey_window", ["projectionKey", "windowStart"]),
+
+  /** bible l.276 — weekly decisions, append-only (createdAt M16 l.96). */
+  analyticsWeeklyDecisions: defineTable({
+    periodStart: v.number(),
+    periodEnd: v.number(),
+    decision: v.string(),
+    evidence: v.any(),
+    metricSnapshots: v.any(),
+    projectionDefinitionVersion: v.number(),
+    catalogVersion: v.number(),
+    ownerUserId: v.id("users"),
+    nextAction: v.string(),
+    reviewDate: v.number(),
+    createdAt: v.number(),
+  }).index("by_periodStart", ["periodStart"]),
+
+  /** bible l.278 — the daily mirror reconcile. */
+  analyticsReconcileResults: defineTable({
+    ranAt: v.number(),
+    mirroredEventDiff: v.number(),
+    status: v.union(v.literal("ok"), v.literal("untrusted"), v.literal("failed")),
+    affectedEventNames: v.array(v.string()),
+  }).index("by_ranAt", ["ranAt"]),
+
+  /** bible l.279 — unknown-prod-event + probe anomalies (CAP-455 rows). */
+  instrumentationIncidents: defineTable({
+    type: v.string(),
+    severity: v.string(),
+    eventNames: v.array(v.string()),
+    detail: v.string(),
+    status: v.string(),
+    createdAt: v.number(),
+    resolvedAt: v.optional(v.number()),
+  }).index("by_status", ["status"]),
+
+  /** bible l.286 — the UTM dictionary (CAP-566 seeds/edits). */
+  utmDictionary: defineTable({
+    version: v.number(),
+    allowedSources: v.array(v.string()),
+    allowedMediums: v.array(v.string()),
+    campaignFormat: v.string(),
+    contentFormat: v.string(),
+    maxLen: v.number(), // 80 (quoted)
+    updatedAt: v.number(),
+  }).index("by_version", ["version"]),
+
   /** bible l.51 — one ask post-acquire; unsubscribe before capture. */
   newsletterConsents: defineTable({
     userId: v.id("users"),
@@ -3354,17 +3442,25 @@ export default defineSchema({
     deepLinkKey: v.string(),
   }).index("by_probeKey", ["probeKey"]),
 
-  /** DECISIONS-LOCKED #7 outbox — vendor deletion requests (CAP-506
-   *  writes pending rows; P7O-08's background job calls the deletion API
-   *  with retry and flips status). NOT a second erasure pipeline. */
+  /** bible l.277 (timestamps M16 l.97) — the analytics deletion lifecycle
+   *  {requested|submitted|confirmed|failed|retrying}. CAP-506's outbox and
+   *  CAP-453's member request BOTH land here (one lifecycle, one job);
+   *  CMP purpose scope rides the additive `purposes` column. */
   analyticsDeletionRequests: defineTable({
-    userId: v.id("users"),
-    scope: v.union(v.literal("purposes"), v.literal("all")),
-    purposes: v.array(v.string()),
-    status: v.union(v.literal("pending"), v.literal("confirmed")),
+    analyticsSubjectId: v.string(),
+    userId: v.optional(v.id("users")), // additive: the requesting member
+    purposes: v.optional(v.array(v.string())), // additive: CMP withdraw scope
+    status: v.union(
+      v.literal("requested"), v.literal("submitted"), v.literal("confirmed"),
+      v.literal("failed"), v.literal("retrying"),
+    ),
     requestedAt: v.number(),
+    submittedAt: v.optional(v.number()),
     confirmedAt: v.optional(v.number()),
-  }).index("by_user_status", ["userId", "status"]),
+    lastError: v.optional(v.string()),
+  })
+    .index("by_subject_status", ["analyticsSubjectId", "status"])
+    .index("by_user", ["userId"]),
 
   /** bible l.305 (back-filled from M18 l.74, P7T-13) — CMP consent.
    *  PostHog gated; rawEvents NEVER consent-gated (quoted). */
