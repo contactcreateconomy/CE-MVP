@@ -72,15 +72,15 @@ function TopNavWithConvexNotifications() {
   const { authStatus } = useAuth();
   const { unreadNotificationCount } = useSharedData();
   const notificationList = useQuery(
-    api.forum.queries.listNotificationsForViewer,
+    api.notifications.reads.list,
     authStatus === "authenticated" ? {} : "skip",
   );
-  const markRead = useMutation(api.forum.mutations.markNotificationRead);
+  const markRead = useMutation(api.notifications.reads.markRead);
 
   const handleMarkRead = useCallback(
     async (notificationId: string) => {
       try {
-        await markRead({ notificationId: notificationId as import("@/lib/convex").Id<"forumNotifications"> });
+        await markRead({ notificationId: notificationId as import("@/lib/convex").Id<"notifications"> });
       } catch {
         /* ignore */
       }
@@ -88,10 +88,30 @@ function TopNavWithConvexNotifications() {
     [markRead],
   );
 
+  // Canonical rows → the bell's row shape (P7-CLEANUP port)
+  type ReadRow = {
+    id: string;
+    notificationType: string;
+    actorCount: number;
+    eventCount: number;
+    createdAt: number;
+    readAt: number | null;
+  };
+  const rows: NotificationRow[] = (
+    (notificationList as { page?: ReadRow[] } | undefined)?.page ?? []
+  ).map((n) => ({
+    id: n.id,
+    type: "system" as const,
+    title: n.notificationType.replace(/_/g, " "),
+    message: `${n.actorCount > 1 ? `${n.actorCount} members` : "Someone"}${n.eventCount > 1 ? ` · ${n.eventCount} events` : ""}`,
+    createdAt: new Date(n.createdAt).toISOString(),
+    read: Boolean(n.readAt),
+  }));
+
   return (
     <TopNavInner
       convexNotificationsEnabled
-      notificationList={notificationList}
+      notificationList={rows}
       unreadCountOverride={unreadNotificationCount}
       onMarkRead={handleMarkRead}
     />

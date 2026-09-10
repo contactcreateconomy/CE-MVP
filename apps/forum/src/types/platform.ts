@@ -1,6 +1,6 @@
 /**
  * Shared identity type for future cross-app user identity.
- * Forum currently uses forumProfiles. This type will be the
+ * The forum identity is the canonical users table; this type is the
  * bridge when seller/marketplace/creator apps go live.
  */
 export interface PlatformIdentity {

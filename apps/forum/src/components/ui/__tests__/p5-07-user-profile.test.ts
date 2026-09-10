@@ -69,12 +69,13 @@ describe("SLICE-P5-07 — CAP-526/527/528 read surface", () => {
     expect(routeSrc).toContain("index: false");
   });
 
-  it("strangler: canonical-first with the legacy profile fallback", () => {
+  it("P7-CLEANUP: canonical-only (legacy profile fallback retired)", () => {
     const clientSrc = readFileSync(
       join(__dirname, "../../../app/(app)/(shell)/users/[handle]/user-profile-page-client.tsx"),
       "utf8",
     );
     expect(clientSrc).toContain("getProfilePage");
-    expect(clientSrc).toContain("LegacyUserProfile");
+    expect(clientSrc).toContain("CanonicalProfile");
+    expect(clientSrc).not.toContain("LegacyUserProfile");
   });
 });

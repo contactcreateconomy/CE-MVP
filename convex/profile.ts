@@ -2,19 +2,11 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { query } from "./_generated/server";
 import { v } from "convex/values";
 
-const appId = v.union(
-  v.literal("forum"),
-  v.literal("seller"),
-  v.literal("admin"),
-  v.literal("marketplace"),
-);
-
-const membershipView = v.object({
-  _id: v.id("memberships"),
-  app: appId,
-  role: v.string(),
-});
-
+/**
+ * P7-CLEANUP: the legacy membership view retired with the forum-scoped
+ * tables. The canonical current-view keeps the auth-ui contract (identity +
+ * a role signal) from users + roleAssignments (CAP-390's own table).
+ */
 export const current = query({
   args: {},
   returns: v.union(
@@ -25,7 +17,7 @@ export const current = query({
       email: v.optional(v.string()),
       image: v.optional(v.string()),
       handle: v.optional(v.string()),
-      memberships: v.array(membershipView),
+      isStaff: v.optional(v.boolean()),
     }),
   ),
   handler: async (ctx) => {
@@ -37,22 +29,13 @@ export const current = query({
     if (!user) {
       return null;
     }
-    const memberships = await ctx.db
-      .query("memberships")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .collect();
-
     return {
       _id: user._id,
       name: user.name,
       email: user.email,
       image: user.image,
       handle: user.handle,
-      memberships: memberships.map((m) => ({
-        _id: m._id,
-        app: m.app,
-        role: m.role,
-      })),
+      isStaff: user.isStaff ?? undefined,
     };
   },
 });

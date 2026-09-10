@@ -35,7 +35,7 @@ export function ImageUploader({
   const [preview, setPreview] = useState<string | null>(value ?? null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const generateUrl = useMutation(api.forum.mutations.generateUploadUrl);
+  const generateUrl = useMutation(api.media.generateUploadUrl);
 
   const resizeFile = useCallback(
     (file: File): Promise<Blob> => {

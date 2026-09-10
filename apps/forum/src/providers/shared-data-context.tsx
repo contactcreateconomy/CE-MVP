@@ -35,13 +35,36 @@ export function useSharedData() {
 }
 
 function SharedDataProviderInner({ children }: { children: ReactNode }) {
-  const rawCategories = useQuery(api.forum.queries.listCategories, {});
-  const unreadCount = useQuery(api.forum.queries.getUnreadNotificationCount, {});
+  // P7-CLEANUP: the typed-post registry (postTypeConfig) — canonical source
+  const rawCategories = useQuery(api.categories.listPostTypes, {});
+  const notifications = useQuery(api.notifications.reads.list, {});
+
+  // Display map (icon/color are client concerns) merged over canonical rows
+  const DISPLAY: Record<string, { icon: string; primaryColor: string }> = {
+    news: { icon: "newspaper", primaryColor: "var(--cat-news)" },
+    review: { icon: "star", primaryColor: "var(--cat-review)" },
+    compare: { icon: "git-compare", primaryColor: "var(--cat-compare)" },
+    help: { icon: "help-circle", primaryColor: "var(--cat-help)" },
+    qa: { icon: "help-circle", primaryColor: "var(--cat-help)" },
+    spark: { icon: "zap", primaryColor: "var(--cat-spark)" },
+    debate: { icon: "swords", primaryColor: "var(--cat-debate)" },
+    list: { icon: "layout-list", primaryColor: "var(--cat-list)" },
+    showcase: { icon: "sparkles", primaryColor: "var(--cat-showcase)" },
+  };
+  const rawRows = rawCategories as
+    | Array<{ key: string; name: string; description: string; lockedByDefault?: boolean }>
+    | undefined;
+  const merged = (rawRows ?? []).map((c) => ({
+    ...c,
+    icon: DISPLAY[c.key]?.icon ?? "circle",
+    primaryColor: DISPLAY[c.key]?.primaryColor ?? "var(--text-muted)",
+  })) as Category[];
 
   const value: SharedData = {
-    categories: (rawCategories as Category[] | undefined) ?? FALLBACK_CATEGORIES,
+    categories: merged.length > 0 ? merged : FALLBACK_CATEGORIES,
     categoriesLoading: rawCategories === undefined,
-    unreadNotificationCount: unreadCount ?? 0,
+    unreadNotificationCount: (notifications as { unreadCount?: number } | undefined)
+      ?.unreadCount ?? 0,
   };
 
   return <SharedDataContext.Provider value={value}>{children}</SharedDataContext.Provider>;

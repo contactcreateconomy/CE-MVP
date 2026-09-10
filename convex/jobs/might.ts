@@ -26,14 +26,14 @@ import { appendActivity } from "../activity";
 
 const DAY_MS = 24 * 3_600_000;
 
-/** CAP-302/303 — Reach + reachFactor per Distribution from memberships. */
+/** CAP-302/303 — Reach + reachFactor per Distribution's membership rows. */
 export const reachRefresh = internalMutation({
   args: {},
   returns: v.object({ refreshed: v.number() }),
   handler: async (ctx) => {
-    const memberships = await ctx.db.query("distributionMemberships").take(500);
+    const distMembers = await ctx.db.query("distributionMemberships").take(500);
     const byDist = new Map<Id<"distributions">, { count: number; factor: number }>();
-    for (const m of memberships) {
+    for (const m of distMembers) {
       if (m.leftAt) continue; // left members: log-scaled reach ≈ 0 (anti-suppression)
       const legit = await ctx.db
         .query("legitimacyScores")

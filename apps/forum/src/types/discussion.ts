@@ -204,7 +204,7 @@ export interface DiscussionThreadBase {
   insightRail: InsightRailContent;
   relatedSlugs: string[];
   trendingSlugs: string[];
-  /** The forumPosts._id — present for real posts and rich threads with a matching post row */
+  /** The legacy post-row id — present for pre-cutover rich threads with a matching row */
   postId?: string;
   viewerHasUpvoted?: boolean;
   viewerHasBookmarked?: boolean;

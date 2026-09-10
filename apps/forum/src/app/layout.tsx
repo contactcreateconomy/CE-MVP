@@ -7,7 +7,6 @@ import "./globals.css";
 import { isConvexConfigured } from "@cemvp/convex-client";
 import { AppAuthProvider, AuthModal, OfflineAuthProvider } from "@cemvp/auth-ui";
 import { ConvexProvider } from "@/providers/convex-provider";
-import { ForumProfileEnsurer } from "@/providers/forum-profile-ensurer";
 import { SharedDataProvider } from "@/providers/shared-data-context";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { NavigationProgressProvider } from "@/providers/navigation-progress-provider";
@@ -47,7 +46,6 @@ export default function RootLayout({
             {convexConfigured ? (
               <AppAuthProvider>
                 <SharedDataProvider>
-                  <ForumProfileEnsurer />
                   {children}
                   <AuthModal />
                 </SharedDataProvider>

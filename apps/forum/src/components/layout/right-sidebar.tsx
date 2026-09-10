@@ -9,7 +9,26 @@ import { api } from "@/lib/convex";
 import { isConvexConfigured } from "@cemvp/convex-client";
 
 function RightSidebarWithConvex() {
-  const rows = useQuery(api.forum.queries.getLeaderboardWithUsers, {});
+  // P7-CLEANUP: the canonical Podium (leaderboardProjections via getChrome)
+  const chrome = useQuery(api.feed.getChrome, {});
+  const podium = (chrome as
+    | {
+        podium?: {
+          forming?: boolean;
+          entries?: Array<{ rank?: number; userId: string; points: number; displayName?: string }>;
+        };
+      }
+    | undefined)?.podium;
+  const rows =
+    podium === undefined || podium?.forming
+      ? undefined
+      : (podium.entries ?? []).map((e, i) => ({
+          rank: e.rank ?? i + 1,
+          userId: e.userId,
+          points: e.points,
+          weeklyDelta: 0,
+          user: { id: e.userId, name: e.displayName ?? "Member", image: null },
+        }));
 
   return (
     <aside className="sticky top-20 hidden h-fit w-[320px] shrink-0 space-y-4 xl:block">

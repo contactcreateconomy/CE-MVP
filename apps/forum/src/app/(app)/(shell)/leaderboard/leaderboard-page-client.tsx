@@ -93,7 +93,24 @@ const rankColors = {
 } as const;
 
 function LeaderboardPageWithConvex() {
-  const rows = (useQuery(api.forum.queries.getLeaderboardWithUsers, {}) ?? []) as LeaderboardRow[];
+  // P7-CLEANUP: the canonical Podium projection (leaderboardProjections via
+  // feed.getChrome; P7E-07 writes it — min-25 forming rule intact)
+  const chrome = useQuery(api.feed.getChrome, {});
+  const podium = (chrome as
+    | {
+        podium?: {
+          forming?: boolean;
+          entries?: Array<{ rank?: number; userId: string; points: number; displayName?: string }>;
+        };
+      }
+    | undefined)?.podium;
+  const rows = (
+    podium && !podium.forming ? (podium.entries ?? []) : []
+  ).map((e, i) => ({
+    ...e,
+    rank: e.rank ?? i + 1,
+    user: { id: e.userId, name: e.displayName ?? "Member", image: null },
+  })) as unknown as LeaderboardRow[];
   const [activeCategory, setActiveCategory] = useState<PodiumCategory>("overall");
   const [activeWindow, setActiveWindow] = useState<PodiumWindow>("1m");
 

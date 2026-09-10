@@ -172,8 +172,10 @@ describe("SLICE-P1-07 — rawEvents + eventCatalog + capture pair", () => {
 });
 
 describe("SLICE-P1-08 — seed.bootstrap", () => {
-  it("module surface: internal-only (one export, no founder/role writes possible)", () => {
-    expect(Object.keys(seedModule)).toEqual(["bootstrap"]);
+  it("module surface: internal-only (no founder/role writes possible)", () => {
+    // P7-CLEANUP: backfillCanonicalUsers joined the surface — it patches
+    // missing canonical fields on EXISTING rows and creates nothing.
+    expect(Object.keys(seedModule)).toEqual(["bootstrap", "backfillCanonicalUsers"]);
   });
 
   it("DEC-C01 five categories derivable from the seed output shape (slug-indexed categories table exists)", () => {

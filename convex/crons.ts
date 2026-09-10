@@ -3,27 +3,6 @@ import { internal } from "./_generated/api";
 
 const crons = cronJobs();
 
-crons.interval(
-  "recompute hot feed cache",
-  { minutes: 5 },
-  internal.forum.feedCache.recomputeHotFeed,
-  {},
-);
-
-crons.interval(
-  "reconcile upvote counters",
-  { minutes: 10 },
-  internal.forum.jobs.reconcileUpvoteCounts,
-  {},
-);
-
-crons.cron(
-  "aggregate daily analytics",
-  "0 3 * * *",
-  internal.forum.jobs.aggregateDailyAnalytics,
-  {},
-);
-
 // SLICE-P4-05 (CAP-116): periodic aggregate drift monitoring — alert-only;
 // repair (CAP-115 tools.recomputeAggregate) is run separately after the
 // alert is triaged. Hourly cadence is an in-slice choice (the register says

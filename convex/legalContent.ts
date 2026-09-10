@@ -3,10 +3,8 @@
  * DECISIONS-LOCKED #9 (E5/E6): append-only rows; manual publish only;
  * rollback = publish a prior version; no destructive edits anywhere.
  *
- * Admin authority NOTE: gating currently uses the live app's
- * `forumProfiles.role === "admin"` store. Per PRD/00-TRANSITION.md, when the
- * canonical `roleAssignments` authz lands (P2-01/P3-01), swap this check to
- * `assertAdminPermission` — the table/API shape below does not change.
+ * Admin authority: assertAdminPermission (roleAssignments, CAP-390) —
+ * the legacy profile-role store was retired in P7-CLEANUP.
  */
 
 import { v } from "convex/values";
@@ -16,13 +14,12 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { LEGAL_SEED_DOCS } from "./legalContentSeed";
 
 async function requireAdmin(ctx: any): Promise<any> {
+  // P7-CLEANUP: the canonical two-layer gate (roleAssignments — CAP-390)
   const userId = await getAuthUserId(ctx);
   if (userId === null) throw new Error("Sign in required.");
-  const profile = await ctx.db
-    .query("forumProfiles")
-    .withIndex("by_user", (q: any) => q.eq("userId", userId))
-    .unique();
-  if (!profile || profile.role !== "admin") throw new Error("Insufficient permissions.");
+  const { assertAdminPermission } = await import("./lib/authz");
+  const roles = await assertAdminPermission(ctx);
+  if (!roles.includes("administrator")) throw new Error("Insufficient permissions.");
   return { userId };
 }
 

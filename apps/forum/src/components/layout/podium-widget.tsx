@@ -7,7 +7,6 @@ import { useMemo, useState } from "react";
 
 import { formatPoints } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { User } from "@/types";
 
 type PodiumWindow = "24h" | "7d" | "1m";
 
@@ -16,7 +15,9 @@ interface PodiumRow {
   userId: string;
   points: number;
   weeklyDelta: number;
-  user: User | null;
+  // P7-CLEANUP: canonical podium rows carry identity only (displayName via
+  // getChrome); the widget renders name + optional avatar.
+  user: { id: string; name: string; avatar?: string | null } | null;
 }
 
 interface PodiumWidgetProps {

@@ -6,6 +6,7 @@
  */
 
 import { query } from "./_generated/server";
+import { v } from "convex/values";
 
 export const listActive = query({
   args: {},
@@ -17,5 +18,38 @@ export const listActive = query({
     return rows
       .sort((a: any, b: any) => a.sortOrder - b.sortOrder)
       .map((c: any) => ({ slug: c.slug, name: c.name, description: c.description }));
+  },
+});
+
+/**
+ * SLICE-P7-CLEANUP: the typed-post registry read (the shell's category
+ * pills — the legacy forum categories table was this registry in legacy
+ * form). Serves postTypeConfig (CAP-104); icon/color stay client display
+ * concerns.
+ */
+const POST_TYPE_DESCRIPTIONS: Record<string, string> = {
+  news: "Platform-injected industry news.",
+  review: "Structured tool reviews with community verdicts.",
+  compare: "Side-by-side tool comparisons.",
+  help: "Questions with accepted answers.",
+  spark: "Short ideas and provocations.",
+  debate: "Position-based discussions.",
+  list: "Ranked or curated lists.",
+  showcase: "Project showcases with one outbound URL.",
+};
+
+export const listPostTypes = query({
+  args: {},
+  returns: v.any(),
+  handler: async (ctx) => {
+    const rows = await ctx.db.query("postTypeConfig").take(20);
+    return rows
+      .sort((a: any, b: any) => a.sortOrder - b.sortOrder)
+      .map((r: any) => ({
+        key: r.type,
+        name: r.label,
+        description: POST_TYPE_DESCRIPTIONS[r.type] ?? "",
+        lockedByDefault: r.state === "locked", // DAU-locked (CAP-104)
+      }));
   },
 });

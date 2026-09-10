@@ -318,7 +318,14 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
     try {
       const canonicalType = categoryKey === "qa" ? "help" : categoryKey;
       await createPost({
-        type: canonicalType as any,
+        type: canonicalType as
+          | "review"
+          | "compare"
+          | "help"
+          | "spark"
+          | "debate"
+          | "list"
+          | "showcase",
         title: title.trim(),
         body,
         categoryId: categoryKey,

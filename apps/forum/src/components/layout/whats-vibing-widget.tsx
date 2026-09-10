@@ -14,7 +14,20 @@ import { cn } from "@/lib/utils";
 const SLIDE_INTERVAL_MS = 4000;
 
 function WhatsVibingWidgetInner() {
-  const fetched = useQuery(api.forum.queries.listVibingItems, { limit: 10 });
+  // P7-CLEANUP: the canonical vibing list (feed.getChrome — A7 degrade:
+  // labeled list, neutral-fallback hooks)
+  const chrome = useQuery(api.feed.getChrome, {});
+  const fetched = useMemo(() => {
+    type VibingRow = { objectType: string; objectId: string; hook: string | null; humans: number };
+    const vibing = (chrome as { vibing?: VibingRow[] } | undefined)?.vibing ?? [];
+    return vibing.map((v, i) => ({
+      id: `${v.objectType}:${v.objectId}:${i}`,
+      kind: v.objectType,
+      label: v.hook ?? `Trending ${v.objectType}`,
+      href: v.objectType === "post" ? `/discussions/${v.objectId}` : "/feed",
+      engagedUsers: v.humans ?? 0,
+    }));
+  }, [chrome]);
   const items = useMemo(() => fetched ?? [], [fetched]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);

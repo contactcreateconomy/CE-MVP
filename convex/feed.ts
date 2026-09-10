@@ -206,9 +206,14 @@ export const getChrome = query({
       if (slot.endAt <= now || slot.startAt > now) continue;
       const post = await ctx.db.get(slot.postId);
       if (!post) continue;
+      const seo = await ctx.db
+        .query("postSeoMeta")
+        .withIndex("by_postId", (q: any) => q.eq("postId", post._id))
+        .unique();
       hero.push({
         slotOrder: slot.slotOrder,
         postId: post._id,
+        slug: seo?.slug ?? null, // P7-CLEANUP chrome port: the shell hero links by slug
         title: slot.headlineOverride ?? post.title,
         ctaLabel: slot.ctaLabel ?? null,
         disclosureClass: slot.disclosureClass,
@@ -251,6 +256,14 @@ export const getChrome = query({
       .query("leaderboardProjections")
       .withIndex("by_category_window", (q: any) => q.eq("category", "overall").eq("window", "d7"))
       .unique();
+    // P7-CLEANUP sidebar port: entries carry display names (userId-only rows
+    // can't render a member list client-side)
+    if (podium) {
+      for (const entry of podium.entries) {
+        const u = await ctx.db.get(entry.userId);
+        (entry as any).displayName = u?.displayName ?? u?.username ?? "Member";
+      }
+    }
 
     const typeNav = await ctx.db
       .query("postTypeConfig")

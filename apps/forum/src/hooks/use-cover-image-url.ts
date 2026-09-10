@@ -12,7 +12,7 @@ import { api } from "@/lib/convex";
 export function useCoverImageUrl(coverImage: string | undefined): string | undefined {
   const isUrl = coverImage?.startsWith("http") ?? false;
   const resolved = useQuery(
-    api.forum.queries.getStorageUrl,
+    api.media.getStorageUrl,
     isUrl || !coverImage ? "skip" : { storageId: coverImage },
   );
   if (!coverImage) return undefined;

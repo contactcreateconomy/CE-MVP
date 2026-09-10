@@ -15,26 +15,11 @@ type ProfileView = {
   email?: string;
   image?: string;
   handle?: string;
-  memberships: Array<{
-    _id: Id<"memberships">;
-    app: "forum" | "seller" | "admin" | "marketplace";
-    role: string;
-  }>;
+  isStaff?: boolean;
 };
 
-function forumRoleFromMemberships(
-  memberships: { app: "forum" | "seller" | "admin" | "marketplace"; role: string }[],
-): AuthUser["role"] {
-  const forum = memberships.filter((m) => m.app === "forum");
-  if (forum.some((m) => m.role === "admin")) {
-    return "admin";
-  }
-  if (forum.some((m) => m.role === "moderator")) {
-    return "moderator";
-  }
-  return "member";
-}
-
+/** P7-CLEANUP: the canonical identity — member by default; the staff signal
+ *  rides users.isStaff (roleAssignments is the admin surface's own gate). */
 function mapProfileToUser(profile: ProfileView): AuthUser {
   const email = profile.email ?? "";
   const handle =
@@ -49,7 +34,7 @@ function mapProfileToUser(profile: ProfileView): AuthUser {
     handle,
     email,
     avatar: profile.image ?? undefined,
-    role: forumRoleFromMemberships(profile.memberships),
+    role: profile.isStaff ? "admin" : "member",
   };
 }
 

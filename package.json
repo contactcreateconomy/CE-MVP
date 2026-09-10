@@ -25,9 +25,6 @@
     "convex:dev": "convex dev",
     "convex:codegen": "convex codegen",
     "convex:deploy:prod": "convex deploy",
-    "convex:seed-forum": "convex run forum/seed:runForumSeed '{\"force\":false}'",
-    "convex:seed-forum-force": "convex run forum/seed:runForumSeed '{\"force\":true}'",
-    "convex:prod:ensure-categories": "convex run forum/seed:ensureForumCategories --prod",
     "convex:seed-legal": "convex run legalContent:seedDefaults"
   },
   "devDependencies": {

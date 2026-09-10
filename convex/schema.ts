@@ -2,29 +2,6 @@ import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
-/** Shared validator fields for all rich thread payload variants. Deeply nested
- *  structures (comments, insightRail, categoryBody) remain `v.any()` since they
- *  vary widely and are only written by seed scripts. */
-const richThreadBase = {
-  id: v.string(),
-  slug: v.string(),
-  title: v.string(),
-  body: v.string(),
-  authorId: v.string(),
-  createdAt: v.string(),
-  updatedAt: v.optional(v.string()),
-  views: v.number(),
-  upvotes: v.number(),
-  bookmarks: v.number(),
-  tags: v.array(v.string()),
-  aiSummary: v.string(),
-  comments: v.array(v.any()),
-  insightRail: v.any(),
-  relatedSlugs: v.array(v.string()),
-  trendingSlugs: v.array(v.string()),
-  categoryBody: v.any(),
-};
-
 const appId = v.union(
   v.literal("forum"),
   v.literal("seller"),
@@ -36,12 +13,13 @@ export default defineSchema({
   ...authTables,
   // Extends Convex Auth `users` — must keep auth fields + email/phone indexes.
   //
-  // ── CANONICAL IDENTITY REGION (SLICE-P1-01a + P1-01b, 2026-09-04) ──
-  // Field union per `_data-model.md` l.315 (bible l.42/l.50/l.245/l.264/l.273
-  // union). All canonical fields are schema-OPTIONAL during the legacy
-  // coexistence window (00-TRANSITION.md): the live password/OAuth path still
-  // inserts bare users; the P2-01 admission cutover makes writers canonical,
-  // and tightening to bible-required is a cleanup-slice step.
+  // ── CANONICAL IDENTITY REGION (SLICE-P1-01a + P1-01b; tightened
+  // SLICE-P7-CLEANUP 2026-09-10) ── Field union per `_data-model.md` l.315
+  // (bible l.42/l.50/l.245/l.264/l.273 union). Bible-required fields are
+  // schema-REQUIRED: the auth profile callback inserts the full canonical
+  // set at signup. tokenIdentifier is the one documented exception - it
+  // stays optional because the auth subject is assigned only after the
+  // users row exists (sessions resolve via the library getAuthUserId).
   users: defineTable({
     // Convex Auth fields (legacy + reference)
     name: v.optional(v.string()),
@@ -53,79 +31,77 @@ export default defineSchema({
     isAnonymous: v.optional(v.boolean()),
     handle: v.optional(v.string()), // legacy forum handle; canonical is username/usernameNormalized
     defaultApp: v.optional(appId),
-    createdAt: v.optional(v.number()),
+    createdAt: v.number(),
     updatedAt: v.optional(v.number()),
-    // P1-01a — M1 core (_data-model.md l.315, first segment)
-    tokenIdentifier: v.optional(v.string()), // Convex Auth subject — canonical-required post-cutover
-    emailVerified: v.optional(v.boolean()),
-    mobileVerified: v.optional(v.boolean()),
-    mobileVerifiedAt: v.optional(v.number()),
-    accountStatus: v.optional(v.union(v.literal("active"), v.literal("deleted"))),
-    accountStanding: v.optional(
-      v.union(
-        v.literal("good"),
-        v.literal("warned"),
-        v.literal("restricted"),
-        v.literal("suspended"),
-        v.literal("terminated"),
-      ),
+    // P1-01a — M1 core (_data-model.md l.315, first segment). P7-CLEANUP:
+    // bible-required fields tightened from v.optional (deviation-1 window
+    // closed with the forum-scoped table retirement). The auth profile
+    // callback + canonical writers insert the full set. tokenIdentifier is
+    // the one documented exception: the auth subject is assigned only after
+    // the users row exists, so it cannot be present at insert time
+    // (sessions resolve via the library getAuthUserId, not this field).
+    tokenIdentifier: v.optional(v.string()), // Convex Auth subject — patched post-creation
+    emailVerified: v.boolean(),
+    mobileVerified: v.boolean(),
+    mobileVerifiedAt: v.number(),
+    accountStatus: v.union(v.literal("active"), v.literal("deleted")),
+    accountStanding: v.union(
+      v.literal("good"),
+      v.literal("warned"),
+      v.literal("restricted"),
+      v.literal("suspended"),
+      v.literal("terminated"),
     ),
-    trustTier: v.optional(v.union(v.literal("t1"), v.literal("t2"), v.literal("t3"))),
+    trustTier: v.union(v.literal("t1"), v.literal("t2"), v.literal("t3")),
     isStaff: v.optional(v.boolean()),
-    analyticsSubjectId: v.optional(v.string()), // crypto-random opaque unique
-    bootstrapState: v.optional(v.union(v.literal("pending_context"), v.literal("complete"))),
-    leaderboardOptOut: v.optional(v.boolean()),
-    postingEligibilityState: v.optional(
-      v.union(
-        v.literal("not_verified"),
-        v.literal("basic_incomplete"),
-        v.literal("eligible"),
-        v.literal("rate_limited"),
-        v.literal("temporarily_restricted"),
-        v.literal("suspended"),
-        v.literal("deleted"),
-      ),
+    analyticsSubjectId: v.string(), // crypto-random opaque unique
+    bootstrapState: v.union(v.literal("pending_context"), v.literal("complete")),
+    leaderboardOptOut: v.boolean(),
+    postingEligibilityState: v.union(
+      v.literal("not_verified"),
+      v.literal("basic_incomplete"),
+      v.literal("eligible"),
+      v.literal("rate_limited"),
+      v.literal("temporarily_restricted"),
+      v.literal("suspended"),
+      v.literal("deleted"),
     ),
-    profileVisibility: v.optional(v.union(v.literal("public"), v.literal("private"))),
+    profileVisibility: v.union(v.literal("public"), v.literal("private")),
     timezone: v.optional(v.string()), // IANA, write-once; Admin+audit correction only
     username: v.optional(v.string()),
     usernameNormalized: v.optional(v.string()),
     // P1-01b (a) — root-profile remainder (bible l.42)
-    displayName: v.optional(v.string()),
-    avatarAssetId: v.optional(v.string()),
-    bio: v.optional(v.string()),
-    postCount: v.optional(v.number()),
-    approvedCommentCount: v.optional(v.number()),
-    lastActiveAt: v.optional(v.number()),
-    suspendedAt: v.optional(v.number()),
-    suspendedReason: v.optional(v.string()),
-    deletedAt: v.optional(v.number()),
+    displayName: v.string(),
+    avatarAssetId: v.string(),
+    bio: v.string(),
+    postCount: v.number(),
+    approvedCommentCount: v.number(),
+    lastActiveAt: v.number(),
+    suspendedAt: v.number(),
+    suspendedReason: v.string(),
+    deletedAt: v.number(),
     // P1-01b (b) — M7 eligibility block (bible l.42 tail)
-    basicProfileComplete: v.optional(v.boolean()),
-    rulesAcceptedVersion: v.optional(v.string()),
-    rulesAcceptedAt: v.optional(v.number()),
-    legalAgeAssertedVersion: v.optional(v.string()),
-    legalAgeAssertedAt: v.optional(v.number()),
-    profileVersion: v.optional(v.number()),
-    completionBadges: v.optional(v.array(v.string())),
-    // P1-01b (c) — M13 standing tail (bible l.245)
+    basicProfileComplete: v.boolean(),
+    rulesAcceptedVersion: v.string(),
+    rulesAcceptedAt: v.number(),
+    legalAgeAssertedVersion: v.string(),
+    legalAgeAssertedAt: v.number(),
+    profileVersion: v.number(),
+    completionBadges: v.array(v.string()),
+    // P1-01b (c) — M13 standing tail (bible l.245); standingSetByCaseId
+    // retyped to v.id("moderationCases") when P1-03 landed (2026-09-04).
     standingExpiresAt: v.optional(v.number()),
-    // Retype to v.id("moderationCases") when SLICE-P1-03 lands the table
-    // (forward table references are not definable in the same schema pass).
-    // → P1-03 LANDED 2026-09-04; retyped:
     standingSetByCaseId: v.optional(v.id("moderationCases")),
     // P1-01b (d) — M14 block (bible l.50, literals from Core-enums l.405/406)
-    onboardingState: v.optional(
-      v.union(
-        v.literal("new"),
-        v.literal("basic_profile_complete"),
-        v.literal("exploring"),
-        v.literal("activated"),
-        v.literal("engaged"),
-        v.literal("retained"),
-        v.literal("coach_dismissed"),
-        v.literal("expired"),
-      ),
+    onboardingState: v.union(
+      v.literal("new"),
+      v.literal("basic_profile_complete"),
+      v.literal("exploring"),
+      v.literal("activated"),
+      v.literal("engaged"),
+      v.literal("retained"),
+      v.literal("coach_dismissed"),
+      v.literal("expired"),
     ),
     firstValueAt: v.optional(v.number()),
     activatedAt: v.optional(v.number()),
@@ -139,33 +115,29 @@ export default defineSchema({
     lastVisitAt: v.optional(v.number()),
     currentSessionStartedAt: v.optional(v.number()),
     lastQuotaExhaustedPeriodKey: v.optional(v.string()), // lazy quota_restored
-    coachCardsShownCount: v.optional(v.number()),
-    checklistStepsShownMax: v.optional(v.number()),
-    coachDismissed: v.optional(
-      v.array(
-        v.union(
-          v.literal("discover_resource"),
-          v.literal("acquire_resource"),
-          v.literal("join_discussion"),
-          v.literal("return_update"),
-        ),
+    coachCardsShownCount: v.number(),
+    checklistStepsShownMax: v.number(),
+    coachDismissed: v.array(
+      v.union(
+        v.literal("discover_resource"),
+        v.literal("acquire_resource"),
+        v.literal("join_discussion"),
+        v.literal("return_update"),
       ),
     ),
     coachDismissedAt: v.optional(v.number()),
     onboardingExpiredAt: v.optional(v.number()),
     // DECISIONS-LOCKED #3 — the 7 bits (schema stores booleans only; CAP-368:
     // UI shows ≤3 next actions, never a % complete — no percentage field)
-    activationProgress: v.optional(
-      v.object({
-        emailVerified: v.boolean(),
-        mobileVerified: v.boolean(),
-        profileComplete: v.boolean(),
-        firstPostPublished: v.boolean(),
-        firstCommentPosted: v.boolean(),
-        firstReactionGiven: v.boolean(),
-        firstFollowMade: v.boolean(),
-      }),
-    ),
+    activationProgress: v.object({
+      emailVerified: v.boolean(),
+      mobileVerified: v.boolean(),
+      profileComplete: v.boolean(),
+      firstPostPublished: v.boolean(),
+      firstCommentPosted: v.boolean(),
+      firstReactionGiven: v.boolean(),
+      firstFollowMade: v.boolean(),
+    }),
     newsletterConsentStatus: v.optional(v.string()),
   })
     .index("email", ["email"])
@@ -187,8 +159,9 @@ export default defineSchema({
   /** P1-01a — canonical authority store (bible l.44). Role literals verbatim
    *  from the bible (camelCase). Default signup assignment per MUST-DEFINE:
    *  {role: member, scopeType: global, scopeId: null, status: active} — the
-   *  P2-01 admission writer enforces it; v1 is global-scope only. Replaces
-   *  ADMIN_EMAILS/memberships authority at the P2/P3 cutover (00-TRANSITION). */
+   *  P2-01 admission writer enforces it; v1 is global-scope only. The legacy
+   *  email-allowlist/membership authority was retired with the forum-scoped
+   *  tables (P7-CLEANUP): users + roleAssignments are the only authority. */
   roleAssignments: defineTable({
     userId: v.id("users"),
     role: v.union(
@@ -210,15 +183,6 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_role_status", ["userId", "role", "status"])
     .index("by_role_status", ["role", "status"]),
-  memberships: defineTable({
-    userId: v.id("users"),
-    app: appId,
-    role: v.string(),
-    createdAt: v.number(),
-  })
-    .index("by_user", ["userId"])
-    .index("by_app", ["app"])
-    .index("by_app_role", ["app", "role"]),
 
   /** P1-06 — bible l.248. Append-only: "never deletable — incl. by erasure".
    *  No update/delete path exists in the helper (convex/lib/audit.ts) or the
@@ -278,317 +242,6 @@ export default defineSchema({
     reversible: v.boolean(),
     sealed: v.boolean(), // true = not editable in Admin (CAP-394)
   }).index("by_key", ["key"]),
-
-  forumProfiles: defineTable({
-    userId: v.optional(v.id("users")),
-    /** Stable seed key e.g. u1 — used only when remapping thread payloads */
-    seedKey: v.optional(v.string()),
-    handle: v.string(),
-    name: v.string(),
-    image: v.string(),
-    bio: v.string(),
-    level: v.number(),
-    points: v.number(),
-    streakDays: v.number(),
-    verified: v.optional(v.boolean()),
-    /** Legacy-only: AI-persona flag on pre-copy demo rows in the shared
-     *  deployment; not written by this codebase. Tolerated so the schema
-     *  push validates against existing data (forum* tables are transitional
-     *  per 00-TRANSITION and are dropped in SLICE-P7-CLEANUP). */
-    managedByAutomation: v.optional(v.boolean()),
-    role: v.union(v.literal("member"), v.literal("moderator"), v.literal("admin")),
-  })
-    .index("by_handle", ["handle"])
-    .index("by_user", ["userId"])
-    .index("by_seed_key", ["seedKey"])
-    .searchIndex("search_name", { searchField: "name" }),
-
-  forumCategories: defineTable({
-    key: v.string(),
-    name: v.string(),
-    icon: v.string(),
-    description: v.string(),
-    primaryColor: v.string(),
-    lockedByDefault: v.boolean(),
-    pointsToUnlock: v.optional(v.number()),
-  }).index("by_key", ["key"]),
-
-  forumPosts: defineTable({
-    slug: v.string(),
-    title: v.string(),
-    summary: v.string(),
-    body: v.string(),
-    coverImage: v.optional(v.string()),
-    category: v.string(),
-    authorProfileId: v.id("forumProfiles"),
-    /** Denormalized for feed cards — avoids loading all profiles. */
-    authorName: v.optional(v.string()),
-    authorHandle: v.optional(v.string()),
-    authorImage: v.optional(v.string()),
-    upvotes: v.number(),
-    commentsCount: v.number(),
-    views: v.number(),
-    createdAt: v.number(),
-    trending: v.union(v.literal("hot"), v.literal("recent"), v.literal("evergreen")),
-    locked: v.boolean(),
-    isRichThread: v.boolean(),
-    /** Matches old mock id (p1, …) for hero carousel join */
-    legacyKey: v.optional(v.string()),
-    moderationStatus: v.optional(v.union(
-      v.literal("visible"),
-      v.literal("flagged"),
-      v.literal("removed"),
-      v.literal("shadow_removed"),
-    )),
-    /** Denormalized searchable tags from category payloads (e.g. gigs skills, review product names). */
-    searchTags: v.optional(v.array(v.string())),
-  })
-    .index("by_slug", ["slug"])
-    .index("by_category", ["category"])
-    .index("by_author", ["authorProfileId"])
-    .index("by_legacy_key", ["legacyKey"])
-    .index("by_createdAt", ["createdAt"])
-    .index("by_category_createdAt", ["category", "createdAt"])
-    .searchIndex("search_title", { searchField: "title", filterFields: ["category"] })
-    .searchIndex("search_body", { searchField: "body", filterFields: ["category"] }),
-
-  /** Rich threads written only by seed scripts — payload shape validated by discriminated union on `category`. */
-  forumRichThreads: defineTable({
-    slug: v.string(),
-    payload: v.union(
-      v.object({ ...richThreadBase, category: v.literal("news") }),
-      v.object({ ...richThreadBase, category: v.literal("review") }),
-      v.object({ ...richThreadBase, category: v.literal("compare") }),
-      v.object({ ...richThreadBase, category: v.literal("launch-pad") }),
-      v.object({ ...richThreadBase, category: v.literal("debate") }),
-      // Temporary widen for the help -> qa migration. Remove after all old rows are migrated.
-      v.object({ ...richThreadBase, category: v.literal("help") }),
-      v.object({ ...richThreadBase, category: v.literal("qa") }),
-      v.object({ ...richThreadBase, category: v.literal("list") }),
-      v.object({ ...richThreadBase, category: v.literal("showcase") }),
-      v.object({ ...richThreadBase, category: v.literal("gigs") }),
-    ),
-  }).index("by_slug", ["slug"]),
-
-  forumPostComments: defineTable({
-    postId: v.id("forumPosts"),
-    authorProfileId: v.id("forumProfiles"),
-    body: v.string(),
-    createdAt: v.number(),
-    upvotes: v.number(),
-    parentId: v.optional(v.id("forumPostComments")),
-  })
-    .index("by_post", ["postId"])
-    .index("by_post_createdAt", ["postId", "createdAt"])
-    .index("by_parent", ["parentId"]),
-
-  forumFavorites: defineTable({
-    userId: v.id("users"),
-    postId: v.id("forumPosts"),
-    /** For paginated saved feed; set on insert. */
-    favoritedAt: v.optional(v.number()),
-  })
-    .index("by_user", ["userId"])
-    .index("by_user_post", ["userId", "postId"])
-    .index("by_user_favoritedAt", ["userId", "favoritedAt"]),
-
-  forumUpvotes: defineTable({
-    userId: v.id("users"),
-    postId: v.id("forumPosts"),
-  })
-    .index("by_user", ["userId"])
-    .index("by_user_post", ["userId", "postId"]),
-
-  forumCampaigns: defineTable({
-    title: v.string(),
-    description: v.string(),
-    rewardPoints: v.number(),
-    endsAt: v.string(),
-    participants: v.number(),
-  }).index("by_endsAt", ["endsAt"]),
-
-  forumLeaderboard: defineTable({
-    rank: v.number(),
-    profileId: v.id("forumProfiles"),
-    points: v.number(),
-    weeklyDelta: v.number(),
-  }).index("by_rank", ["rank"]),
-
-  forumNotifications: defineTable({
-    profileId: v.id("forumProfiles"),
-    type: v.union(v.literal("comment"), v.literal("upvote"), v.literal("follow"), v.literal("system")),
-    title: v.string(),
-    message: v.string(),
-    createdAt: v.string(),
-    read: v.boolean(),
-    postSlug: v.optional(v.string()),
-  })
-    .index("by_profile", ["profileId"])
-    .index("by_profile_createdAt", ["profileId", "createdAt"]),
-
-  forumVibingItems: defineTable({
-    kind: v.union(
-      v.literal("campaign"),
-      v.literal("post"),
-      v.literal("discussion"),
-      v.literal("update"),
-      v.literal("creator"),
-    ),
-    label: v.string(),
-    href: v.string(),
-    engagedUsers: v.number(),
-    sortOrder: v.number(),
-  }).index("by_sort", ["sortOrder"]),
-
-  forumUserSettings: defineTable({
-    userId: v.id("users"),
-    theme: v.union(v.literal("dark"), v.literal("light"), v.literal("system")),
-    emailNotifications: v.boolean(),
-    pushNotifications: v.boolean(),
-    hideMatureContent: v.boolean(),
-  }).index("by_user", ["userId"]),
-
-  forumHeroSlides: defineTable({
-    legacyPostKey: v.string(),
-    shares: v.number(),
-    eyebrow: v.string(),
-    ctaLabel: v.string(),
-    accentRgb: v.string(),
-    sortOrder: v.number(),
-  }).index("by_sort", ["sortOrder"]),
-
-  forumWriteBuckets: defineTable({
-    userId: v.id("users"),
-    kind: v.union(
-      v.literal("createPost"),
-      v.literal("createComment"),
-      v.literal("toggleUpvote"),
-      v.literal("toggleFavorite"),
-      v.literal("createReport"),
-    ),
-    count: v.number(),
-    windowStartMs: v.number(),
-  }).index("by_user_kind", ["userId", "kind"]),
-
-  forumFeedCache: defineTable({
-    cacheKey: v.string(),
-    postIds: v.array(v.string()),
-    computedAt: v.number(),
-  }).index("by_key", ["cacheKey"]),
-
-  forumReports: defineTable({
-    reporterId: v.id("forumProfiles"),
-    contentType: v.union(v.literal("post"), v.literal("comment")),
-    contentId: v.string(),
-    reason: v.union(
-      v.literal("spam"),
-      v.literal("harassment"),
-      v.literal("misinformation"),
-      v.literal("off_topic"),
-      v.literal("other"),
-    ),
-    details: v.optional(v.string()),
-    status: v.union(v.literal("pending"), v.literal("reviewed"), v.literal("dismissed")),
-    createdAt: v.number(),
-  })
-    .index("by_reporter", ["reporterId"])
-    .index("by_content", ["contentType", "contentId"])
-    .index("by_status_createdAt", ["status", "createdAt"]),
-
-  forumModActions: defineTable({
-    moderatorId: v.id("forumProfiles"),
-    action: v.union(
-      v.literal("remove_post"),
-      v.literal("restore_post"),
-      v.literal("remove_comment"),
-      v.literal("flag_post"),
-      v.literal("dismiss_report"),
-    ),
-    contentId: v.string(),
-    reason: v.string(),
-    createdAt: v.number(),
-  })
-    .index("by_moderator", ["moderatorId"])
-    .index("by_content", ["contentId"]),
-
-  /** Per-category structured payloads for real user posts. */
-  forumCategoryPayloads: defineTable({
-    postId: v.id("forumPosts"),
-    category: v.string(),
-    payload: v.union(
-      // Gigs payload
-      v.object({
-        roleTitle: v.string(),
-        employment: v.string(),
-        location: v.string(),
-        budget: v.optional(v.string()),
-        duration: v.optional(v.string()),
-        requiredSkills: v.array(v.string()),
-        preferredSkills: v.optional(v.array(v.string())),
-        posterNote: v.optional(v.string()),
-        isOpen: v.optional(v.boolean()),
-        applicantCount: v.optional(v.number()),
-        processStage: v.optional(v.string()),
-        stages: v.optional(v.array(v.string())),
-      }),
-      // Review payload
-      v.object({
-        productName: v.string(),
-        productUrl: v.optional(v.string()),
-        verdict: v.string(),
-        starRating: v.number(),
-        reviewerContextNote: v.optional(v.string()),
-        verdictRationale: v.optional(v.string()),
-        criteria: v.optional(v.array(v.object({
-          id: v.string(),
-          label: v.string(),
-          score: v.number(),
-          maxScore: v.number(),
-          weightPercent: v.number(),
-        }))),
-        reviewerContextMax: v.optional(v.any()),
-        sentiment: v.optional(v.any()),
-        productLogo: v.optional(v.string()),
-      }),
-      // Fallback for other categories
-      v.any(),
-    ),
-    version: v.number(),
-  }).index("by_post", ["postId"]),
-
-  /** Sharded counters to avoid OCC conflicts on high-churn fields (upvotes, views). */
-  forumCounterShards: defineTable({
-    entityId: v.string(),
-    entityType: v.string(),    // "post"
-    counterType: v.string(),   // "upvotes" or "views"
-    shardKey: v.number(),      // 0–9 for upvotes, 0–4 for views
-    count: v.number(),
-  })
-    .index("by_entity_counter_shard", ["entityId", "counterType", "shardKey"])
-    .index("by_entity_counter", ["entityId", "counterType"]),
-
-  /** Analytics events for tracking user behavior. */
-  forumAnalyticsEvents: defineTable({
-    eventType: v.string(),
-    profileId: v.optional(v.id("forumProfiles")),
-    postId: v.optional(v.id("forumPosts")),
-    category: v.optional(v.string()),
-    metadata: v.optional(v.any()),
-    createdAt: v.number(),
-    sessionId: v.optional(v.string()),
-  })
-    .index("by_eventType_createdAt", ["eventType", "createdAt"])
-    .index("by_post_eventType", ["postId", "eventType"]),
-
-  /** Daily aggregated analytics for admin dashboards. */
-  forumDailyStats: defineTable({
-    date: v.string(),          // YYYY-MM-DD
-    category: v.optional(v.string()),
-    eventType: v.string(),
-    count: v.number(),
-  })
-    .index("by_date_category", ["date", "category"])
-    .index("by_date_eventType", ["date", "eventType"]),
 
   /** P1-03 — bible l.238, the moderation spine. policyFamily per
    *  DECISIONS-LOCKED #4; enums per M13 §2. Dedupe invariant INV-2: one open

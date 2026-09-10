@@ -12,15 +12,6 @@ function oauthEnv(idKey: string, secretKey: string) {
   return { clientId, clientSecret };
 }
 
-function parseAdminEmails(): Set<string> {
-  const raw = process.env.ADMIN_EMAILS ?? "";
-  return new Set(
-    raw
-      .split(",")
-      .map((e) => e.trim().toLowerCase())
-      .filter(Boolean),
-  );
-}
 
 /** Origins allowed for OAuth `redirectTo` (plus `SITE_URL`). Comma-separated URL prefixes in `AUTH_REDIRECT_ORIGINS`. */
 function parseAuthRedirectOrigins(): Set<string> {
@@ -86,15 +77,71 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       },
     }),
     Password({
+      // P7-CLEANUP: returns the FULL bible-required canonical set so the
+      // strict users schema validates on the library's insert (the profile
+      // is persisted only on signUp — signIn of an existing account never
+      // writes these). tokenIdentifier is the one field omitted: the auth
+      // subject exists only after this row is created (patched in the
+      // afterUserCreatedOrUpdated callback below).
       profile(params) {
         const email = String(params.email ?? "")
           .trim()
           .toLowerCase();
-        const out: { email: string; name?: string } = { email };
-        if (typeof params.name === "string" && params.name.trim()) {
-          out.name = params.name.trim();
-        }
-        return out;
+        const name =
+          typeof params.name === "string" && params.name.trim()
+            ? params.name.trim()
+            : undefined;
+        const now = Date.now();
+        return {
+          email,
+          ...(name ? { name } : null),
+          createdAt: now,
+          emailVerified: false,
+          mobileVerified: false,
+          mobileVerifiedAt: 0,
+          accountStatus: "active" as const,
+          accountStanding: "good" as const,
+          trustTier: "t1" as const,
+          analyticsSubjectId: crypto.randomUUID(),
+          bootstrapState: "pending_context" as const,
+          leaderboardOptOut: false,
+          postingEligibilityState: "not_verified" as const,
+          profileVisibility: "public" as const,
+          displayName: name ?? email.split("@")[0] ?? "member",
+          avatarAssetId: "",
+          bio: "",
+          postCount: 0,
+          approvedCommentCount: 0,
+          lastActiveAt: now,
+          suspendedAt: 0,
+          suspendedReason: "",
+          deletedAt: 0,
+          basicProfileComplete: false,
+          rulesAcceptedVersion: "",
+          rulesAcceptedAt: 0,
+          legalAgeAssertedVersion: "",
+          legalAgeAssertedAt: 0,
+          profileVersion: 1,
+          completionBadges: [] as string[],
+          onboardingState: "new" as const,
+          coachCardsShownCount: 0,
+          checklistStepsShownMax: 0,
+          coachDismissed: [] as (
+            | "discover_resource"
+            | "acquire_resource"
+            | "join_discussion"
+            | "return_update"
+          )[],
+          activationProgress: {
+            emailVerified: false,
+            mobileVerified: false,
+            profileComplete: false,
+            firstPostPublished: false,
+            firstCommentPosted: false,
+            firstReactionGiven: false,
+            firstFollowMade: false,
+          },
+        };
       },
     }),
     GitHub(oauthEnv("AUTH_GITHUB_ID", "AUTH_GITHUB_SECRET")),
@@ -138,46 +185,10 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
           updatedAt: now,
         });
 
-        await ctx.db.insert("forumProfiles", {
-          userId,
-          handle,
-          name: name ?? handle,
-          image: typeof profile.image === "string" ? profile.image : "",
-          bio: "",
-          level: 1,
-          points: 0,
-          streakDays: 0,
-          role: "member",
-        });
-
-        await ctx.db.insert("memberships", {
-          userId,
-          app: "forum",
-          role: "member",
-          createdAt: now,
-        });
-        await ctx.db.insert("memberships", {
-          userId,
-          app: "seller",
-          role: "member",
-          createdAt: now,
-        });
-        await ctx.db.insert("memberships", {
-          userId,
-          app: "marketplace",
-          role: "member",
-          createdAt: now,
-        });
-
-        const admins = parseAdminEmails();
-        if (email && admins.has(email)) {
-          await ctx.db.insert("memberships", {
-            userId,
-            app: "admin",
-            role: "admin",
-            createdAt: now,
-          });
-        }
+        // P7-CLEANUP: the legacy profile/membership (email-allowlist
+        // authority) inserts retired with the forum-scoped tables — the
+        // canonical users/roleAssignments pair (CAP-007 grantFounder /
+        // CAP-413 roles.assign) is the only authority path.
       } else {
         await ctx.db.patch(userId, { updatedAt: now });
       }

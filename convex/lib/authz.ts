@@ -271,9 +271,9 @@ export class AdminAuthzError extends Error {
 
 /**
  * CAP-390 — Broad shell-entry gate. "Shell entry = any staff role
- * (broadest gate)." Reads the user's ACTIVE roleAssignments rows (NOT
- * forumProfiles.role / memberships / ADMIN_EMAILS — those are the legacy
- * stores being retired per 00-TRANSITION).
+ * (broadest gate)." Reads the user's ACTIVE roleAssignments rows (the
+ * legacy profile-role/email-allowlist stores were retired per
+ * 00-TRANSITION / P7-CLEANUP).
  *
  * CAP-430 (next-request revoke) is enforced by construction: this function
  * reads roleAssignments fresh on every call, so a revoked role takes

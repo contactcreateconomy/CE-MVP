@@ -465,10 +465,79 @@ export const bootstrap = internalMutation({
     //     v1 rows incl. the CAP-333 autoRelease allowlist flags.
     for (const line of await seedReasonCodes(ctx)) result.push(line);
 
-    // R-FOUNDER boundary: no users, no roleAssignments, no founder grants —
-    // verified by the module surface (this is the only export). The ONE
-    // deliberate exception is CAP-571's reserved isStaff platform identity
-    // (never Founder, never roleAssignments) — quoted in store/seed.ts.
+    // R-FOUNDER boundary: no users, no roleAssignments, no founder grants.
+    // The deliberate exceptions, quoted in their modules: CAP-571's reserved
+    // isStaff platform identity (never Founder, never roleAssignments) and
+    // the P7-CLEANUP backfillCanonicalUsers field-patch pass (creates
+    // nothing; only fills missing canonical fields on existing rows).
+    return result;
+  },
+});
+
+/** P7-CLEANUP one-time: patch pre-tightening users rows up to the strict
+ *  canonical set (SLICE-P7-CLEANUP criterion b). Idempotent — only fields
+ *  missing on a row are patched; existing values are never clobbered.
+ *  Run once against the live dev deployment BEFORE pushing the strict
+ *  schema: `npx convex run seed:backfillCanonicalUsers`. */
+export const backfillCanonicalUsers = internalMutation({
+  args: {},
+  handler: async (ctx): Promise<string[]> => {
+    const result: string[] = [];
+    const rows = await ctx.db.query("users").collect();
+    for (const row of rows as Record<string, unknown>[]) {
+      const id = row._id as any;
+      const now = Date.now();
+      const patch: Record<string, unknown> = {};
+      const put = (k: string, v: unknown) => {
+        if (row[k] === undefined) patch[k] = v;
+      };
+      put("createdAt", now);
+      put("emailVerified", false);
+      put("mobileVerified", false);
+      put("mobileVerifiedAt", 0);
+      put("accountStatus", "active");
+      put("accountStanding", "good");
+      put("trustTier", "t1");
+      put("analyticsSubjectId", crypto.randomUUID());
+      put("bootstrapState", "pending_context");
+      put("leaderboardOptOut", false);
+      put("postingEligibilityState", "not_verified");
+      put("profileVisibility", "public");
+      put("displayName", typeof row.email === "string" ? row.email.split("@")[0] : "member");
+      put("avatarAssetId", "");
+      put("bio", "");
+      put("postCount", 0);
+      put("approvedCommentCount", 0);
+      put("lastActiveAt", now);
+      put("suspendedAt", 0);
+      put("suspendedReason", "");
+      put("deletedAt", 0);
+      put("basicProfileComplete", false);
+      put("rulesAcceptedVersion", "");
+      put("rulesAcceptedAt", 0);
+      put("legalAgeAssertedVersion", "");
+      put("legalAgeAssertedAt", 0);
+      put("profileVersion", 1);
+      put("completionBadges", []);
+      put("onboardingState", "new");
+      put("coachCardsShownCount", 0);
+      put("checklistStepsShownMax", 0);
+      put("coachDismissed", []);
+      put("activationProgress", {
+        emailVerified: false,
+        mobileVerified: false,
+        profileComplete: false,
+        firstPostPublished: false,
+        firstCommentPosted: false,
+        firstReactionGiven: false,
+        firstFollowMade: false,
+      });
+      if (Object.keys(patch).length > 0) {
+        await ctx.db.patch(id, patch);
+        result.push(`users:${id}: patched ${Object.keys(patch).length} fields`);
+      }
+    }
+    if (result.length === 0) result.push("users: all rows canonical — nothing to do");
     return result;
   },
 });

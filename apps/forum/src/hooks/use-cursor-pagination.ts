@@ -10,7 +10,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
  *
  * Usage:
  *   const [cursor, setCursor] = useState<string | null>(null);
- *   const page = useQuery(api.forum.queries.listFeedPage, { sort, cursor, limit: 24 });
+ *   const page = useQuery(the canonical feed list query, { sort, cursor, limit: 24 });
  *   const { items, loadMore, canLoadMore } = useCursorPagination(page);
  *   // feed loadMore's cursor back into the query:
  *   useEffect(() => { if (nextCursor !== undefined) setCursor(nextCursor); }, [nextCursor]);

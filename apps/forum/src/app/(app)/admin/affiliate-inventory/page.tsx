@@ -37,7 +37,7 @@ export default function AdminAffiliateInventoryPage() {
   const relationshipUpsert = useMutation(api.affiliateInventory.relationshipUpsert);
   const linkUpsert = useMutation(api.affiliateInventory.linkUpsert);
   const deactivate = useMutation(api.affiliateInventory.deactivate);
-  const getUploadUrl = useMutation(api.forum.mutations.generateUploadUrl); // CAP-012 (P4-02 — reuse, no fork)
+  const getUploadUrl = useMutation(api.media.generateUploadUrl); // P7-CLEANUP: canonical media.generateUploadUrl
 
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string } | null>(null);
