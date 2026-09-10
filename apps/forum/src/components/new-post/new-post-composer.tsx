@@ -124,7 +124,10 @@ function setTipTapPlaceholder(editor: NonNullable<ReturnType<typeof useEditor>>,
 export function NewPostComposer({ categories }: NewPostComposerProps) {
   const router = useRouter();
   const { authStatus, openAuthModal } = useAuth();
-  const createPost = useMutation(api.forum.mutations.createPost);
+  // B2 (founder-approved Section-B rec, 2026-09-06; executed 2026-09-10):
+  // the CANONICAL posts.createPost — the legacy forum mutation retires
+  // with P7-CLEANUP. "qa" maps to the canonical "help" type.
+  const createPost = useMutation(api.posts.createPost);
   // Member-composable types only: news is platform-injected (CAP-086/W2-E1);
   // launch-pad/gigs hidden until the admin DAU flip (CAP-104).
   const composableCategories = useMemo(
@@ -268,17 +271,6 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
     };
   }, [updateCategoryIndicator, editor]);
 
-  const setLink = useCallback(() => {
-    if (!editor) return;
-    const prev = editor.getAttributes("link").href as string | undefined;
-    const url = window.prompt("Link URL", prev ?? "https://");
-    if (url === null) return;
-    if (url === "") {
-      editor.chain().focus().extendMarkRange("link").unsetLink().run();
-      return;
-    }
-    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
-  }, [editor]);
 
   const saveDraft = useCallback(() => {
     if (!editor) return;
@@ -324,13 +316,19 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
     const body = `${bodyHtml || `<p>${bodyText}</p>`}${tokens ? `<p>${tokens}</p>` : ""}`;
     publishingRef.current = true;
     try {
+      const canonicalType = categoryKey === "qa" ? "help" : categoryKey;
       await createPost({
+        type: canonicalType as any,
         title: title.trim(),
-        summary: summary.trim() || title.trim().slice(0, 160),
         body,
-        category: categoryKey,
-        categoryFields,
-        coverImage,
+        categoryId: categoryKey,
+        // Legacy-composer extras ride extensionData (postSeoMeta generates
+        // the canonical SEO description; coverImage has no canonical column)
+        extensionData: {
+          summary: summary.trim() || title.trim().slice(0, 160),
+          coverImage: coverImage ?? null,
+          categoryFields: categoryFields ?? null,
+        },
       });
       try {
         localStorage.removeItem(NEW_POST_DRAFT_STORAGE_KEY);
@@ -531,9 +529,9 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
               >
                 <Quote className="h-4 w-4" />
               </MenuBtn>
-              <MenuBtn label="Link" active={editor.isActive("link")} onClick={setLink}>
-                <Link2 className="h-4 w-4" />
-              </MenuBtn>
+              {/* B2: the link affordance is retired — canonical posts enforce
+                  R-URL (no raw URLs in bodies); showcase outbound rides the
+                  P4-15 projectUrl field, product blocks ride /go. */}
             </BubbleMenu>
             <EditorContent editor={editor} />
           </div>
