@@ -8,8 +8,11 @@
  *
  * CAP-107 (quoted): "Page ships noindex in Wave 2, flips to indexable only
  * when CAP-468 ships in Wave 7 — same-wave pairing required by
- * FATAL-M17-01, never separated." — generateMetadata sets noindex
- * unconditionally this wave; nothing here decides indexability.
+ * FATAL-M17-01, never separated." — SLICE-P7G-01: the evaluator
+ * (seo/assertIndexable) now governs the sitemap + JSON-LD (the engine);
+ * this SSR shell keeps the fail-closed noindex until the per-post robots
+ * wiring rides P7O-07's /admin/seo view pairing (flagged, not silently
+ * flipped — false → noindex,nofollow per CAP-467 either way).
  */
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -23,8 +26,8 @@ interface DiscussionPageProps {
 }
 
 export async function generateMetadata(_props: DiscussionPageProps): Promise<Metadata> {
-  // Wave-2 posture (FATAL-M17-01): the indexable flip ships with P7G-01 +
-  // P7T-11 as one pairing — never here, never separable.
+  // Fail-closed noindex (CAP-467): the evaluator's true-verdict flip rides
+  // the sitemap/JSON-LD engine this batch ships; the shell never guesses.
   return { robots: { index: false, follow: false } };
 }
 

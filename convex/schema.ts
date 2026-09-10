@@ -2148,6 +2148,11 @@ export default defineSchema({
     releaseDate: v.optional(v.number()),
     currentVersionId: v.optional(v.id("resourceVersions")),
     createdAt: v.number(),
+    // SLICE-P7G-01 — indexable-entity deepen (bible l.288, quoted)
+    previousSlugs: v.optional(v.array(v.string())),
+    lastReviewedAt: v.optional(v.number()),
+    reviewedByUserId: v.optional(v.id("users")),
+    provenanceVersion: v.optional(v.number()), // P7G-02 writes it at review; legacy rows absent
   })
     .index("by_slug", ["slug"])
     .index("by_status", ["status"]),
@@ -2561,6 +2566,11 @@ export default defineSchema({
     editorialVerdictSummary: v.optional(v.string()),
     editorialVerdictAssignedByUserId: v.optional(v.id("users")),
     editorialVerdictUpdatedAt: v.optional(v.number()),
+    // SLICE-P7G-01 — indexable-entity deepen (bible l.288, quoted)
+    previousSlugs: v.optional(v.array(v.string())),
+    lastReviewedAt: v.optional(v.number()),
+    reviewedByUserId: v.optional(v.id("users")),
+    provenanceVersion: v.optional(v.number()), // P7G-02 writes it at review; legacy rows absent
   })
     .index("by_slug", ["slug"])
     .index("by_status", ["status"])
@@ -3233,6 +3243,31 @@ export default defineSchema({
   // l.287, l.304 + Core-enums l.392). adminInterventionAlerts already
   // exists (Phase 3); launchReadinessResults/jobDeadLetters already exist.
   // ═══════════════════════════════════════════════════════════════════════
+
+  /** bible l.51 — one ask post-acquire; unsubscribe before capture. */
+  newsletterConsents: defineTable({
+    userId: v.id("users"),
+    status: v.union(v.literal("pending"), v.literal("confirmed"), v.literal("unsubscribed")),
+    consentedAt: v.optional(v.number()),
+    surface: v.string(),
+    copyVersion: v.string(), // v1 = trigger-based "when new resources drop"
+    ipHash: v.optional(v.string()),
+    unsubscribedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_status", ["status"]),
+
+  /** bible l.52 — PRIMARY retention; soft-beta itemsPerDay=1; launch floor 40. */
+  dripBatches: defineTable({
+    batchId: v.string(),
+    releasedAt: v.number(),
+    resourceIds: v.array(v.id("resources")),
+    tags: v.array(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_batchId", ["batchId"])
+    .index("by_releasedAt", ["releasedAt"]),
 
   /** bible l.257 — M18 refreshes; M15 renders; stale ≠ 0 (quoted). */
   adminCounters: defineTable({

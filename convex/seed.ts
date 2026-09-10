@@ -120,6 +120,20 @@ const REGISTRY_ROWS = [
   // SLICE-P7A-10: Readiness Category 8 — ranking calibration reviewed
   // (gates public launch; founder flips after the calibration pass).
   { key: "ranking.calibration.reviewed", module: "m12", valueType: "boolean" as const, default: false, editTier: "tier3" as const, blastRadius: "Readiness Category 8 — the public-launch ranking-calibration review.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  // SLICE-P7G-05/06 (M14 l.64, quoted set): drip + retention knobs — the
+  // CAP-388 "1-2 humans act Tuesday without deploy" levers. No invented keys.
+  { key: "interestTiles.enabled", module: "m14", valueType: "json" as const, default: [], editTier: "tier2" as const, blastRadius: "Which interest tiles render (CAP-389 config-disable).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "drip.itemsPerDay", module: "m14", valueType: "number" as const, default: 1, min: 1, max: 10, editTier: "tier2" as const, blastRadius: "Drip publish rate (soft-beta default 1).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "drip.releaseHourUtc", module: "m14", valueType: "number" as const, default: 9, min: 0, max: 23, editTier: "tier2" as const, blastRadius: "The UTC hour the daily drip publishes.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "drip.minScheduledDays", module: "m14", valueType: "number" as const, default: 14, min: 1, max: 90, editTier: "tier2" as const, blastRadius: "Alert threshold for scheduled drip supply (CAP-381).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "drip.launchInventoryFloor", module: "m14", valueType: "number" as const, default: 40, min: 1, max: 1000, editTier: "tier3" as const, blastRadius: "Banked launch inventory floor (quoted: do not change casually).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "coach.maxLifetime", module: "m14", valueType: "number" as const, default: 4, min: 0, max: 10, editTier: "tier2" as const, blastRadius: "Coach-card lifetime cap.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "coach.maxPreActivation", module: "m14", valueType: "number" as const, default: 3, min: 0, max: 10, editTier: "tier2" as const, blastRadius: "Coach-card pre-activation cap.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "checklist.visibleMax", module: "m14", valueType: "number" as const, default: 3, min: 1, max: 10, editTier: "tier2" as const, blastRadius: "Checklist steps visible at once.", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "sinceLastVisit.minItems", module: "m14", valueType: "number" as const, default: 3, min: 1, max: 20, editTier: "tier2" as const, blastRadius: "Since-last-visit module threshold (CAP-374).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "leaderboard.minParticipants", module: "m14", valueType: "number" as const, default: 25, min: 5, max: 100, editTier: "tier2" as const, blastRadius: "Podium/leaderboard min threshold (CAP-371 alignment).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "visit.qualifyMs", module: "m14", valueType: "number" as const, default: 30000, min: 1000, max: 600000, editTier: "tier2" as const, blastRadius: "Visit-commit session qualification (CAP-373).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
+  { key: "visit.writeThrottleMs", module: "m14", valueType: "number" as const, default: 1800000, min: 60000, max: 86400000, editTier: "tier2" as const, blastRadius: "Visit-commit write throttle (CAP-373).", effectiveTiming: "immediate" as const, reversible: true, sealed: false },
 ];
 
 // P1-07 mechanism + P2 rows: CAP-437 rejects capture of any event whose

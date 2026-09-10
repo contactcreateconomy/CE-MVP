@@ -230,3 +230,7 @@ crons.interval("drip supply sweep", { hours: 6 }, internal.admin.homeAlertWriter
 crons.interval("seo health sweep", { hours: 6 }, internal.admin.homeAlertWriters.seoHealthSweep, {});
 crons.interval("rank integrity sweep", { hours: 12 }, internal.admin.homeAlertWriters.rankIntegritySweep, {});
 crons.interval("intervention orphan sweep", { minutes: 5 }, internal.admin.interventions.sweepOrphans, {});
+
+// SLICE-P7G-05 (CAP-380): drip.release — the PRIMARY retention cron.
+// Hourly UTC; the job itself gates on drip.releaseHourUtc (default 9).
+crons.interval("drip release", { minutes: 60 }, internal.jobs.dripRelease.release, {});

@@ -114,8 +114,7 @@ describe("SLICE-P7A-05/06 — S0 cover + remote writers (CAP-399/332/334/381/484
   it("CAP-381: 14-day floor + launch floor 40 unchanged; drip fixture degraded (no invented cron)", () => {
     expect(alertsSrc).toContain("DRIP_SUPPLY_FLOOR_DAYS = 14");
     expect(alertsSrc).toContain("DRIP_LAUNCH_FLOOR = 40");
-    expect(alertsSrc).not.toContain("export const dripRelease"); // the cron stays P7G-05's
-    expect(cronsSrc).not.toContain("drip.release"); // the SUPPLY sweep is ours; the RELEASE cron is not
+    expect(alertsSrc).not.toContain("export const dripRelease"); // the SUPPLY alert never publishes (P7G-05's release cron owns that — RESOLVED 2026-09-10, drip.release now wired by P7G-05)
   });
   it("CAP-484 monitors: thin indexed = 0 · held indexed = 0; CAP-318 reads integrityFlags only", () => {
     expect(alertsSrc).toContain("thinIndexedCount");

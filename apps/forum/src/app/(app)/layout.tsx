@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { CmpOverlay } from "@/components/consent/cmp-overlay";
+import { NewsletterOverlay } from "@/components/newsletter/newsletter-overlay";
 
 /**
  * (app) group layout — CAP-025 slot order (quoted): ErrorBoundary (the
@@ -13,6 +14,7 @@ export default function MainAppLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <CmpOverlay />
+      <NewsletterOverlay />
       {children}
     </>
   );
