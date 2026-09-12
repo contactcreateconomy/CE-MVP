@@ -1,6 +1,6 @@
 # SETUP — Createconomy PRD reference app
 
-Verified working from this exact copy on 2026-09-04. This file replaces the
+Verified working from this exact copy on 2026-09-04 (updated 2026-09-12). This file replaces the
 historical root-README/docs references that were not carried into the PRD
 copy (FINAL-HOLISTIC-AUDIT HOL-P2-007). Paths below are relative to the
 repo root (updated 2026-09-05 from the earlier `PRD/app` wording).
@@ -46,7 +46,7 @@ http://localhost:3000/feed` → `200`.
 | Command | What it checks |
 |---|---|
 | `pnpm typecheck` | `tsc --noEmit` across the forum app |
-| `pnpm test:run` | vitest suite (44 tests: registry, layer-3 components, tiered ladder, toggle-switch) |
+| `pnpm test:run` | vitest suite (902 tests across 59 phase-mapped suite files) |
 | `pnpm build` | production build (Turbopack), 19+1 routes |
 
 ## Environment
@@ -107,6 +107,6 @@ email-guarded). ADMIN_EMAILS remains set until the full cutover.
 ## Coverage gate
 
 `node scripts/cap-coverage.mjs` — range-expanded CAP→slice coverage check
-(572/572 as of 2026-09-04; 570 slice-owned + CAP-009/CAP-156 explicitly
+(572/572 as of 2026-09-12; 570 slice-owned + CAP-009/CAP-156 explicitly
 deferred in the Phase-4 disposition table). Run after any slice-catalog edit.
 

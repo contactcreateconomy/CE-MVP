@@ -2,7 +2,7 @@
 
 Createconomy is a creator-economy discussion platform (typed-post forum + labeled AI-persona discussions + claims-first editorial pipeline + tool registry + reputation economy). This repo is a pnpm monorepo containing the **PRD reference app**: the `apps/forum` Next.js frontend, a shared `convex/` backend, and the complete build specification under `docs/`.
 
-**Status snapshot (2026-09-05, post-P4):** Phases 1–4 **code-complete** (P4-01…P4-15; the Phase-4 exit-gate E2E still needs GLM + classifier keys), 315 tests passing, typecheck/lint clean, coverage 572/572. Phases 5–7 not started. A live Convex **dev** deployment (`watchful-chameleon-570`) is now active — schema pushed, seeds run, G1 founder bootstrap executed (CAP-007 `grantFounder`), live probes passing. Caveat: `docs/00-project-status/PROJECT-STATUS.md` was written at the 2026-09-05 scope-stop and still says nothing has ever run live — it predates the resumed work; the `CHANGELOG.md` "Unreleased" entries are the up-to-date record.
+**Status snapshot (2026-09-12, post-audit):** Phases 1–7 code-complete (P7-CLEANUP closed 00-TRANSITION 2026-09-10; 58/58 Phase-7 slices). 902/902 tests, typecheck/lint clean, coverage 572/572 (now CI-enforcing). Live Convex dev deployment (`watchful-chameleon-570`) active — schema pushed, seeds + G1 founder bootstrap executed 2026-09-05. A 2026-09-12 docs-vs-code audit reconciled remaining drift (see CHANGELOG 'DOCS-VS-CODE AUDIT' entry): the /sell dashboard + tool rating form were built, CAP-244 wired, role literals moved to snake_case, several bible enums tightened. Remaining work is founder-owned: G3 GLM + G4 classifier keys (P4 exit-gate E2E waits), G6 Twilio, PostHog/email, OAuth secrets, legal publish + lawyer review, Readiness Cat-8, A8 Figma, A2 charts, prod push.
 
 ---
 
@@ -22,7 +22,7 @@ The PRD was authored against a folder layout that differs from this repo. Every 
 | `PRD/app/apps/forum/...` | `apps/forum/...` |
 | `PRD/app/convex/...` | `convex/...` |
 
-The `Brainstorm/` folder referenced by AGENT-START-HERE does not exist in this repo (that fence is satisfied by default). SETUP.md's paths have been updated to this repo layout; `docs/DEV-HANDOFF.md` and `docs/FOUNDER-BOOTSTRAP.md` still use the `cd PRD/app` wording — run those commands from this repo root instead.
+The `Brainstorm/` folder referenced by AGENT-START-HERE does not exist in this repo (that fence is satisfied by default). SETUP.md's paths have been updated to this repo layout; `docs/DEV-HANDOFF.md` and `docs/FOUNDER-BOOTSTRAP.md` were updated to repo-root wording on 2026-09-12.
 
 ## 3. Mandatory read order before starting any slice/screen
 
@@ -77,10 +77,9 @@ From `docs/00-project-status/` (founder-approved 2026-09-04 — read before any 
 | `pnpm build` | Production build (Turbopack) |
 | `pnpm convex:dev` | Push Convex function changes / run dev sync |
 | `pnpm convex:codegen` | Regenerate `convex/_generated/` |
-| `pnpm convex:seed-forum` / `-force` | Seed forum demo content |
 | `pnpm convex:seed-legal` | Seed the 4 legal docs (requires one-time `npx convex login`) |
 | `pnpm dev:seller` / `dev:admin` / `dev:marketplace` | Run parked placeholder apps |
-| `pnpm convex:deploy:prod` / `convex:prod:ensure-categories` | Prod push + prod category check (Bucket-1 — flag before running) |
+| `pnpm convex:deploy:prod` | Prod push (Bucket-1 — flag before running) |
 | `node scripts/cap-coverage.mjs` | Capability coverage gate (572/572 expected) |
 
 Toolchain: Node ≥ 22, pnpm 10 (`packageManager` pins pnpm@10.28.2), Convex pinned to 1.34.1 via pnpm override, forum runs `next dev` on Turbopack.
@@ -95,7 +94,7 @@ Three pieces are real, verified code — **extend them; never build parallel ver
 
 1. **Feed** — `apps/forum/src/app/(app)/(shell)/feed/page.tsx` + `components/feed/` (RSC + ISR, Convex-backed).
 2. **Auth popup** — `packages/auth-ui` (`auth-modal.tsx`, `AppAuthProvider`, `useAuth`). UI complete; live OAuth providers intentionally not configured.
-3. **Discussion page / post detail** — `apps/forum/src/app/(app)/discussions/[slug]/` — built through P4-15 as the strangler route: canonical `postSeoMeta` resolves first, legacy forum thread is the fallback; per-type render + debate/list/help/showcase mechanics are live. The thread/comments area is an honest Phase-5 placeholder — close the gap against `docs/02-contracts/wave-5/CONTRACT-5-discussion-thread-FINAL.md` when Phase 5 starts.
+3. **Discussion page / post detail** — `apps/forum/src/app/(app)/discussions/[slug]/` — built through P4-15 as the strangler route: canonical `postSeoMeta` resolves first, legacy forum thread is the fallback; per-type render + debate/list/help/showcase mechanics are live. The thread/comments area is fully built (P5-03) against CONTRACT-5-discussion-thread; the MAX layer renders its contract-correct empty state until the CAP-132/133 compute ships.
 
 Conventions to follow:
 
@@ -109,13 +108,13 @@ Conventions to follow:
 ## 9. Open items — check before assuming anything is final
 
 - `docs/06-open-items/OPEN-DECISIONS.md` — still open (non-blocking): E1 (BetaBanner ungoverned), F-34 (eligibility-state routing unowned), F-36 (two waitlist capture surfaces), F-38 (support-scoped intervention inbox), plus FUTURE-* rows.
-- `docs/06-open-items/SCREEN-SCORES.md` — **wave-4-editorial is flagged NEEDS HUMAN REVIEW** (A10 evidence/diff panel). Do not attempt that screen without founder input. All other 53 screens cleared.
+- `docs/06-open-items/SCREEN-SCORES.md` — wave-4-editorial's NEEDS HUMAN REVIEW flag was **resolved 2026-09-04** by DECISIONS-LOCKED #10 (A10 two-pane); the screen was built in P4-09/10 and the doc retains its historical flag. All 54 screens cleared.
 - `docs/04-design-system/DESIGN-SYSTEM-OPEN-ITEMS.md` — A8 tiered-ladder visual sign-off open; A2 charts have no spec (flag before building admin analytics).
 - `docs/06-open-items/DECISIONS-LOCKED.md` — all 11 former stop-and-report fences resolved 2026-09-04 (OTP=Twilio Verify, 7 activation bits, A10 two-pane, etc.).
 
 ## 10. Terminal/deployment-blocked items
 
-Anything requiring the Convex CLI, package installs, deployment pushes, or external accounts is **Bucket-1: stop, flag, hand off** — see `docs/DEV-HANDOFF.md` (note: its "Immediate" items 1–5 — Convex login/codegen, founder bootstrap, rate-limiter install, schema push, widget seeder — are all **closed**, executed 2026-09-05 against the live dev deployment; the doc still lists them). Still blocked, in priority order: **GLM API key** and **moderation-classifier provider** (both pipeline-blocking — H-SAFE/qualify holds every candidate until wired) — **founder deferred both on 2026-09-06 ("will do later"); build continues, the P4 exit-gate E2E waits until the keys land** — then Twilio / PostHog / email providers, legal-doc seed verification, and the prod push. Founder-only steps live in `docs/FOUNDER-BOOTSTRAP.md`; the admin-access rollback is documented in `SETUP.md`.
+Anything requiring the Convex CLI, package installs, deployment pushes, or external accounts is **Bucket-1: stop, flag, hand off** — see `docs/DEV-HANDOFF.md` (note: its "Immediate" items 1–5 — Convex login/codegen, founder bootstrap, rate-limiter install, schema push, widget seeder — are all **closed**, executed 2026-09-05 against the live dev deployment; they are now struck as DONE in the doc). Still blocked, in priority order: **GLM API key** and **moderation-classifier provider** (both pipeline-blocking — H-SAFE/qualify holds every candidate until wired) — **founder deferred both on 2026-09-06 ("will do later"); build continues, the P4 exit-gate E2E waits until the keys land** — then Twilio / PostHog / email providers, legal-doc seed verification, and the prod push. Founder-only steps live in `docs/FOUNDER-BOOTSTRAP.md`; the admin-access rollback is documented in `SETUP.md`.
 
 Pre-launch-only gates (do NOT block build): lawyer review of the four legal docs, and Readiness Category 8 (ranking calibration reviewed) — both gate `signup.mode=open` only.
 

@@ -1,5 +1,7 @@
 # Founder-Bootstrap Manual Verification — P2-AUTH-CUTOVER Gate
 
+> **EXECUTED 2026-09-05** against dev deployment watchful-chameleon-570 (CAP-007 grantFounder; 1 active administrator verified). Retained as the procedure + ADMIN_EMAILS rollback record.
+
 **Purpose:** Step-by-step instructions to verify the founder can access admin
 surfaces via `roleAssignments` alone, BEFORE any change to `ADMIN_EMAILS`.
 You perform these steps yourself — not the agent, not the test suite.
@@ -8,10 +10,10 @@ You perform these steps yourself — not the agent, not the test suite.
 
 ## Prerequisites
 
-- Node.js + pnpm working (see `PRD/app/SETUP.md`)
+- Node.js + pnpm working (see `SETUP.md` at the repo root)
 - `npx convex login` completed (one-time)
 - `npx convex dev --once` pushed (functions live on the deployment)
-- The dev server running: `pnpm dev` from `PRD/app`
+- The dev server running: `pnpm dev` from the repo root
 
 ---
 
@@ -19,7 +21,7 @@ You perform these steps yourself — not the agent, not the test suite.
 
 ```bash
 # Check the current env var is set (on your deployment dashboard or .env.local)
-grep ADMIN_EMAILS PRD/app/.env.local PRD/app/apps/forum/.env.local 2>/dev/null
+grep ADMIN_EMAILS .env.local apps/forum/.env.local 2>/dev/null
 ```
 
 Expected: the variable exists with at least one email. If absent, the legacy
@@ -39,7 +41,7 @@ on any existing admin surface (even if it's just a moderator panel).
 This creates your `roleAssignments` administrator row:
 
 ```bash
-cd PRD/app
+# from the repo root
 npx convex run roleAssignments:grantFounder --identity <your-user-id>
 ```
 
@@ -127,8 +129,8 @@ Write down (or have me record):
 
 ## Rollback procedure (if admin access is lost post-cutover)
 
-1. Add `ADMIN_EMAILS=<your-email>` to `PRD/app/.env.local`
-2. Add `ADMIN_EMAILS=<your-email>` to `PRD/app/apps/forum/.env.local`
+1. Add `ADMIN_EMAILS=<your-email>` to the repo-root `.env.local`
+2. Add `ADMIN_EMAILS=<your-email>` to `apps/forum/.env.local`
 3. Restart: `pnpm dev`
 4. The legacy admin grant in `convex/auth.ts`'s afterUser callback will
    re-activate on your next sign-in

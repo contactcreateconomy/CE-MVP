@@ -20,7 +20,7 @@ From **repository root** (recommended):
 pnpm install
 cp apps/forum/.env.example apps/forum/.env.local
 # Set NEXT_PUBLIC_CONVEX_URL in .env.local
-pnpm convex:seed-forum   # if empty
+# demo content seeds via seed:bootstrap at deploy (seed-forum script removed in P7-CLEANUP)
 pnpm dev                # forum dev server
 ```
 

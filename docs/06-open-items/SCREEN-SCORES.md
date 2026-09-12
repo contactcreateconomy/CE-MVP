@@ -1,5 +1,7 @@
 # SCREEN-SCORES — build-readiness audit, permanent record
 
+**Resolution note (2026-09-12):** wave-4-editorial's NEEDS HUMAN REVIEW was resolved 2026-09-04 by DECISIONS-LOCKED #10 (A10 two-pane) and built in P4-09/10; the flag below is historical.
+
 **Generated:** Stage 2B final (2026-09-04) · **N:** 54 sheets
 **Rubric:** Contract-fidelity 40 (all sheets byte-verified verbatim vs contracts — Stage 1/2 sampled + scripted two-direction check) · Component-availability 30 (−1 untested-cited, −2 raw-exception component, −5 primary-surface missing, −3 ≥6 / −1 1-5 bundled MISSING components) · Clarity 20 (−3 layout-fallback or thin-§12, −3 ambiguity×3+ / −2 ×1-2 — **counted wherever it appears, States verbatim text included, per Stage-2B ruling that build-risk is source-agnostic**, −2 caveat-host) · Honesty 10 (all gaps flagged — zero silent absences found).
 **Manual overrides:** bundled-MISSING counts (editorial 8, tool-profile 7, compose 7, tool-directory 6 — one sheet line names several distinct missing components); editorial NEEDS HUMAN REVIEW regardless of score (primary interactive surface absent).

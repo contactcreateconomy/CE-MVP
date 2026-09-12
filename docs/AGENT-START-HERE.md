@@ -2,6 +2,8 @@
 
 You are the coding agent building Createconomy. This file is the only entry point you need. Read it fully before touching any code.
 
+> **Build-state note (2026-09-12):** this entry doc predates the build. All 7 phases are code-complete, the thread contract is implemented, and wave-4-editorial was resolved (DECISIONS-LOCKED #10). Its fence/spec-guidance sections remain governing; its build-state prose is historical.
+
 ---
 
 ## 1. WHAT THIS FOLDER IS

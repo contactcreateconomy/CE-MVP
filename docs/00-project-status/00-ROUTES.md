@@ -13,12 +13,12 @@ side that updates. Resolves FINAL-HOLISTIC-AUDIT **HOL-P2-008** and retires ever
 | `/p/[slug]` | **`/discussions/[slug]`** | keep live name (was already accepted in AGENT-START-HERE §1b) |
 | `/compose` · `/compose/[type]` | **`/new-post`** | keep live name |
 | `/u/[handle]` | **`/users/[handle]`** | keep live name |
-| `/settings/profile` | **`/profile` + `/settings`** | keep live split (profile = identity/bio surface; settings = privacy/consents surface). Contracts' field ownership maps across unchanged. |
+| `/settings/profile` | **`/profile` + `/settings`** | keep live split (profile = identity/bio surface; settings = privacy/consents surface). `/settings/profile` remains the live M7 write surface (CONTRACT-5-settings-profile) alongside the split — the supersession applied only to the old redirect question. Contracts' field ownership maps across unchanged. |
 | `/` (anon landing) | **`/` (anon landing)** | unbuilt — build fresh per CONTRACT-7-landing; the current redirect `/` → `/feed` moves to `/` → landing when it lands (authed `/` continues to `/feed`). |
 | `/feed` | `/feed` | match (already canonical) |
 | `/search`, `/notifications`, `/privacy`, `/terms` | unchanged | match |
-| `/dmca`, `/repeat-infringer` | unbuilt | build fresh at these paths (now served from the versioned-content table per DECISIONS-LOCKED #9) |
-| All `/admin/*`, `/sell`, `/s/*` | unchanged | serve from the forum app per 00-TOPOLOGY |
+| `/dmca`, `/repeat-infringer` | **`/dmca`, `/repeat-infringer`** | built (7-TRUST) — render from the versioned `contentVersions` table per DECISIONS-LOCKED #9 |
+| All `/admin/*`, `/sell`, `/s/*` | unchanged | serve from the forum app per 00-TOPOLOGY — `/sell` (Rocketeer dashboard) built 2026-09-12 |
 
 ## Consequences
 

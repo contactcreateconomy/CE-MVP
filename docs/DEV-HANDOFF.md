@@ -12,9 +12,9 @@
 
 ## Immediate (needed to verify current work)
 
-### 1. Convex login + codegen + legal seed
+### 1. **DONE 2026-09-05** — ~~Convex login + codegen + legal seed~~ (executed against the live dev deployment)
 ```bash
-cd PRD/app
+# from the repo root
 npx convex login          # one-time browser flow
 npx convex dev --once     # push functions + regenerate _generated (incl. api.d.ts diff check)
 pnpm convex:seed-legal    # seed the 4 legal docs as v1 published
@@ -22,7 +22,7 @@ npx convex run legalContent:getPublished '{"docKey":"terms"}'  # verify
 ```
 **Why:** the legal routes render the contract-sanctioned `unavailable_pending_legal` state until seeded. Also: step (b) regenerates `api.d.ts` — diff against the hand-extended version (the Item 2 verification you noted).
 
-### 2. Founder-bootstrap + admin access verification (P2-AUTH-CUTOVER gate)
+### 2. **DONE 2026-09-05** — ~~Founder-bootstrap + admin access verification (P2-AUTH-CUTOVER gate)~~ (executed against the live dev deployment)
 See `FOUNDER-BOOTSTRAP.md` for the full step-by-step. Short version:
 ```bash
 # Create the roleAssignments administrator row (via dashboard or CLI)
@@ -30,16 +30,16 @@ See `FOUNDER-BOOTSTRAP.md` for the full step-by-step. Short version:
 ```
 **Why:** blocks the ADMIN_EMAILS removal (P2-AUTH-CUTOVER gate). Also blocks the auth provider swap from password/OAuth to magic-link-only.
 
-### 3. Install the rate-limiter component
+### 3. **DONE 2026-09-05** — ~~Install the rate-limiter component~~ (executed against the live dev deployment)
 ```bash
-cd PRD/app
+# from the repo root
 pnpm add @convex-dev/rate-limiter
 ```
 **Why:** P1-09 built the literal sets + typed helpers in `convex/lib/rateLimit.ts`, but the actual `reserve()` calls need the component installed and its client wired into the mutation ctx. Without it, rate limits are defined but not enforced.
 
-### 4. Push the current schema to the deployment
+### 4. **DONE 2026-09-05** — ~~Push the current schema to the deployment~~ (executed against the live dev deployment)
 ```bash
-cd PRD/app
+# from the repo root
 npx convex dev --once
 ```
 **Why:** 14 new tables landed in Phase 1-2 (users canonical fields, privateUserData, roleAssignments, auditLog, systemConfig, configKeyRegistry, moderationCases, legalIntake, waitlistEntries, notifications, jobCatalog, jobRuns, jobDeadLetters, rawEvents, eventCatalog, categories, launchReadinessResults, deployLog, identityJoins, capabilityRestrictions, contentVersions). They need a deployment push to be queryable.
@@ -48,7 +48,7 @@ npx convex dev --once
 
 ## Phase 3 (when Phase 3 build starts)
 
-### 5. Admin widget deploy seeder (SLICE-P3-03)
+### 5. **DONE 2026-09-05** — ~~Admin widget deploy seeder (SLICE-P3-03)~~ (executed against the live dev deployment)
 ```bash
 npx convex run admin/widgetsCatalog:deploySeed
 ```
@@ -88,14 +88,15 @@ SPF/DKIM/DMARC verification before posting).
 
 ### 9. Twilio Verify integration (DECISIONS-LOCKED #1, CAP-551)
 ```bash
-cd PRD/app
+# from the repo root
 pnpm add twilio
 ```
 Plus: set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SERVICE_SID` in `.env.local`. This unblocks CAP-141 (comment eligibility). The helper code in `convex/lib/` is Bucket-2; the account setup + package install + env vars are Bucket-1.
 
 ### 10. PostHog integration (Phase 7 CMP/reliability)
 ```bash
-cd PRD/app/apps/forum
+# from the repo root
+cd apps/forum
 pnpm add posthog-js
 ```
 Plus: set `NEXT_PUBLIC_POSTHOG_KEY` + `NEXT_PUBLIC_POSTHOG_HOST` in `.env.local`. The CMP consent gate code is Bucket-2; the account + package + env vars are Bucket-1. The vendor-deletion outbox (DECISIONS-LOCKED #7) also needs a PostHog API key set server-side.
