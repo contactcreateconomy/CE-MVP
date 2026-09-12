@@ -59,5 +59,7 @@ Sign off **only if** you want a true map instead of that default:
 | **A3 Block / rich composer** | Still owning-slice. Not specified in this close. |
 | **F-25 STATUS DOT / CHECKBOX** | Already in `STYLE-KIT` §11.2 / §11.5 — not gaps. |
 | **A12 Queue / case board** | Specified mechanically as §11.11 (F-24 shared primitive; composes A1 + Notification Card). |
+| **GLOW-EFFECT PALETTE** (2026-09-12 audit) | `components/ui/glowing-effect.tsx` uses the kit's brand sky family as raw hex (`#38bdf8`/`#7dd3fc`/`#0ea5e9`/`#0369a1` — sanctioned hues: §2.1 l.39 `brand/primary-hover` #38BDF8; §2.2 glow hue hsl(199 89% 48%) = #0EA5E9) but only sky-500 has a live CSS var. Needs either three more gradient-stop tokens or a founder blessing of the raw stops; not silently reminted (rule: never invent a token). |
+| **3 arbitrary-px offsets** (2026-09-12 audit) | Catalogued deliberate optical/layout offsets with no token-scale equivalent (not scale drift): `ai-key-takeaways.tsx` `mt-[5px]` (6px bullet-dot optical alignment), `content-page.tsx` `top-[100px]` (sticky-below-fixed-header), `signup-form.tsx` `pr-[126px]/[132px]` (password-meter overlay clearance). Snap only if the kit grows sub-pixel/optical tokens. `global-error.tsx` inline hex is pre-CSS-render (Next.js requirement), exempt. |
 
 Copy on banners, `/go` interstitial, legal prose, and A13 pill **strings** remains founder/legal-owned. Chrome is specified; do not invent marketing copy in Figma.

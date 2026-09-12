@@ -847,6 +847,11 @@ export default defineSchema({
     postId: v.id("posts"),
     toolId: v.string(),
     verdictScore: v.optional(v.number()), // 1-5 int, auto-computed same-txn
+    // bible l.88 verdict-block fields — optional until the review form
+    // collects them (flagged: form spec unconfirmed against CONTRACT-2)
+    verdictSummary: v.optional(v.string()),
+    pros: v.optional(v.array(v.string())),
+    cons: v.optional(v.array(v.string())),
   }).index("by_postId", ["postId"]),
 
   /** bible l.89 — Compare block. Numeric rows live-rendered from tools aggregate. */
@@ -926,10 +931,11 @@ export default defineSchema({
 
   /* ── M6 discussion spine (SLICE-P5-01; bible l.79-115) ─────────────
    * Deferred with flag (NOT silently dropped): commentRankSnapshots
-   * (l.108, calibration audit — Readiness Cat-8 owner) and the MAX
-   * artifact tables threadIntelligenceRuns / threadThemes /
-   * threadPositions / threadQuestions (l.110-114 — compute is
-   * CAP-132/133, Phase-7-owned per CONTRACT-5-discussion-thread §1). */
+   * (l.108, calibration audit — Readiness Cat-8 owner). The MAX artifact
+   * tables threadIntelligenceRuns / threadThemes / threadPositions /
+   * threadQuestions (l.110-114) LANDED with the Phase-7 schema — see the
+   * MAX region below; canonical-thread renders their empty state until
+   * the CAP-132/133 compute ships. */
 
   /** bible l.79 — one reply depth (INV-1); no separate thread entity;
    *  threadRootCommentId = own id on top-level (MUST-DEFINE resolved).

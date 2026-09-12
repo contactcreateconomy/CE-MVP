@@ -291,7 +291,16 @@ async function insertExtensionRow(actx: any, postId: string, args: any): Promise
   switch (args.type) {
     case "review": {
       const verdictScore = args.dimensionScores ? computeVerdictScore(args.dimensionScores) : undefined;
-      await actx.db.insert("postReviews", { postId, toolId: data.toolId ?? "", verdictScore });
+      await actx.db.insert("postReviews", {
+        postId,
+        toolId: data.toolId ?? "",
+        verdictScore,
+        // bible l.88 verdict-block passthrough — written only when the
+        // composer supplies them (form spec flagged, not invented)
+        ...(data.verdictSummary !== undefined ? { verdictSummary: data.verdictSummary } : {}),
+        ...(Array.isArray(data.pros) ? { pros: data.pros } : {}),
+        ...(Array.isArray(data.cons) ? { cons: data.cons } : {}),
+      });
       break;
     }
     case "compare":

@@ -157,6 +157,11 @@ const GlowingEffect = memo(
                       #0369a1 calc(75% / var(--repeating-conic-gradient-times)),
                       #38bdf8 calc(100% / var(--repeating-conic-gradient-times))
                     )`,
+              // Palette note (2026-09-12): these four sky stops are the kit's
+              // brand family (STYLE-KIT §2.1 l.39 brand/primary-hover #38BDF8;
+              // §2.2 glow hue hsl(199 89% 48%) = #0EA5E9) but only sky-500 has
+              // a live CSS var — flagged in DESIGN-SYSTEM-OPEN-ITEMS for
+              // founder tokenization rather than silently reminted.
             } as React.CSSProperties
           }
           className={cn(
