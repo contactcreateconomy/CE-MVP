@@ -24,14 +24,14 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertAdminPermission } from "../lib/authz";
 import { writeAudited, newCorrelationId } from "../lib/audit";
 
-const ENFORCERS = ["storeOperator", "administrator", "moderator"];
+const ENFORCERS = ["store_operator", "administrator", "moderator"];
 
 async function requireEnforcer(ctx: any): Promise<Id<"users">> {
   const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
   if (!userId) throw new Error("storeEnforce: authentication required");
   const roles = await assertAdminPermission(ctx);
   if (!roles.some((r) => ENFORCERS.includes(r))) {
-    throw new Error("storeEnforce: storeOperator/administrator/moderator required");
+    throw new Error("storeEnforce: store_operator/administrator/moderator required");
   }
   return userId;
 }

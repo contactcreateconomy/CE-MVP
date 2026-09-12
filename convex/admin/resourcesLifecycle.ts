@@ -12,7 +12,7 @@
  * CAP-220 (quoted): "Does not itself flip constellation.ugc.enabled" —
  *   the cron writes pilotKillGateEvaluations ONLY.
  * CAP-221 (quoted): "Administrator-only kill-switch — a distinct,
- *   narrower gate" (E2 two-layer: a storeOperator hitting this mutation
+ *   narrower gate" (E2 two-layer: a store_operator hitting this mutation
  *   is server-rejected even though the console route admits them).
  * CAP-557 Actor = Moderator only (the legal-review lane).
  * The lifecycle writes (CAP-555–559) are one-pattern status mutations,
@@ -26,7 +26,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertAdminPermission } from "../lib/authz";
 import { writeAudited, newCorrelationId } from "../lib/audit";
 
-const OPERATORS = ["editor", "publisher", "storeOperator", "administrator"];
+const OPERATORS = ["editor", "publisher", "store_operator", "administrator"];
 
 async function requireOperator(ctx: any, allowed: string[] = OPERATORS): Promise<Id<"users">> {
   const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
@@ -44,7 +44,7 @@ export const publish = mutation({
   args: { resourceId: v.id("resources"), versionId: v.id("resourceVersions") },
   returns: v.object({ published: v.boolean() }),
   handler: async (ctx, args) => {
-    const userId = await requireOperator(ctx, ["publisher", "storeOperator", "administrator"]);
+    const userId = await requireOperator(ctx, ["publisher", "store_operator", "administrator"]);
     const resource = await ctx.db.get(args.resourceId);
     if (!resource) throw new Error("publish: resource not found");
     const version = await ctx.db.get(args.versionId);
@@ -149,7 +149,7 @@ export const executeTakedown = mutation({
   args: { legalIntakeId: v.id("legalIntake"), resourceId: v.id("resources"), action: v.union(v.literal("unpublish"), v.literal("legal_hold"), v.literal("remove")), reasonCode: v.string() },
   returns: v.object({ executed: v.boolean(), cascadeNodes: v.number() }),
   handler: async (ctx, args) => {
-    const userId = await requireOperator(ctx, ["moderator", "storeOperator", "supportOperator", "administrator"]);
+    const userId = await requireOperator(ctx, ["moderator", "store_operator", "support_operator", "administrator"]);
     const intake = await ctx.db.get(args.legalIntakeId);
     if (!intake) throw new Error("takedown: legalIntake row not found");
     const resource = await ctx.db.get(args.resourceId);
@@ -248,7 +248,7 @@ export const killGateEvaluate = internalMutation({
 });
 
 /** CAP-221 — the Administrator-only UGC kill-switch (the NARROWER gate —
- *  a storeOperator is server-rejected here even with console access). */
+ *  a store_operator is server-rejected here even with console access). */
 export const ugcKillSwitch = mutation({
   args: { enabled: v.boolean(), justification: v.string() },
   returns: v.object({ flipped: v.boolean() }),

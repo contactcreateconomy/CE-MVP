@@ -161,12 +161,13 @@ describe("SLICE-P3-01 — two-layer admin authz", () => {
 
   it("State A: support_operator sees only support widgets in catalog", async () => {
     const supportWidgets = [
-      { widgetKey: "support", routeKey: "/admin/support", status: "active", requiredPermissionKeys: ["supportOperator", "administrator"] },
+      // keys match the seeded catalog verbatim (widgetsCatalog.ts: snake_case)
+      { widgetKey: "support", routeKey: "/admin/support", status: "active", requiredPermissionKeys: ["support_operator"] },
       { ...configWidget },
     ];
     const visible = await getPermittedWidgetCatalog(
       adminCtx({
-        roleAssignments: [{ userId: "u-admin", role: "supportOperator", status: "active" }],
+        roleAssignments: [{ userId: "u-admin", role: "support_operator", status: "active" }],
         widgets: supportWidgets,
       }),
     );

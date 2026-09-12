@@ -38,7 +38,7 @@ async function requireSupportOperator(ctx: any): Promise<Id<"users">> {
   const roles = await assertAdminPermission(ctx);
   // Narrow support_operator gate — an Administrator WITHOUT support_operator
   // cannot grant (V4: the actor set is register-backed, not a gap)
-  if (!roles.includes("supportOperator")) {
+  if (!roles.includes("support_operator")) {
     throw new Error("support: support_operator role required");
   }
   return userId;

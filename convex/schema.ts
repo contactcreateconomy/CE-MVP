@@ -157,7 +157,9 @@ export default defineSchema({
   }).index("by_user", ["userId"]),
 
   /** P1-01a — canonical authority store (bible l.44). Role literals verbatim
-   *  from the bible (camelCase). Default signup assignment per MUST-DEFINE:
+   *  from the bible (lower_snake per the Core-enum convention, l.35/l.386):
+   *  store_operator · support_operator. Default signup assignment per
+   *  MUST-DEFINE:
    *  {role: member, scopeType: global, scopeId: null, status: active} — the
    *  P2-01 admission writer enforces it; v1 is global-scope only. The legacy
    *  email-allowlist/membership authority was retired with the forum-scoped
@@ -169,8 +171,8 @@ export default defineSchema({
       v.literal("editor"),
       v.literal("publisher"),
       v.literal("moderator"),
-      v.literal("storeOperator"),
-      v.literal("supportOperator"),
+      v.literal("store_operator"),
+      v.literal("support_operator"),
       v.literal("administrator"),
     ),
     scopeType: v.union(v.literal("global")), // v1: global only (bible l.44)

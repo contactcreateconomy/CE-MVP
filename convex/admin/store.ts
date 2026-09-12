@@ -43,8 +43,8 @@ async function requireStoreOperator(ctx: any): Promise<Id<"users">> {
   const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
   if (!userId) throw new Error("admin.store: authentication required");
   const roles = await assertAdminPermission(ctx);
-  if (!roles.some((r) => r === "storeOperator" || r === "administrator")) {
-    throw new Error("admin.store: storeOperator required");
+  if (!roles.some((r) => r === "store_operator" || r === "administrator")) {
+    throw new Error("admin.store: store_operator required");
   }
   return userId;
 }

@@ -30,8 +30,8 @@ async function requireCurationOperator(ctx: any): Promise<Id<"users">> {
   const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
   if (!userId) throw new Error("curation: authentication required");
   const roles = await assertAdminPermission(ctx);
-  if (!roles.some((r) => r === "editor" || r === "publisher" || r === "storeOperator" || r === "administrator")) {
-    throw new Error("curation: Editor/Publisher/storeOperator required (CAP-191/192 actor set)");
+  if (!roles.some((r) => r === "editor" || r === "publisher" || r === "store_operator" || r === "administrator")) {
+    throw new Error("curation: Editor/Publisher/store_operator required (CAP-191/192 actor set)");
   }
   return userId;
 }

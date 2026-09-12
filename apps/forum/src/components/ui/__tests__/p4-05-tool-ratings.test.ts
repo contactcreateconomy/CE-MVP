@@ -169,7 +169,7 @@ describe("SLICE-P4-05 — auto-flag (CAP-533: velocity + outlier, config-driven)
 
 describe("SLICE-P4-05 — R-STAFF (server-side reject, not UI-hide)", () => {
   it("every privileged role is rejected with RATING_STAFF_FORBIDDEN", () => {
-    for (const role of ["editor", "publisher", "moderator", "storeOperator", "supportOperator", "administrator"]) {
+    for (const role of ["editor", "publisher", "moderator", "store_operator", "support_operator", "administrator"]) {
       const r = ratingActorEligibility([role]);
       expect(r.allowed, role).toBe(false);
       expect(r.reason).toContain("RATING_STAFF_FORBIDDEN");

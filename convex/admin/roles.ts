@@ -20,8 +20,8 @@ export const rolesAssign = mutation({
     // boundary, TypeScript gets the correct narrowed type (no cast needed)
     role: v.union(
       v.literal("member"), v.literal("editor"), v.literal("publisher"),
-      v.literal("moderator"), v.literal("storeOperator"),
-      v.literal("supportOperator"), v.literal("administrator"),
+      v.literal("moderator"), v.literal("store_operator"),
+      v.literal("support_operator"), v.literal("administrator"),
     ),
     actorId: v.id("users"),
     reason: v.string(),

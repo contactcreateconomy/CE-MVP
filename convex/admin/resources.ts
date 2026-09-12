@@ -3,7 +3,7 @@
  * rights/content review pipeline, the forge engine, PDF artifact
  * validation, and contribution weights.
  *
- * Actors: Editor/Publisher/storeOperator on the review rows (UGC-disabled
+ * Actors: Editor/Publisher/store_operator on the review rows (UGC-disabled
  *   does NOT disable this console — in-house/operator production
  *   continues, quoted).
  * CAP-206 (quoted): "Off-topic ≠ unsafe (distinct reject reasons)"
@@ -46,7 +46,7 @@ export const rightsReview = mutation({
   },
   returns: v.object({ status: v.string() }),
   handler: async (ctx, args) => {
-    const userId = await requireOperator(ctx, ["editor", "publisher", "storeOperator", "administrator"]);
+    const userId = await requireOperator(ctx, ["editor", "publisher", "store_operator", "administrator"]);
     const ref = await ctx.db.get(args.referenceId);
     if (!ref || ref.status !== "rights_review") throw new Error("rights.review: reference not in rights_review");
     const status = args.accept ? "accepted_for_forge" : "rejected";
@@ -74,7 +74,7 @@ export const contentReview = mutation({
   },
   returns: v.object({ status: v.string() }),
   handler: async (ctx, args) => {
-    const userId = await requireOperator(ctx, ["editor", "publisher", "storeOperator", "administrator"]);
+    const userId = await requireOperator(ctx, ["editor", "publisher", "store_operator", "administrator"]);
     const ref = await ctx.db.get(args.referenceId);
     if (!ref || ref.status !== "content_review") throw new Error("content.review: reference not in content_review");
     const status = args.decision === "accept" ? "accepted_for_forge" : "rejected";
@@ -109,7 +109,7 @@ export const forgeFromReferences = mutation({
   },
   returns: v.object({ resourceId: v.id("resources"), versionId: v.id("resourceVersions") }),
   handler: async (ctx, args) => {
-    const userId = await requireOperator(ctx, ["editor", "publisher", "storeOperator", "administrator"]);
+    const userId = await requireOperator(ctx, ["editor", "publisher", "store_operator", "administrator"]);
     if (args.referenceIds.length === 0) throw new Error("forge: at least one reference required");
 
     const refs: any[] = [];
@@ -186,7 +186,7 @@ export const promoteRightsVerified = mutation({
   args: { referenceId: v.id("resourceReferences"), evidence: v.string() },
   returns: v.object({ promoted: v.boolean() }),
   handler: async (ctx, args) => {
-    const userId = await requireOperator(ctx, ["editor", "publisher", "storeOperator", "administrator"]);
+    const userId = await requireOperator(ctx, ["editor", "publisher", "store_operator", "administrator"]);
     await writeAudited(ctx, async (actx) => {
       await actx.db.patch(args.referenceId, { sourceClass: "rights_verified" });
       return {
@@ -220,7 +220,7 @@ export const validatePdf = mutation({
   },
   returns: v.object({ status: v.string(), rejection: v.optional(v.string()) }),
   handler: async (ctx, args) => {
-    const userId = await requireOperator(ctx, ["editor", "publisher", "storeOperator", "administrator"]);
+    const userId = await requireOperator(ctx, ["editor", "publisher", "store_operator", "administrator"]);
     const version = await ctx.db.get(args.versionId);
     if (!version) throw new Error("artifact.validatePdf: version not found");
 
@@ -270,7 +270,7 @@ export const assignWeights = mutation({
   },
   returns: v.object({ totalWeight: v.number() }),
   handler: async (ctx, args) => {
-    const userId = await requireOperator(ctx, ["editor", "publisher", "storeOperator", "administrator"]);
+    const userId = await requireOperator(ctx, ["editor", "publisher", "store_operator", "administrator"]);
     const rows = await ctx.db
       .query("resourceContributions")
       .withIndex("by_resource", (q: any) => q.eq("resourceId", args.resourceId))

@@ -248,9 +248,10 @@ export async function assertCustomerCapability(
 // SLICE-P3-01 — Two-layer admin authz (CAP-390/392/430)
 // ═══════════════════════════════════════════════════════════════════════
 
-/** Staff roles per the canonical role enum (bible l.44). */
+/** Staff roles per the canonical role enum (bible l.44 + Core-enums l.386,
+ *  lower_snake — matching the widget-catalog permission keys verbatim). */
 export const STAFF_ROLES = [
-  "editor", "publisher", "moderator", "storeOperator", "supportOperator", "administrator",
+  "editor", "publisher", "moderator", "store_operator", "support_operator", "administrator",
 ] as const;
 export type StaffRole = (typeof STAFF_ROLES)[number];
 
@@ -331,10 +332,12 @@ export async function resolveWidgetRoute(
     throw new AdminAuthzError("WIDGET_HIDDEN", `Widget "${routeKey}" is ${widget.status} → FEATURE_DISABLED`);
   }
 
-  // 2. Check requiredPermissionKeys against the user's staff roles
+  // 2. Check requiredPermissionKeys against the user's staff roles.
+  //    Keys are role literals (widgetsCatalog) — exact match only; a mismatch
+  //    fails closed loudly instead of papering over casing drift.
   const required = widget.requiredPermissionKeys ?? [];
   const hasPermission = required.some((key: string) =>
-    userStaffRoles.some((role) => role === key || key === role.toLowerCase()),
+    userStaffRoles.some((role) => role === key),
   );
   if (required.length > 0 && !hasPermission) {
     throw new AdminAuthzError(
@@ -383,8 +386,6 @@ export async function getPermittedWidgetCatalog(ctx: any): Promise<any[]> {
     if (w.status === "hidden" || w.status === "unregistered") return false;
     const required = w.requiredPermissionKeys ?? [];
     if (required.length === 0) return true; // no permission required
-    return required.some((key: string) =>
-      roles.some((role) => role === key || key === role.toLowerCase()),
-    );
+    return required.some((key: string) => roles.some((role) => role === key));
   });
 }

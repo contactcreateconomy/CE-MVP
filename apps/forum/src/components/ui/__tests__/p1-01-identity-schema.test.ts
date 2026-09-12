@@ -29,9 +29,9 @@ const hasField = (table: any, field: string) => Boolean(fieldsOf(table)?.[field]
 const indexNames = (table: any) => (table.indexes ?? []).map((i: any) => i.indexDescriptor);
 
 describe("SLICE-P1-01a — identity core", () => {
-  it("roleAssignments.role matches the bible l.44 literal set exactly (camelCase)", () => {
+  it("roleAssignments.role matches the bible l.44 literal set exactly (lower_snake, Core-enums l.386)", () => {
     expect(literalValues(fieldsOf(roleAssignments).role).sort()).toEqual(
-      ["member", "editor", "publisher", "moderator", "storeOperator", "supportOperator", "administrator"].sort(),
+      ["member", "editor", "publisher", "moderator", "store_operator", "support_operator", "administrator"].sort(),
     );
   });
 
