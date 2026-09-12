@@ -355,6 +355,7 @@ export const getProfile = query({
     let ratingsPage: {
       items: { userId: Id<"users">; overallScore: number; dimensionScores: (typeof tool)["dimensionSums"]; reviewText: string | undefined }[];
       isDone: boolean;
+      nextCursor: string | null; // continuation for tools.listRatings (Action 5)
     };
     if (userId) {
       const result = await ctx.db
@@ -375,9 +376,32 @@ export const getProfile = query({
           reviewText: r.reviewText,
         })),
         isDone: result.isDone,
+        nextCursor: result.isDone ? null : result.continueCursor,
       };
     } else {
-      ratingsPage = { items: [], isDone: true };
+      ratingsPage = { items: [], isDone: true, nextCursor: null };
+    }
+
+    // The viewer's own ACTIVE rating (contract State 6: existing active →
+    // edit mode; owner-only edit/withdraw CAP-113/117). Anonymous → null.
+    let myRating: {
+      ratingId: string; overallScore: number;
+      dimensionScores: Record<string, number | "not_applicable">; reviewText: string | undefined;
+    } | null = null;
+    if (userId) {
+      const own = await ctx.db
+        .query("toolRatings")
+        .withIndex("by_toolId_userId", (q: any) => q.eq("toolId", tool._id).eq("userId", userId))
+        .filter((q: any) => q.eq(q.field("status"), "active"))
+        .first();
+      if (own) {
+        myRating = {
+          ratingId: own._id,
+          overallScore: own.overallScore,
+          dimensionScores: own.dimensionScores,
+          reviewText: own.reviewText,
+        };
+      }
     }
 
     return {
@@ -394,6 +418,40 @@ export const getProfile = query({
       aggregate, // labeled segment 1 — community (from tools row)
       editorialVerdicts, // labeled segment 2 — curated (CAP-535 fields)
       ratingsPage,
+      myRating, // contract State 6 — drives the form's edit/withdraw modes
+    };
+  },
+});
+
+/**
+ * Ratings-page continuation (contract Action 5 / OQ#6 — cursor mechanics
+ * were unspecified; this follows the platform's standard Convex cursor
+ * pagination). Member-only, same display filter as getProfile's page.
+ */
+export const listRatings = query({
+  args: { toolId: v.id("tools"), cursor: v.optional(v.string()), numItems: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return { items: [], isDone: true, nextCursor: null };
+    const result = await ctx.db
+      .query("toolRatings")
+      .withIndex("by_toolId", (q: any) => q.eq("toolId", args.toolId))
+      .filter((q: any) =>
+        q.and(
+          q.eq(q.field("status"), "active"),
+          q.eq(q.field("moderationStatus"), "passed"),
+        ),
+      )
+      .paginate({ cursor: (args.cursor ?? null) as any, numItems: args.numItems ?? 10 });
+    return {
+      items: result.page.map((r: any) => ({
+        userId: r.userId,
+        overallScore: r.overallScore,
+        dimensionScores: r.dimensionScores,
+        reviewText: r.reviewText,
+      })),
+      isDone: result.isDone,
+      nextCursor: result.isDone ? null : result.continueCursor,
     };
   },
 });

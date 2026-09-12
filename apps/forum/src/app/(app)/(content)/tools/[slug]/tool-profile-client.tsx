@@ -1,27 +1,31 @@
 "use client";
 
 /**
- * Tool Profile client (SLICE-P4-04) — CAP-110's TWO labeled segments
- * (R-VERDICT: community aggregate vs editorialVerdicts — conflation
- * prohibited), honest zero-state when ratingCount=0, CAP-119 archived
- * banner + frozen aggregate. The rating form/submit surface is SLICE-P4-05
- * — deliberately absent here; ratings render zero-state only.
+ * Tool Profile client (SLICE-P4-04 + the rating-form closure): CAP-110's
+ * TWO labeled segments (R-VERDICT: community aggregate vs editorialVerdicts
+ * — conflation prohibited), honest zero-state when ratingCount=0, CAP-119
+ * archived banner + frozen aggregate, the CONTRACT-2 States 4–9 rating
+ * form (submit/edit/withdraw — P4-05 mutations, closed 2026-09-12), and
+ * ratingsPage Load-more continuation.
  *
  * Segment composition note: no §11 primitive exists for two-segment layouts
  * (contract §6 flag) — composed from Card with explicit segment labels.
  */
 
-import { useQuery } from "convex/react";
+import { useState } from "react";
+import { useConvex, useQuery } from "convex/react";
 import { Archive, ExternalLink, PackageSearch, Star } from "lucide-react";
 import { useAuth } from "@cemvp/auth-ui";
 
 import { Badge } from "@/components/ui/badge";
 import { Banner } from "@/components/ui/banner";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/convex";
 import { ProvenanceFooter } from "@/components/trust/provenance-footer";
+import { RatingForm } from "./rating-form";
 
 const DIMENSION_LABELS: Record<string, string> = {
   ease_of_use: "Ease of use",
@@ -40,6 +44,14 @@ export function ToolProfileClient({ slug }: ToolProfileClientProps) {
   // regenerated api types surface v.any() as unknown — boundary cast
   const profile = useQuery(api.tools.getProfile, { slug }) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
   const { authStatus } = useAuth();
+  const convex = useConvex();
+
+  // ratingsPage continuation (contract Action 5) — appended pages held in
+  // ratingsPage continuation (contract Action 5) — appended pages held in
+  // local state; the base query keeps rendering the first page. Hooks live
+  // before the early returns (React rules of hooks).
+  const [extraPages, setExtraPages] = useState<{ items: any[]; nextCursor: string | null }[]>([]); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const [loadingMore, setLoadingMore] = useState(false);
 
   if (profile === undefined) {
     return (
@@ -63,7 +75,30 @@ export function ToolProfileClient({ slug }: ToolProfileClientProps) {
     );
   }
 
-  const { tool, aggregate, editorialVerdicts, ratingsPage } = profile;
+  const { tool, aggregate, editorialVerdicts, ratingsPage, myRating } = profile;
+
+  // The first page's cursor comes from getProfile; each Load-more appends
+  // one continuation page and advances the cursor.
+  const effectiveCursor = extraPages.length > 0
+    ? extraPages[extraPages.length - 1].nextCursor
+    : ratingsPage.nextCursor;
+  const canContinue = effectiveCursor !== null && effectiveCursor !== undefined;
+
+  async function loadMore() {
+    if (!canContinue || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const page = await convex.query(api.tools.listRatings, {
+        toolId: tool._id,
+        cursor: effectiveCursor ?? undefined,
+      });
+      setExtraPages((prev) => [...prev, { items: page.items, nextCursor: page.nextCursor }]);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  const allRatings = [...ratingsPage.items, ...extraPages.flatMap((p) => p.items)];
 
   return (
     <div className="mx-auto w-full max-w-[720px] space-y-6 px-4 py-8 md:px-6">
@@ -162,7 +197,28 @@ export function ToolProfileClient({ slug }: ToolProfileClientProps) {
         </CardContent>
       </Card>
 
-      {/* Member ratings (zero-state this slice — the rating form is P4-05) */}
+      {/* Rating form — CONTRACT-2 States 4–9 (submit/edit/withdraw).
+          Eligibility is server-enforced (reject, not UI-hide): the form
+          renders for signed-in members and surfaces R-STAFF/R-ONE/verify
+          rejections verbatim from the mutations. */}
+      {authStatus === "authenticated" ? (
+        <RatingForm
+          toolId={String(tool._id)}
+          toolStatus={String(tool.status)}
+          myRating={myRating ?? null}
+        />
+      ) : (
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm text-(--text-secondary)">
+              <a href="/signin" className="underline">Sign in</a> to rate this tool — ratings are
+              open to verified members.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Member ratings + Load-more continuation (contract Action 5) */}
       <Card>
         <CardHeader className="p-4 pb-2">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">
@@ -170,7 +226,7 @@ export function ToolProfileClient({ slug }: ToolProfileClientProps) {
           </h2>
         </CardHeader>
         <CardContent className="p-4 pt-0">
-          {ratingsPage.items.length === 0 ? (
+          {allRatings.length === 0 ? (
             <p className="text-sm text-(--text-secondary)">
               {/* Anonymous branch (bible l.33): ratings withheld — member
                   branch with no ratings renders the plain zero-state. */}
@@ -179,18 +235,27 @@ export function ToolProfileClient({ slug }: ToolProfileClientProps) {
                 : "No member ratings yet."}
             </p>
           ) : (
-            <ul className="space-y-3">
-              {ratingsPage.items.map((r: any, i: number) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
-                <li key={i} className="border-b border-(--border-subtle) pb-3 last:border-b-0 last:pb-0">
-                  <div className="flex items-center gap-2">
-                    <Badge tone="brand">{r.overallScore} / 5</Badge>
-                  </div>
-                  {r.reviewText ? (
-                    <p className="mt-1.5 text-sm leading-relaxed text-(--text-secondary)">{r.reviewText}</p>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul className="space-y-3">
+                {allRatings.map((r: any, i: number) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                  <li key={i} className="border-b border-(--border-subtle) pb-3 last:border-b-0 last:pb-0">
+                    <div className="flex items-center gap-2">
+                      <Badge tone="brand">{r.overallScore} / 5</Badge>
+                    </div>
+                    {r.reviewText ? (
+                      <p className="mt-1.5 text-sm leading-relaxed text-(--text-secondary)">{r.reviewText}</p>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+              {canContinue && (
+                <div className="mt-3">
+                  <Button variant="secondary" disabled={loadingMore} onClick={loadMore}>
+                    {loadingMore ? "Loading…" : "Load more ratings"}
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
