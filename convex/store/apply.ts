@@ -110,7 +110,7 @@ export const submit = mutation({
     const existing = await ctx.db
       .query("storeRequests")
       .withIndex("by_user", (q: any) => q.eq("userId", userId))
-      .filter((q: any) => q.eq(q.field("status"), "pending"))
+      .filter((q: any) => q.eq(q.field("status"), "submitted"))
       .first();
     if (existing) throw new Error("store.apply: a pending request already exists");
 
@@ -118,7 +118,7 @@ export const submit = mutation({
     await writeAudited(ctx, async (actx) => {
       requestId = (await actx.db.insert("storeRequests", {
         userId,
-        status: "pending",
+        status: "submitted", // Core-enums l.437 (was free-string "pending")
         categories: args.categories,
         networks: args.networks,
         expectedProductCount: args.expectedProductCount,
@@ -130,7 +130,7 @@ export const submit = mutation({
       })) as Id<"storeRequests">;
       return {
         actorId: userId, action: "store.apply.submit", target: `storeRequests:${requestId}`,
-        prev: null, next: { status: "pending", networks: args.networks },
+        prev: null, next: { status: "submitted", networks: args.networks },
         correlationId: newCorrelationId(), reversible: true,
       };
     });

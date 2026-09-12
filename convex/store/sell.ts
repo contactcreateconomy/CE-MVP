@@ -56,6 +56,17 @@ export const activate = mutation({
     }
     await writeAudited(ctx, async (actx) => {
       await actx.db.patch(store._id, { status: "active", activatedAt: Date.now() });
+      // bible l.228 — "active at activation": the provisional rocketeer
+      // badge minted at P6-14 approval finalizes HERE
+      const badge = await actx.db
+        .query("badges")
+        .withIndex("by_subject_state", (q: any) =>
+          q.eq("subjectType", "user").eq("subjectId", userId).eq("state", "provisional"))
+        .filter((q: any) => q.eq(q.field("type"), "rocketeer"))
+        .take(1);
+      if (badge.length > 0) {
+        await actx.db.patch(badge[0]._id, { state: "finalized" });
+      }
       return {
         actorId: userId, action: "store.activate", target: `storefronts:${store._id}`,
         prev: { status: store.status }, next: { status: "active" },
@@ -123,7 +134,7 @@ export const submitProduct = mutation({
         useCase: args.useCase,
         description: args.description,
         claims: args.claims,
-        status: "pending",
+        status: "under_review", // Core-enums l.438 — enters the P6-14 validation pipeline
         sortOrder: 0,
         createdAt: now,
       })) as Id<"storefrontProducts">;
@@ -153,7 +164,7 @@ export const requestEdit = mutation({
     await writeAudited(ctx, async (actx) => {
       // The edit lands as a pending product revision; the CURRENT stays
       // live until P6-14 re-validates + locks a new version.
-      await actx.db.patch(args.storefrontProductId, { description: args.description, claims: args.claims, status: "pending" });
+      await actx.db.patch(args.storefrontProductId, { description: args.description, claims: args.claims, status: "under_review" });
       return {
         actorId: userId, action: "store.requestEdit", target: `storefrontProducts:${args.storefrontProductId}`,
         prev: { description: product.description.slice(0, 80) }, next: { status: "pending (re-validation)" },

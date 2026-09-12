@@ -9,6 +9,14 @@ const appId = v.union(
   v.literal("marketplace"),
 );
 
+/** personaEngagement.contributionIntent — Core-enums l.374 (8 literals). */
+const CONTRIBUTION_INTENT = v.union(
+  v.literal("counterpoint"), v.literal("missing_assumption"),
+  v.literal("tradeoff"), v.literal("evidence_gap"),
+  v.literal("alt_framework"), v.literal("synthesis"),
+  v.literal("unresolved_question"), v.literal("position_evolution"),
+);
+
 export default defineSchema({
   ...authTables,
   // Extends Convex Auth `users` — must keep auth fields + email/phone indexes.
@@ -1276,7 +1284,7 @@ export default defineSchema({
     commentId: v.optional(v.id("comments")),
     stanceSummary: v.string(),
     stanceEmbedding: v.optional(v.array(v.float64())),
-    contributionIntent: v.string(),
+    contributionIntent: CONTRIBUTION_INTENT,
     isFollowUp: v.boolean(),
     isEvolution: v.boolean(),
     threadRevision: v.optional(v.number()),
@@ -1393,7 +1401,7 @@ export default defineSchema({
   personaCommentDrafts: defineTable({
     postId: v.id("posts"),
     personaId: v.id("personas"),
-    contributionIntent: v.string(),
+    contributionIntent: CONTRIBUTION_INTENT,
     generationRunId: v.string(),
     genomeVersion: v.number(),
     memoryIds: v.array(v.string()),
@@ -1931,11 +1939,16 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_owner", ["ownerUserId"]),
 
-  /** bible l.215 — one per verified user; activation = ≥1 approved product. */
+  /** bible l.215 — one per verified user; activation = ≥1 approved product.
+   *  status per Core-enums l.436 (8 literals). */
   storefronts: defineTable({
     ownerUserId: v.id("users"),
     distributionId: v.id("distributions"),
-    status: v.string(),
+    status: v.union(
+      v.literal("none"), v.literal("requested"), v.literal("under_review"),
+      v.literal("setup"), v.literal("active"), v.literal("paused"),
+      v.literal("suspended"), v.literal("closed"),
+    ),
     isPlatformCurated: v.boolean(),
     disclosureVersion: v.string(),
     collections: v.array(v.string()),
@@ -1945,10 +1958,14 @@ export default defineSchema({
     .index("by_owner", ["ownerUserId"])
     .index("by_status", ["status"]),
 
-  /** bible l.216 — the request gate with the four attestations. */
+  /** bible l.216 — the request gate with the four attestations.
+   *  status per Core-enums l.437 (5 literals). */
   storeRequests: defineTable({
     userId: v.id("users"),
-    status: v.string(),
+    status: v.union(
+      v.literal("submitted"), v.literal("under_review"),
+      v.literal("info_requested"), v.literal("approved"), v.literal("rejected"),
+    ),
     categories: v.array(v.string()),
     networks: v.array(v.string()),
     expectedProductCount: v.number(),
@@ -1969,7 +1986,8 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_status", ["status"]),
 
-  /** bible l.217 — the Product-Promotion layer over tools. */
+  /** bible l.217 — the Product-Promotion layer over tools.
+   *  status per Core-enums l.438 (9 literals). */
   storefrontProducts: defineTable({
     storefrontId: v.id("storefronts"),
     toolId: v.optional(v.string()), // canonical M5 registry link where one exists
@@ -1979,7 +1997,11 @@ export default defineSchema({
     imageAssetId: v.optional(v.id("_storage")),
     description: v.string(),
     claims: v.string(),
-    status: v.string(),
+    status: v.union(
+      v.literal("draft"), v.literal("auto_screened"), v.literal("under_review"),
+      v.literal("approved"), v.literal("paused"), v.literal("rejected"),
+      v.literal("withdrawn"), v.literal("expired"), v.literal("destination_unavailable"),
+    ),
     currentVersionId: v.optional(v.id("storefrontProductVersions")),
     // CAP-560 write target (register, quoted): "storefrontProducts (link to
     // the shadow post's ID)" — set at approval by createShadowPost.
@@ -2733,6 +2755,7 @@ export default defineSchema({
     type: v.union(
       v.literal("level_milestone"), v.literal("recognition_role"),
       v.literal("profile_completion"), v.literal("discoverer"),
+      v.literal("rocketeer"), // bible l.228/l.433 — capability marker, minted provisional at store approval
     ),
     label: v.string(),
     level: v.optional(v.string()), // signal.level literal

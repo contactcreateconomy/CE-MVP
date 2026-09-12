@@ -154,17 +154,20 @@ export const circuitBreaker = internalMutation({
 });
 
 /** CAP-266 — emergency product pull (immediate delist; the version
- *  history is retained — nothing deleted). */
+ *  history is retained — nothing deleted). Writes product status=paused
+ *  (no "pulled" literal exists in Core-enums l.438; the operator-pause
+ *  pattern mirrors CAP-264's store-level pause, and the audit reasonCode
+ *  preserves the emergency distinction). */
 export const emergencyPull = mutation({
   args: { storefrontProductId: v.id("storefrontProducts"), reasonCode: v.string() },
   returns: v.object({ pulled: v.boolean() }),
   handler: async (ctx, args) => {
     const userId = await requireEnforcer(ctx);
     await writeAudited(ctx, async (actx) => {
-      await actx.db.patch(args.storefrontProductId, { status: "pulled" });
+      await actx.db.patch(args.storefrontProductId, { status: "paused" });
       return {
         actorId: userId, action: "store.emergencyPull", target: `storefrontProducts:${args.storefrontProductId}`,
-        prev: null, next: { status: "pulled" },
+        prev: null, next: { status: "paused", emergency: true },
         correlationId: newCorrelationId(), reversible: true, reasonCode: args.reasonCode,
       };
     });
@@ -180,11 +183,25 @@ export const revokeBadge = mutation({
   returns: v.object({ revoked: v.boolean(), notice: v.string() }),
   handler: async (ctx, args) => {
     const userId = await requireEnforcer(ctx);
+    const store = await ctx.db.get(args.storefrontId);
+    if (!store) throw new Error("storeEnforce.revokeBadge: storefront not found");
     const notice = "This store's verified-seller badge was revoked."; // the public notice line
     await writeAudited(ctx, async (actx) => {
       await actx.db.patch(args.storefrontId, { status: "suspended" });
-      // The notice itself renders on the public storefront (P6-18 reads
+      // bible l.228 — the rocketeer badge row REVOKES (stays on the public
+      // shelf); the notice itself renders on the storefront (P6-18 reads
       // status=suspended + the strike trail). No follower/buyer fan-out.
+      const badge = await actx.db
+        .query("badges")
+        .withIndex("by_subject_state", (q: any) =>
+          q.eq("subjectType", "user").eq("subjectId", store.ownerUserId).eq("state", "finalized"))
+        .filter((q: any) => q.eq(q.field("type"), "rocketeer"))
+        .take(1);
+      if (badge.length > 0) {
+        await actx.db.patch(badge[0]._id, {
+          state: "revoked", revokedAt: Date.now(), revokeReason: args.reasonCode,
+        });
+      }
       return {
         actorId: userId, action: "store.revokeBadge", target: `storefronts:${args.storefrontId}`,
         prev: null, next: { status: "suspended", publicNotice: notice },

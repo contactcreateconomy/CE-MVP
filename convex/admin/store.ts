@@ -61,7 +61,7 @@ export const decideRequest = mutation({
   handler: async (ctx, args) => {
     const userId = await requireStoreOperator(ctx);
     const request = await ctx.db.get(args.requestId);
-    if (!request || request.status !== "pending") throw new Error("store.decide: no pending request");
+    if (!request || request.status !== "submitted") throw new Error("store.decide: no pending request");
 
     let storefrontId: Id<"storefronts"> | undefined;
     await writeAudited(ctx, async (actx) => {
@@ -91,10 +91,29 @@ export const decideRequest = mutation({
           collections: [],
           createdAt: Date.now(),
         })) as Id<"storefronts">);
+        // bible l.228 — Rocketeer badge minted PROVISIONAL at approval
+        // (capability marker, not a warranty; finalized at CAP-233 activation)
+        const minted = await actx.db
+          .query("badges")
+          .withIndex("by_subject_state", (q: any) =>
+            q.eq("subjectType", "user").eq("subjectId", request.userId).eq("state", "provisional"))
+          .filter((q: any) => q.eq(q.field("type"), "rocketeer"))
+          .take(1);
+        if (minted.length === 0) {
+          await actx.db.insert("badges", {
+            subjectType: "user",
+            subjectId: request.userId,
+            type: "rocketeer",
+            label: "Rocketeer",
+            isFirstToAchieve: false,
+            state: "provisional",
+            awardedAt: Date.now(),
+          });
+        }
       }
       return {
         actorId: userId, action: "store.decideRequest", target: `storeRequests:${args.requestId}`,
-        prev: { status: "pending" }, next: { status: args.decision },
+        prev: { status: "submitted" }, next: { status: args.decision },
         correlationId: newCorrelationId(), reversible: true, reasonCode: args.reasonCode,
       };
     });
@@ -291,7 +310,7 @@ export const getQueue = query({
     if (!staff) return null;
     const requests = await ctx.db
       .query("storeRequests")
-      .withIndex("by_status", (q: any) => q.eq("status", "pending"))
+      .withIndex("by_status", (q: any) => q.eq("status", "submitted"))
       .take(10); // CAP-263 batch ≤10
     const links = await ctx.db
       .query("storefrontLinks")

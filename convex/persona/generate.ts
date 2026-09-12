@@ -244,7 +244,7 @@ async function generateDraft(
   const draftId = (await ctx.db.insert("personaCommentDrafts", {
     postId,
     personaId,
-    contributionIntent: "gap_fill",
+    contributionIntent: "evidence_gap", // Core-enums l.374 (was off-enum "gap_fill")
     generationRunId,
     genomeVersion: genome.version, // snapshots at generation (in-flight insulation, CAP-547 contract §3)
     memoryIds: (memories as any[]).map((m) => m._id),
