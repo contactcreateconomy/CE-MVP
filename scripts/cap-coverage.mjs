@@ -21,3 +21,5 @@ const all = new Set(Array.from({ length: 572 }, (_, i) => i + 1));
 const missing = [...all].filter(n => !covered.has(n));
 console.log("named+range-covered:", all.size - missing.length, "/", all.size);
 console.log("absent:", missing.length, missing.length ? "→ " + missing.map(n => "CAP-" + String(n).padStart(3, "0")).join(", ") : "(none)");
+// CI gate: fail the workflow when any capability is uncovered
+process.exit(missing.length ? 1 : 0);

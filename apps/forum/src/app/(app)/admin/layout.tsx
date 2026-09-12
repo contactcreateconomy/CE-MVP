@@ -20,13 +20,23 @@ import {
 } from "lucide-react";
 
 import { api } from "../../../../../../convex/_generated/api";
+import { isConvexConfigured } from "@cemvp/convex-client";
 import { CommandPalette, type CommandSection } from "@/components/ui/command-palette";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CreateconomyLogoMark } from "@/components/ui/createconomy-logo-mark";
 import { Banner } from "@/components/ui/banner";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({ children }: { children?: React.ReactNode }) {
+  // Prerender/build guard: without NEXT_PUBLIC_CONVEX_URL there is no
+  // ConvexProvider, and useQuery/useConvexAuth throw even in "skip" mode.
+  if (!isConvexConfigured()) {
+    return <div className="p-8 text-sm text-neutral-400">Admin console requires a Convex deployment (set NEXT_PUBLIC_CONVEX_URL).</div>;
+  }
+  return <AdminLayoutInner>{children}</AdminLayoutInner>;
+}
+
+function AdminLayoutInner({ children }: { children?: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [paletteOpen, setPaletteOpen] = useState(false);

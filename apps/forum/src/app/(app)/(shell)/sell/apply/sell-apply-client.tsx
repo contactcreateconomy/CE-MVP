@@ -28,6 +28,13 @@ const ATTESTATION_COPY: [keyof Att, string][] = [
 type Att = { owns: boolean; programPermits: boolean; regionEligible: boolean; willDisclose: boolean };
 
 export function SellApplyClient() {
+  // Avoid `useQuery` when Convex is not configured (CI/Vercel build without
+  // NEXT_PUBLIC_CONVEX_URL) — `useQuery` requires a provider even with "skip".
+  if (!isConvexConfigured()) return null;
+  return <SellApplyClientWithConvex />;
+}
+
+function SellApplyClientWithConvex() {
   const configured = isConvexConfigured();
   const { authStatus } = useAuth();
   const state = useQuery(api.store.apply.getApplyState, configured && authStatus === "authenticated" ? {} : "skip");
