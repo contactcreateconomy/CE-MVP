@@ -45,6 +45,18 @@ export function checkNoUrls(body: string): void {
   }
 }
 
+/** CAP-244 — the composer product-tag token (FE-owned format, see
+ *  composer-product-block): [[product:<id>]], internal id only, never a
+ *  raw URL. Extractors below dedupe and are shared by the density gate. */
+const PRODUCT_TAG_SOURCE = "\\[\\[product:([a-z0-9]+)\\]\\]";
+export function productTagIds(body: string): string[] {
+  const re = new RegExp(PRODUCT_TAG_SOURCE, "g");
+  return [...new Set([...body.matchAll(re)].map((m) => m[1]))];
+}
+export function hasProductTag(body: string): boolean {
+  return new RegExp(PRODUCT_TAG_SOURCE).test(body);
+}
+
 /** Showcase projectUrl field validation — the single controlled outbound
  *  URL. P4-15's submitProjectUrl adds the allowlist + approval flow; here
  *  only transport + shape are checked. */
@@ -123,6 +135,48 @@ export const createPost = mutation({
     let preservedAsDraft = false;
     const missingBasic: string[] = [];
     const rejectionReasons: string[] = [];
+
+    // ── CAP-244 (R-COMPOSER) — the composer product-tag gate, wired at the
+    // B2 canonical cutover (2026-09-12). The [[product:<id>]] structured
+    // token is the FE-owned format (composer-product-block docblock); the
+    // register's gates are enforced HERE server-side: own approved products
+    // only, ≤5, ≤50% commercial density rolling 30d. No raw URL ever rides
+    // a tag (R-URL above already rejects body URLs).
+    const taggedIds = productTagIds(args.body);
+    if (taggedIds.length > 0) {
+      if (taggedIds.length > 5) {
+        throw new Error("R-COMPOSER: at most 5 product tags per post (CAP-244)");
+      }
+      const store = await ctx.db
+        .query("storefronts")
+        .withIndex("by_owner", (q: any) => q.eq("ownerUserId", userId))
+        .unique();
+      if (!store || store.status !== "active") {
+        throw new Error("R-COMPOSER: product tags require an active storefront (CAP-233)");
+      }
+      for (const pid of taggedIds) {
+        const product: any = await ctx.db.get(pid as any);
+        if (!product || product.storefrontId !== store._id || product.status !== "approved") {
+          throw new Error(`R-COMPOSER: product ${pid} is not one of your approved products`);
+        }
+      }
+      if (publishing) {
+        // ≤50% commercial density rolling 30d — the author's published
+        // posts in the window, counting those carrying product tags.
+        const since = Date.now() - 30 * 24 * 60 * 60 * 1000;
+        const recent = await ctx.db
+          .query("posts")
+          .withIndex("by_author_type_authorUserId", (q: any) =>
+            q.eq("authorType", "user").eq("authorUserId", userId))
+          .order("desc")
+          .take(50);
+        const inWindow = recent.filter((p: any) => (p.publishedAt ?? p.createdAt) >= since);
+        const commercial = inWindow.filter((p: any) => hasProductTag(p.body)).length;
+        if ((commercial + 1) / (inWindow.length + 1) > 0.5) {
+          throw new Error("R-COMPOSER: ≤50% commercial density rolling 30d (CAP-244)");
+        }
+      }
+    }
 
     if (publishing) {
       // CAP-152 — "N posts/hour, tier-independent. O(1) rolling counter,
