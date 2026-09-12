@@ -76,6 +76,11 @@ function SellApplyClientWithConvex() {
             <p className="text-sm text-(--text-muted)">
               Your application is {state.existingRequest.status}. {state.existingRequest.reasonCode ? `Reason: ${state.existingRequest.reasonCode}.` : ""}
             </p>
+            {state.existingRequest.status === "approved" && (
+              <p className="text-sm">
+                <a href="/sell" className="underline">Go to your Rocketeer Dashboard</a> to submit products and activate your store.
+              </p>
+            )}
           </CardContent>
         </Card>
       ) : !state.eligibility.eligible ? (
