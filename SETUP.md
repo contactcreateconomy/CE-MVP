@@ -7,9 +7,10 @@ repo root (updated 2026-09-05 from the earlier `PRD/app` wording).
 
 ## Prerequisites (Windows/macOS/Linux)
 
-1. **Node.js ≥ 22** — on the dev machine this project uses fnm-managed Node
-   **v24.15.0** (`~/AppData/Roaming/fnm/node-versions/v24.15.0/installation`).
-   Any Node ≥ 22 works.
+1. **Node.js ≥ 24 (LTS "Krypton")** — CI and `.nvmrc` pin **Node 24** (latest
+   LTS as of 2026-09; Node 26 exists but is not LTS). On the reference dev
+   machine the project ran fnm-managed Node v24.15.0
+   (`~/AppData/Roaming/fnm/node-versions/v24.15.0/installation`).
 2. **pnpm 10.x** — bundled with Node via corepack (`corepack enable`) or
    `npm i -g pnpm@10`. Note: on the reference dev shell, pnpm is NOT on the
    plain PATH — the fnm installation dir must be prepended first.
