@@ -23,6 +23,7 @@ Thumbs.db
 .turbo/
 .vercel/
 .zcode/
+.claude/workflows/
 test-results/
 playwright-report/
 tests/integration/components/
