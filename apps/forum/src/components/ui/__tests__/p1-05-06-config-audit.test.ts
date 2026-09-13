@@ -8,7 +8,7 @@ import { describe, it, expect } from "vitest";
  * Sources: bible l.248/250/256; R-GETFLAG (FATAL-M1B-04); CAP-394/395/426
  * Notes; admin-config contract §4. */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 import schemaDefault from "../../../../../../convex/schema";
 import { SEALED_KEYS, validateAgainstRegistry, getFlag } from "../../../../../../convex/lib/authz";
 import { writeAudited, writeAudit, newCorrelationId } from "../../../../../../convex/lib/audit";
@@ -149,7 +149,7 @@ describe("SLICE-P1-05 — config spine", () => {
   });
 
   it("corrupt live rows cannot silently pass bounds (read-side validation)", async () => {
-    const ctx = fakeCtx([numKey], [{ key: numKey.key, status: "active", value: 9999 }]);
+
     // getConfigValue is not exported for direct import here (runs via query),
     // so exercise the same path getFlag uses: validate against the registry
     expect(() => validateAgainstRegistry(numKey.key, 9999, numKey)).toThrow("> max");

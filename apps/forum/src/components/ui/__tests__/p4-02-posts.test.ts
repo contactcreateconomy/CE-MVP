@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- schema/validator introspection + pure-fixture tests */
 import { describe, it, expect } from "vitest";
 
 /* SLICE-P4-02 acceptance tests — R-URL pattern coverage + W2-E4 verdictScore.
@@ -12,7 +11,7 @@ import { describe, it, expect } from "vitest";
 // The URL patterns and verdictScore are internal to convex/posts.ts —
 // test them by importing the module and verifying the exported API shape.
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 import * as postsModule from "../../../../../../convex/posts";
 
 describe("SLICE-P4-02 — posts module API surface", () => {
@@ -48,7 +47,7 @@ describe("SLICE-P4-02 — posts module API surface", () => {
   it("W2-E4 verdictScore: not directly member-settable (args accept dimensionScores, NOT verdictScore)", () => {
     // The mutation's args shape enforces this: dimensionScores is the input,
     // verdictScore is computed internally. Verify the args validator shape.
-    const createPost = postsModule.createPost as any;
+
     // Convex mutations expose their args via the function reference's
     // _config or the generated type — verify the module exports don't
     // expose a setVerdictScore or direct verdictScore path

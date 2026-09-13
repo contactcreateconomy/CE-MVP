@@ -43,10 +43,13 @@ function evidencePillar(e: any) {
   return EVIDENCE_LABELS[e.type] ?? { label: `${e.type} — ${e.status}`, tone: "warning" as const };
 }
 
-const PRODUCT_STATUSES = [
+/** CONTRACT-6-sell §3.B status vocabulary — kept as the client-side enum
+ * set; source-asserted by p6-16-sell-dashboard tests. */
+export const PRODUCT_STATUSES = [
   "draft", "auto_screened", "under_review", "approved",
   "paused", "rejected", "withdrawn", "expired", "destination_unavailable",
 ] as const;
+
 
 export function SellDashboardClient() {
   // Avoid `useQuery` when Convex is not configured (CI/Vercel build without

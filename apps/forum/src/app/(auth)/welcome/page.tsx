@@ -59,7 +59,7 @@ export default function WelcomePage() {
     } finally {
       setSubmitting(false);
     }
-  }, [timezone, router]);
+  }, [router]);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-bg-canvas p-6">

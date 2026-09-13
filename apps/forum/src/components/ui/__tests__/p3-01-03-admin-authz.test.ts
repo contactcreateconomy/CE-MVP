@@ -6,12 +6,12 @@ import { describe, it, expect } from "vitest";
  * Sources: CONTRACT-7-admin-shell §1-3; CAP-390/392/430/569 Notes;
  * bible l.255 (adminWidgets). */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 import schemaDefault from "../../../../../../convex/schema";
 import {
   assertAdminPermission,
   resolveWidgetRoute,
-  assertWidgetAccess,
+
   getPermittedWidgetCatalog,
   AdminAuthzError,
   STAFF_ROLES,
@@ -61,7 +61,7 @@ function adminCtx(overrides: {
   }
   return {
     auth: { userId: "u-admin" },
-    db: { get: async (id: string) => null, query: makeQuery },
+    db: { get: async (_id: string) => null, query: makeQuery },
   };
 }
 

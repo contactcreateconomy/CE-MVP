@@ -6,7 +6,7 @@ import { join } from "node:path";
 /* SLICE-P6-03 acceptance tests — CAP-182…186/194/198…201/553. Sources:
  * CONTRACT-6-feed §1-§5 (quotes live in convex/feed.ts docblocks). */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 import schemaDefault from "../../../../../../convex/schema";
 import * as feedModule from "../../../../../../convex/feed";
 

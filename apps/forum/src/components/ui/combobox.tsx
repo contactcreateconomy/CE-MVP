@@ -80,6 +80,7 @@ export function SearchableCombobox({
   const [activeIndex, setActiveIndex] = React.useState(0);
   const rootRef = React.useRef<HTMLDivElement>(null);
   const searchRef = React.useRef<HTMLInputElement>(null);
+  const listboxId = React.useId();
 
   const q = query.trim().toLowerCase();
   const filtered = React.useMemo(
@@ -145,14 +146,22 @@ export function SearchableCombobox({
   return (
     <div ref={rootRef} className={cn("relative", className)} id={id}>
       {/* §11.15 trigger: Select-like input + chevron (rotates when open) */}
-      <button
-        type="button"
+      <span
         role="combobox"
+        tabIndex={disabled ? -1 : 0}
         aria-expanded={open}
         aria-haspopup="listbox"
+        aria-controls={listboxId}
         aria-invalid={error ? true : undefined}
-        disabled={disabled}
-        onClick={() => setOpen((o) => !o)}
+        aria-disabled={disabled || undefined}
+        onClick={disabled ? undefined : () => setOpen((o) => !o)}
+        onKeyDown={(e) => {
+          if (disabled) return;
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setOpen((o) => !o);
+          }
+        }}
         className={cn(
           "flex min-h-9 w-full flex-wrap items-center gap-1 rounded-md border bg-bg-surface px-3 py-1.5 text-left text-sm text-text-primary outline-hidden",
           "transition-[border-color,box-shadow] duration-normal ease-out-cubic",
@@ -196,10 +205,11 @@ export function SearchableCombobox({
           )}
           aria-hidden
         />
-      </button>
+      </span>
 
       {open ? (
         <div
+          id={listboxId}
           role="listbox"
           aria-multiselectable={multiple || undefined}
           className={cn(

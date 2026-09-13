@@ -143,6 +143,7 @@ export function CommandPalette({
           )}
         />
         <DialogPrimitive.Content
+          aria-describedby={undefined}
           className={cn(
             // §11.12 container: Modal sm 420px, surface-elevated, radius/xl,
             // shadow/xl, padding 0 (list flush), centered, max-height 80vh.
@@ -156,6 +157,7 @@ export function CommandPalette({
           onKeyDown={onKeyDown}
           aria-label="Command palette"
         >
+          <DialogPrimitive.Title className="sr-only">Command palette</DialogPrimitive.Title>
           {/* §11.12 search: padded space/3 instead of nested radius */}
           <div className="p-3">
             <div className="relative">
@@ -231,7 +233,8 @@ export function CommandPalette({
                                 : "text-text-primary",
                               "disabled:pointer-events-none disabled:opacity-40",
                             )}
-                            onMouseEnter={() => setActiveIndex(idx)}
+
+          onMouseEnter={() => setActiveIndex(idx)}
                             onClick={() => runItem(item)}
                           >
                             {item.icon ? (

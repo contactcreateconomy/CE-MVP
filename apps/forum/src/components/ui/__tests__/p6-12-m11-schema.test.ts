@@ -7,7 +7,7 @@ import { join } from "node:path";
  * bible l.215-227 + l.343; register rows CAP-565/571/572 (quotes in the
  * owning modules). */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 import schemaDefault from "../../../../../../convex/schema";
 import { SUB_ID_REGISTRY_ROWS } from "../../../../../../convex/store/seed";
 import { ensureDistributionTx, INITIAL_LEVEL } from "../../../../../../convex/distributions";

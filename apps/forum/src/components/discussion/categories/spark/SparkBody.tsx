@@ -4,7 +4,6 @@ import { Quote } from "lucide-react";
 
 import type { DiscussionThread } from "@/types/discussion";
 
-import { FormattedBody } from "../../formatted-body";
 
 /**
  * Spec-aligned spark body (2026-08-31): statement-first render — large type,

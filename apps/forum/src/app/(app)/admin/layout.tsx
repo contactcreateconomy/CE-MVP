@@ -15,8 +15,8 @@ import { useState, useCallback, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useQuery, useConvexAuth } from "convex/react";
 import {
-  LayoutGrid, ShieldCheck, ScrollText, Bell, FileQuestion, User,
-  Search, AlertTriangle,
+  LayoutGrid, ShieldCheck, Bell, FileQuestion, User,
+  Search,
 } from "lucide-react";
 
 import { api } from "../../../../../../convex/_generated/api";
@@ -26,6 +26,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CreateconomyLogoMark } from "@/components/ui/createconomy-logo-mark";
 import { Banner } from "@/components/ui/banner";
+
+const EMPTY_WIDGETS: { widgetKey: string; title: string; routeKey: string }[] = [];
 
 export default function AdminLayout({ children }: { children?: React.ReactNode }) {
   // Prerender/build guard: without NEXT_PUBLIC_CONVEX_URL there is no
@@ -46,8 +48,9 @@ function AdminLayoutInner({ children }: { children?: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useConvexAuth();
 
   // Widget catalog — filtered by the user's staff roles (CAP-392); the
-  // query degrades to [] for anonymous/non-staff (see convex/admin/shell.ts)
-  const widgets = useQuery(api.admin.shell?.getWidgetCatalog) ?? [];
+  // query degrades to [] for anonymous/non-staff (see convex/admin/shell.ts).
+  // EMPTY_WIDGETS is module-stable so useMemo deps don't churn per render.
+  const widgets = useQuery(api.admin.shell?.getWidgetCatalog) ?? EMPTY_WIDGETS;
   const catalogLoaded = widgets !== undefined;
 
   // Permitted widgets for the sidebar

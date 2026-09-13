@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- Convex query results untyped at the client edge */
+ 
 "use client";
 
 /**

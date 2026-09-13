@@ -6,14 +6,13 @@
  */
 
 import { useQuery } from "convex/react";
-import { UserPlus, ShieldCheck, AlertTriangle } from "lucide-react";
+import { UserPlus } from "lucide-react";
 
 import { api } from "../../../../../../../convex/_generated/api";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { SkeletonText } from "@/components/ui/skeleton";
 
 interface RoleRow { _id: string; userId: string; role: string; status: string; grantedAt: number }
 interface OpsRow { _id: string; slot: string; userId: string; status: string }

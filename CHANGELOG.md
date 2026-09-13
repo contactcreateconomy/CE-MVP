@@ -7,6 +7,23 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### CI clean-slate: zero warnings + deprecation purge (2026-09-13)
+
+*Full warning/deprecation elimination across the CI pipeline (run 34754515791 noise) — every gate now enforces zero.*
+
+- **Action runtime deprecations** (the "Node 20 is being deprecated" spam): `actions/checkout@v4→v7`, `actions/setup-node@v4→v7`, `pnpm/action-setup@v4→v6` in both `ci.yml` and `convex-prod-deploy.yml` — all three now target the Node 24 action runtime.
+- **pnpm `Ignored build scripts` warning**: `onlyBuiltDependencies` (esbuild, sharp, unrs-resolver) in root `package.json`.
+- **84 → 0 ESLint warnings, now enforced**: `--max-warnings 0` in the forum lint script (CI fails on any warning).
+  - 43 stale `eslint-disable` directives auto-removed (`eslint --fix`); legacy `apps/forum/.eslintrc.json` deleted (dead config superseded by the flat `eslint.config.mjs`).
+  - `@typescript-eslint/no-unused-vars` `_`-prefix convention added (project style), `convex/_generated/**` globally ignored (regenerated code).
+  - 37 unused imports/vars/functions removed across app + tests (incl. dead outer-scope `busy`/`run` block in admin/resources page, unused `PRODUCT_STATUSES` — restored as an **export** since p6-16 source-asserts its enum literals).
+  - 2 `react-hooks/exhaustive-deps` fixes: admin/layout `EMPTY_WIDGETS` module-stable constant (useMemo deps no longer churn); welcome page drops unused `timezone` dep.
+  - 1 a11y: SearchableCombobox trigger gets `aria-controls` bound to a `useId()` listbox id.
+- **Hydration bug fixed**: SearchableCombobox multi-select tag-dismiss `<button>` was nested inside the trigger `<button>` (invalid HTML → hydration errors); trigger is now a `<span role="combobox">` with full keyboard support (Enter/Space toggle, tabIndex, aria-disabled).
+- **Radix a11y warnings**: CommandPalette `DialogContent` gains a visually-hidden `DialogTitle` + explicit `aria-describedby={undefined}` — no more screen-reader/console warnings.
+- **`@next/next/no-img-element`**: image-uploader's client-local blob preview `<img>` is intentional (next/image can't optimize object URLs) — documented file-level exception.
+- Verification: lint **0 errors / 0 warnings**, typecheck clean, tests **949/949**, coverage **572/572**, no-env build green.
+
 ### CODE-REVIEW PASS-2 — the confirmed backlog: 14 functional + 6 efficiency/reuse items fixed (2026-09-13)
 
 *Every remaining CONFIRMED finding from the full-repo review (PASS-1 fixed the 10 critical ones). Five parallel module-scoped passes + one consolidation sweep + a cross-cutting pass; strict file ownership, full battery green at the end: suite **949/949** (+47), typecheck clean, lint 0 errors, coverage 572/572, and the no-env `next build` now passes the FULL route table.*

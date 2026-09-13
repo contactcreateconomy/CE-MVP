@@ -18,7 +18,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { Mail, Lock, AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import { Mail, AlertCircle, CheckCircle2, Clock } from "lucide-react";
 
 import { api } from "../../../../../../convex/_generated/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";

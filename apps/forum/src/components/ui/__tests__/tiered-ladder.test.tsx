@@ -66,7 +66,7 @@ describe("TieredLadder (A8 — §11.26 / profile-economy contract)", () => {
 
   it("revealState data overrides the default derivation (M12 progressive reveal)", () => {
     // pulsar explicitly revealed by definition data even though far above current
-    const { container } = render(
+    render(
       <TieredLadder
         currentLevel="orbit"
         rungs={[

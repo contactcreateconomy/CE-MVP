@@ -8,7 +8,7 @@ import { describe, it, expect } from "vitest";
  * CONTRACT-5-discussion-thread §2/§3 (INV-1 depth, INV-3 never-lowers,
  * mutual exclusivity, tombstone semantics). */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 import schemaDefault from "../../../../../../convex/schema";
 
 const schema = schemaDefault as any;

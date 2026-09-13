@@ -11,7 +11,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { useQuery, useMutation } from "convex/react";
-import { AlertTriangle, Save, ShieldAlert, Power, RotateCcw } from "lucide-react";
+import { Save, ShieldAlert } from "lucide-react";
 
 import { api } from "../../../../../../../convex/_generated/api";
 import { DataTable, DataTableToolbar, type DataTableColumn } from "@/components/ui/data-table";
@@ -146,7 +146,7 @@ export default function AdminConfigPage() {
   const reasonCodes = useQuery(api.moderation.reasonCodes.listLatest, {});
   const editCodeCopy = useMutation(api.moderation.reasonCodes.editCopy);
   const founderBump = useMutation(api.moderation.reasonCodes.founderBumpAll);
-  const [legalCode, setLegalCode] = useState<ConfigRow | null>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const [legalCode, setLegalCode] = useState<ConfigRow | null>(null);  
   const [legalTitle, setLegalTitle] = useState("");
   const [legalBody, setLegalBody] = useState("");
   const [legalNote, setLegalNote] = useState<string | null>(null);

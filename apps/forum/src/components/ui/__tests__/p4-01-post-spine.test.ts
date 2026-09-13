@@ -5,7 +5,7 @@ import { describe, it, expect } from "vitest";
  * Sources: bible l.76-97 (posts + 8 extensions + postTypeConfig +
  * postRevisions + postTags + tags); Core-enums l.351-382. */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 import schemaDefault from "../../../../../../convex/schema";
 
 const schema = schemaDefault as any;

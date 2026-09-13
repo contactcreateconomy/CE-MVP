@@ -5,7 +5,7 @@ import { describe, it, expect } from "vitest";
  * l.129-139. Sources: feed + curation contracts §2; bible quotes in the
  * schema region comments. */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 import schemaDefault from "../../../../../../convex/schema";
 
 const schema = schemaDefault as any;

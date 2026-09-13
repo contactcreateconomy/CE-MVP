@@ -6,9 +6,9 @@ import { describe, it, expect } from "vitest";
  * Sources: FATAL-M1A-01/02, CAP-001/002/003/004/005/393 Notes; bible
  * l.243/265/274/307; M15 R-CUSTOMER-GUARD; DECISIONS-LOCKED #2. */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 import schemaDefault from "../../../../../../convex/schema";
-import { assertCustomerCapability, AuthzError, PROTECTED_CAPABILITIES } from "../../../../../../convex/lib/authz";
+import { assertCustomerCapability, PROTECTED_CAPABILITIES } from "../../../../../../convex/lib/authz";
 import { checkAdmission, effectiveSignupMode } from "../../../../../../convex/admission";
 import { SIGNUP_EVENT_CATALOG_ROW } from "../../../../../../convex/bootstrap";
 

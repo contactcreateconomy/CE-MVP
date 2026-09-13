@@ -1,7 +1,6 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Link2Off } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Banner } from "@/components/ui/banner";

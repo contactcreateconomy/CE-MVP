@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- host-page props vary */
+ 
 import Link from "next/link";
 
 /**

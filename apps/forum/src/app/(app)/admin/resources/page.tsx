@@ -22,12 +22,6 @@ export default function AdminResourcesPage() {
   const { authStatus } = useAuth();
   const queue = useQuery(api.admin.resources.getReviewQueue, authStatus === "authenticated" ? {} : "skip");
   const [note, setNote] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  const run = async (fn: () => Promise<unknown>, ok: string) => {
-    setBusy(true); setNote(null);
-    try { await fn(); setNote(ok); } catch (e) { setNote(e instanceof Error ? e.message : "Failed"); } finally { setBusy(false); }
-  };
 
   if (queue === undefined) {
     return <div className="flex min-h-[30vh] items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-(--border-default) border-t-(--brand-primary)" /></div>;

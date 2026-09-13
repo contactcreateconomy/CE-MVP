@@ -8,6 +8,16 @@ const eslintConfig = defineConfig([
   {
     rules: {
       "react-hooks/set-state-in-effect": "off",
+      // `_`-prefix marks intentionally-unused params/vars (project convention).
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          args: "all",
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
     },
   },
   globalIgnores([
@@ -15,6 +25,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Convex codegen output — regenerated on every `convex codegen`/`dev`.
+    "convex/_generated/**",
   ]),
 ]);
 

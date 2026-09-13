@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- pure-function + source assertions */
+ 
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -52,7 +52,7 @@ describe("CONTRACT-2 State 6 — edit mode for the owner's active rating", () =>
 describe("CONTRACT-2 State 7 — withdraw with confirmation", () => {
   it("withdraw is behind a confirmation dialog (CAP-117)", () => {
     expect(formSrc).toContain("api.toolRatings.withdraw");
-    const fn = formSrc.split("withdrawOpen")[1] ?? "";
+
     expect(formSrc).toContain("<DialogTitle>Withdraw your rating?</DialogTitle>");
   });
 

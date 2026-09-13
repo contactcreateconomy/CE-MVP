@@ -7,7 +7,6 @@ import { join } from "node:path";
  * + keyword search (CAP-529). Quotes live in the owning modules. */
 
 import * as curationModule from "../../../../../../convex/admin/curation";
-import * as searchModule from "../../../../../../convex/search";
 
 const convexRoot = join(__dirname, "../../../../../../convex");
 const curationSrc = readFileSync(join(convexRoot, "admin/curation.ts"), "utf8");

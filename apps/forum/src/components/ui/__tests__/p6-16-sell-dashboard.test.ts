@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- pure-function + source assertions */
+ 
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";

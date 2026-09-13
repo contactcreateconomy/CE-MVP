@@ -7,7 +7,7 @@ import { describe, it, expect } from "vitest";
  * convex/server TableDescription shape: table.validator.fields (object
  * validator), v.optional wraps via .value, indexes as { indexDescriptor }. */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 import schemaDefault from "../../../../../../convex/schema";
 
 const schema = schemaDefault as any;

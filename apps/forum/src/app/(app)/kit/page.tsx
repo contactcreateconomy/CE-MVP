@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/data-table";
 import { DatetimePicker } from "@/components/ui/datetime-picker";
 import { FileDropzone } from "@/components/ui/dropzone";
-import { Interstitial } from "@/components/ui/interstitial";
 import { QueueBoard, type QueueCase } from "@/components/ui/queue-board";
 import { TieredLadder } from "@/components/ui/tiered-ladder";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- source assertions */
+ 
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -8,7 +8,6 @@ import { join } from "node:path";
  * 227/228). Quotes live in the owning modules. */
 
 import * as viewModel from "../../../../../../convex/resources/view";
-import * as contributeModule from "../../../../../../convex/contribute";
 
 const convexRoot = join(__dirname, "../../../../../../convex");
 const viewSrc = readFileSync(join(convexRoot, "resources/view.ts"), "utf8");

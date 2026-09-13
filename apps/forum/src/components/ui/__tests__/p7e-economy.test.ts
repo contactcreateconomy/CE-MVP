@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- source assertions */
+ 
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -12,7 +12,7 @@ const read = (rel: string) => readFileSync(join(convexRoot, rel), "utf8");
 const schemaSrc = read("schema.ts");
 const awardSrc = read("signal/award.ts");
 const settleSrc = read("jobs/attributionSettle.ts");
-const legitimacySrc = read("jobs/legitimacy.ts");
+
 const summarySrc = read("jobs/signalSummary.ts");
 const recognitionSrc = read("jobs/recognition.ts");
 const mightSrc = read("jobs/might.ts");

@@ -24,7 +24,7 @@ interface AuditRow {
 
 export default function AdminAuditPage() {
   const [search, setSearch] = useState("");
-  const [filterAction, setFilterAction] = useState("");
+  const [filterAction] = useState("");
 
   const result = useQuery(api.admin.audit?.auditQuery, {
     action: filterAction || undefined,

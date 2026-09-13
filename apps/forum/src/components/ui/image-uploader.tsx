@@ -1,3 +1,6 @@
+/* The upload preview renders a client-local blob URL — next/image cannot
+ * optimize object URLs, so a plain <img> is intentional here. */
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useMutation } from "convex/react";

@@ -7,7 +7,7 @@ import { join } from "node:path";
  * l.165/l.172-186; register rows CAP-158/168-171 (quoted in module
  * docblocks); CONTRACT-5-personas-genome §3 (compile + invalidation). */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 import schemaDefault from "../../../../../../convex/schema";
 import { compileSystemPrompt, PERSONA_DENSITY_MAX, type GenomeLike } from "../../../../../../convex/persona/generate";
 

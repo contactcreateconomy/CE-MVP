@@ -6,7 +6,7 @@ import { join } from "node:path";
 /* SLICE-P6-06 acceptance tests — M10 resource-store schema vs bible
  * l.190-202. Includes the absorbed-entity grep (dmcaNotices). */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 import schemaDefault from "../../../../../../convex/schema";
 
 const schema = schemaDefault as any;

@@ -6,7 +6,7 @@ import { describe, it, expect } from "vitest";
  * (activityLedger), CONTRACT-5-setup §1-§4 (six-item set, CAP-148
  * defaults, consent append-only). */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 import schemaDefault from "../../../../../../convex/schema";
 import { ACTIVITY_EVENT_TYPES, appendActivity } from "../../../../../../convex/activity";
 import {

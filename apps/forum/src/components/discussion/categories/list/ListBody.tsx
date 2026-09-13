@@ -12,7 +12,7 @@ import { FormattedBody } from "../../formatted-body";
  * Multi-lens re-ranking (reader-switchable ranking lenses + delta badges) was
  * archived — see archive/cluster1-interactive-mechanics/ListBody-multi-lens.tsx.
  */
-export function ListBody({ thread, isMax }: { thread: Extract<DiscussionThread, { category: "list" }>; isMax: boolean }) {
+export function ListBody({ thread }: { thread: Extract<DiscussionThread, { category: "list" }>; isMax: boolean }) {
   const b = thread.categoryBody;
   const criteria = b.criteria ?? [];
   const items = b.items ?? [];

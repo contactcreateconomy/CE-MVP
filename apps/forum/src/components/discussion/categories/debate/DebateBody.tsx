@@ -17,7 +17,7 @@ import { FormattedBody } from "../../formatted-body";
  */
 export function DebateBody({
   thread,
-  isMax,
+
   ensureAuthenticated,
 }: {
   thread: Extract<DiscussionThread, { category: "debate" }>;

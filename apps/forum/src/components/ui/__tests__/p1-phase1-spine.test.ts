@@ -5,7 +5,7 @@ import { describe, it, expect } from "vitest";
  * helper behavior. Sources: bible l.53/121/238/241/270/300-302/317/409-410;
  * M18 l.69-71; DEC-C01; M1 §4/§6/§8; CAP notes per slice. */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 import schemaDefault from "../../../../../../convex/schema";
 import { RATE_LIMITS, RateLimitError, rateLimitSet, subjectKey, isRateExempt } from "../../../../../../convex/lib/rateLimit";
 import { isBlockedIp } from "../../../../../../convex/lib/safeFetch";

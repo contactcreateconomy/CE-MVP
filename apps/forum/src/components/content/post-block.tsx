@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Eye, Bookmark, MessageSquare, Video, HelpCircle, UserPlus, UserCheck, Bell, BellOff } from "lucide-react";
+import { Video, HelpCircle, UserPlus, UserCheck, Bell, BellOff } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { fmtCount, avatarBg } from "@/lib/format";
+import { avatarBg } from "@/lib/format";
 import { NetworkAvatarCard } from "@/components/ui/network-hover-card";
 import { AIKeyTakeaways } from "./ai-key-takeaways";
 import type { SeedThread } from "@/app/(app)/(content)/content/_seed";
@@ -125,7 +125,7 @@ function RichBody({ body }: { body: string }) {
 }
 
 export function PostBlock({ thread, mode = "max" }: PostBlockProps) {
-  const { author, stats } = thread;
+  const { author } = thread;
   const isMinimal = mode === "minimal";
   const [isJoined, setIsJoined] = useState(false);
   const [isNotifying, setIsNotifying] = useState(false);
