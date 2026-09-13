@@ -24,18 +24,66 @@ export interface SafeFetchResult {
   finalUrl?: string;
 }
 
-const BLOCKED_RANGES = [
-  { name: "loopback", test: (ip: string) => ip === "127.0.0.1" || ip === "::1" },
-  { name: "private-a", test: (ip: string) => ip.startsWith("10.") },
-  { name: "private-b", test: (ip: string) => { const p = ip.split("."); return p[0] === "172" && Number(p[1]) >= 16 && Number(p[1]) <= 31; } },
-  { name: "private-c", test: (ip: string) => ip.startsWith("192.168.") },
-  { name: "link-local", test: (ip: string) => ip.startsWith("169.254.") || ip.startsWith("fe80") },
-  { name: "metadata", test: (ip: string) => ip === "169.254.169.254" },
-  { name: "unique-local", test: (ip: string) => ip.toLowerCase().startsWith("fc") || ip.toLowerCase().startsWith("fd") },
-];
+// SECURITY (scan 2026-09-13, finding 6): the range list was string-prefix
+// based and missed several reserved ranges: 127.0.0.0/8 (only .1 was
+// blocked), IPv4-mapped IPv6 (::ffff:10.0.0.1 etc.), 0.0.0.0/8, and the
+// full current IPv6 reserved allocations. Normalized to a canonical IPv4
+// or pure-IPv6 form, then classified numerically — no prefix matching.
+function normalizeIp(ip: string): { v4: number[] | null; v6: string | null } {
+  const raw = ip.trim().toLowerCase();
+  // IPv4-mapped IPv6: ::ffff:a.b.c.d → classify as IPv4
+  const mapped = raw.match(/^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/);
+  if (mapped) return { v4: mapped[1].split(".").map(Number), v6: null };
+  if (/^\d{1,3}(?:\.\d{1,3}){3}$/.test(raw)) return { v4: raw.split(".").map(Number), v6: null };
+  if (raw.includes(":")) return { v4: null, v6: raw };
+  return { v4: null, v6: null };
+}
+
+function isBlockedIpv4(o: number[]): boolean {
+  const [a, b] = o;
+  return (
+    a === 0 ||                                  // 0.0.0.0/8 ("this host")
+    a === 10 ||                                 // 10.0.0.0/8 private
+    a === 127 ||                                // 127.0.0.0/8 loopback (FULL /8)
+    (a === 100 && b >= 64 && b <= 127) ||       // 100.64.0.0/10 CGNAT
+    (a === 169 && b === 254) ||                 // 169.254.0.0/16 link-local + metadata
+    (a === 172 && b >= 16 && b <= 31) ||        // 172.16.0.0/12 private
+    (a === 192 && b === 168) ||                 // 192.168.0.0/16 private
+    (a === 192 && b === 0) ||                   // 192.0.0.0/24 + 192.0.2.0/24
+    (a === 198 && (b === 18 || b === 19)) ||    // 198.18.0.0/15 benchmark
+    (a === 198 && b === 51) ||                  // 198.51.100.0/24 doc
+    (a === 203 && b === 0) ||                   // 203.0.113.0/24 doc
+    (a >= 224)                                  // multicast + 240.0.0.0/4 reserved + broadcast
+  );
+}
+
+function isBlockedIpv6(v6: string): boolean {
+  // NAT64/IPv4-translated prefix first (64:ff9b::/96 etc. can END in an
+  // embedded v4 tail — the tail check below would otherwise classify the
+  // embedded PUBLIC v4 as allowed and mask the reserved prefix).
+  const firstGroupNat = parseInt(v6.split(":")[0] || "0", 16) || 0;
+  if (firstGroupNat === 0x64) return true; // 64:… NAT64 well-known prefix
+  // Handle embedded IPv4 in IPv6 tails (::ffff:… handled above; also x:x:…:a.b.c.d)
+  const tailV4 = v6.match(/(\d{1,3}(?:\.\d{1,3}){3})$/);
+  if (tailV4) return isBlockedIpv4(tailV4[1].split(".").map(Number));
+  // Compare the FIRST GROUP (16-bit) — /N allocations are group-scoped:
+  const firstGroup = firstGroupNat;
+  return (
+    v6 === "::" ||                              // unspecified
+    v6 === "::1" ||                             // loopback
+    firstGroup === 0x100 ||                     // 100::/64 discard-only
+    (firstGroup === 0x2001 && v6.startsWith("2001:db8")) || // 2001:db8::/32 doc
+    (firstGroup >= 0xfc00 && firstGroup <= 0xfdff) || // fc00::/7 unique-local
+    (firstGroup >= 0xfe80 && firstGroup <= 0xfebf) || // fe80::/10 link-local
+    firstGroup >= 0xff00                        // ff00::/8 multicast
+  );
+}
 
 export function isBlockedIp(ip: string): boolean {
-  return BLOCKED_RANGES.some((r) => r.test(ip));
+  const { v4, v6 } = normalizeIp(ip);
+  if (v4) return isBlockedIpv4(v4);
+  if (v6) return isBlockedIpv6(v6);
+  return true; // unrecognized form → fail-closed block
 }
 
 /**

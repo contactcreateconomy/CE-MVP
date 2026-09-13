@@ -27,7 +27,7 @@ import { mutation, query } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { requireUser } from "../lib/authz";
+import { requireUser, assertCustomerCapability } from "../lib/authz";
 import { writeAudited, newCorrelationId } from "../lib/audit";
 import { checkRateLimit } from "../lib/rateLimit";
 
@@ -100,10 +100,30 @@ export const dmcaIntake = mutation({
     if (!args.signatureAttested) throw new Error("dmca.intake: signature attestation required");
     if (args.description.trim().length === 0) throw new Error("dmca.intake: complaint description required");
 
+    // SECURITY (scan 2026-09-13, finding 23): PII fields are bounded —
+    // unbounded strings made each row a cheap storage bomb, and the
+    // arbitrary targetType/targetId pair an enumeration oracle. Field caps
+    // are shape rules, not content judgments (statutory text is preserved
+    // verbatim; bounds chosen at RFC-5322-scale headroom).
+    if (args.legalName.length > 200 || args.physicalAddress.length > 500 || args.description.length > 20_000 || args.email.length > 320) {
+      throw new Error("dmca.intake: field length exceeded");
+    }
+    if (!["post", "comment", "user", "resource", "storefront", "product"].includes(args.targetType)) {
+      throw new Error(`dmca.intake: unknown targetType "${args.targetType}"`);
+    }
+    if (args.targetId.length > 128) throw new Error("dmca.intake: targetId length exceeded");
+
     // Rate limit 5/24h per email+IP (DECISIONS-LOCKED #6) — keyed on the
     // submitter identity this branch has (email); IP binding rides the
     // edge layer's session id when present
     await checkRateLimit(ctx, "legal.dmca.email", { kind: "email_hash", value: args.email.toLowerCase() });
+    // SECURITY (finding 23): a SECOND, session-actor-keyed bucket closes the
+    // N-emails-per-actor hole (one actor spamming via 5 fresh addresses
+    // previously sailed past the email-keyed limit).
+    const sessionActorId = (await getAuthUserId(ctx)) as Id<"users"> | null;
+    if (sessionActorId) {
+      await checkRateLimit(ctx, "legal.dmca.actor", { kind: "user", value: sessionActorId });
+    }
 
     if (await isDuplicate(ctx, "dmca_notice", args.email.toLowerCase(), args.targetType, args.targetId)) {
       throw new Error("dmca.intake: a complaint for this target is already in the 24h window");
@@ -142,6 +162,21 @@ export const legalIntakeAuthenticated = mutation({
   returns: v.object({ intakeId: v.id("legalIntake"), status: v.string() }),
   handler: async (ctx, args) => {
     const userId = await requireUser(ctx, "legal.intake");
+
+    // SECURITY (scan 2026-09-13, finding 24): authenticated intake had NO
+    // rate limit and no capability gate — each call minted an s1_high
+    // moderation case with an arbitrary targetId (queue-flooding +
+    // target enumeration). Now: report-capability gate (the member's
+    // report channel — same class as CAP-021's protection) + the legal
+    // throttle set + bounded fields.
+    await assertCustomerCapability(ctx, "report");
+    await checkRateLimit(ctx, "legal.dmca.actor", { kind: "user", value: userId });
+    if (args.details.length > 20_000 || args.targetType.length > 32 || args.targetId.length > 128) {
+      throw new Error("legal.intake: field length exceeded");
+    }
+    if (!["post", "comment", "user", "resource", "storefront", "product", "source"].includes(args.targetType)) {
+      throw new Error(`legal.intake: unknown targetType "${args.targetType}"`);
+    }
 
     let ackDueAt: number | undefined;
     let actionDueAt: number | undefined;
@@ -211,7 +246,19 @@ export const counterNotice = mutation({
   returns: v.object({ intakeId: v.id("legalIntake"), status: v.string() }),
   handler: async (ctx, args) => {
     const userId = await requireUser(ctx, "counter.notice");
-    await checkRateLimit(ctx, "legal.dmca.email", { kind: "email_hash", value: args.contact.toLowerCase() });
+
+    // SECURITY (scan 2026-09-13, finding 25): the throttle and the
+    // deficient-count were keyed on the CLIENT-SUPPLIED contact string —
+    // an attacker could exhaust a victim's rate bucket and, worse, file
+    // two deficient counter-notices under the victim's contact to strip
+    // the victim's expedited-removal status (identity poisoning). Both
+    // are now keyed on the SESSION actor; the contact remains stored (the
+    // statutory record keeps it) but never controls abuse state.
+    await checkRateLimit(ctx, "legal.dmca.actor", { kind: "user", value: userId });
+    if (args.contact.length > 320 || args.statement.length > 20_000 || args.targetType.length > 32 || args.targetId.length > 128) {
+      throw new Error("counter.notice: field length exceeded");
+    }
+    const contactKey = `user:${userId}:${args.contact.toLowerCase()}`;
 
     const faciallyComplete =
       args.contact.trim().length > 0 &&
@@ -220,13 +267,16 @@ export const counterNotice = mutation({
 
     // CAP-361 (quoted): "never refuse facially complete counter" — the
     // abuse chill only strips the EXPEDITED path, never intake itself.
+    // The deficiency count reads THIS ACTOR's prior deficient filings
+    // (actor-keyed since the poisoning fix — a forged contact can no
+    // longer inflate someone else's count).
     const yearAgo = Date.now() - 90 * 24 * 3_600_000;
     const priors = await ctx.db
       .query("legalIntake")
       .withIndex("by_type_status", (q: any) => q.eq("type", "dmca_counter_notice"))
       .take(100);
     const deficientCount = priors.filter(
-      (r: any) => r.createdAt > yearAgo && String((r.complainantContact as any)?.key ?? "") === args.contact.toLowerCase() && r.status === "rejected_invalid",
+      (r: any) => r.createdAt > yearAgo && String((r.complainantContact as any)?.actorKey ?? (r.complainantContact as any)?.key ?? "") === `user:${userId}` && r.status === "rejected_invalid",
     ).length;
     const expeditedRemoved = deficientCount >= 2;
 
@@ -236,7 +286,7 @@ export const counterNotice = mutation({
       const id = await insertIntake(actx, {
         type: "dmca_counter_notice",
         subjectClass: "ugc",
-        complainantContact: { key: args.contact.toLowerCase(), contact: args.contact, statement: args.statement },
+        complainantContact: { key: contactKey, actorKey: `user:${userId}`, contact: args.contact, statement: args.statement },
         targetType: args.targetType,
         targetId: args.targetId,
         status,

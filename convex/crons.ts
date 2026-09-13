@@ -38,6 +38,16 @@ crons.interval(
   {},
 );
 
+// SECURITY (scan 2026-09-13, finding 2): CAP-204 scan coordinator — the
+// intakeScan advance (quarantined → scanning → rights_review/rejected)
+// is now a cron-driven internal mutation (was an unwired public mutation).
+crons.interval(
+  "contribute intake scan",
+  { minutes: 15 },
+  internal.contribute.intakeScan,
+  {},
+);
+
 // SLICE-P5-04 (CAP-129/130/145): the M6 rank engine. The register's ~3s
 // recompute cadence is unattainable on Convex crons (1/min floor) — every
 // minute, flagged deviation; the clear-first lease keeps overlap-safe

@@ -21,7 +21,7 @@
  * (the P6-10 console's writer shares this helper contract).
  */
 
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
@@ -124,8 +124,14 @@ export const submitReference = mutation({
  * rights_review. The isolated external worker (no creds, no egress,
  * CPU/mem/wall caps) is deploy-time infra; this job owns the status
  * machine fail-closed: any scan that cannot run holds the row in
- * scanning (never auto-passes). */
-export const intakeScan = mutation({
+ * scanning (never auto-passes).
+ *
+ * SECURITY (scan 2026-09-13, finding 2): was a PUBLIC mutation — any
+ * internet caller could advance quarantined UGC through the fail-closed
+ * scanning hold (and no cron was wired, so the public function was the
+ * only path). Now an internalMutation driven exclusively by crons.ts
+ * ("contribute intake scan" — CAP-204 coordinator cadence). */
+export const intakeScan = internalMutation({
   args: {},
   returns: v.object({ scanned: v.number(), advanced: v.number() }),
   handler: async (ctx) => {

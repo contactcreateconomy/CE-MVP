@@ -399,7 +399,16 @@ export const edit = mutation({
   args: { commentId: v.id("comments"), body: v.string() },
   returns: v.object({ edited: v.boolean(), moderationStatus: v.string() }),
   handler: async (ctx, args) => {
+    // SECURITY (scan 2026-09-13, finding 12): comment EDIT previously
+    // skipped the ENTIRE create-path gate chain — a member restricted from
+    // commenting (capabilityRestrictions), STOP-flagged, or ineligible
+    // could still rewrite any of their existing comments. The edit path
+    // now enforces the same R-CUSTOMER-GUARD + rate + eligibility chain
+    // as comments.create.
+    await assertCustomerCapability(ctx, "comment");
     const userId = await requireUser(ctx, "comments.edit");
+    await checkRateLimit(ctx, "member.comments.hour", { kind: "user", value: userId });
+    await checkCommentEligibility(ctx, userId);
     const comment = await ctx.db.get(args.commentId);
     if (!comment) throw new Error("comments.edit: comment not found");
     if (comment.authorUserId !== userId) throw new Error("comments.edit: not your comment (CAP-121 ownership)");

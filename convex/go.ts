@@ -36,6 +36,7 @@ import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { captureEvent } from "./lib/events";
+import { checkRateLimit } from "./lib/rateLimit";
 
 export const GO_CLICK_EVENT_ROW = {
   schemaVersion: 1,
@@ -121,9 +122,23 @@ export const recordClick = mutation({
   },
   returns: v.object({ clickId: v.string(), proceed: v.boolean(), reason: v.optional(v.string()) }),
   handler: async (ctx, args) => {
-    // The gate RE-READS at the mutation too (the query's decision is
-    // advisory; the write path is authoritative — Finding 5 bounds
-    // staleness to one request by re-validating here)
+    // SECURITY (scan 2026-09-13, finding 7): recordClick was unthrottled
+    // and trusted a client-supplied anonymousSessionId — anonymous click
+    // farming could auto-qualify rows after the 24h settle (qualification
+    // inflation; Signal awarding was already blocked for anonymous actors
+    // by passesOutcomeGate's null-actor reject, so the inflation is
+    // metrics/settlement-side). Now: (a) signed-in actors are rate-limited
+    // (10/h — matches member.posts.hour's flagged-default class), (b) the
+    // anonymous session id is server-normalized (shape+length capped, never
+    // persisted raw), and (c) anonymous clicks stay qualification=raw and
+    // NEVER auto-qualify at settle — only actor-attributed clicks do.
+    const viewerId = (await getAuthUserId(ctx)) as Id<"users"> | null;
+    if (viewerId) {
+      await checkRateLimit(ctx, "storefront.click.hour", { kind: "user", value: viewerId });
+    }
+    const anonSession = args.anonymousSessionId
+      ? args.anonymousSessionId.trim().slice(0, 64)
+      : "anonymous";
     const link = await ctx.db.get(args.linkId);
     if (!link) return { clickId: "", proceed: false, reason: "dead_link" };
     if (link.validationState !== "approved_locked") {
@@ -151,12 +166,15 @@ export const recordClick = mutation({
     if (!store) return { clickId: "", proceed: false, reason: "attribution_unresolvable" };
     const promoterUserId = store.ownerUserId;
 
-    const viewerId = (await getAuthUserId(ctx)) as Id<"users"> | null;
     const clickId = `click:${Date.now().toString(36)}:${link._id.slice(-6)}`;
 
     // Self/associated clicks excluded (qualification=excluded — still
-    // logged; never a Signal input — that's M12's gate, never here)
+    // logged; never a Signal input — that's M12's gate, never here).
+    // SECURITY (finding 7): anonymous (unauthenticated) clicks are marked
+    // excluded from qualification at write — they log for analytics but
+    // never enter the raw→qualified settle path.
     const isSelf = viewerId === promoterUserId;
+    const isAnonymous = viewerId === null;
     try {
       await ctx.db.insert("storefrontClicks", {
         storefrontLinkId: args.linkId,
@@ -166,8 +184,8 @@ export const recordClick = mutation({
         sourceSurface: args.sourcePostId ? "post" : "storefront",
         clickId,
         actorUserId: viewerId ?? undefined,
-        anonymousSessionId: args.anonymousSessionId ?? "anonymous",
-        qualification: isSelf ? "excluded" : "raw",
+        anonymousSessionId: anonSession,
+        qualification: isSelf || isAnonymous ? "excluded" : "raw",
         integrityStatus: "pending",
         occurredAt: Date.now(),
       });
@@ -182,7 +200,8 @@ export const recordClick = mutation({
         source: "direct",
         isStaff: false,
         isPersona: false,
-        isCountableAtWrite: !isSelf,
+        // SECURITY (finding 7): anonymous rows are never countable outcomes
+        isCountableAtWrite: !isSelf && !isAnonymous,
         branch: args.isInApp ? "in_app" : "off_platform",
         network: link.network,
       } as any);

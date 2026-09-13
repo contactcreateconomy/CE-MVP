@@ -345,8 +345,14 @@ export const clickSettle = internalMutation({
     let settled = 0;
     for (const click of rows) {
       if (click.integrityStatus !== "pending" || click.occurredAt > cutoff) continue;
-      // raw → qualified (provisional-10 class); excluded stays excluded
-      const qualification = click.qualification === "raw" ? "qualified" : click.qualification;
+      // raw → qualified (provisional-10 class); excluded stays excluded.
+      // SECURITY (scan 2026-09-13, finding 7): only ACTOR-ATTRIBUTED raw
+      // clicks promote. An anonymousSessionId-only row (legacy farmed rows
+      // included) settles as excluded — a session string the client chose
+      // is not qualification evidence.
+      let qualification = click.qualification;
+      if (qualification === "raw" && !click.actorUserId) qualification = "excluded";
+      if (qualification === "raw") qualification = "qualified";
       await ctx.db.patch(click._id, { integrityStatus: "settled", qualification });
       settled += 1;
     }

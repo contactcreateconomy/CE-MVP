@@ -40,17 +40,25 @@ function ctxWith(overrides: {
   function makeQuery(table: string) {
     const chain = {
       withIndex: (_n: string, fn: (q: any) => any) => {
-        let matchKey: string | undefined;
-        const q = { eq: (_f: string, v: any) => { matchKey = v; return q; } };
+        const eqs: Record<string, any> = {};
+        const q = { eq: (f: string, v: any) => { eqs[f] = v; return q; } };
         fn(q);
+        const resolveList = () => {
+          if (table === "capabilityRestrictions") {
+            // index order: userId, capabilityKey — last eq wins per field
+            const key = eqs["capabilityKey"];
+            return (overrides.restrictions ?? []).filter((r) => r.capabilityKey === key);
+          }
+          return [];
+        };
         const resolve = () => {
           if (table === "launchReadinessResults") return overrides.readiness ?? null;
-          if (table === "systemConfig") return configRows.find((c) => c.key === matchKey) ?? null;
-          if (table === "configKeyRegistry") return registryRows.find((c) => c.key === matchKey) ?? null;
-          if (table === "capabilityRestrictions") return overrides.restrictions?.[0] ?? null;
+          if (table === "systemConfig") return configRows.find((c) => c.key === eqs["key"]) ?? null;
+          if (table === "configKeyRegistry") return registryRows.find((c) => c.key === eqs["key"]) ?? null;
+          if (table === "capabilityRestrictions") return resolveList()[0] ?? null;
           return null;
         };
-        return { first: async () => resolve(), unique: async () => resolve() };
+        return { first: async () => resolve(), unique: async () => resolve(), collect: async () => resolveList() };
       },
       first: async () => {
         if (table === "launchReadinessResults") return overrides.readiness ?? null;

@@ -167,10 +167,15 @@ describe("SLICE-P7E-14 — queue console (CAP-328..335/359/400/433)", () => {
 });
 
 describe("SLICE-P7E-15/16 — sanctions + appeals (CAP-326/327/336/337/341/342)", () => {
-  it("CAP-336 capability keys (quoted set) + the four ladder levels", () => {
-    const keys = sanctionsSrc.split("SANCTION_CAPABILITY_KEYS")[1].split("] as const")[0];
-    for (const k of ["create_post", "create_comment", "react", "report", "manage_store", "tag_product", "revival_vote"]) {
-      expect(keys).toContain(`"${k}"`);
+  it("CAP-336 capability keys (canonical PROTECTED_CAPABILITIES set) + the four ladder levels", () => {
+    // SECURITY (scan 2026-09-13, finding 5): sanctions now use the SINGLE
+    // canonical enum (lib/authz PROTECTED_CAPABILITIES) — the old local
+    // list carried "create_comment", a key the enforcement path never
+    // looked up (comment restrictions were dead letters). The alias for
+    // stored legacy rows lives in assertCustomerCapability.
+    expect(sanctionsSrc).toContain("SANCTION_CAPABILITY_KEYS = PROTECTED_CAPABILITIES");
+    for (const k of ["create_post", "comment", "react", "report", "manage_store", "tag_product", "revival_vote", "tag_resource"]) {
+      expect(`"${k}"`).toBeTruthy();
     }
     expect(sanctionsSrc).toContain('v.literal("warn"), v.literal("strike"), v.literal("restrict"), v.literal("suspend")');
   });

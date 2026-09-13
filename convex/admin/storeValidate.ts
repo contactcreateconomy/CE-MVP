@@ -11,6 +11,8 @@ import { action } from "../_generated/server";
 import { internal } from "../_generated/api";
 import { v } from "convex/values";
 import { safeFetchText } from "../lib/safeFetch";
+import { checkRateLimit } from "../lib/rateLimit";
+import { requireStoreOperator } from "./store";
 
 async function inspect(url: string): Promise<{ disposition: string; fingerprint: Record<string, unknown> }> {
   let disposition = "needs_human";
@@ -35,11 +37,19 @@ async function inspect(url: string): Promise<{ disposition: string; fingerprint:
   return { disposition, fingerprint };
 }
 
-/** CAP-235 — initial inspection (console-triggered). */
+/** CAP-235 — initial inspection (console-triggered).
+ *
+ * SECURITY (scan 2026-09-13, finding 8): was a PUBLIC action — an
+ * unauthenticated caller could trigger outbound network probes, write
+ * validation rows, and flip drift (which disables BUY) for arbitrary
+ * links. Now Store-Operator/Administrator-gated (CAP-235's console
+ * actor) + admin.write rate limit. */
 export const inspectLinkAction = action({
   args: { storefrontLinkId: v.id("storefrontLinks") },
   returns: v.object({ disposition: v.string() }),
   handler: async (ctx, args) => {
+    const actorId = await requireStoreOperator(ctx);
+    await checkRateLimit(ctx, "admin.write", { kind: "operator", value: actorId });
     const link: any = await ctx.runMutation(internal.admin.store.loadLinkForInspection, { storefrontLinkId: args.storefrontLinkId });
     if (!link) throw new Error("inspect: link not found");
     const result = await inspect(link.submittedUrl);
@@ -47,17 +57,20 @@ export const inspectLinkAction = action({
       storefrontLinkId: args.storefrontLinkId,
       runType: "initial",
       disposition: result.disposition as "pass" | "needs_human" | "fail",
-      fingerprint: { ...result.fingerprint, finalHost: link.finalRegistrableDomain, redirectHash: link.redirectChainHash },
+      fingerprint: { ...result.fingerprint, finalHost: link.finalRegistrableDomain, redirectChainHash: link.redirectChainHash },
     });
     return { disposition: result.disposition };
   },
 });
 
-/** CAP-240 — rescan pass over locked links; drift → under_review (CAP-242). */
+/** CAP-240 — rescan pass over locked links; drift → under_review (CAP-242).
+ * SECURITY (finding 8): same guard as inspectLinkAction. */
 export const rescanLinksAction = action({
   args: {},
   returns: v.object({ rescanned: v.number(), flagged: v.number() }),
   handler: async (ctx) => {
+    const actorId = await requireStoreOperator(ctx);
+    await checkRateLimit(ctx, "admin.write", { kind: "operator", value: actorId });
     const batch: any[] = await ctx.runMutation(internal.admin.store.loadRescanBatch, {});
     let rescanned = 0;
     let flagged = 0;
@@ -68,7 +81,7 @@ export const rescanLinksAction = action({
         storefrontLinkId: link.linkId,
         runType: "rescan",
         disposition: result.disposition as "pass" | "needs_human" | "fail",
-        fingerprint: { ...result.fingerprint, finalHost: link.finalRegistrableDomain, redirectHash: link.redirectChainHash },
+        fingerprint: { ...result.fingerprint, finalHost: link.finalRegistrableDomain, redirectChainHash: link.redirectChainHash },
       });
       // CAP-242 (quoted): "material intermediate change triggers review"
       if (link.priorTitleHash && result.fingerprint.titleHash && link.priorTitleHash !== result.fingerprint.titleHash) {

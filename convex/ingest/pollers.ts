@@ -304,6 +304,16 @@ export const ingestInboundEmail = internalAction({
     if (!match) {
       return { accepted: false, reason: `sender/inbox ${args.to} not allowlisted` };
     }
+    // SECURITY (scan 2026-09-13, finding 14): the recipient matched but the
+    // SENDER was never checked — anyone with the webhook secret (or a
+    // provider spoofing the envelope) could forge newsletter content into
+    // ingestion under a legit inbox. The sender's domain must match the
+    // source's registered domain (CAP-035's "allowlisted senders").
+    const fromDomain = (args.from.split("@")[1] ?? "").toLowerCase().replace(/>$/, "");
+    const sourceDomain = String(match.source?.domain ?? "").toLowerCase();
+    if (!sourceDomain || fromDomain !== sourceDomain) {
+      return { accepted: false, reason: `sender ${args.from} not allowlisted for ${sourceDomain || "this source"}` };
+    }
     const contentHash = hashContent(`${args.from}|${args.subject}|${clean.slice(0, 2048)}`);
     const dup = await ctx.runMutation(internal.ingest.pollersData.hasSourceItemHash, { contentHash });
     if (dup) return { accepted: false, reason: "duplicate (hash dedup)" };

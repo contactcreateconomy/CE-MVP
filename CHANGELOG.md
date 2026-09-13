@@ -7,6 +7,38 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Security hardening: 30 findings from the 2026-09-13 security scan (all severities fixed)
+
+*Source-verified scan (CRITICAL 1 · HIGH 7 · MEDIUM 19 · LOW 3) — every finding verified against source before fixing; full gate re-run green (typecheck · lint · 952 forum + 80 convex tests · 572/572 coverage · build · E2E 4/4+1 skip).*
+
+**CRITICAL**
+- **Unauthenticated global config writes** (`convex/config.ts`): `config.casUpdate` + `config.getNamespace` now require the administrator role derived from the session; client-supplied `actorId`/`actorRole` args removed from the validator (audit actor is always the session actor) — the internet-wide signup.mode/allowlist/rate-limit flip is closed.
+- **Public intakeScan** (`convex/contribute.ts`): converted to `internalMutation` wired to a 15-min cron (`crons.ts` "contribute intake scan") — quarantined UGC can no longer be advanced by anonymous callers.
+- **Registration bypassed admission + bootstrap** (`convex/auth.ts`): `afterUserCreatedOrUpdated` now enforces `checkAdmission` (closed → throw/rollback; waitlist → throw/rollback — no account persists) and performs the CAP-002 atomic bootstrap (privateUserData + member roleAssignments) for every new account.
+
+**HIGH**
+- **Post edit re-moderation** (`convex/posts.ts updatePost`): every content-bearing edit replays the create-path sequence — `classifySafety` (CAP-154) + `autoGateTx` (CAP-321/102) + deduped moderation case; held edits pull published posts to `ready` with `publishedAt` cleared. Draft→publish transitions now enforce the rate limit, eligibility, and 50k body cap (was: all skippable via the draft path).
+- **Sanction/enforcement capability-key mismatch**: sanctions now write the single canonical `PROTECTED_CAPABILITIES` enum (was a local list with a dead `create_comment` key); `assertCustomerCapability` accepts the legacy stored `create_comment` rows via a read-time alias and reads ALL restriction rows (an expired row can no longer mask an active one); `resources.tagInPost` enforces `tag_resource` (was `create_post`).
+- **SSRF hardening** (`urlGuards.ts` / `safeFetch.ts`): numeric IP classification blocks the full reserved set (127.0.0.0/8 entire, 0.0.0.0/8, CGNAT, RFC-5737/3330 doc/benchmark ranges, IPv4-mapped IPv6, NAT64, multicast, IPv6 doc/unspecified); `safeFetchText` gains the unpinned-probe `disabled` guard (CAP-010 parity with `safeFetch`); body reads are raced against the total timeout (no slow-drip hang, no per-chunk timer leak).
+- **BUY-click farming** (`go.ts` / `store/public.ts clickSettle`): signed-in actors rate-limited (10/h); anonymous clicks are `qualification: excluded` + `isCountableAtWrite: false` at write AND settle (only actor-attributed raw clicks promote to qualified); anonymous session ids server-normalized (trim + 64-char cap).
+- **Store-validation actions** (`admin/storeValidate.ts`): `inspectLinkAction`/`rescanLinksAction` now require Store-Operator/Administrator + `admin.write` rate limit (was: unauthenticated network probes + drift flips disabling BUY).
+
+**MEDIUM** (selection — all 19 fixed)
+- `validateSourceUrl` Publisher/Admin-gated (was a public arbitrary-fetch oracle); `sources.listSources`, `rulebook.listRules`/`listCalibrationExamples`, `moderation/reasonCodes.listLatest` staff-gated.
+- `roles.assign` is now truly Founder-only (earliest-active-administrator derivation, session-bound audit actor); `actorId` arg removed.
+- Comment edit enforces the full create-path gate chain (capability + rate + eligibility + STOP).
+- Showcase URL swaps on edit run the CAP-100 allowlist + reset `approvalStatus` to pending.
+- Webhook: constant-time secret compare (SHA-256 + uniform byte loop), content-type/size/field bounds, auth ordered before parse; newsletter sender domain must match the registered source domain.
+- Media: `media.store` consumption gate (image MIME allowlist + `media.upload.maxBytes` finally read), `getStorageUrl` shape-bounded.
+- Twilio OTP send throttled (3/h/user); magic-link provider throttles CAP-016/017 at the send seam.
+- Archived posts return tombstone-only API payloads; private profiles return the redacted projection to non-self viewers.
+- Dev test credential no longer source-hard-coded (`DEV_TEST_USER_PASSWORD` env required).
+- Legal intake: actor-keyed throttles (anti N-email spam), bounded PII fields, target-type allowlists, authenticated intake capability-gated, counter-notice abuse state keyed on the session actor (identity poisoning closed).
+- Setup/consent surfaces: already-complete guard + throttles + no-op suppression (history inflation closed).
+- Auth redirect rejects backslash-encoded protocol-relative targets.
+
+**Tests updated** (pinning the NEW secured behavior; source-assertion suite): p2-01-03 mock ctx gains `collect` + multi-eq index semantics; p7e-moderation pins the canonical capability enum; p6-15-17 pins anonymous-excluded clicks; lib-urlguards pins 24 new blocked ranges (incl. IPv4-mapped IPv6 + full 127/8) and moves RFC-5737 doc ranges to blocked.
+
 ### CI clean-slate: zero warnings + deprecation purge (2026-09-13)
 
 *Full warning/deprecation elimination across the CI pipeline (run 34754515791 noise) — every gate now enforces zero.*

@@ -51,10 +51,18 @@ async function assertPublisherOrAdmin(ctx: any): Promise<Id<"users">> {
   return userId;
 }
 
-/** CAP-538 — the console table load. */
+/** CAP-538 — the console table load.
+ * SECURITY (scan 2026-09-13, finding 20): was an unauthenticated read —
+ * every registered source URL + ingestion config (cadences, inbox
+ * addresses, rights bases) readable anonymously. Publisher/Admin gate per
+ * CAP-031's actor. */
 export const listSources = query({
   args: {},
   handler: async (ctx) => {
+    const roles = await assertAdminPermission(ctx);
+    if (!roles.includes("publisher") && !roles.includes("administrator")) {
+      throw new Error("sources: Publisher/Admin role required (CAP-031)");
+    }
     const sources = await ctx.db.query("sources").collect();
     const withHealth = [];
     for (const source of sources) {

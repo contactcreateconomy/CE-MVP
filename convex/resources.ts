@@ -265,7 +265,12 @@ export const tagInPost = mutation({
   handler: async (ctx, args) => {
     const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
     if (!userId) throw new Error("resource.tagInPost: authentication required");
-    await assertCustomerCapability(ctx, "create_post");
+    // SECURITY (scan 2026-09-13, finding 5): this enforced create_post —
+    // the wrong capability. CAP-214's register row gates the structured
+    // resource tag on its own key; a member restricted from tag_resource
+    // (but not create_post) could keep tagging. tag_resource is the
+    // canonical key in PROTECTED_CAPABILITIES.
+    await assertCustomerCapability(ctx, "tag_resource");
     const post = await ctx.db.get(args.postId);
     if (!post) throw new Error("resource.tagInPost: post not found");
     if (post.authorUserId !== userId) throw new Error("resource.tagInPost: only the post author tags resources");

@@ -107,6 +107,33 @@ export const getDetail = query({
       return null;
     }
 
+    // SECURITY (scan 2026-09-13, finding 17): archived = tombstone — the
+    // body/extension must NOT ride the API for archived posts (the UI
+    // renders a tombstone; the API was still returning full content).
+    // The tombstone keeps identity + timing metadata only.
+    if (post.lifecycleStatus === "archived") {
+      return {
+        post: {
+          _id: post._id,
+          type: post.type,
+          title: post.title,
+          body: "",
+          authorType: post.authorType,
+          editorialByline: post.editorialByline ?? null,
+          publishedAt: post.publishedAt ?? null,
+          toolIds: [],
+          archived: true,
+        },
+        seo: seo
+          ? { slug: seo.slug, seoTitle: seo.seoTitle, seoDescription: seo.seoDescription }
+          : { slug: post._id, seoTitle: post.title, seoDescription: null },
+        extension: null,
+        threadContext: { type: post.type, mechanic: null, userVote: null },
+        compare: null,
+        affiliateCtas: [],
+      };
+    }
+
     const extension = await loadExtension(ctx, post._id, post.type);
 
     // threadContext (CAP-090) — mechanic state + signed-in user's vote

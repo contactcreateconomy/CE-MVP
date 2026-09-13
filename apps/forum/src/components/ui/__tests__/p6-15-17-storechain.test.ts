@@ -153,7 +153,9 @@ describe("SLICE-P6-17 — /go: BOTH-BRANCH GATE MATRIX (the exit gate)", () => {
 
   it("A click is NEVER a verified conversion (go §5 quoted)", () => {
     expect(goSrc).toContain("never a Signal input");
-    expect(recordFn).toContain('qualification: isSelf ? "excluded" : "raw"'); // raw, never verified
+    // SECURITY (scan 2026-09-13, finding 7): anonymous clicks are excluded
+    // at write (never raw→qualified); self-clicks stay excluded.
+    expect(recordFn).toContain('qualification: isSelf || isAnonymous ? "excluded" : "raw"');
   });
 
   it("the click event is catalog-gated + seeded", () => {

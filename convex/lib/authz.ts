@@ -194,15 +194,29 @@ export async function assertCustomerCapability(
   }
 
   // 3. capabilityRestrictions (active rows only)
-  const restriction = await ctx.db
-    .query("capabilityRestrictions")
-    .withIndex("by_user_capability", (q: any) => q.eq("userId", userId).eq("capabilityKey", capabilityKey))
-    .first();
-  if (restriction) {
-    const now = Date.now();
-    const active = restriction.startsAt <= now && (!restriction.endsAt || restriction.endsAt > now);
-    if (active) {
-      throw new AuthzError("RESTRICTED", `Capability "${capabilityKey}" restricted: ${restriction.reasonCode}`);
+  // SECURITY (scan 2026-09-13, findings 5 + 13): two defects fixed here.
+  // (5) Legacy sanctions stored capabilityKey="create_comment" while the
+  //     enforced key is "comment" — those rows never matched, making
+  //     comment restrictions dead letters. The canonical enum is
+  //     PROTECTED_CAPABILITIES; a read-time alias keeps pre-fix rows
+  //     enforcing (no silent un-restriction of already-sanctioned users).
+  // (13) The lookup was .first() on an unordered index — an EXPIRED row
+  //     could be selected over a newer ACTIVE one, silently un-restricting
+  //     the user. Now ALL rows for the key are read and the restriction
+  //     holds if ANY active row exists.
+  const aliases: string[] = [capabilityKey];
+  if (capabilityKey === "comment") aliases.push("create_comment");
+  const now = Date.now();
+  for (const lookupKey of aliases) {
+    const restrictions = await ctx.db
+      .query("capabilityRestrictions")
+      .withIndex("by_user_capability", (q: any) => q.eq("userId", userId).eq("capabilityKey", lookupKey))
+      .collect();
+    for (const restriction of restrictions) {
+      const active = restriction.startsAt <= now && (!restriction.endsAt || restriction.endsAt > now);
+      if (active) {
+        throw new AuthzError("RESTRICTED", `Capability "${capabilityKey}" restricted: ${restriction.reasonCode}`);
+      }
     }
   }
 

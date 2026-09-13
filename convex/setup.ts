@@ -27,6 +27,7 @@ import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { checkRateLimit } from "./lib/rateLimit";
 import { requireUser } from "./lib/authz";
 import { reserveHandleTx } from "./profile/page";
 
@@ -136,6 +137,17 @@ export const upsertBasic = mutation({
     const prevProfile = await profilesRow(ctx, userId);
     const completionVersion = (prevProfile?.completionVersion ?? 0) + 1;
     const profileVersion = (prevProfile?.profileVersion ?? 0) + 1;
+
+    // SECURITY (scan 2026-09-13, finding 26): setup/consent history
+    // inflation — repeated submissions appended unbounded consent-record +
+    // completion-event rows (no idempotency, no throttle). Two guards:
+    // (a) already-complete members cannot re-run the SETUP surface (the
+    // per-field consent console below is the only post-setup consent
+    // writer); (b) a submit throttle bounds re-runs during setup.
+    await checkRateLimit(ctx, "setup.upsert", { kind: "user", value: userId });
+    if (user.basicProfileComplete) {
+      throw new Error("setup: basic profile already complete — use the settings consent console (CAP-148 consentRecord), not setup.upsertBasic");
+    }
 
     // 1. profiles upsert (firstTapOrder = this submission's tap order on
     //    first completion; after that the ORDER cannot be backfilled —
@@ -336,6 +348,19 @@ export const consentRecord = mutation({
   handler: async (ctx, args) => {
     const userId = await requireUser(ctx, "profile.consentRecord");
     const now = Date.now();
+    // SECURITY (scan 2026-09-13, finding 26): consent writes were
+    // unthrottled — each call appended an immutable consent-history row,
+    // so a looping client could inflate the audit trail unboundedly.
+    // No-op suppression + a per-user throttle.
+    await checkRateLimit(ctx, "setup.consent", { kind: "user", value: userId });
+    const dup = await ctx.db
+      .query("userConsentRecords")
+      .withIndex("by_user_purpose", (q: any) => q.eq("userId", userId).eq("purpose", args.purpose))
+      .order("desc")
+      .first();
+    if (dup && dup.status === args.status && dup.policyVersion === args.policyVersion) {
+      return { recorded: false }; // identical consecutive write — history stays append-only for CHANGES only
+    }
     await ctx.db.insert("userConsentRecords", {
       userId,
       purpose: args.purpose,
@@ -457,6 +482,10 @@ export const mobileSendOtp = action({
     // consolidation report).
     const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
     if (!userId) throw new Error("mobile.sendOtp: authentication required");
+    // SECURITY (scan 2026-09-13, finding 16): SMS bombing / cost control —
+    // per-user send throttle before the Twilio call (CAP-551 leaves
+    // retry/expiry semantics to Twilio Verify; this is OUR cost gate).
+    await checkRateLimit(ctx, "mobile.otp.send", { kind: "user", value: userId });
     const config = twilioConfig();
     if (!config) return { sent: false, notConfigured: true };
     const result = await twilioVerifyCall(config, "Verifications", {

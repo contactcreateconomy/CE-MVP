@@ -13,12 +13,22 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 
-import { SEALED_KEYS, _configRow, _registryRow, validateAgainstRegistry } from "./lib/authz";
+import { SEALED_KEYS, _configRow, _registryRow, validateAgainstRegistry, assertAdminPermission } from "./lib/authz";
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { writeAudited, newCorrelationId } from "./lib/audit";
 
 export const getNamespace = query({
   args: { module: v.optional(v.string()) },
   handler: async (ctx, { module }) => {
+    // SECURITY (scan 2026-09-13, finding 1): the namespace read carries
+    // live values + versions — the exact inputs a CAS forger needs. It is
+    // admin-surface data (CONTRACT-7 console) and is now staff-gated like
+    // every other /admin/config surface. Administrator-only: values can be
+    // operationally sensitive (rate limits, allowlists).
+    const roles = await assertAdminPermission(ctx);
+    if (!roles.includes("administrator")) {
+      throw new Error("config.getNamespace: administrator role required (CAP-394 surface)");
+    }
     // CAP-394: sealed keys are ABSENT from the namespace read (registry
     // seed contains none; belt-and-braces filter too).
     const rows = await ctx.db.query("configKeyRegistry").collect();
@@ -40,10 +50,24 @@ export const casUpdate = mutation({
     expectedVersion: v.number(),
     reason: v.optional(v.string()),
     blastRadius: v.string(),
-    actorId: v.optional(v.id("users")),
-    actorRole: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // SECURITY (scan 2026-09-13, finding 1): casUpdate was a public
+    // mutation with no auth — anyone on the internet could flip
+    // signup.mode, constellation.ugc.enabled, showcase.allowedDomains,
+    // rate limits, etc., and forge the audit actor via client-supplied
+    // actorId/actorRole args. Now: administrator role derived from the
+    // SESSION (assertAdminPermission reads roleAssignments fresh), the
+    // actor bound to that session, and the client-supplied actor args are
+    // REMOVED from the validator (unknown args are rejected by Convex
+    // args validation → the old forge path is dead at the boundary).
+    const roles = await assertAdminPermission(ctx);
+    if (!roles.includes("administrator")) {
+      throw new Error("casUpdate: administrator role required (CAP-395 surface)");
+    }
+    const actorId = (await getAuthUserId(ctx)) as any;
+    if (!actorId) throw new Error("casUpdate: authentication required");
+
     const registry = await _registryRow(ctx, args.key);
     if (!registry) {
       throw new Error(`casUpdate: unregistered key "${args.key}"${SEALED_KEYS.includes(args.key as any) ? " (sealed — not editable)" : ""}`);
@@ -82,12 +106,12 @@ export const casUpdate = mutation({
         value: validated,
         version: args.expectedVersion + 1,
         updatedAt: Date.now(),
-        updatedByUserId: args.actorId ?? undefined,
+        updatedByUserId: actorId,
         reason: args.reason,
       });
       return {
-        actorId: args.actorId ?? undefined,
-        role: args.actorRole,
+        actorId,
+        role: roles.includes("administrator") ? "administrator" : undefined,
         action: "config.casUpdate",
         target: `config:${args.key}`,
         prev: live.value,

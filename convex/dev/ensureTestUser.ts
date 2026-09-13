@@ -4,10 +4,24 @@ import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { internalAction, internalQuery } from "../_generated/server";
 
-/** Log in with the email (not a bare username) in the app’s auth form. */
+/** Log in with the email (not a bare username) in the app’s auth form.
+ * SECURITY (scan 2026-09-13, finding 21): the password is no longer a
+ * source-code literal — it must be supplied via DEV_TEST_USER_PASSWORD at
+ * ensure time (the env-gated dev-only flow reads it; production deploys
+ * never define ALLOW_DEV_TEST_USER). A credential that ships in source is
+ * a known-password account on every deployment. */
 const DEVTEST_EMAIL = "devtest@example.com";
 const DEVTEST_NAME = "Devtest";
-const DEVTEST_PASSWORD = "Dev123456";
+
+function devTestPassword(): string {
+  const pw = process.env.DEV_TEST_USER_PASSWORD;
+  if (!pw || pw.length < 8) {
+    throw new Error(
+      "Set DEV_TEST_USER_PASSWORD (≥8 chars) on the Convex deployment before running dev/ensureTestUser:ensure — hard-coded dev credentials were removed (security scan 2026-09-13).",
+    );
+  }
+  return pw;
+}
 
 export const hasPasswordAccount = internalQuery({
   args: {},
@@ -46,7 +60,7 @@ export const ensure = internalAction({
     }
     await createAccount(ctx, {
       provider: "password",
-      account: { id: DEVTEST_EMAIL, secret: DEVTEST_PASSWORD },
+      account: { id: DEVTEST_EMAIL, secret: devTestPassword() },
       // P7-CLEANUP: full canonical set — the strict users schema validates
       // on this insert (same defaults as the Password profile callback).
       profile: {

@@ -20,7 +20,7 @@ import { writeAudited, newCorrelationId } from "./lib/audit";
 import { checkRateLimit } from "./lib/rateLimit";
 import { checkPostEligibility } from "./eligibility";
 import { classifySafety } from "./lib/classifier";
-import { autoGateTx } from "./moderation/autoGate";
+import { autoGateTx, openCaseDeduped } from "./moderation/autoGate";
 import { captureEvent } from "./lib/events";
 import { appendActivity } from "./activity";
 
@@ -59,8 +59,10 @@ export function hasProductTag(body: string): boolean {
 
 /** Showcase projectUrl field validation — the single controlled outbound
  *  URL. P4-15's submitProjectUrl adds the allowlist + approval flow; here
- *  only transport + shape are checked. */
-function validateProjectUrl(url: string): void {
+ *  only transport + shape are checked. (The allowlist admission itself
+ *  lives in posts/showcase.ts and is enforced on EVERY write path — see
+ *  updatePost, scan 2026-09-13 finding 9.) */
+function validateProjectUrlShape(url: string): void {
   try {
     const parsed = new URL(url);
     if (parsed.protocol !== "https:") throw new Error();
@@ -68,6 +70,7 @@ function validateProjectUrl(url: string): void {
     throw new Error("POST_URL_NOT_ALLOWED: showcase projectUrl must be a valid HTTPS URL");
   }
 }
+const validateProjectUrl = validateProjectUrlShape;
 
 /** W2-E4 — verdictScore auto-compute (average of dimensions, excluding not_applicable vfm). */
 function computeVerdictScore(dimensionScores: Record<string, number | "not_applicable">): number {
@@ -416,13 +419,72 @@ export const updatePost = mutation({
     // showcase projectUrl FIELD (on postShowcases, not posts) is validated
     // separately below.
     checkNoUrls(body);
-    if (post.type === "showcase" && args.projectUrl !== undefined) validateProjectUrl(args.projectUrl);
+    if (post.type === "showcase" && args.projectUrl !== undefined) {
+      // SECURITY (scan 2026-09-13, finding 9): the edit path validated only
+      // transport+shape — an APPROVED showcase URL could be swapped for any
+      // HTTPS host while approvalStatus stayed "approved" (approved-looking
+      // CTA to an arbitrary destination). The edit path now runs the SAME
+      // CAP-100 allowlist admission as posts/showcase.submitProjectUrl and
+      // resets approval to pending whenever the URL changes.
+      const showcaseRow = await ctx.db
+        .query("postShowcases")
+        .withIndex("by_postId", (q: any) => q.eq("postId", args.postId))
+        .unique() as any;
+      if (showcaseRow && showcaseRow.projectUrl !== args.projectUrl) {
+        const { validateProjectUrl: validateAgainstAllowlist } = await import("./posts/showcase");
+        const config = await ctx.db
+          .query("systemConfig")
+          .withIndex("by_key", (q: any) => q.eq("key", "showcase.allowedDomains"))
+          .first();
+        if (!config) {
+          throw new Error("updatePost: showcase.allowedDomains is not configured — fail-closed (CAP-100)");
+        }
+        const allowlist = Array.isArray(config.value) ? (config.value as string[]) : [];
+        const check = validateAgainstAllowlist(args.projectUrl, allowlist);
+        if (!check.ok) throw new Error(`updatePost: ${check.reason}`);
+      }
+      validateProjectUrlShape(args.projectUrl);
+    }
 
     // CAP-244 on the update path — edits re-expose the composer surface:
     // the same product-tag gates as createPost (tag ownership, ≤5, active
     // storefront; density re-checked when the post is already published —
     // pre-B2 edits could inject arbitrary [[product:<id>]] tokens).
-    await assertProductTagGates(ctx, actorId, body, post.lifecycleStatus === "published");
+    const republishing = args.asDraft ? false : post.lifecycleStatus === "draft" || post.lifecycleStatus === "ready";
+    await assertProductTagGates(ctx, actorId, body, republishing || post.lifecycleStatus === "published");
+    if (republishing) {
+      // SECURITY (scan 2026-09-13, finding 19): a draft edit that lands on
+      // publish previously skipped the rate limit, eligibility, and body
+      // cap that createPost enforces — a suspended-tier member could park
+      // a draft then publish past every gate.
+      await checkRateLimit(ctx, "member.posts.hour", { kind: "user", value: actorId });
+      const eligibility = await checkPostEligibility(ctx, actorId);
+      if (!eligibility.eligible) {
+        throw new Error(`updatePost: publishing requires eligibility (missing: ${eligibility.missing.join(", ")})`);
+      }
+      if (body.length > 50_000) throw new Error("updatePost: body exceeds 50,000 chars (CAP-153)");
+    }
+
+    // SECURITY (scan 2026-09-13, finding 4): an edit previously wrote new
+    // title/body with NO moderation — a published post kept moderationStatus
+    // "passed" over unmoderated content. Every content-bearing edit now
+    // replays the create-path sequence: classifier (CAP-154) → autoGateTx
+    // (CAP-321/102) → status flip + case. Editing to a DRAFT also
+    // re-moderates: the next publish (create or edit) can never inherit a
+    // stale "passed".
+    const contentChanged =
+      (args.title !== undefined && args.title !== post.title) || (args.body !== undefined && args.body !== post.body);
+    let moderationStatus: "not_required" | "passed" | "pending" | "held" = "not_required";
+    let gateDecision: { decision: "pass" | "hold" | "hard_reject"; reasonCode?: string } | null = null;
+    if (contentChanged) {
+      const safety = await classifySafety(`${args.title ?? post.title}\n${body}`);
+      moderationStatus = !safety.available ? "pending" : safety.unsafe ? "held" : "passed";
+      if (moderationStatus === "pending" || moderationStatus === "held") {
+        // Pre-compute the hold so the status flip + case land in the SAME
+        // transaction as the content write (mirrors createPost).
+        gateDecision = { decision: "hold", reasonCode: safety.unsafe ? "classifier_unsafe" : "classifier_unavailable" };
+      }
+    }
 
     return await writeAudited(ctx, async (actx) => {
       const latestRev = await actx.db
@@ -432,11 +494,23 @@ export const updatePost = mutation({
         .first();
       const nextRev = (latestRev?.revisionNumber ?? 0) + 1;
 
+      const nextStatus = contentChanged
+        ? moderationStatus
+        : ((post.moderationStatus ?? "not_required") as typeof moderationStatus);
+      // A held/pending edit pulls the post OUT of published (CAP-154's
+      // fail-closed direction — same as create: held ⇒ ready, never live).
+      const nextLifecycle =
+        args.asDraft ? "draft"
+        : gateDecision ? (post.lifecycleStatus === "published" ? "ready" : post.lifecycleStatus)
+        : post.lifecycleStatus;
+
       await actx.db.patch(args.postId, {
         title: args.title ?? post.title,
         body,
-        lifecycleStatus: args.asDraft ? "draft" : post.lifecycleStatus,
+        lifecycleStatus: nextLifecycle,
+        moderationStatus: nextStatus,
         toolIds: args.toolIds !== undefined ? args.toolIds : post.toolIds,
+        ...(gateDecision && post.lifecycleStatus === "published" ? { publishedAt: undefined } : {}),
       });
 
       await actx.db.insert("postRevisions", {
@@ -446,6 +520,34 @@ export const updatePost = mutation({
         changedByUserId: actorId,
         createdAt: Date.now(),
       });
+
+      // SECURITY (finding 4): the named auto-gate + case rows on the edit
+      // path — the same CAP-321/102 layer + CAP-154 case semantics as
+      // createPost. REVIEW-FIX: the case goes through openCaseDeduped (the
+      // bible l.239 "one open case per target+policyFamily+window" rule) —
+      // a raw insert would stack duplicate open cases on repeat edits.
+      if (contentChanged) {
+        const gate = await autoGateTx(actx, {
+          kind: "post", userId: actorId, targetId: args.postId, body: `${args.title ?? post.title}\n${body}`,
+        });
+        if (gate.decision !== "pass" && !gateDecision) {
+          gateDecision = { decision: gate.decision, reasonCode: gate.reasonCode };
+          await actx.db.patch(args.postId, {
+            moderationStatus: "held",
+            ...(post.lifecycleStatus === "published" ? { lifecycleStatus: "ready", publishedAt: undefined } : {}),
+          });
+        }
+        if (moderationStatus === "pending" || moderationStatus === "held") {
+          await openCaseDeduped(actx, {
+            targetType: "post",
+            targetId: args.postId,
+            policyFamily: "quality_guidelines",
+            caseType: "ugc_safety",
+            severity: moderationStatus === "held" ? "s2_medium" : "s3_low",
+            reasonCode: moderationStatus === "held" ? "classifier_unsafe" : "classifier_unavailable",
+          });
+        }
+      }
 
       // W2-E4 — extension updates ride the SAME transaction as the post
       // update (verdictScore recomputed on edit, extension fields applied).
@@ -516,7 +618,14 @@ async function patchExtensionRow(actx: any, postId: string, type: string, args: 
       if (!row) break;
       const patch: Record<string, unknown> = {};
       if (data.theThing !== undefined) patch.theThing = data.theThing;
-      if (args.projectUrl !== undefined) patch.projectUrl = args.projectUrl;
+      if (args.projectUrl !== undefined) {
+        patch.projectUrl = args.projectUrl;
+        // SECURITY (scan 2026-09-13, finding 9): any URL change on an
+        // approved showcase resets approval to pending — the CTA keeps
+        // rendering but never as "approved" for a swapped destination
+        // (approve/reject itself is P7E-13 CAP-101's, never invented here).
+        if (row.projectUrl !== args.projectUrl) patch.approvalStatus = "pending";
+      }
       if (Object.keys(patch).length) await actx.db.patch(row._id, patch);
       break;
     }

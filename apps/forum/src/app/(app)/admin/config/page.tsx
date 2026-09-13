@@ -127,7 +127,8 @@ export default function AdminConfigPage() {
         expectedVersion: editing.liveVersion,
         reason: reason || undefined,
         blastRadius: editing.blastRadius,
-        actorRole: "administrator",
+        // SECURITY (finding 1): actor identity is now derived server-side
+        // from the session — actorId/actorRole args no longer exist.
       });
       setEditing(null);
     } catch (err) {

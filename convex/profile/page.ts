@@ -82,6 +82,31 @@ export const getProfilePage = query({
     // visibility fields are never projected at all.
     const demographicsVisible = isSelf || profile?.consentFlags?.demographicsPersonalization === true;
 
+    // SECURITY (scan 2026-09-13, finding 18): profileVisibility=private was
+    // never enforced server-side — identity/bio/badges/interests flowed to
+    // every viewer regardless. Non-self viewers of a private profile now
+    // get the existence-only projection (handle + private marker), the
+    // same redaction the /users/[handle] contract's not-found-adjacent
+    // state implies; journal was already self-only.
+    if ((user.profileVisibility ?? "public") === "private" && !isSelf) {
+      return {
+        identity: {
+          displayName: "Member",
+          username: user.username ?? normalized,
+          bio: null,
+          roleArchetype: null,
+          avatarUrl: null,
+        },
+        badges: [],
+        interests: [],
+        awardsShelf: [],
+        metrics: null,
+        profileVisibility: "private" as const,
+        isSelf: false,
+        journal: null,
+      };
+    }
+
     // Direct interests with tile labels (public surface)
     const interests = await ctx.db
       .query("userInterests")

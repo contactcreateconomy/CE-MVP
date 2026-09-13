@@ -114,6 +114,15 @@ async function safeFetchTextInner(
   const maxRedirects = Math.min(options.maxRedirects ?? 3, 3);
   const timeoutMs = options.timeoutMs ?? 10_000;
 
+  // SECURITY (scan 2026-09-13, finding 6): safeFetchText LACKED the
+  // unpinned-probe "disabled" guard that safeFetch enforces (CAP-010: "no
+  // pin ⇒ disable arbitrary probe") — storeValidate's probe path was
+  // fetching arbitrary URLs with validation not bound to the connection.
+  // The two variants now share the same rule.
+  if (options.mode === "external_destination_probe" && !options.pinnedIp) {
+    return { status: "disabled", reason: "CAP-010: no pinned IP ⇒ arbitrary probe disabled (M11 → manual review degrade)" };
+  }
+
   let currentUrl = url;
   for (let hop = 0; hop <= maxRedirects; hop++) {
     const syntax = validateUrlSyntax(currentUrl);
@@ -136,28 +145,52 @@ async function safeFetchTextInner(
         signal: controller.signal,
         headers: { "user-agent": "Createconomy-SafeFetch/1.0" },
       });
-      clearTimeout(timer);
       if (res.status >= 300 && res.status < 400 && res.headers.get("location")) {
+        clearTimeout(timer);
         currentUrl = new URL(res.headers.get("location")!, currentUrl).href;
         continue;
       }
       if (!res.ok && res.status !== 200) {
+        clearTimeout(timer);
         return { status: "error", reason: `HTTP ${res.status}` };
       }
       const reader = res.body?.getReader();
-      if (!reader) return { status: "error", reason: "no response body" };
+      if (!reader) {
+        clearTimeout(timer);
+        return { status: "error", reason: "no response body" };
+      }
       const chunks: Uint8Array[] = [];
       let total = 0;
       for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        total += value.byteLength;
-        if (total > maxBytes) {
-          await reader.cancel();
-          return { status: "blocked", reason: `size cap: body exceeded ${maxBytes} bytes` };
+        // SECURITY (scan 2026-09-13, finding 30): the abort timer was
+        // cleared right after headers — a slow-drip body could hang the
+        // action for unbounded time. Each read is raced against the same
+        // TOTAL deadline; the race timer is cleared per-read (no leak).
+        let raceTimer: ReturnType<typeof setTimeout> | undefined;
+        try {
+          const { done, value } = await Promise.race([
+            reader.read(),
+            new Promise<never>((_, reject) => {
+              raceTimer = setTimeout(
+                () => reject(new Error(`timeout: body exceeded ${timeoutMs}ms total`)),
+                Math.max(1, timeoutMs),
+              );
+            }),
+          ]);
+          if (raceTimer) clearTimeout(raceTimer);
+          if (done) break;
+          total += value.byteLength;
+          if (total > maxBytes) {
+            await reader.cancel();
+            clearTimeout(timer);
+            return { status: "blocked", reason: `size cap: body exceeded ${maxBytes} bytes` };
+          }
+          chunks.push(value);
+        } finally {
+          if (raceTimer) clearTimeout(raceTimer);
         }
-        chunks.push(value);
       }
+      clearTimeout(timer);
       const text = new TextDecoder().decode(concat(chunks));
       return { status: "ok", response: res.status, finalUrl: currentUrl, text };
     } catch (e) {

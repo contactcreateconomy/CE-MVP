@@ -49,6 +49,8 @@ async function requireStoreOperator(ctx: any): Promise<Id<"users">> {
   return userId;
 }
 
+export { requireStoreOperator };
+
 /** CAP-232 — decide a store request. Approval → storefronts.status=setup
  *  (Rocketeer badge goes PROVISIONAL here; activation is P6-16's CAP-233). */
 export const decideRequest = mutation({

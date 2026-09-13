@@ -153,10 +153,13 @@ export const deploySeed = internalMutation({
   },
 });
 
-/** CAP-085 list branch — rules + recent-run context. No writes. */
+/** CAP-085 list branch — rules + recent-run context. No writes.
+ * SECURITY (scan 2026-09-13, finding 20): staff-gated — qualification
+ * rules + recent runs are admin operational data, not public. */
 export const listRules = query({
   args: {},
   handler: async (ctx) => {
+    await assertAdminPermission(ctx);
     const rules = await ctx.db.query("qualificationRules").collect();
     const recentRuns = await ctx.db
       .query("qualificationRuns")
@@ -354,10 +357,13 @@ export const editCalibrationExample = mutation({
   },
 });
 
-/** Calibration-set read for the console. */
+/** Calibration-set read for the console.
+ * SECURITY (scan 2026-09-13, finding 20): staff-gated (admin operational
+ * calibration data). */
 export const listCalibrationExamples = query({
   args: {},
   handler: async (ctx) => {
+    await assertAdminPermission(ctx);
     return await ctx.db
       .query("calibrationExamples")
       .withIndex("by_addedAt")

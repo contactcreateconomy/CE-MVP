@@ -124,11 +124,14 @@ export const founderBumpAll = mutation({
   },
 });
 
-/** The Legal-namespace list on /admin/config: latest version per code. */
+/** The Legal-namespace list on /admin/config: latest version per code.
+ * SECURITY (scan 2026-09-13, finding 20): staff-gated — reason-code copy
+ * is admin-console data. */
 export const listLatest = query({
   args: {},
   returns: v.any(),
   handler: async (ctx) => {
+    await assertAdminPermission(ctx);
     const all = await ctx.db.query("policyReasonCodes").take(500); // small seeded catalog, bounded
     const latest = new Map<string, any>();
     for (const row of all) {

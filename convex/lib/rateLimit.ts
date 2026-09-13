@@ -51,6 +51,15 @@ export const RATE_LIMITS: Record<string, RateLimit[]> = {
   "legal.dmca.email": [
     { name: "legal.dmca.email.daily", max: 5, periodMs: 24 * 60 * 60_000, subject: "email_hash" },
   ],
+  // SECURITY (scan 2026-09-13, findings 23/24/25): the ACTOR-keyed legal
+  // throttle — one session actor spamming via N fresh email addresses
+  // previously sailed past the email-keyed bucket, and client-supplied
+  // contact strings could poison a victim's counter-notice state. All
+  // authenticated legal intake + the session-actor half of anonymous DMCA
+  // throttle through this bucket.
+  "legal.dmca.actor": [
+    { name: "legal.dmca.actor.daily", max: 5, periodMs: 24 * 60 * 60_000, subject: "user" },
+  ],
   // CAP-015: waitlist join "10/h ip + 3/24h email"
   "waitlist.join": [
     { name: "waitlist.join.ip", max: 10, periodMs: 60 * 60_000, subject: "ip_hash" },
@@ -72,6 +81,22 @@ export const RATE_LIMITS: Record<string, RateLimit[]> = {
   // comments.create lost it in the strangler cutover, leaving comment
   // submission unbounded (autoGate velocity only counts prior HOLDS).
   "member.comments.hour": [{ name: "member.comments.hour", max: 60, periodMs: 60 * 60_000, subject: "user" }],
+  // SECURITY (scan 2026-09-13, finding 26): setup-surface throttles —
+  // upsertBasic/consentRecord appended unbounded history rows. FLAGGED
+  // defaults (register-unnamed): 5/h setup re-runs, 30/h consent writes.
+  "setup.upsert": [{ name: "setup.upsert", max: 5, periodMs: 60 * 60_000, subject: "user" }],
+  "setup.consent": [{ name: "setup.consent", max: 30, periodMs: 60 * 60_000, subject: "user" }],
+  // SECURITY (scan 2026-09-13, finding 7): BUY-click throttle —
+  // register-unnamed velocity control for recordClick (10/1h per signed-in
+  // actor; anonymous farming is handled by qualification=excluded at
+  // write + the settle-side actor requirement). FLAGGED default, same
+  // class as member.posts.hour: change = registry edit + this literal.
+  "storefront.click.hour": [{ name: "storefront.click.hour", max: 10, periodMs: 60 * 60_000, subject: "user" }],
+  // SECURITY (scan 2026-09-13, finding 16): OTP SMS throttle —
+  // register-unnamed (CAP-551 puts retry/expiry at Twilio Verify; the
+  // send-side throttle is our cost/bombing control). 3/1h per user.
+  // FLAGGED default.
+  "mobile.otp.send": [{ name: "mobile.otp.send", max: 3, periodMs: 60 * 60_000, subject: "user" }],
 };
 
 /** Typed rejection — consumers see this shape, never a silent pass. */

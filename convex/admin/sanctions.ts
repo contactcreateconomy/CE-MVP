@@ -22,6 +22,7 @@ import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertAdminPermission } from "../lib/authz";
+import { PROTECTED_CAPABILITIES, type CapabilityKey } from "../lib/authz";
 import { writeAudited, newCorrelationId } from "../lib/audit";
 import { checkRateLimit } from "../lib/rateLimit";
 import { internal } from "../_generated/api";
@@ -34,10 +35,12 @@ const STRIKE_CLASS_DAYS: Record<string, number> = {
   account_integrity: 365,
 };
 
-const SANCTION_CAPABILITY_KEYS = [
-  "create_post", "create_comment", "react", "report",
-  "manage_store", "tag_product", "revival_vote",
-] as const;
+// SECURITY (scan 2026-09-13, finding 5): this list previously carried
+// "create_comment" — a key the enforcement path (assertCustomerCapability)
+// never looks up (it enforces "comment"), so comment restrictions were
+// dead letters. The single canonical set is lib/authz's
+// PROTECTED_CAPABILITIES; this alias exists only for typed args docs.
+const SANCTION_CAPABILITY_KEYS = PROTECTED_CAPABILITIES;
 
 async function requireSanctionActor(ctx: any, allowModerator: boolean): Promise<Id<"users">> {
   const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;

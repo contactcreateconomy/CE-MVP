@@ -9,6 +9,8 @@
 
 import { internalMutation, mutation, query } from "../_generated/server";
 import { v } from "convex/values";
+import type { Id } from "../_generated/dataModel";
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertAdminPermission, AdminAuthzError } from "../lib/authz";
 import { writeAudited, newCorrelationId } from "../lib/audit";
 
@@ -23,22 +25,38 @@ export const rolesAssign = mutation({
       v.literal("moderator"), v.literal("store_operator"),
       v.literal("support_operator"), v.literal("administrator"),
     ),
-    actorId: v.id("users"),
     reason: v.string(),
   },
   handler: async (ctx, args) => {
-    // CAP-413: "Founder-only" — verify actor is a Founder (has founder-only keys)
-    const actorRoles = await assertAdminPermission(ctx);
-    if (!actorRoles.includes("administrator")) {
+    // SECURITY (scan 2026-09-13, finding 11): "Founder-only" was enforced
+    // as ANY administrator — every admin could mint admins. Founder is the
+    // bootstrapped FIRST administrator (CAP-007's earliest active
+    // administrator assignment — the same derivation as CAP-429/analytics),
+    // derived from the session; the audit actor is the session actor.
+    const actorId = (await getAuthUserId(ctx)) as Id<"users">;
+    if (!actorId) throw new AdminAuthzError("NOT_STAFF", "roles.assign: authentication required");
+    const roles = await assertAdminPermission(ctx);
+    if (!roles.includes("administrator")) {
       throw new AdminAuthzError("NOT_STAFF", "roles.assign is Founder-only (CAP-413).");
+    }
+    const admins = await ctx.db
+      .query("roleAssignments")
+      .filter((q: any) => q.eq(q.field("role"), "administrator"))
+      .take(50);
+    const first = admins
+      .filter((a: any) => a.status === "active")
+      .sort((a: any, b: any) => a.grantedAt - b.grantedAt)[0];
+    const isFounder = Boolean(first && first.userId === actorId);
+    if (!isFounder) {
+      throw new AdminAuthzError("NOT_STAFF", "roles.assign is Founder-only (CAP-413) — the bootstrapped first administrator.");
     }
 
     return await writeAudited(ctx, async (actx) => {
       const id = await actx.db.insert("roleAssignments", {
         userId: args.userId, role: args.role, scopeType: "global" as const,
-        status: "active", grantedByUserId: args.actorId, grantedAt: Date.now(),
+        status: "active", grantedByUserId: actorId, grantedAt: Date.now(),
       });
-      return { actorId: args.actorId, action: "roles.assign", target: `roleAssignment:${id}`, prev: null, next: { userId: args.userId, role: args.role }, reasonCode: args.reason, correlationId: newCorrelationId(), reversible: true };
+      return { actorId, action: "roles.assign", target: `roleAssignment:${id}`, prev: null, next: { userId: args.userId, role: args.role }, reasonCode: args.reason, correlationId: newCorrelationId(), reversible: true };
     });
   },
 });
