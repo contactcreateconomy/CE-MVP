@@ -15,7 +15,7 @@
     "typescript": "5.9.3"
   },
   "peerDependencies": {
-    "@convex-dev/auth": "^0.0.91",
+    "@convex-dev/auth": "^0.0.95",
     "@radix-ui/react-dialog": "^1.1.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",

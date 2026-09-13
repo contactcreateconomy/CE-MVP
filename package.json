@@ -11,6 +11,7 @@
     "test": "pnpm --filter ./apps/forum test",
     "test:run": "pnpm --filter ./apps/forum test:run",
     "test:e2e": "playwright test",
+    "test:convex": "vitest run --config vitest.config.ts",
     "dev:seller": "pnpm --filter @cemvp/seller dev",
     "dev:admin": "pnpm --filter @cemvp/admin dev",
     "dev:marketplace": "pnpm --filter @cemvp/marketplace dev",
@@ -33,19 +34,27 @@
     "@playwright/test": "^1.63.0",
     "convex": "^1.34.1",
     "jose": "^6.2.2",
-    "vitest-axe": "^0.1.0"
+    "vitest": "^4.1.4"
   },
   "engines": {
     "node": ">=24"
   },
   "dependencies": {
-    "@auth/core": "0.37.0",
-    "@convex-dev/auth": "^0.0.91",
+    "@auth/core": "0.41.3",
+    "@convex-dev/auth": "^0.0.95",
     "@convex-dev/rate-limiter": "^0.3.2"
   },
   "pnpm": {
     "overrides": {
-      "convex": "1.34.1"
+      "convex": "1.34.1",
+      "@convex-dev/auth": "0.0.95",
+      "eslint-plugin-react-hooks": "7.0.1",
+      "postcss": ">=8.5.23",
+      "nanoid": ">=3.3.18",
+      "ws": ">=8.21.0",
+      "linkify-it": ">=5.0.2",
+      "markdown-it": ">=14.2.0",
+      "browserslist": ">=4.28.7"
     },
     "onlyBuiltDependencies": [
       "esbuild",
