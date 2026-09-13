@@ -15,7 +15,7 @@ import path from "path";
  */
 export default defineConfig({
   test: {
-    include: ["tests/convex/**/*.test.ts"],
+    include: ["tests/convex/**/*.test.ts", "tests/integration/**/*.test.ts"],
     environment: "node",
   },
   resolve: {

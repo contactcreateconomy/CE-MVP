@@ -38,6 +38,9 @@ importers:
       convex:
         specifier: 1.34.1
         version: 1.34.1(react@19.2.4)
+      convex-test:
+        specifier: 0.0.50
+        version: 0.0.50(convex@1.34.1(react@19.2.4))
       jose:
         specifier: ^6.2.2
         version: 6.2.2
@@ -2770,6 +2773,11 @@ packages:
 
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
+
+  convex-test@0.0.50:
+    resolution: {integrity: sha512-rMNfrgcKJGToYDqNns2n1AO9KUP1NyC/AF9ldYEuWwTfRbgC9RQiHjlZsZQ/sOjLIVPUyKKIjoI/fNJUzy1urw==}
+    peerDependencies:
+      convex: 1.34.1
 
   convex@1.34.1:
     resolution: {integrity: sha512-ooyFnZVVq0u6b5zt0Ptq8QB2ixhf/2vXe+PIcUtdtrs0lq/TwpkmmruHdqkFmWgMd6N+Tmfy8AGkz6QnZUYZBA==}
@@ -6724,6 +6732,10 @@ snapshots:
   concat-map@0.0.1: {}
 
   convert-source-map@2.0.0: {}
+
+  convex-test@0.0.50(convex@1.34.1(react@19.2.4)):
+    dependencies:
+      convex: 1.34.1(react@19.2.4)
 
   convex@1.34.1(react@19.2.4):
     dependencies:

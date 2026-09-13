@@ -25,3 +25,5 @@ Thumbs.db
 .zcode/
 test-results/
 playwright-report/
+tests/integration/components/
+.env.test
