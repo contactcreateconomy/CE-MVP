@@ -30,6 +30,7 @@ import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertCustomerCapability, assertAdminPermission } from "./lib/authz";
+import { checkRateLimit } from "./lib/rateLimit";
 import { captureEvent } from "./lib/events";
 import { classifySafety } from "./lib/classifier";
 import { checkNoUrls } from "./posts";
@@ -171,6 +172,10 @@ export const create = mutation({
     // R-GATE (CAP-393 applies-to: "comment")
     await assertCustomerCapability(ctx, "comment");
 
+    // Hourly member cap — the legacy forum bucket's 60/1h, lost in the
+    // strangler cutover (see rateLimit.ts member.comments.hour note).
+    await checkRateLimit(ctx, "member.comments.hour", { kind: "user", value: userId });
+
     // Host post: published only (commenting on archived posts is
     // register-silent — blocked, flagged)
     const post = await ctx.db.get(args.postId);
@@ -218,6 +223,19 @@ export const create = mutation({
 
     const now = Date.now();
     const isQuestion = args.isQuestion ?? args.authorIntent === "question";
+
+    // Participant delta computed BEFORE this comment is inserted: after
+    // the insert, the by-author lookup finds the just-inserted row (same
+    // tx), so every author looked like a returning participant and
+    // humanParticipantCount froze at its creation value forever.
+    const priorStats = await threadStatsRow(ctx, args.postId);
+    const firstCommentOnPost = priorStats
+      ? !(await ctx.db
+          .query("comments")
+          .withIndex("by_post_depth_created", (q: any) => q.eq("postId", args.postId))
+          .filter((q: any) => q.eq(q.field("authorUserId"), userId))
+          .first())
+      : true;
 
     const commentId = await ctx.db.insert("comments", {
       postId: args.postId,
@@ -281,15 +299,8 @@ export const create = mutation({
       }
     }
 
-    // Same-mutation: threadStats deltas (rebuildable projection)
-    const priorStats = await threadStatsRow(ctx, args.postId);
-    const firstCommentOnPost = priorStats
-      ? !(await ctx.db
-          .query("comments")
-          .withIndex("by_post_depth_created", (q: any) => q.eq("postId", args.postId))
-          .filter((q: any) => q.eq(q.field("authorUserId"), userId))
-          .first())
-      : true;
+    // Same-mutation: threadStats deltas (rebuildable projection);
+    // priorStats/firstCommentOnPost were computed pre-insert above.
     if (priorStats) {
       await ctx.db.patch(priorStats._id, {
         humanCommentCount: priorStats.humanCommentCount + 1,

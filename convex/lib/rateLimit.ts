@@ -66,6 +66,12 @@ export const RATE_LIMITS: Record<string, RateLimit[]> = {
   // CAP-176 (SLICE-P5-09): "rate-limited" with no literal — 5/day is a
   // FLAGGED default per member (revival-vote integrity).
   "revival.vote": [{ name: "revival.vote", max: 5, periodMs: 24 * 60 * 60_000, subject: "user" }],
+  // Comment hourly cap — 60/1h per user, the value the legacy forum
+  // createComment bucket enforced (deleted convex/forum/limits.ts
+  // RATE_MAX_PER_WINDOW.createComment=60, window 60min). The canonical
+  // comments.create lost it in the strangler cutover, leaving comment
+  // submission unbounded (autoGate velocity only counts prior HOLDS).
+  "member.comments.hour": [{ name: "member.comments.hour", max: 60, periodMs: 60 * 60_000, subject: "user" }],
 };
 
 /** Typed rejection — consumers see this shape, never a silent pass. */

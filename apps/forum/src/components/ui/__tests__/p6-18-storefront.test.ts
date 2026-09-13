@@ -31,7 +31,7 @@ describe("SLICE-P6-18 — public storefront lifecycle renders (CAP-269/246)", ()
 
   it("BUY href renders ONLY toward /go and ONLY when the link is locked", () => {
     const fn = src.split("export const getStorefront")[1] ?? "";
-    expect(fn).toContain("`/go/${link._id}`");
+    expect(fn).toContain("`/go/${link._id}#${product._id}`"); // #product-id hash feeds recordClick's server-derived attribution
     expect(fn).toContain('link.validationState === "approved_locked"');
   });
 
@@ -107,7 +107,7 @@ describe("SLICE-P6-18 — product detail + composer block (CAP-245/524/255/244)"
 
   it("detail: BUY → /go ONLY when approved_locked; degrades otherwise (CAP-245)", () => {
     expect(detailFn).toContain('link?.validationState === "approved_locked"');
-    expect(detailFn).toContain("`/go/${link._id}`");
+    expect(detailFn).toContain("`/go/${link._id}#${product._id}`"); // hash = recordClick attribution input
   });
 
   it("detail: Amazon = standard /go + interim-tier copy slot (CAP-524 — no click-row divergence)", () => {

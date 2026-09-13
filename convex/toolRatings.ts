@@ -389,10 +389,15 @@ export const update = mutation({
       await actx.db.patch(args.ratingId, patch);
 
       // R-AGG — prior→new delta, masked by prior eligibility. Updates keep
-      // moderationStatus=passed (the register ties auto-flag to submit only);
-      // a held rating's edit therefore applies no delta on either side.
-      const priorEligible = isAggregateEligible(rating) ? rating : null;
-      const delta = aggDelta(priorEligible, args);
+      // the row's moderationStatus (the register ties auto-flag to submit
+      // only), so the NEXT side is masked by the SAME eligibility: a held
+      // rating's edit applies no delta on either side (INV-1 — feeding the
+      // aggregate from an unmoderated edit was a phantom contribution that
+      // withdraw could never remove).
+      const eligible = isAggregateEligible(rating);
+      const priorEligible = eligible ? rating : null;
+      const nextEligible = eligible ? args : null;
+      const delta = aggDelta(priorEligible, nextEligible);
       await actx.db.patch(rating.toolId, {
         ratingSum: tool.ratingSum + delta.ratingSum,
         ratingCount: tool.ratingCount + delta.ratingCount,

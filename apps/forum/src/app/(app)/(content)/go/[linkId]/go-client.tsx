@@ -7,7 +7,7 @@
  * NO auto-redirect (quoted anti-hijack). Three distinct state renders.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 
 import { Badge } from "@/components/ui/badge";
@@ -19,8 +19,20 @@ import { isConvexConfigured } from "@cemvp/convex-client";
 export function GoClient({ linkId }: { linkId: string }) {
   const configured = isConvexConfigured();
   // Context: in-app = same-origin navigation (session/Referer heuristic —
-  // the BRANCH only; the gate never trusts this flag)
+  // the BRANCH only; the gate never trusts this flag). Cross-origin
+  // referrer = off-platform (CAP-249: interstitial, NO auto-redirect);
+  // same-origin/absent referrer = in-app (typed/bookmarked/SPA nav).
   const [isInApp, setIsInApp] = useState(true);
+  useEffect(() => {
+    const ref = document.referrer;
+    if (ref) {
+      try {
+        setIsInApp(new URL(ref).origin === window.location.origin);
+      } catch {
+        setIsInApp(false);
+      }
+    }
+  }, []);
   const resolution = useQuery(
     api.go.resolveGo,
     configured ? ({ linkId: linkId as any, isInApp } as any) : "skip",
@@ -71,8 +83,9 @@ export function GoClient({ linkId }: { linkId: string }) {
           setBusy(true); setNote(null);
           recordClick({
             linkId: linkId as any,
-            productId: (window.location.hash || "#").slice(1) as any, // productId rides the hash from the BUY anchor
-            promoterUserId: (new URLSearchParams(window.location.search).get("p") || "") as any,
+            // productId rides the #hash from the BUY anchor; attribution
+            // (promoter) is DERIVED server-side from product → storefront.
+            ...((window.location.hash || "#").slice(1) ? { productId: (window.location.hash || "#").slice(1) as any } : {}),
             isInApp,
           })
             .then((r: any) => {

@@ -19,6 +19,12 @@ import { isConvexConfigured } from "@cemvp/convex-client";
 import { useAuth } from "@cemvp/auth-ui";
 
 export function NewsletterOverlay() {
+  // Pre-hooks guard (layout-mounted on every (app) route — see CmpOverlay).
+  if (!isConvexConfigured()) return null;
+  return <NewsletterOverlayWithConvex />;
+}
+
+function NewsletterOverlayWithConvex() {
   const configured = isConvexConfigured();
   const { authStatus } = useAuth();
   const state = useQuery(api.newsletter.overlayState, configured && authStatus === "authenticated" ? {} : "skip");

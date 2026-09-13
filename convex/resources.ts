@@ -134,11 +134,18 @@ export const acquire = mutation({
     const user = await ctx.db.get(userId);
     const keys = quotaKeys(user?.timezone, new Date());
 
-    // Ledger with LAZY reset inside this txn (CAP-377 — no midnight cron)
-    let ledger = await ctx.db
+    // Ledger with LAZY reset inside this txn (CAP-377 — no midnight cron).
+    // ONE row per user, found by the by_user index (most recent): keying
+    // the lookup by (user, TODAY) matched nothing on a new day and minted
+    // a fresh row with week usage 1 — the 20/week gate could never fire
+    // (effective cap was 5/day x 7) and the rolledDay/rolledWeek reset
+    // below was dead code. The single-row lookup makes the lazy reset do
+    // its job.
+    const ledger = await ctx.db
       .query("resourceQuotaLedgers")
-      .withIndex("by_user_day", (q: any) => q.eq("userId", userId).eq("dayKey", keys.dayKey))
-      .unique();
+      .withIndex("by_user", (q: any) => q.eq("userId", userId))
+      .order("desc")
+      .first();
     let usedDay = 0;
     let usedWeek = 0;
     if (ledger) {

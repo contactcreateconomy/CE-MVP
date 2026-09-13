@@ -26,6 +26,14 @@ const OPTIONAL_PURPOSES = [
 ] as const;
 
 export function CmpOverlay() {
+  // Pre-hooks guard: this is mounted by the (app) layout for EVERY route —
+  // without it, useQuery/useMutation run (and require a provider) before
+  // the `configured` early-return below can take effect.
+  if (!isConvexConfigured()) return null;
+  return <CmpOverlayWithConvex />;
+}
+
+function CmpOverlayWithConvex() {
   const configured = isConvexConfigured();
   const { authStatus } = useAuth();
   const consent = useQuery(api.consent.myConsent, configured && authStatus === "authenticated" ? {} : "skip");

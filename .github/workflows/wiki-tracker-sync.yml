@@ -21,12 +21,17 @@ jobs:
     steps:
       - name: Append closed slice to Progress-Tracker
         if: github.event_name == 'issues' && github.event.action == 'closed' && contains(github.event.issue.labels.*.name, 'slice')
+        # Untrusted issue metadata (title) reaches the shell ONLY through
+        # env — interpolating ${{ github.event.issue.* }} directly into
+        # run: is expression injection (title text executes as bash with
+        # the wiki-push token in scope).
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
         run: |
           set -euo pipefail
           DATE=$(date -u +%Y-%m-%d)
-          ISSUE="${{ github.event.issue.number }}"
-          TITLE="${{ github.event.issue.title }}"
-          ROW="| ${DATE} | #${ISSUE} ${TITLE} | auto | closed via issue |"
+          ROW="| ${DATE} | #${ISSUE_NUMBER} ${ISSUE_TITLE} | auto | closed via issue |"
           git clone "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git" wiki
           cd wiki
           grep -q "Progress-Tracker.md" <(ls) || { echo "Progress-Tracker.md missing in wiki"; exit 1; }
@@ -35,7 +40,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Progress-Tracker.md
-          git commit -m "Tracker: #${ISSUE} closed (auto)" || exit 0
+          git commit -m "Tracker: #${ISSUE_NUMBER} closed (auto)" || exit 0
           git push
 
       - name: Remind on CHANGELOG (PR merged without changelog change)

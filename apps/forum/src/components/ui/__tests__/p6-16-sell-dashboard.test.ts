@@ -74,7 +74,11 @@ describe("SLICE-P6-16 — CAP-270/239/257 seller actions", () => {
 
   it("edit request: the current stays live — the row re-enters validation, never a destructive rewrite", () => {
     const fn = sellSrc.split("export const requestEdit")[1]?.split("export const")[0] ?? "";
-    expect(fn).toContain('"under_review"');
+    // CAP-239: a NEW pending version row; the product row (status/currentVersionId)
+    // is untouched — the live package stays listed + BUYable until re-validation.
+    expect(fn).toContain('insert("storefrontProductVersions"');
+    expect(fn).not.toContain("db.patch(args.storefrontProductId");
+    expect(fn).toContain('product.status !== "approved"'); // server-side precondition (reject-not-UI-hide)
   });
 
   it("analytics read honors CAP-450: k<5 intent cells suppressed server-side", () => {

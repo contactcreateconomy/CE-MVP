@@ -232,16 +232,20 @@ async function neighborSimilarities(
   embeddingVector: number[],
   categoryId: string | undefined,
   limit: number,
+  ownEmbeddingId: string | null,
 ): Promise<number[]> {
   const results = await ctx.vectorSearch("contentEmbeddings", "by_embedding", {
     vector: embeddingVector,
     limit,
     filter: categoryId ? { eq: categoryId } : undefined,
   });
-  // The candidate's own embedding may be returned — scores are similarities
-  // of OTHER docs; the loader's candidate row is included in results only
-  // if it was indexed before this run (acceptable evidence either way).
-  return results.map((r: any) => r.score);
+  // EXCLUDE the candidate's own embedding row: forge inserts it BEFORE
+  // qualify runs, so self-cosine ~1.0 was the top hit for every candidate
+  // and deterministically failed H-SIM-semantic (0.28) and H-DUP (0.85)
+  // — the whole editorial pipeline fail-closed deadlocked. Similarities
+  // are evidence about OTHER docs by definition.
+  const others = results.filter((r: any) => r._id !== ownEmbeddingId);
+  return others.map((r: any) => r.score);
 }
 
 /**
@@ -267,7 +271,7 @@ export const run = internalAction({
     let dupComparisons: { semantic: number; jaccard: number }[] = [];
     if (loaded.embedding) {
       const categoryId = (loaded.candidate.draft as any)?.categoryId;
-      const scores = await neighborSimilarities(ctx, loaded.embedding.embedding, categoryId, 20);
+      const scores = await neighborSimilarities(ctx, loaded.embedding.embedding, categoryId, 20, loaded.embedding._id ?? null);
       semanticSimilarities = scores;
       dupComparisons = scores.map((s) => ({ semantic: s, jaccard: 0 }));
     }

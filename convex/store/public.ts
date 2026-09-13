@@ -71,8 +71,10 @@ export const getStorefront = query({
         useCase: product.useCase,
         description: product.description,
         // BUY renders ONLY toward /go when the link is locked (the route
-        // re-verifies — this is a display gate, not the money gate)
-        buyHref: link && link.validationState === "approved_locked" ? `/go/${link._id}` : null,
+        // re-verifies — this is a display gate, not the money gate). The
+        // #product-id hash is the recordClick attribution input (derived +
+        // validated server-side at go.recordClick).
+        buyHref: link && link.validationState === "approved_locked" ? `/go/${link._id}#${product._id}` : null,
         network: link?.network ?? null,
       });
     }
@@ -158,8 +160,9 @@ export const getProductDetail = query({
       regions: version?.regions ?? [],
       category: product.category,
       // BUY → /go ONLY; null when not locked (degrades — historical
-      // commercial context preserved, CAP-245)
-      buyHref: locked && link ? `/go/${link._id}` : null,
+      // commercial context preserved, CAP-245). #product-id hash feeds
+      // recordClick's server-derived attribution.
+      buyHref: locked && link ? `/go/${link._id}#${product._id}` : null,
       validationState: link?.validationState ?? null,
       network: link?.network ?? null,
       isAmazon: link?.network === "amazon",

@@ -10,6 +10,8 @@
 
 import { mutation as publicMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
+import { assertAdminPermission } from "./lib/authz";
 import { captureEvent } from "./lib/events";
 import { checkRateLimit } from "./lib/rateLimit";
 
@@ -98,6 +100,17 @@ export const join = publicMutation({
 export const markConverted = publicMutation({
   args: { emailNormalized: v.string(), userId: v.id("users") },
   handler: async (ctx, { emailNormalized, userId }) => {
+    // Operator-bookkeeping gate: this flips arbitrary waitlist entries to
+    // converted and stamps an arbitrary convertedUserId — as a bare public
+    // mutation anyone could enumerate emails and destroy the invite
+    // funnel's conversion state. Admin-only (no live callers exist; the
+    // member-side admission path is CAP-001/002, never this).
+    const operatorId = (await getAuthUserId(ctx)) as any;
+    if (!operatorId) throw new Error("waitlist.markConverted: authentication required");
+    const roles = await assertAdminPermission(ctx);
+    if (!roles.some((r) => r === "administrator")) {
+      throw new Error("waitlist.markConverted: administrator required");
+    }
     const entry = await ctx.db
       .query("waitlistEntries")
       .withIndex("by_emailNormalized", (q: any) => q.eq("emailNormalized", emailNormalized))

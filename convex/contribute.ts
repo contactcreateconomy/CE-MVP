@@ -25,7 +25,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { assertCustomerCapability } from "./lib/authz";
+import { assertCustomerCapability, assertAdminPermission } from "./lib/authz";
 import { writeAudited, newCorrelationId } from "./lib/audit";
 
 async function ugcEnabled(ctx: any): Promise<boolean> {
@@ -159,6 +159,17 @@ export const eraseAttribution = mutation({
   handler: async (ctx, args) => {
     const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
     if (!userId) throw new Error("contribute.erase: authentication required");
+    // Erasure belongs to the uploader (or an operator) — without this any
+    // authenticated member could mass-strip attribution from other
+    // contributors' references.
+    const row = await ctx.db.get(args.referenceId);
+    if (!row) throw new Error("contribute.erase: reference not found");
+    if (row.uploaderUserId !== userId) {
+      const roles = await assertAdminPermission(ctx);
+      if (!roles.some((r) => r === "administrator")) {
+        throw new Error("contribute.erase: not your submission");
+      }
+    }
     await writeAudited(ctx, async (actx) => {
       await actx.db.patch(args.referenceId, { uploaderUserId: undefined }); // detach (nullable by design)
       return {

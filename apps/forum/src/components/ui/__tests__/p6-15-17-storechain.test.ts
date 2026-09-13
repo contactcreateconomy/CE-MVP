@@ -62,7 +62,9 @@ describe("SLICE-P6-16 — the sell dashboard (CAP-233/234/239/270/257/450/525)",
 
   it("CAP-270: owner pause is immediate, no review", () => {
     const fn = (sellSrc.split("export const pauseMyStore")[1] ?? "").split("export const getAnalytics")[0];
-    expect(fn).not.toContain("writeAudited"); // immediate owner action (E5)
+    expect(fn).not.toContain("review queue"); // immediate owner action (E5) — audit ≠ review
+    expect(fn).toContain("writeAudited"); // sibling parity: pause lands an auditLog row
+    expect(fn).toContain("assertCustomerCapability"); // restriction/STOP/standing chain runs
     expect(fn).toContain("paused");
   });
 

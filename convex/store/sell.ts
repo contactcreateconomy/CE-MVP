@@ -47,6 +47,13 @@ export const activate = mutation({
     if (!userId) throw new Error("sell.activate: authentication required");
     await assertCustomerCapability(ctx, "manage_store");
     const store = await myStorefront(ctx, userId);
+    // Admin-imposed states are owner-irreversible (schema l.436 lifecycle):
+    // an owner may re-activate a store THEY paused, never one an operator
+    // suspended/closed — activation from 'suspended' would self-reverse an
+    // integrity action with no operator in the loop.
+    if (store.status === "suspended" || store.status === "closed") {
+      return { activated: false, reason: `store is ${store.status} — operator action required` };
+    }
     const products = await ctx.db
       .query("storefrontProducts")
       .withIndex("by_storefront_status", (q: any) => q.eq("storefrontId", store._id).eq("status", "approved"))
@@ -159,15 +166,54 @@ export const requestEdit = mutation({
     await assertCustomerCapability(ctx, "manage_store");
     const product = await ctx.db.get(args.storefrontProductId);
     if (!product) throw new Error("sell.requestEdit: product not found");
+    // Server-side precondition (the dashboard UI gates the button on
+    // status==='approved' — reject-not-UI-hide): only a LIVE package can
+    // request an edit; drafts/rejected/pending ride their own flows.
+    if (product.status !== "approved") {
+      throw new Error("sell.requestEdit: only an approved (live) product can request an edit");
+    }
     const store = await myStorefront(ctx, userId);
     if (product.storefrontId !== store._id) throw new Error("sell.requestEdit: not your product");
+    const current = product.currentVersionId
+      ? await ctx.db.get(product.currentVersionId)
+      : null;
+    if (!current) throw new Error("sell.requestEdit: no live version to edit");
     await writeAudited(ctx, async (actx) => {
-      // The edit lands as a pending product revision; the CURRENT stays
-      // live until P6-14 re-validates + locks a new version.
-      await actx.db.patch(args.storefrontProductId, { description: args.description, claims: args.claims, status: "under_review" });
+      // The edit lands as a PENDING version row (unapproved — no
+      // approvedByUserId/approvedAt) carrying the proposed copy and the
+      // SAME locked link (requestEdit never changes the destination).
+      // The product row is NOT touched: status stays 'approved' and
+      // currentVersionId keeps pointing at the locked package, so the
+      // storefront card + BUY stay live until P6-14 re-validates and an
+      // operator approves the new version (INV-2 — patching the live
+      // row in place pulled the product from the listing and destroyed
+      // the immutable package).
+      const priorVersions = await actx.db
+        .query("storefrontProductVersions")
+        .withIndex("by_product_version", (q: any) => q.eq("storefrontProductId", args.storefrontProductId))
+        .order("desc")
+        .take(1);
+      const versionNo = (priorVersions[0]?.versionNo ?? 0) + 1;
+      await actx.db.insert("storefrontProductVersions", {
+        storefrontProductId: args.storefrontProductId,
+        versionNo,
+        packageHash: `pending-edit:${Date.now()}`,
+        name: current.name,
+        merchant: current.merchant,
+        image: current.image,
+        description: args.description,
+        claims: args.claims,
+        disclosureClass: current.disclosureClass,
+        ctaLabel: current.ctaLabel,
+        regions: current.regions,
+        category: current.category,
+        storefrontLinkId: current.storefrontLinkId,
+        createdAt: Date.now(),
+      });
       return {
         actorId: userId, action: "store.requestEdit", target: `storefrontProducts:${args.storefrontProductId}`,
-        prev: { description: product.description.slice(0, 80) }, next: { status: "pending (re-validation)" },
+        prev: { version: current.versionNo, description: current.description.slice(0, 80) },
+        next: { version: versionNo, status: "pending (re-validation)" },
         correlationId: newCorrelationId(), reversible: true,
       };
     });
@@ -182,8 +228,23 @@ export const pauseMyStore = mutation({
   handler: async (ctx) => {
     const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
     if (!userId) throw new Error("sell.pause: authentication required");
+    // Sibling parity: every owner store mutation runs the capability guard
+    // (restriction/STOP/standing chain) and lands an auditLog row.
+    await assertCustomerCapability(ctx, "manage_store");
     const store = await myStorefront(ctx, userId);
-    await ctx.db.patch(store._id, { status: "paused" });
+    // Pausing from 'suspended' would soften the admin render ("no longer
+    // available" → owner-paused notice) — admin states are owner-immutable.
+    if (store.status === "suspended" || store.status === "closed") {
+      throw new Error(`sell.pause: store is ${store.status} — operator action required`);
+    }
+    await writeAudited(ctx, async (actx) => {
+      await actx.db.patch(store._id, { status: "paused" });
+      return {
+        actorId: userId, action: "store.pauseMyStore", target: `storefronts:${store._id}`,
+        prev: { status: store.status }, next: { status: "paused" },
+        correlationId: newCorrelationId(), reversible: true,
+      };
+    });
     return { paused: true };
   },
 });

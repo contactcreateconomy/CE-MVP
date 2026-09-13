@@ -17,7 +17,8 @@ describe("CAP-244 — R-COMPOSER gates enforced server-side in createPost", () =
   const helpers = postsSrc.split("CAP-244 — the composer product-tag token")[1]?.split("function validateProjectUrl")[0] ?? "";
 
   it("parses the [[product:<id>]] structured token (the FE-owned format) and dedupes", () => {
-    expect(gate).toContain("productTagIds(args.body)");
+    expect(gate).toContain("productTagIds(body)");
+    expect(gate).toContain("assertProductTagGates"); // shared helper (create AND edit paths)
     expect(helpers).toContain("PRODUCT_TAG_SOURCE");
     expect(helpers).toContain("new Set");
   });

@@ -110,8 +110,11 @@ export const resolveGo = query({
 export const recordClick = mutation({
   args: {
     linkId: v.id("storefrontLinks"),
-    productId: v.id("storefrontProducts"),
-    promoterUserId: v.id("users"),
+    // Attribution is DERIVED server-side (product → storefront → owner):
+    // a client-supplied promoterUserId was client-trust (self-click
+    // laundering + competitor attribution poisoning). productId rides the
+    // BUY href hash (public.ts appends #<productId>).
+    productId: v.optional(v.id("storefrontProducts")),
     isInApp: v.boolean(),
     anonymousSessionId: v.optional(v.string()),
     sourcePostId: v.optional(v.id("posts")),
@@ -134,17 +137,31 @@ export const recordClick = mutation({
       return { clickId: "", proceed: false, reason: "subid_dictionary_absent" };
     }
 
+    // Server-derived attribution (fail-closed — a click that cannot be
+    // attributed cannot proceed, F-31 class): product → its CURRENT
+    // version's link must BE this link → the storefront owner is the
+    // promoter. Nothing here trusts the client.
+    const product = args.productId ? await ctx.db.get(args.productId) : null;
+    if (!product) return { clickId: "", proceed: false, reason: "attribution_unresolvable" };
+    const version = product.currentVersionId ? await ctx.db.get(product.currentVersionId) : null;
+    if (!version || version.storefrontLinkId !== link._id) {
+      return { clickId: "", proceed: false, reason: "attribution_unresolvable" };
+    }
+    const store = await ctx.db.get(product.storefrontId);
+    if (!store) return { clickId: "", proceed: false, reason: "attribution_unresolvable" };
+    const promoterUserId = store.ownerUserId;
+
     const viewerId = (await getAuthUserId(ctx)) as Id<"users"> | null;
     const clickId = `click:${Date.now().toString(36)}:${link._id.slice(-6)}`;
 
     // Self/associated clicks excluded (qualification=excluded — still
     // logged; never a Signal input — that's M12's gate, never here)
-    const isSelf = viewerId === args.promoterUserId;
+    const isSelf = viewerId === promoterUserId;
     try {
       await ctx.db.insert("storefrontClicks", {
         storefrontLinkId: args.linkId,
-        storefrontProductId: args.productId,
-        promoterUserId: args.promoterUserId,
+        storefrontProductId: product._id,
+        promoterUserId,
         sourcePostId: args.sourcePostId,
         sourceSurface: args.sourcePostId ? "post" : "storefront",
         clickId,

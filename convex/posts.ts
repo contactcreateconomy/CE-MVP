@@ -80,6 +80,51 @@ function computeVerdictScore(dimensionScores: Record<string, number | "not_appli
 // ── Extension data validators (per post type) ──
 const extensionData = v.optional(v.any()); // typed per-extension in the handler
 
+/** CAP-244 (R-COMPOSER) shared gate — runs on EVERY body write (create AND
+ *  edit): updatePost re-exposes the same surface, so the register's gates
+ *  (own approved products only, ≤5, active storefront CAP-233, ≤50%
+ *  commercial density rolling 30d) live HERE, not inline in one caller.
+ *  `publishing` scopes only the density check (drafts don't consume the
+ *  rolling window; edits to already-published posts re-check it). */
+async function assertProductTagGates(ctx: any, userId: any, body: string, publishing: boolean): Promise<void> {
+  const taggedIds = productTagIds(body);
+  if (taggedIds.length === 0) return;
+  if (taggedIds.length > 5) {
+    throw new Error("R-COMPOSER: at most 5 product tags per post (CAP-244)");
+  }
+  const store = await ctx.db
+    .query("storefronts")
+    .withIndex("by_owner", (q: any) => q.eq("ownerUserId", userId))
+    .unique();
+  if (!store || store.status !== "active") {
+    throw new Error("R-COMPOSER: product tags require an active storefront (CAP-233)");
+  }
+  for (const pid of taggedIds) {
+    const product: any = await ctx.db.get(pid as any);
+    if (!product || product.storefrontId !== store._id || product.status !== "approved") {
+      throw new Error(`R-COMPOSER: product ${pid} is not one of your approved products`);
+    }
+  }
+  if (publishing) {
+    // ≤50% commercial density rolling 30d — the author's PUBLISHED posts
+    // in the window (drafts never pad the denominator), counting those
+    // carrying product tags.
+    const since = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const recent = await ctx.db
+      .query("posts")
+      .withIndex("by_author_type_authorUserId", (q: any) =>
+        q.eq("authorType", "user").eq("authorUserId", userId))
+      .order("desc")
+      .take(50);
+    const inWindow = recent.filter((p: any) =>
+      p.lifecycleStatus === "published" && (p.publishedAt ?? p.createdAt) >= since);
+    const commercial = inWindow.filter((p: any) => hasProductTag(p.body)).length;
+    if ((commercial + 1) / (inWindow.length + 1) > 0.5) {
+      throw new Error("R-COMPOSER: ≤50% commercial density rolling 30d (CAP-244)");
+    }
+  }
+}
+
 export const createPost = mutation({
   args: {
     type: v.union(
@@ -139,44 +184,11 @@ export const createPost = mutation({
     // ── CAP-244 (R-COMPOSER) — the composer product-tag gate, wired at the
     // B2 canonical cutover (2026-09-12). The [[product:<id>]] structured
     // token is the FE-owned format (composer-product-block docblock); the
-    // register's gates are enforced HERE server-side: own approved products
-    // only, ≤5, ≤50% commercial density rolling 30d. No raw URL ever rides
-    // a tag (R-URL above already rejects body URLs).
-    const taggedIds = productTagIds(args.body);
-    if (taggedIds.length > 0) {
-      if (taggedIds.length > 5) {
-        throw new Error("R-COMPOSER: at most 5 product tags per post (CAP-244)");
-      }
-      const store = await ctx.db
-        .query("storefronts")
-        .withIndex("by_owner", (q: any) => q.eq("ownerUserId", userId))
-        .unique();
-      if (!store || store.status !== "active") {
-        throw new Error("R-COMPOSER: product tags require an active storefront (CAP-233)");
-      }
-      for (const pid of taggedIds) {
-        const product: any = await ctx.db.get(pid as any);
-        if (!product || product.storefrontId !== store._id || product.status !== "approved") {
-          throw new Error(`R-COMPOSER: product ${pid} is not one of your approved products`);
-        }
-      }
-      if (publishing) {
-        // ≤50% commercial density rolling 30d — the author's published
-        // posts in the window, counting those carrying product tags.
-        const since = Date.now() - 30 * 24 * 60 * 60 * 1000;
-        const recent = await ctx.db
-          .query("posts")
-          .withIndex("by_author_type_authorUserId", (q: any) =>
-            q.eq("authorType", "user").eq("authorUserId", userId))
-          .order("desc")
-          .take(50);
-        const inWindow = recent.filter((p: any) => (p.publishedAt ?? p.createdAt) >= since);
-        const commercial = inWindow.filter((p: any) => hasProductTag(p.body)).length;
-        if ((commercial + 1) / (inWindow.length + 1) > 0.5) {
-          throw new Error("R-COMPOSER: ≤50% commercial density rolling 30d (CAP-244)");
-        }
-      }
-    }
+    // register's gates are enforced HERE server-side (shared with the edit
+    // path via assertProductTagGates — edits re-expose the same surface):
+    // own approved products only, ≤5, ≤50% commercial density rolling 30d.
+    // No raw URL ever rides a tag (R-URL above already rejects body URLs).
+    await assertProductTagGates(ctx, userId, args.body, publishing);
 
     if (publishing) {
       // CAP-152 — "N posts/hour, tier-independent. O(1) rolling counter,
@@ -405,6 +417,12 @@ export const updatePost = mutation({
     // separately below.
     checkNoUrls(body);
     if (post.type === "showcase" && args.projectUrl !== undefined) validateProjectUrl(args.projectUrl);
+
+    // CAP-244 on the update path — edits re-expose the composer surface:
+    // the same product-tag gates as createPost (tag ownership, ≤5, active
+    // storefront; density re-checked when the post is already published —
+    // pre-B2 edits could inject arbitrary [[product:<id>]] tokens).
+    await assertProductTagGates(ctx, actorId, body, post.lifecycleStatus === "published");
 
     return await writeAudited(ctx, async (actx) => {
       const latestRev = await actx.db

@@ -52,8 +52,20 @@ export const searchQuery = query({
     const term = args.q.trim().toLowerCase();
     if (term.length < 2) return { posts: [], tools: [], people: [] };
 
-    // Posts: title/body keyword; moderation-hidden/removed excluded
-    const posts = await ctx.db.query("posts").withIndex("by_type_lifecycleStatus", (q: any) => q.eq("lifecycleStatus", "published")).take(200);
+    // Posts: title/body keyword; moderation-hidden/removed excluded.
+    // by_type_lifecycleStatus is ["type","lifecycleStatus"] — Convex index
+    // ranges must constrain a prefix, so walk the ACTIVE registry types and
+    // constrain both fields (constraining lifecycleStatus alone throws at
+    // runtime; the (q:any) cast hides it from typecheck).
+    const activeTypes = await ctx.db.query("postTypeConfig").filter((q: any) => q.eq(q.field("state"), "active")).take(12);
+    const posts: any[] = [];
+    for (const tc of activeTypes) {
+      const rows = await ctx.db
+        .query("posts")
+        .withIndex("by_type_lifecycleStatus", (q: any) => q.eq("type", tc.type).eq("lifecycleStatus", "published"))
+        .take(200);
+      posts.push(...rows);
+    }
     const matchedPosts = posts
       .filter((p: any) => p.moderationStatus === "passed" || p.moderationStatus === "not_required")
       .filter((p: any) => p.title.toLowerCase().includes(term) || p.body.toLowerCase().includes(term))

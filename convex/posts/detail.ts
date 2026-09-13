@@ -75,12 +75,30 @@ async function compareRows(ctx: any, toolIds: string[]): Promise<any[]> {
 export const getDetail = query({
   args: { slug: v.string() },
   handler: async (ctx, args) => {
-    const seo = await ctx.db
+    let seo = await ctx.db
       .query("postSeoMeta")
       .withIndex("by_slug", (q: any) => q.eq("slug", args.slug))
       .unique();
-    if (!seo) return null;
-    const post = await ctx.db.get(seo.postId);
+    let post: any = null;
+    if (seo) {
+      post = await ctx.db.get(seo.postId);
+    } else {
+      // B2 cutover fallback: the feed/search/vibing surfaces link by the
+      // raw posts._id (member posts only get a postSeoMeta slug at
+      // editorial publish), so the [slug] route param may carry the id.
+      // ctx.db.get throws on a non-id string — treat that as no match.
+      try {
+        post = await ctx.db.get(args.slug as Id<"posts">);
+        if (post) {
+          seo = (await ctx.db
+            .query("postSeoMeta")
+            .withIndex("by_postId", (q: any) => q.eq("postId", post._id))
+            .unique()) ?? null;
+        }
+      } catch {
+        post = null;
+      }
+    }
     if (!post) return null;
     // Public + published/archived only (held/rejected/private/unlisted never
     // resolve a live detail — they render the SSR shell with noindex per
@@ -151,7 +169,9 @@ export const getDetail = query({
         publishedAt: post.publishedAt ?? null, toolIds: post.toolIds,
         archived: post.lifecycleStatus === "archived", // tombstone render (CAP-089)
       },
-      seo: { slug: seo.slug, seoTitle: seo.seoTitle, seoDescription: seo.seoDescription },
+      seo: seo
+        ? { slug: seo.slug, seoTitle: seo.seoTitle, seoDescription: seo.seoDescription }
+        : { slug: post._id, seoTitle: post.title, seoDescription: null }, // id-linked member post: no SEO row yet
       extension,
       threadContext: { type: post.type, mechanic, userVote },
       compare,
