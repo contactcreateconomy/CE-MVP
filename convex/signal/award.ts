@@ -33,6 +33,7 @@ import { internalMutation } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { snapshotLegitimacy } from "../jobs/legitimacy";
+import { currentSeasonTx } from "./promoteDemote";
 
 // ── Sealed constants (never config-exposed, never returned; H5) ──
 export const SEALED_EVENT_WEIGHTS = {
@@ -43,6 +44,11 @@ const PROVISIONAL_SHARE = 0.8; // CAP-273 "@80%"
 const CONFIDENCE_K = 10; // CAP-280 saturating volume constant (calibration_pending.v1)
 const PER_ACTOR_TARGET_CAP = 3; // CAP-274 per-(actor,target) cap per window (unnamed → flagged default)
 const CAP_WINDOW_MS = 7 * 24 * 3_600_000;
+/** CAP-285 fractional weight for rawEvent-level suspicion booleans
+ *  (suspectedAutomation/suspectedCoordination carry no stored factor —
+ *  integrityFlags own the per-actor number). Register-unnamed → flagged
+ *  default, calibration_pending.v1. */
+const SUSPECTED_EVENT_DAMP = 0.4;
 
 /** The outcome event families the sweep consumes. Map: eventType →
  *  weight family. `completion` (2.5) has no emitter at MVP-1 — absent
@@ -83,6 +89,19 @@ export function computeProvisional(input: {
   return { confidenceFactor, signalValue };
 }
 
+/** CAP-285 — the effective fractional weight (pure). The actor-level damp
+ *  disposition's own dampFactor (schema l.341) binds when present — the
+ *  detector owns the number; otherwise a suspected rawEvent takes the
+ *  flagged default. Never 1 when suspicion exists: suspected events must
+ *  actually earn fractional Signal, not full Signal. */
+export function effectiveDamp(
+  gate: { suspected: boolean; dampFactor: number },
+  eventSuspected: boolean,
+): number {
+  if (gate.dampFactor < 1) return gate.dampFactor; // actor-level flag wins (strongest binds)
+  return eventSuspected ? SUSPECTED_EVENT_DAMP : 1;
+}
+
 /** Integrity + dedupe + per-cap gate (CAP-274). Returns null = no award.
  *  `networkAttested` (verified conversions) skips the actor-class gates —
  *  the network's postback/subid evidence IS the qualification; seller-side
@@ -106,6 +125,8 @@ export async function passesOutcomeGate(
   if (dup) return null;
   // integrity: damp/neutralize dispositions on the ACTOR (recipient
   // neutrality — the awardee is never penalized for inbound suspicion)
+  let dampFactor = 1;
+  let suspected = false;
   if (input.actorId) {
     const flags = await ctx.db
       .query("integrityFlags")
@@ -116,6 +137,15 @@ export async function passesOutcomeGate(
       .withIndex("by_actor_disposition", (q: any) => q.eq("actorUserId", input.actorId).eq("disposition", "neutralize"))
       .first();
     if (neutralized) return null; // neutralized actors' events stop crediting
+    // CAP-285 (quoted): "Suspected event shadow-damped (still ticks visible
+    // counter, fractional weight)" — an open damp disposition on the ACTOR
+    // damps every event they feed by the flag's own dampFactor (schema
+    // l.341); the strongest open flag binds. The award still ticks (never
+    // dropped), the actor is never told (no gaming gradient).
+    if (flags.length > 0) {
+      suspected = true;
+      dampFactor = Math.min(...flags.map((f: any) => f.dampFactor));
+    }
     const capWindowStart = Date.now() - CAP_WINDOW_MS;
     const actorLedger = await ctx.db
       .query("signalLedger")
@@ -127,7 +157,7 @@ export async function passesOutcomeGate(
     if (capped.length >= PER_ACTOR_TARGET_CAP) return null;
   }
   // network-attested (no human actor): dedupe-only pass
-  return { suspected: false, dampFactor: 1 };
+  return { suspected, dampFactor };
 }
 
 /** The System award entry (plain logic — thin wrappers avoid the
@@ -176,7 +206,7 @@ export const sweep = internalMutation({
   args: {},
   returns: v.object({ awarded: v.number(), skipped: v.number() }),
   handler: async (ctx) => {
-    const season = await ctx.db.query("signalSeasons").withIndex("by_seasonNumber", (q: any) => q.eq("seasonNumber", 1)).unique();
+    const season = await currentSeasonTx(ctx); // derived — never a hardcoded season number
     if (!season) return { awarded: 0, skipped: 0 }; // no season = no ledger (fail-closed)
 
     const since = Date.now() - 24 * 3_600_000;
@@ -201,8 +231,11 @@ export const sweep = internalMutation({
           actorIsStaffOrPersona: Boolean(event.isAiPersona) || Boolean((event as any).reactorIsStaff),
         });
         if (!gate) { skipped += 1; continue; }
-        // CAP-285: rawEvent-level suspicion also shadow-damps
-        const suspected = gate.suspected || Boolean(event.suspectedAutomation) || Boolean(event.suspectedCoordination);
+        // CAP-285: rawEvent-level suspicion also shadow-damps (fractional
+        // weight — full Signal for a suspected event was the dead-factor bug)
+        const eventSuspected = Boolean(event.suspectedAutomation) || Boolean(event.suspectedCoordination);
+        const suspected = gate.suspected || eventSuspected;
+        const dampFactor = effectiveDamp(gate, eventSuspected);
         await awardFromOutcomeTx(ctx, {
           outcomeType: eventType,
           weightFamily: family,
@@ -212,7 +245,7 @@ export const sweep = internalMutation({
           contributionType: "post",
           grossValue: SEALED_EVENT_WEIGHTS[family],
           suspected,
-          dampFactor: gate.dampFactor,
+          dampFactor,
         }, season._id);
         awarded += 1;
       }

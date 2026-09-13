@@ -27,6 +27,7 @@ import { mutation, query } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireUser } from "../lib/authz";
 import { writeAudited, newCorrelationId } from "../lib/audit";
 import { checkRateLimit } from "../lib/rateLimit";
 
@@ -140,8 +141,7 @@ export const legalIntakeAuthenticated = mutation({
   },
   returns: v.object({ intakeId: v.id("legalIntake"), status: v.string() }),
   handler: async (ctx, args) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("legal.intake: authentication required");
+    const userId = await requireUser(ctx, "legal.intake");
 
     let ackDueAt: number | undefined;
     let actionDueAt: number | undefined;
@@ -210,8 +210,7 @@ export const counterNotice = mutation({
   },
   returns: v.object({ intakeId: v.id("legalIntake"), status: v.string() }),
   handler: async (ctx, args) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("counter.notice: authentication required");
+    const userId = await requireUser(ctx, "counter.notice");
     await checkRateLimit(ctx, "legal.dmca.email", { kind: "email_hash", value: args.contact.toLowerCase() });
 
     const faciallyComplete =
@@ -260,8 +259,7 @@ export const erasureSubmit = mutation({
   args: { confirmation: v.string() },
   returns: v.object({ intakeId: v.id("legalIntake"), outcome: v.string() }),
   handler: async (ctx, args) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("erasure.submit: authentication required");
+    const userId = await requireUser(ctx, "erasure.submit");
     if (args.confirmation !== "ERASE MY DATA") {
       throw new Error('erasure.submit: type "ERASE MY DATA" to confirm');
     }

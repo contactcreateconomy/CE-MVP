@@ -4,6 +4,7 @@ import Google from "@auth/core/providers/google";
 import { Password } from "@convex-dev/auth/providers/Password";
 import { Email } from "@convex-dev/auth/providers/Email";
 import { convexAuth } from "@convex-dev/auth/server";
+import { normalizeHandle } from "./lib/handle";
 
 /** Convex Dashboard paste can include trailing newlines; GitHub rejects client_id with %0A. */
 function oauthEnv(idKey: string, secretKey: string) {
@@ -39,17 +40,12 @@ function parseAuthRedirectOrigins(): Set<string> {
 }
 
 function deriveHandle(email: string, name?: string): string {
-  if (name?.trim()) {
-    const h = name
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
-    if (h) return h.slice(0, 40);
-  }
-  const local = email.split("@")[0] ?? "user";
-  const fromEmail = local.toLowerCase().replace(/[^a-z0-9._-]/g, "-").slice(0, 40);
-  return fromEmail || "user";
+  // CAP-474 discipline via lib/handle (the same normalizer the username
+  // reserve path uses) — only the SOURCE differs: name first, email
+  // local-part fallback. Previously a cruder divergent regex lived here
+  // ("José" → `jos-` handle vs `jose` username).
+  if (name?.trim()) return normalizeHandle(name.trim());
+  return normalizeHandle(email.split("@")[0] ?? "user");
 }
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({

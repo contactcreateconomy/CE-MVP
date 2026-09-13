@@ -29,6 +29,7 @@ import { internalMutation, mutation } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { writeAudited, newCorrelationId } from "../lib/audit";
+import { currentSeasonTx } from "../signal/promoteDemote";
 
 const PROJECTION_MIN_ELIGIBLE = 25; // CAP-294 quoted floor
 
@@ -38,7 +39,7 @@ export const rollup = internalMutation({
   args: {},
   returns: v.object({ events: v.number(), projected: v.number() }),
   handler: async (ctx) => {
-    const season = await ctx.db.query("signalSeasons").withIndex("by_seasonNumber", (q: any) => q.eq("seasonNumber", 1)).unique();
+    const season = await currentSeasonTx(ctx); // derived — never a hardcoded season number
     if (!season) return { events: 0, projected: 0 };
     const since = Date.now() - 30 * 24 * 3_600_000;
 

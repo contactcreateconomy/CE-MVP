@@ -32,7 +32,7 @@ import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { assertCustomerCapability } from "./lib/authz";
+import { assertCustomerCapability, requireUser } from "./lib/authz";
 import { captureEvent } from "./lib/events";
 import { checkCommentEligibility } from "./eligibility";
 import { appendActivity } from "./activity";
@@ -120,8 +120,7 @@ export const toggleValuable = mutation({
   args: { commentId: v.id("comments") },
   returns: v.object({ reacted: v.boolean() }),
   handler: async (ctx, args) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("reactions.valuable: authentication required");
+    const userId = await requireUser(ctx, "reactions.valuable");
     const comment = await loadComment(ctx, args.commentId);
     await assertReactorEligibility(ctx, userId, comment);
 
@@ -189,8 +188,7 @@ export const toggleNegative = mutation({
   },
   returns: v.object({ reacted: v.boolean() }),
   handler: async (ctx, args) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("reactions.negative: authentication required");
+    const userId = await requireUser(ctx, "reactions.negative");
     const comment = await loadComment(ctx, args.commentId);
     await assertReactorEligibility(ctx, userId, comment);
 
@@ -384,8 +382,7 @@ export const markReadState = mutation({
   args: { postId: v.id("posts"), lastReadCommentId: v.optional(v.id("comments")) },
   returns: v.object({ marked: v.boolean() }),
   handler: async (ctx, args) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("readState.mark: authentication required");
+    const userId = await requireUser(ctx, "readState.mark");
 
     const stats = await ctx.db.query("threadStats").withIndex("by_postId", (q: any) => q.eq("postId", args.postId)).unique();
     const now = Date.now();

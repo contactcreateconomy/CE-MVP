@@ -141,6 +141,31 @@ describe("SLICE-P7E-03 — award path (CAP-272/273/274/275/280/285)", () => {
     expect(out.signalValue).toBeGreaterThan(0);
     expect(out.signalValue).toBeLessThan(10 * 0.8);
   });
+  it("CAP-285 the damp factor is APPLIED — suspected automation never earns full Signal", async () => {
+    const { effectiveDamp } = await import("../../../../../../convex/signal/award");
+    // clean actor + clean event → full weight
+    expect(effectiveDamp({ suspected: false, dampFactor: 1 }, false)).toBe(1);
+    // actor-level damp disposition: the flag's own factor binds (strongest wins)
+    expect(effectiveDamp({ suspected: true, dampFactor: 0.25 }, true)).toBe(0.25);
+    expect(effectiveDamp({ suspected: true, dampFactor: 0.25 }, false)).toBe(0.25);
+    // event-level suspicion with no actor flag → fractional default, NOT 1
+    const eventDamp = effectiveDamp({ suspected: false, dampFactor: 1 }, true);
+    expect(eventDamp).toBeGreaterThan(0);
+    expect(eventDamp).toBeLessThan(1);
+  });
+  it("CAP-285 the gate reads the actor's damp dispositions (the flag's dampFactor, schema l.341)", () => {
+    const fn = awardSrc.split("passesOutcomeGate")[1];
+    expect(fn).toContain('eq("disposition", "damp")');
+    // the fetched flags feed the returned factor — not a dead fetch
+    expect(fn).toContain("Math.min(...flags.map((f: any) => f.dampFactor))");
+    // neutralize still hard-stops before damp applies
+    expect(fn.indexOf("if (neutralized) return null")).toBeLessThan(fn.indexOf("Math.min(...flags.map"));
+  });
+  it("event-level suspicion booleans reach the award with a fractional factor", () => {
+    const fn = awardSrc.split("1. Event-driven outcome families")[1].split("// 2.")[0];
+    expect(fn).toContain("eventSuspected");
+    expect(fn).toContain("effectiveDamp(gate, eventSuspected)");
+  });
   it("CAP-275 CTA gate: only settled qualified clicks credit (dwell/once-per-window live in the P6-17/P6-18 machinery)", () => {
     const branch = awardSrc.split("CAP-275 qualified-CTA outcomes")[1].split("// 3.")[0];
     expect(branch).toContain('click.qualification !== "qualified"');

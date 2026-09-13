@@ -10,10 +10,11 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { ArrowRight, BookOpen, MessageSquare } from "lucide-react";
 
 import { api } from "../../../../../../convex/_generated/api";
+import { isConvexConfigured } from "@cemvp/convex-client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Banner } from "@/components/ui/banner";
@@ -25,8 +26,12 @@ export default function LandingPage() {
   // SLICE-P7T-12 (F-14 close): the waitlist-mode CTA delegates DIRECTLY to
   // CAP-014 waitlist.join — the same public mutation /waitlist calls; no
   // second waitlist surface, no users/role write (CAP-014 invariant).
+  const joinWaitlist = useMutation(api.waitlist.join);
   const [wlEmail, setWlEmail] = useState("");
   const [wlNote, setWlNote] = useState<string | null>(null);
+  // Reject-not-UI-hide: server rejections surface verbatim (the note string
+  // is reserved for the two success outcomes).
+  const [wlError, setWlError] = useState<string | null>(null);
   const [wlBusy, setWlBusy] = useState(false);
 
   // CAP-465: UTM capture — first-touch-once, canonical URL strips UTMs
@@ -105,15 +110,26 @@ export default function LandingPage() {
                   size="lg"
                   disabled={wlBusy || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(wlEmail)}
                   onClick={() => {
+                    if (!isConvexConfigured()) {
+                      setWlError("Convex is not configured.");
+                      return;
+                    }
                     setWlBusy(true);
-                    void fetch("/api/convex/waitlist.join", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ email: wlEmail.trim() }),
-                    })
-                      .then((r) => r.json())
-                      .then((r) => setWlNote(r.alreadyOnList ? "You're already on the list." : "You're on the list — we'll be in touch."))
-                      .catch(() => setWlNote("Could not join right now — try the waitlist page."))
+                    setWlError(null);
+                    setWlNote(null);
+                    void joinWaitlist({ email: wlEmail.trim().toLowerCase() })
+                      .then((r) =>
+                        setWlNote(
+                          r.alreadyJoined
+                            ? "You're already on the list."
+                            : "You're on the list — we'll be in touch.",
+                        ),
+                      )
+                      .catch((err: unknown) => {
+                        // Verbatim (reject-not-UI-hide) — CAP-015 rate
+                        // rejections included.
+                        setWlError(err instanceof Error ? err.message : String(err));
+                      })
                       .finally(() => setWlBusy(false));
                   }}
                 >
@@ -122,6 +138,11 @@ export default function LandingPage() {
                 </Button>
               </div>
               {wlNote ? <p className="text-xs text-text-muted">{wlNote}</p> : null}
+              {wlError ? (
+                <p className="text-xs text-(--feedback-error)" role="alert">
+                  {wlError}
+                </p>
+              ) : null}
             </div>
           ) : (
             <Button size="lg" className="w-full max-w-xs" onClick={() => window.location.href = cta.href}>

@@ -27,6 +27,7 @@ import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireUser } from "./lib/authz";
 import { reserveHandleTx } from "./profile/page";
 
 /* ── interestTaxonomy derivation (bible l.64: "derived from the post-type
@@ -79,8 +80,7 @@ export function defaultConsentGranted(purpose: ConsentPurpose): boolean {
 }
 
 async function requireVerifiedMember(ctx: any): Promise<{ userId: Id<"users">; user: any }> {
-  const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-  if (!userId) throw new Error("setup: authentication required");
+  const userId = await requireUser(ctx, "setup");
   const user = await ctx.db.get(userId);
   if (!user) throw new Error("setup: user not found");
   // Verified precondition (CAP-140's M1 half): email verified + active +
@@ -334,8 +334,7 @@ export const consentRecord = mutation({
   },
   returns: v.object({ recorded: v.boolean() }),
   handler: async (ctx, args) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("profile.consentRecord: authentication required");
+    const userId = await requireUser(ctx, "profile.consentRecord");
     const now = Date.now();
     await ctx.db.insert("userConsentRecords", {
       userId,
@@ -453,6 +452,9 @@ export const mobileSendOtp = action({
   args: { mobileNumber: v.string() },
   returns: v.object({ sent: v.boolean(), notConfigured: v.optional(v.boolean()) }),
   handler: async (ctx, args) => {
+    // actions carry ActionCtx, which the shared requireUser(GenericCtx) helper
+    // does not accept — this site keeps the hand-rolled guard (listed in the
+    // consolidation report).
     const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
     if (!userId) throw new Error("mobile.sendOtp: authentication required");
     const config = twilioConfig();
@@ -471,6 +473,9 @@ export const mobileVerify = action({
   args: { mobileNumber: v.string(), code: v.string() },
   returns: v.object({ verified: v.boolean(), notConfigured: v.optional(v.boolean()) }),
   handler: async (ctx, args) => {
+    // actions carry ActionCtx, which the shared requireUser(GenericCtx) helper
+    // does not accept — this site keeps the hand-rolled guard (listed in the
+    // consolidation report).
     const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
     if (!userId) throw new Error("mobile.verify: authentication required");
     const config = twilioConfig();

@@ -13,7 +13,7 @@
  * Phase 7 (CAP-132/133).
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 
 import { Badge } from "@/components/ui/badge";
@@ -82,11 +82,22 @@ export function CanonicalThread({ postId, archived }: { postId: string; archived
     setCursor(null);
   }, [sortMode, postId]);
 
+  // Subscription re-pushes for the ALREADY-appended cursor REPLACE the tail
+  // page instead of appending it again — a naive unconditional append
+  // duplicated every comment on each reactive push once a cursor was set.
+  const appendedCursorRef = useRef<string | null | undefined>(null);
   useEffect(() => {
     if (!listPage) return;
-    setPages((prev) => (cursor === null ? [listPage.page] : [...prev, listPage.page]));
+    const isNewFetch = appendedCursorRef.current !== cursor;
+    appendedCursorRef.current = cursor;
+    setPages((prev) => {
+      if (cursor === null) return [listPage.page];
+      if (!isNewFetch && prev.length > 0) return [...prev.slice(0, -1), listPage.page];
+      const seen = new Set(prev.flat().map((c) => c.id));
+      return [...prev, listPage.page.filter((c) => !seen.has(c.id))];
+    });
     setLoadingMore(false);
-  }, [listPage]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [listPage, cursor]);
 
   const comments = useMemo(() => pages.flat(), [pages]);
 

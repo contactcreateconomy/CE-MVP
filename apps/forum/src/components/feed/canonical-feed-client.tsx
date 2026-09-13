@@ -11,7 +11,7 @@
  * route (00-TRANSITION: canonical replaces; demo data disposable).
  */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 
 import { Badge } from "@/components/ui/badge";
@@ -25,14 +25,16 @@ type SortMode = "hot" | "top" | "new" | "fav";
 
 const SORT_LABELS: Record<SortMode, string> = { hot: "Hot", top: "Top", new: "New", fav: "Fav" };
 
-export function CanonicalFeedClient() {
+export function CanonicalFeedClient({ initialTypeFilter = null }: { initialTypeFilter?: string | null }) {
   const configured = isConvexConfigured();
   const { authStatus } = useAuth();
   const member = authStatus === "authenticated";
   // CAP-183 (quoted): "Anonymous lands on Hot."
   const [sort, setSort] = useState<SortMode>("hot");
   const effectiveSort = sort === "fav" && !member ? "hot" : sort;
-  const [typeFilter, setTypeFilter] = useState<string | null>(null);
+  // /feed?category=<post-type> (left-sidebar + discover links): the URL
+  // param is the initial type filter — same mechanism as the type nav.
+  const [typeFilter, setTypeFilter] = useState<string | null>(initialTypeFilter);
   const [pages, setPages] = useState<any[][]>([]);
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -49,7 +51,31 @@ export function CanonicalFeedClient() {
   const cardAction = useMutation(api.feed.cardAction);
   const unhide = useMutation(api.feed.unhide);
 
-  useEffect1(page, cursor, setPages, setLoadingMore);
+  // Re-navigation to a different ?category= resets the walk exactly like a
+  // type-nav click (the param is the type filter's URL entry point).
+  useEffect(() => {
+    setTypeFilter(initialTypeFilter);
+    setPages([]);
+    setCursor(undefined);
+  }, [initialTypeFilter]);
+
+  // Page accumulation (cursor walk; sort/type/category resets clear it).
+  // Subscription re-pushes for the ALREADY-appended cursor REPLACE the tail
+  // page instead of appending it again — a naive unconditional append
+  // duplicated every card on each reactive push once a cursor was set.
+  const appendedCursorRef = useRef<number | undefined | null>(null);
+  useEffect(() => {
+    if (!page) return;
+    const isNewFetch = appendedCursorRef.current !== cursor;
+    appendedCursorRef.current = cursor;
+    setPages((prev) => {
+      if (cursor === undefined) return [page.page];
+      if (!isNewFetch && prev.length > 0) return [...prev.slice(0, -1), page.page];
+      const seen = new Set(prev.flat().map((c: any) => c.postId));
+      return [...prev, page.page.filter((c: any) => !seen.has(c.postId))];
+    });
+    setLoadingMore(false);
+  }, [page, cursor]);
   const cards = useMemo(() => pages.flat().filter((c) => !hiddenIds.has(c.postId)), [pages, hiddenIds]);
 
   if (!configured) return null;
@@ -311,14 +337,4 @@ function FeedCard({
       </Card>
     </li>
   );
-}
-
-/** Page-accumulation effect (cursor walk; sort/type resets clear it). */
-import { useEffect } from "react";
-function useEffect1(page: any, cursor: number | undefined, setPages: any, setLoadingMore: any) {
-  useEffect(() => {
-    if (!page) return;
-    setPages((prev: any[]) => (cursor === undefined ? [page.page] : [...prev, page.page]));
-    setLoadingMore(false);
-  }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
 }

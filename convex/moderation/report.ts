@@ -64,6 +64,16 @@ export const submit = mutation({
     const reasonCode = REASON_BY_FAMILY[args.policyFamily];
     const dedupeKey = `${args.commentId}:${args.policyFamily}:${userId}`;
 
+    // dedupeKey enforced on WRITE (bible l.239/l.240): one intake row per
+    // reporter per target+policyFamily — a repeat is idempotent (returns
+    // the existing case), never a second row and never a second count.
+    // The rate limits above still burn, so repeat-spam stays metered.
+    const dup = await ctx.db
+      .query("reports")
+      .withIndex("by_dedupe", (q: any) => q.eq("dedupeKey", dedupeKey))
+      .first();
+    if (dup?.caseId) return { caseId: dup.caseId, alreadyReported: true };
+
     // One open case per target+policyFamily+window (l.239 + CAP-324) —
     // severity by family; safety_illegal = s0 fastest SLA (quoted)
     const severity =
@@ -74,6 +84,7 @@ export const submit = mutation({
 
     let caseRow = await findOpenCase(ctx, "comment", args.commentId, args.policyFamily);
     const alreadyReported = Boolean(caseRow);
+    let reporterBase: number;
     if (!caseRow) {
       const caseId = await openCaseDeduped(ctx, {
         targetType: "comment",
@@ -83,9 +94,11 @@ export const submit = mutation({
         severity,
         reasonCode,
       });
+      await ctx.db.patch(caseId, { reporterClusterCount: 1 });
       caseRow = { _id: caseId };
-      // The reporter count is DISTINCT members, not report volume
-      await ctx.db.patch(caseId, { reporterCountDistinct: 1, reporterClusterCount: 1 });
+      reporterBase = 0; // openCaseDeduped inserts the case at 0
+    } else {
+      reporterBase = (caseRow as any).reporterCountDistinct ?? 0;
     }
 
     // The immutable intake row (bible l.240)
@@ -101,6 +114,11 @@ export const submit = mutation({
       status: "open",
       createdAt: Date.now(),
     });
+    // reporterCountDistinct = DISTINCT members on the case, never report
+    // volume (bible l.238). The dedupeKey gate above guarantees this
+    // reporter is NEW for the target+family, so the +1 is exactly the
+    // distinct increment — previously frozen at 1 after the first report.
+    await ctx.db.patch(caseRow._id, { reporterCountDistinct: reporterBase + 1 });
     return { caseId: caseRow._id, alreadyReported };
   },
 });

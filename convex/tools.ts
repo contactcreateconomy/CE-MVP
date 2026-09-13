@@ -561,23 +561,128 @@ export const recomputeAggregate = internalMutation({
 });
 
 /**
+ * CAP-116 drift-check machinery — the audit actions that can move a tool's
+ * community aggregate (every aggregate-affecting write goes through
+ * writeAudited, so auditLog by_action_createdAt IS the change-feed for the
+ * incremental pass below).
+ */
+const DRIFT_SOURCE_ACTIONS = [
+  "toolRatings.submit",
+  "toolRatings.update",
+  "toolRatings.withdraw",
+  "toolRatings.moderate",
+] as const;
+
+/** Job-state watermarks — systemConfig System-writer rows (same precedent
+ * as admin/homeAlertWriters' ingest.throttle). Deliberately NOT
+ * config-registry keys: getConfigValue throws on unregistered keys, and
+ * these are cron plumbing, not an admin config surface. */
+const DRIFT_WATERMARK_KEY = "tools.ratings.driftCheck.auditSeenAt";
+const DRIFT_FULL_PASS_KEY = "tools.ratings.driftCheck.lastFullPassAt";
+/** Cushion against the commit-vs-createdAt race: a mutation that began
+ * just before this pass and committed just after it can carry a createdAt
+ * below the new watermark. Re-scanning the trailing 10 minutes of audit
+ * rows closes it; re-verifying a tool twice is idempotent. */
+const DRIFT_WATERMARK_OVERLAP_MS = 10 * 60_000;
+/** Full-pass cadence (semantics-drift backstop, above). */
+const DRIFT_FULL_PASS_INTERVAL_MS = 24 * 60 * 60_000;
+/** Audit-read bound per source action. If a burst saturates it the
+ * watermark does NOT advance, so the next hourly run re-scans the same
+ * window — nothing is silently skipped, the work is only spread. */
+const DRIFT_AUDIT_BATCH_CAP = 1000;
+
+async function readDriftFlag(ctx: any, key: string): Promise<number | null> {
+  const row = await ctx.db
+    .query("systemConfig")
+    .withIndex("by_key", (q: any) => q.eq("key", key))
+    .first();
+  return row && typeof row.value === "number" ? row.value : null;
+}
+
+async function writeDriftFlag(ctx: any, key: string, value: number): Promise<void> {
+  const row = await ctx.db
+    .query("systemConfig")
+    .withIndex("by_key", (q: any) => q.eq("key", key))
+    .first();
+  if (row) {
+    await ctx.db.patch(row._id, { value, updatedAt: Date.now() });
+  } else {
+    await ctx.db.insert("systemConfig", {
+      key,
+      value,
+      valueType: "number",
+      scope: "global",
+      status: "active",
+      updatedAt: Date.now(),
+    });
+  }
+}
+
+/**
  * CAP-116 — aggregate drift monitor (internal; cron-registered): "Periodic
  * recompute vs stored; alert on mismatch." Alert-only — this NEVER repairs
  * (repair is CAP-115, run after a human/automation reacts to the alert).
  * The alert lands in adminInterventionAlerts (bible l.263, transcribed this
  * slice); the register's "Writes: none (alert only)" reads as no DOMAIN
  * writes (tools/toolRatings untouched). Deduplicated per open alert.
+ *
+ * INCREMENTAL (was: hourly full-table re-verification): the hourly pass
+ * re-verifies only tools with rating activity since the last watermark
+ * (DRIFT_SOURCE_ACTIONS above); the comparison and the alert are
+ * byte-identical to the full scan. A full pass still runs when ≥24h has
+ * passed since the last one (or args.full is forced), because a deploy can
+ * change the eligibility semantics inside recomputeFromRatings and re-drift
+ * EVERY tool with zero new rating activity — the incremental feed cannot
+ * see that.
  */
 export const driftCheck = internalMutation({
-  args: {},
-  handler: async (ctx) => {
-    const tools = await ctx.db.query("tools").collect();
+  args: { full: v.optional(v.boolean()) }, // operator-forced full pass (e.g. after a repair)
+  returns: v.object({ checked: v.number(), drifts: v.number(), mode: v.string() }),
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const lastSeen = await readDriftFlag(ctx, DRIFT_WATERMARK_KEY);
+    const lastFull = await readDriftFlag(ctx, DRIFT_FULL_PASS_KEY);
+    const fullPass =
+      args.full === true || lastFull === null || now - lastFull >= DRIFT_FULL_PASS_INTERVAL_MS;
+
+    let toolIds: Id<"tools">[];
+    if (fullPass) {
+      const tools = await ctx.db.query("tools").collect();
+      toolIds = tools.map((tool: any) => tool._id as Id<"tools">);
+      // Everything was verified as of now — both watermarks advance.
+      await writeDriftFlag(ctx, DRIFT_FULL_PASS_KEY, now);
+      await writeDriftFlag(ctx, DRIFT_WATERMARK_KEY, now);
+    } else {
+      // Incremental: only tools with rating activity since the watermark.
+      const since = Math.max(0, (lastSeen ?? 0) - DRIFT_WATERMARK_OVERLAP_MS);
+      const candidates = new Set<Id<"tools">>();
+      let saturated = false;
+      for (const action of DRIFT_SOURCE_ACTIONS) {
+        const auditRows = await ctx.db
+          .query("auditLog")
+          .withIndex("by_action_createdAt", (q: any) => q.eq("action", action).gte("createdAt", since))
+          .take(DRIFT_AUDIT_BATCH_CAP);
+        if (auditRows.length === DRIFT_AUDIT_BATCH_CAP) saturated = true;
+        for (const row of auditRows) {
+          // targets: `toolRatings:<id>` (member mutations) / `toolRating:<id>` (moderate)
+          const ratingId = row.target.slice(row.target.indexOf(":") + 1) as Id<"toolRatings">;
+          const rating = await ctx.db.get(ratingId);
+          if (rating) candidates.add(rating.toolId);
+        }
+      }
+      toolIds = [...candidates];
+      // Advance only when the whole audit window was read (see cap note).
+      if (!saturated) await writeDriftFlag(ctx, DRIFT_WATERMARK_KEY, now);
+    }
+
     const drifts: { toolId: string; slug: string; stored: number; expected: number }[] = [];
 
-    for (const tool of tools) {
+    for (const toolId of toolIds) {
+      const tool = await ctx.db.get(toolId);
+      if (!tool) continue;
       const ratings = await ctx.db
         .query("toolRatings")
-        .withIndex("by_toolId", (q: any) => q.eq("toolId", tool._id))
+        .withIndex("by_toolId", (q: any) => q.eq("toolId", toolId))
         .collect();
       const expected = recomputeFromRatings(ratings);
       if (
@@ -613,6 +718,6 @@ export const driftCheck = internalMutation({
       });
     }
 
-    return { checked: tools.length, drifts: drifts.length };
+    return { checked: toolIds.length, drifts: drifts.length, mode: fullPass ? "full" : "incremental" };
   },
 });

@@ -26,6 +26,7 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireUser } from "./lib/authz";
 import { captureEvent } from "./lib/events";
 
 const PAGE = 20;
@@ -78,8 +79,10 @@ async function ensureSessionRow(ctx: any, userId: Id<"users">, sortMode: string)
   return await ctx.db.get(id);
 }
 
-async function assembleCard(ctx: any, score: any): Promise<any> {
-  const post = await ctx.db.get(score.postId);
+async function assembleCard(ctx: any, score: any, fetchedPost?: any): Promise<any> {
+  // Callers that already fetched the post for gating (the organic walk)
+  // pass it in — one read, reused; everyone else fetches here.
+  const post = fetchedPost ?? (await ctx.db.get(score.postId));
   if (!post || post.lifecycleStatus !== "published") return null;
   const card = await ctx.db
     .query("cardSummaries")
@@ -157,27 +160,48 @@ export const list = query({
         if (card && (!args.typeFilter || card.type === args.typeFilter)) cards.push(card);
       }
     } else {
-      // Organic sorts — the index IS the ranking (never compute-at-read)
+      // Organic sorts — the index IS the ranking (never compute-at-read).
+      // CAP-198 snapshot walk: each lap reads strictly BELOW the boundary
+      // key (index range, not a post-filter over a pre-truncated take) and
+      // the gates run INSIDE the walk, so a full page of MATCHING cards is
+      // emitted before the cursor is minted — truncating the scan up front
+      // underfilled type-filtered feeds and ended their pagination early.
       const idx =
         args.sortMode === "top" ? "by_topScore" : args.sortMode === "hot" ? "by_hotScore" : "by_lastEligibleInteractionAt";
-      const rows = await ctx.db.query("postDistributionScores").withIndex(idx).order("desc").take(PAGE + 10);
-      const boundary = args.cursor;
+      const keyField = args.sortMode === "top" ? "topScore" : args.sortMode === "hot" ? "hotScore" : "lastEligibleInteractionAt";
+      const BATCH = 50; // over-fetch window per lap — filter, THEN take
+      const SCAN_CAP = 250; // bound per-request reads; a short page keeps its cursor
+      let boundary = args.cursor;
+      let scanned = 0;
       let emitted = 0;
-      for (const row of rows) {
-        const key = args.sortMode === "top" ? row.topScore : args.sortMode === "hot" ? row.hotScore : row.lastEligibleInteractionAt;
-        if (boundary !== undefined && key >= boundary) continue; // cursor walk below the boundary
-        const post = await ctx.db.get(row.postId);
-        if (!post || post.lifecycleStatus !== "published") continue;
-        if (post.authorType !== "user") continue; // persona/staff ZERO in core ranking (§3 M)
-        if (hidden.has(row.postId)) continue;
-        if (args.typeFilter && post.type !== args.typeFilter) continue;
-        const card = await assembleCard(ctx, row);
-        if (!card) continue;
-        cards.push(card);
-        emitted += 1;
-        if (emitted >= PAGE) {
-          const lastKey = args.sortMode === "top" ? row.topScore : args.sortMode === "hot" ? row.hotScore : row.lastEligibleInteractionAt;
-          nextCursor = lastKey;
+      while (true) {
+        const rows = await ctx.db
+          .query("postDistributionScores")
+          .withIndex(idx, (q: any) => (boundary === undefined ? q : q.lt(keyField, boundary)))
+          .order("desc")
+          .take(BATCH);
+        if (rows.length === 0) break; // index exhausted below the boundary — walk is done
+        for (const row of rows) {
+          boundary = row[keyField]; // cursor walk below the boundary
+          scanned += 1;
+          const post = await ctx.db.get(row.postId);
+          if (!post || post.lifecycleStatus !== "published") continue;
+          if (post.authorType !== "user") continue; // persona/staff ZERO in core ranking (§3 M)
+          if (hidden.has(row.postId)) continue;
+          if (args.typeFilter && post.type !== args.typeFilter) continue;
+          const card = await assembleCard(ctx, row, post); // reuse the gated read — no second fetch
+          if (!card) continue;
+          cards.push(card);
+          emitted += 1;
+          if (emitted >= PAGE) {
+            nextCursor = row[keyField];
+            break;
+          }
+        }
+        if (emitted >= PAGE) break;
+        if (rows.length < BATCH) break; // tail of the index reached — no more material exists
+        if (scanned >= SCAN_CAP) {
+          nextCursor = boundary ?? null; // short page, cursor stays live — never a false "done"
           break;
         }
       }
@@ -324,8 +348,7 @@ export const cardAction = mutation({
   },
   returns: v.object({ done: v.boolean() }),
   handler: async (ctx, args) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("feed.cardAction: authentication required");
+    const userId = await requireUser(ctx, "feed.cardAction");
 
     if (args.action === "report") {
       const user = await ctx.db.get(userId);
@@ -370,8 +393,7 @@ export const unhide = mutation({
   args: { postId: v.id("posts"), unmute: v.optional(v.boolean()) },
   returns: v.object({ done: v.boolean() }),
   handler: async (ctx, args) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("feed.unhide: authentication required");
+    const userId = await requireUser(ctx, "feed.unhide");
     const session = await sessionRow(ctx, userId);
     if (!session) return { done: false };
     const patch: Record<string, unknown> = {};

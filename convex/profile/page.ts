@@ -21,19 +21,10 @@ import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
-/** CAP-474-discipline normalization for handles. */
-const LATIN_SUPPLEMENT: Record<string, string> = { ø: "o", æ: "ae", ß: "ss", đ: "d", ł: "l", þ: "th" };
-export function normalizeHandle(source: string): string {
-  const slug = source
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "") // strip combining marks (Ü→u, not U-+dash)
-    .replace(/[øæßđłþ]/g, (c) => LATIN_SUPPLEMENT[c]) // letters NFKD won't decompose
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 32);
-  return slug.length >= 3 ? slug : `member-${slug || "x"}`;
-}
+// CAP-474 normalization lives in lib/handle.ts now — single source (auth's
+// deriveHandle runs the same discipline); re-exported for existing importers.
+export { normalizeHandle } from "../lib/handle";
+import { normalizeHandle } from "../lib/handle";
 
 /** The reserve transaction body — shared by the internalMutation entry
  *  point and setup.upsertBasic's same-transaction call (CAP-550 fires at

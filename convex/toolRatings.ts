@@ -35,7 +35,7 @@ import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { assertCustomerCapability, STAFF_ROLES, getConfigValue } from "./lib/authz";
+import { assertCustomerCapability, STAFF_ROLES, getConfigValue, requireUser } from "./lib/authz";
 import { writeAudited, newCorrelationId } from "./lib/audit";
 
 /** bible l.354 — the four rating dimensions. */
@@ -213,8 +213,7 @@ function assertRatingShape(rating: RatingScores): void {
 
 /** R-STAFF — reject any active privileged role (server-side). */
 async function assertRatableActor(ctx: any): Promise<Id<"users">> {
-  const userId = (await getAuthUserId(ctx)) as Id<"users">;
-  if (!userId) throw new Error("toolRatings: authentication required");
+  const userId = await requireUser(ctx, "toolRatings");
   const assignments = await ctx.db
     .query("roleAssignments")
     .withIndex("by_user", (q: any) => q.eq("userId", userId))
@@ -260,14 +259,27 @@ async function writeAutoFlagCase(
 }
 
 /** Trailing-window velocity input for CAP-533 (submissions on this tool in
- *  the last hour, INCLUDING the one being evaluated). */
+ *  the last hour, INCLUDING the one being evaluated). Counted newest-first
+ *  with an early stop instead of a full collect+filter: every Convex index
+ *  ends in _creationTime, so the by_toolId range walked desc is newest-first
+ *  by creation, and createdAt is Date.now() taken in-mutation (server clock)
+ *  at insert — monotone with _creationTime, so the first row older than
+ *  the window means every row after it is too. Same count, without reading
+ *  every historical rating for the tool on every submit. */
 async function recentSubmissionCount(ctx: any, toolId: Id<"tools">): Promise<number> {
   const oneHourAgo = Date.now() - 60 * 60 * 1000;
-  const rows = await ctx.db
-    .query("toolRatings")
-    .withIndex("by_toolId", (q: any) => q.eq("toolId", toolId))
-    .collect();
-  return rows.filter((r: any) => r.createdAt >= oneHourAgo).length;
+  let take = 32; // small first page; widened geometrically only if the burst is deeper
+  for (;;) {
+    const page = await ctx.db
+      .query("toolRatings")
+      .withIndex("by_toolId", (q: any) => q.eq("toolId", toolId))
+      .order("desc")
+      .take(take);
+    const boundary = page.findIndex((r: any) => r.createdAt < oneHourAgo);
+    if (boundary !== -1) return boundary; // in-window rows all precede the boundary
+    if (page.length < take) return page.length; // the window covers every rating
+    take *= 8;
+  }
 }
 
 // ── CAP-112 — submit ──────────────────────────────────────────────────────

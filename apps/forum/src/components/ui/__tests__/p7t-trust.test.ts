@@ -107,6 +107,14 @@ describe("SLICE-P7T-04 — appeal submit (CAP-340)", () => {
   it("no rawEvents (contract §5)", () => {
     expect(appealSrc).not.toContain("captureEvent");
   });
+  it("myActions matches the WRITTEN action vocabulary — the 'sanction*' filter matched no writer (always-empty list)", () => {
+    // grep the writers: the moderationActions rows recorded against a member
+    // are autoGate's holds/rejects on their own content (system_auto_gate);
+    // no writer ever emits a "sanction*" action value on moderationActions
+    expect(appealSrc).toContain("APPEALABLE_ACTION_PREFIXES");
+    expect(appealSrc).toContain('"auto_gate_"');
+    expect(appealSrc).not.toContain('startsWith("sanction")');
+  });
 });
 
 describe("SLICE-P7T-05/06/07 — legal intake (CAP-217/343/344/348/350/361/058/059/060)", () => {
@@ -182,10 +190,24 @@ describe("SLICE-P7T-11 — provenance footers (CAP-468/469)", () => {
 });
 
 describe("SLICE-P7T-12 — landing waitlist CTA (F-14 close)", () => {
-  it("delegates to CAP-014 waitlist.join — the same public endpoint, no second mutation", () => {
-    const page = read(forumRoot, "src/app/(auth)/landing/page.tsx");
-    expect(page).toContain('"/api/convex/waitlist.join"');
-    expect(page).not.toContain("useMutation(api.waitlist");
+  it("delegates to CAP-014 waitlist.join — the same public mutation /waitlist calls, no second surface", () => {
+    // CODE-REVIEW PASS-2: the old POST to /api/convex/waitlist.join hit a
+    // NONEXISTENT route (no such API handler exists — 404) and the page
+    // treated the failure as success. Both surfaces now call the real
+    // publicMutation through the generated api.
+    for (const rel of ["src/app/(auth)/landing/page.tsx", "src/app/(auth)/waitlist/page.tsx"]) {
+      const page = read(forumRoot, rel);
+      expect(page).toContain("useMutation(api.waitlist.join)");
+      expect(page).not.toContain("/api/convex/");
+    }
+  });
+  it("waitlist page: server rejections surface verbatim — no optimistic fake-success", () => {
+    const page = read(forumRoot, "src/app/(auth)/waitlist/page.tsx");
+    expect(page).toContain("isConvexConfigured()");
+    expect(page).not.toContain('setResult("joined"); // optimistic');
+    // CAP-015 limit rejections map to the contract's States 3/4; the rest
+    // render verbatim.
+    expect(page).toContain('msg.includes("waitlist.join.email")');
   });
 });
 

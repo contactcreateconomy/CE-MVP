@@ -165,6 +165,19 @@ describe("SLICE-P4-05 — auto-flag (CAP-533: velocity + outlier, config-driven)
       expect(row.default).toBeLessThanOrEqual(row.max);
     }
   });
+
+  it("velocity input counts via an indexed newest-first walk with an early stop — no full collect per submit", () => {
+    const src = readFileSync(resolve(__dirname, "../../../../../../convex/toolRatings.ts"), "utf8");
+    const fn = src.split("async function recentSubmissionCount")[1]?.split("// ── CAP-112")[0] ?? "";
+    // index range walked desc (every Convex index ends in _creationTime →
+    // newest-first by creation), then stops at the first out-of-window row
+    expect(fn).toContain('.withIndex("by_toolId"');
+    expect(fn).toContain('.order("desc")');
+    expect(fn).toContain("findIndex");
+    expect(fn).not.toContain(".collect()"); // the old full-history read is gone
+    // same predicate as before — the window edge, not the counting, is unchanged
+    expect(fn).toContain("r.createdAt < oneHourAgo");
+  });
 });
 
 describe("SLICE-P4-05 — R-STAFF (server-side reject, not UI-hide)", () => {

@@ -9,16 +9,13 @@ import {
   NEW_POST_DRAFT_STORAGE_KEY,
   type NewPostDraftPayload,
 } from "@/lib/new-post/category-composer-fields";
+import { formatRelativeDate } from "@/lib/format";
 
+/** Delegates the m/h/d cascade to the shared formatter; keeps this page's
+ *  distinct "Just now" string for the sub-minute bucket. */
 function relativeTime(ts: number): string {
-  const diff = Date.now() - ts;
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  if (Date.now() - ts < 60_000) return "Just now";
+  return formatRelativeDate(new Date(ts).toISOString());
 }
 
 /**

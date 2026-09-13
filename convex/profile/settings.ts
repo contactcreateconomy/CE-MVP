@@ -24,15 +24,14 @@ import { mutation, query } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireUser as requireAuthedUser } from "../lib/authz";
 import { writeAudited, newCorrelationId } from "../lib/audit";
 import { CONSENT_PURPOSES, type ConsentPurpose } from "../setup";
 
 const CURRENT_RULES_VERSION = "rules.v1"; // CAP-157's "current" — single source with /setup (OQ3-flagged)
 
 async function requireUser(ctx: any): Promise<Id<"users">> {
-  const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-  if (!userId) throw new Error("settings: authentication required");
-  return userId;
+  return await requireAuthedUser(ctx, "settings");
 }
 
 async function profilesRow(ctx: any, userId: Id<"users">): Promise<any | null> {

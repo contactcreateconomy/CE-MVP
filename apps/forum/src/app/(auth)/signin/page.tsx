@@ -40,7 +40,13 @@ type SigninState =
 
 export default function SigninPage() {
   const router = useRouter();
-  const { signIn } = useAuthActions();
+  // Offline/no-env guard: without a configured Convex URL the root provider
+  // deliberately omits ConvexAuthProvider (@convex-dev/auth) — useAuthActions
+  // returns undefined during CI prerender, so the destructure must not throw
+  // (same guard class as the layout overlays). Offline the page stays in its
+  // checking state; the actions below can never fire without a provider.
+  const authActions = useAuthActions() as ReturnType<typeof useAuthActions> | undefined;
+  const signIn = authActions?.signIn;
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [state, setState] = useState<SigninState>("checking-mode");
@@ -58,6 +64,7 @@ export default function SigninPage() {
 
   const requestCode = useCallback(async () => {
     if (!email.trim()) return;
+    if (!signIn) return; // no @convex-dev/auth provider mounted (offline)
     setSubmitting(true);
     try {
       // Rate gates: CAP-016 (5/15m ip_hash) + CAP-017 (3/1h email_hash)
@@ -77,6 +84,7 @@ export default function SigninPage() {
 
   const verifyCode = useCallback(async () => {
     if (!code.trim() || !email.trim()) return;
+    if (!signIn) return; // no @convex-dev/auth provider mounted (offline)
     setSubmitting(true);
     try {
       await signIn("email-code", { email: email.trim().toLowerCase(), code: code.trim() });

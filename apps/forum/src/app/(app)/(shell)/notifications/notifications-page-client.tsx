@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Convex boundary */
 "use client";
 
-import Link from "next/link";
-import { useMutation, useQuery } from "convex/react";
+import { useConvex, useMutation, useQuery } from "convex/react";
+import { useState } from "react";
 import { Bell } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { api } from "@/lib/convex";
 import { formatRelativeDate } from "@/lib/format";
@@ -25,7 +26,34 @@ function NotificationsPageWithConvex({
     authStatus === "authenticated" ? {} : "skip",
   );
   const markRead = useMutation(api.notifications.reads.markRead);
-  const items = (viewerNotifications as any)?.page ?? [];
+
+  // Cursor continuation — the base query keeps rendering the first page;
+  // each Load-more appends one continuation page and advances the cursor
+  // (the same idiom as the tool-profile ratingsPage).
+  const convex = useConvex();
+  const [extraPages, setExtraPages] = useState<{ page: any[]; cursor: string | null }[]>([]);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const baseCursor = (viewerNotifications as any)?.cursor ?? null;
+  const effectiveCursor = extraPages.length > 0 ? extraPages[extraPages.length - 1].cursor : baseCursor;
+  const canContinue = effectiveCursor !== null && effectiveCursor !== undefined;
+
+  async function loadMore() {
+    if (!canContinue || loadingMore || !convex) return;
+    setLoadingMore(true);
+    try {
+      const result = await convex.query(api.notifications.reads.list, {
+        cursor: effectiveCursor ?? undefined,
+      });
+      setExtraPages((prev) => [...prev, { page: result?.page ?? [], cursor: result?.cursor ?? null }]);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  const items = [
+    ...((viewerNotifications as any)?.page ?? []),
+    ...extraPages.flatMap((p) => p.page),
+  ];
 
   if (authStatus !== "authenticated") {
     return (
@@ -101,6 +129,11 @@ function NotificationsPageWithConvex({
               );
             })
           )}
+          {items.length > 0 && canContinue ? (
+            <Button variant="secondary" disabled={loadingMore} onClick={loadMore}>
+              {loadingMore ? "Loading…" : "Load more"}
+            </Button>
+          ) : null}
         </CardContent>
       </Card>
     </section>

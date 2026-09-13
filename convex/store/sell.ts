@@ -28,6 +28,17 @@ export const SELF_REPORT_WEIGHT = 17; // flagged default inside the open band
 const CLICK_WEIGHT = 10;
 const VERIFIED_WEIGHT = 25;
 
+/** CAP-450 k — "min 5 distinct users per returned cell" (M11 R-ANALYTICS,
+ *  quoted). Applied to EVERY bucket below: a 1-view or 2-conversion cell is
+ *  a member-sized sample, not an aggregate. Suppressed cells return null —
+ *  the dashboard renders "—", never 0 (suppressed ≠ zero). */
+export const ANALYTICS_CELL_K = 5;
+/** Wishlist rides the intent cell but is STRONGER-suppressed — "wishlist
+ *  gets stronger suppression (intent is private)" (M11 R-ANALYTICS,
+ *  quoted). The stronger value is register-unnamed: flagged default at 2×
+ *  the cell k. */
+export const WISHLIST_SUPPRESSION_K = 10;
+
 async function myStorefront(ctx: any, userId: Id<"users">): Promise<any> {
   const store = await ctx.db
     .query("storefronts")
@@ -114,6 +125,24 @@ export const submitProduct = mutation({
       throw new Error("sell.submitProduct: submittedUrl must be a valid URL");
     }
 
+    // toolId boundary validation: storefrontProducts.toolId is a FREE-STRING
+    // column (schema l.1999 — live deployment, schema pushes are
+    // founder-gated, NOT retyped here) while every tool join it feeds is
+    // id-typed. Reject anything that is not a live tools id (or empty) —
+    // storing a slug/free string silently severs the toolRatings/tool
+    // linkage. Reject-not-UI-hide: the throw surfaces verbatim.
+    let toolId: Id<"tools"> | undefined;
+    if (typeof args.toolId === "string" && args.toolId.trim() !== "") {
+      const raw = args.toolId.trim();
+      const tool = await ctx.db.get(raw as Id<"tools">).catch(() => null);
+      if (!tool) {
+        throw new Error(
+          `sell.submitProduct: toolId must be a valid tools id or empty — "${raw}" matches no tools row`,
+        );
+      }
+      toolId = tool._id as Id<"tools">; // canonical id only, never the raw arg
+    }
+
     const now = Date.now();
     let productId: Id<"storefrontProducts"> | undefined;
     let linkId: Id<"storefrontLinks"> | undefined;
@@ -135,7 +164,7 @@ export const submitProduct = mutation({
       })) as Id<"storefrontLinks">;
       productId = (await actx.db.insert("storefrontProducts", {
         storefrontId: store._id,
-        toolId: args.toolId,
+        toolId, // validated above — a live tools id or undefined, never a free string
         name: args.name,
         category: args.category,
         useCase: args.useCase,
@@ -269,10 +298,23 @@ export const getAnalytics = query({
       .take(30);
     return rows.map((r: any) => ({
       window: r.window,
-      // Three honest buckets; k<5 cells suppressed (CAP-450)
-      traffic: r.storeViews,
-      intent: r.uniqueQualifiedViewers >= 5 ? { views: r.uniqueQualifiedViewers, clicks: r.qualifiedClicks, wishlist: r.wishlistAdds } : null,
-      confirmed: r.verifiedConversions ?? null,
+      // Three honest buckets; k<5 cells suppressed on EVERY bucket (CAP-450
+      // "k≥5/cell" — suppression is a property of the cell, not of one
+      // bucket). Suppressed → null, which the dashboard renders as "—":
+      // never 0, and never a member-sized count exposed as an aggregate.
+      traffic: r.storeViews >= ANALYTICS_CELL_K ? r.storeViews : null,
+      intent:
+        r.uniqueQualifiedViewers >= ANALYTICS_CELL_K
+          ? {
+              views: r.uniqueQualifiedViewers,
+              clicks: r.qualifiedClicks,
+              // stronger suppression (intent is private — quoted); a
+              // sub-k wishlist count stays null even inside a k≥5 cell
+              wishlist: r.wishlistAdds >= WISHLIST_SUPPRESSION_K ? r.wishlistAdds : null,
+            }
+          : null,
+      // absent (never rolled) and suppressed (< k) are both null → "—"
+      confirmed: (r.verifiedConversions ?? 0) >= ANALYTICS_CELL_K ? r.verifiedConversions : null,
     }));
   },
 });

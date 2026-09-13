@@ -28,8 +28,9 @@ import { query, mutation } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { assertCustomerCapability } from "../lib/authz";
+import { assertCustomerCapability, requireUser } from "../lib/authz";
 import { notifyBatched } from "../notifications/batch";
+import { currentSeasonTx } from "../signal/promoteDemote";
 
 export const getMetrics = query({
   args: { handle: v.string() },
@@ -67,10 +68,7 @@ export const getMetrics = query({
       .take(50);
 
     // Ladder: current + below + next + silhouette above (CAP-313 render)
-    const season = await ctx.db
-      .query("signalSeasons")
-      .withIndex("by_seasonNumber", (q: any) => q.eq("seasonNumber", 1))
-      .unique();
+    const season = await currentSeasonTx(ctx); // derived — never a hardcoded season number
     let ladder: any = null;
     if (season) {
       const defs = (await ctx.db
@@ -201,8 +199,7 @@ export const leave = mutation({
   args: { handle: v.string() },
   returns: v.object({ left: v.boolean() }),
   handler: async (ctx, args) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("distribution.leave: authentication required");
+    const userId = await requireUser(ctx, "distribution.leave");
     const owner = await ctx.db
       .query("users")
       .withIndex("by_usernameNormalized", (q: any) => q.eq("usernameNormalized", args.handle.toLowerCase()))

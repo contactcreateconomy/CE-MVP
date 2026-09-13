@@ -28,6 +28,25 @@ import type { Id } from "../_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertCustomerCapability } from "../lib/authz";
 
+/** toolId linkage normalization — storefrontProducts.toolId is a FREE-STRING
+ *  column (schema l.1999, founder-gated — NOT retyped here) while every
+ *  tool join it feeds (toolRatings.by_toolId, toolTags, posts.toolIds
+ *  consumers) is id-typed: a raw string join silently matches nothing.
+ *  Resolve the stored value to a live tools id — canonical id first, then
+ *  slug (the seeded fixtures store slugs like "notion") — so reads compare
+ *  ids. Unresolvable → null (no linkage, never a silent string join).
+ *  sell.submitProduct validates the same way at the write boundary. */
+async function resolveToolId(ctx: any, raw: string | undefined): Promise<Id<"tools"> | null> {
+  if (!raw) return null;
+  const byId: any = await ctx.db.get(raw as Id<"tools">).catch(() => null);
+  if (byId) return byId._id as Id<"tools">;
+  const bySlug: any = await ctx.db
+    .query("tools")
+    .withIndex("by_slug", (q: any) => q.eq("slug", raw))
+    .unique();
+  return (bySlug?._id as Id<"tools">) ?? null;
+}
+
 /** CAP-269/246 — the public storefront (handle = the owner's CAP-550
  *  username; no handle field on storefronts). Group B lifecycle renders. */
 export const getStorefront = query({
@@ -125,13 +144,17 @@ export const getProductDetail = query({
 
     // CAP-255 — conflicted-review label (readable, not hidden; label not
     // hideable). reviewConflicts key by toolRatingId, so resolve through
-    // the product's tool ratings. v1: any non-cleared conflict state
-    // surfaces the label; same-device alone never confirms (CAP-254).
+    // the product's tool ratings. toolRatings.by_toolId is ID-TYPED while
+    // storefrontProducts.toolId is a free string — resolveToolId compares
+    // ids (slug-shaped legacy values resolve through tools.by_slug).
+    // v1: any non-cleared conflict state surfaces the label; same-device
+    // alone never confirms (CAP-254).
     let conflictedLabel: string | null = null;
-    if (product.toolId) {
+    const linkedToolId = await resolveToolId(ctx, product.toolId);
+    if (linkedToolId) {
       const ratings = await ctx.db
         .query("toolRatings")
-        .withIndex("by_toolId", (q: any) => q.eq("toolId", product.toolId))
+        .withIndex("by_toolId", (q: any) => q.eq("toolId", linkedToolId))
         .take(20);
       for (const rating of ratings) {
         const conflict = await ctx.db
@@ -173,24 +196,30 @@ export const getProductDetail = query({
 });
 
 /** CAP-244 data side — the composer product-block's own-approved-products
- *  picker (≤5, structured token; member actor). */
+ *  picker (member actor). The ≤5 CAP-244 literal is TAGS PER POST, not the
+ *  picker's page size — the picker must offer EVERY approved product, so a
+ *  member with more than one page can still reach any 5 of them. Pages at
+ *  20 (the sibling store queries' page size) with cursor continuation
+ *  (the platform's standard cursor idiom, cf. tools.listRatings). */
 export const listOwnProducts = query({
-  args: {},
+  args: { cursor: v.optional(v.string()) },
   returns: v.any(),
-  handler: async (ctx) => {
+  handler: async (ctx, args) => {
     const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) return { products: [] };
+    if (!userId) return { products: [], isDone: true, nextCursor: null };
     const store = await ctx.db
       .query("storefronts")
       .withIndex("by_owner", (q: any) => q.eq("ownerUserId", userId))
       .unique();
-    if (!store || store.status !== "active") return { products: [] };
-    const products = await ctx.db
+    if (!store || store.status !== "active") return { products: [], isDone: true, nextCursor: null };
+    const result = await ctx.db
       .query("storefrontProducts")
       .withIndex("by_storefront_status", (q: any) => q.eq("storefrontId", store._id).eq("status", "approved"))
-      .take(5); // CAP-244: ≤5 own approved products
+      .paginate({ cursor: (args.cursor ?? null) as any, numItems: 20 });
     return {
-      products: products.map((p: any) => ({ productId: p._id, name: p.name, category: p.category })),
+      products: result.page.map((p: any) => ({ productId: p._id, name: p.name, category: p.category })),
+      isDone: result.isDone,
+      nextCursor: result.isDone ? null : result.continueCursor,
     };
   },
 });
@@ -236,6 +265,10 @@ export const createShadowPost = internalMutation({
       return { postId: already._id };
     }
 
+    // Free-string column → id-typed join (see resolveToolId): the shadow
+    // post's toolIds carry the resolved tools id only.
+    const linkedToolId = await resolveToolId(ctx, product?.toolId);
+
     const postId = (await ctx.db.insert("posts", {
       authorType: "user",
       authorUserId: args.ownerUserId,
@@ -243,7 +276,9 @@ export const createShadowPost = internalMutation({
       title: `Product discussion: ${product?.name ?? "product"}`,
       body: product?.description ?? "",
       categoryId: "",
-      toolIds: product?.toolId ? [product.toolId] : [],
+      // posts.toolIds consumers join id-typed — write the RESOLVED tools id,
+      // never the free-string column value (schema column unchanged).
+      toolIds: linkedToolId ? [linkedToolId] : [],
       lifecycleStatus: "published",
       moderationStatus: "not_required",
       visibility: "unlisted", // hidden from M9 surfaces (the feed's visibility guard holds it)

@@ -239,3 +239,45 @@ describe("SLICE-P4-04 — module surface + api registration", () => {
     expect(apiDts).toContain("categories: typeof categories;");
   });
 });
+
+describe("SLICE-P4-04 — CAP-116 driftCheck cadence (incremental hourly, full daily)", () => {
+  const toolsSrc = readFileSync(resolve(__dirname, "../../../../../../convex/tools.ts"), "utf8");
+  const fn = toolsSrc.split("export const driftCheck")[1]?.split("\n});")[0] ?? "";
+
+  it("hourly pass is audit-fed: only tools with rating activity since the watermark re-verify", () => {
+    // the change-feed is auditLog by_action_createdAt (every aggregate-affecting
+    // write is writeAudited) — not an unconditional tools.collect()
+    expect(fn).toContain("DRIFT_SOURCE_ACTIONS");
+    expect(fn).toContain('by_action_createdAt');
+    expect(fn).toContain("DRIFT_WATERMARK_KEY");
+    // the full-table collect sits inside the fullPass branch only
+    const fullBranch = fn.split("if (fullPass)")[1]?.split("} else {")[0] ?? "";
+    expect(fullBranch).toContain('query("tools").collect()');
+    const incrementalBranch = fn.split("} else {")[1]?.split("const drifts")[0] ?? "";
+    expect(incrementalBranch).not.toContain('query("tools")');
+  });
+
+  it("full pass still runs (semantics backstop) — forced arg or ≥24h since the last one", () => {
+    expect(fn).toContain("args.full === true");
+    expect(fn).toContain("DRIFT_FULL_PASS_INTERVAL_MS");
+    expect(toolsSrc).toContain("DRIFT_FULL_PASS_INTERVAL_MS = 24 * 60 * 60_000");
+    expect(fn).toContain('mode: fullPass ? "full" : "incremental"');
+    // operator can force one after a repair (CAP-115 flow)
+    expect(argsOf(toolsModule.driftCheck).full.optional).toBe(true);
+  });
+
+  it("the verification itself is unchanged: stored vs eligible recompute, alert-only, deduped", () => {
+    expect(fn).toContain("recomputeFromRatings(ratings)");
+    expect(fn).toContain("tool.ratingSum !== expected.ratingSum");
+    expect(fn).toContain("tool.ratingCount !== expected.ratingCount");
+    expect(fn).toContain("tools.aggregate.drift");
+    expect(fn).toContain("openAlert"); // one open alert per drifted tool
+    // never repairs (CAP-115 owns repair): no patch to tools in this body
+    expect(fn).not.toContain('db.patch(tool');
+  });
+
+  it("a saturated audit read does NOT advance the watermark — nothing is silently skipped", () => {
+    expect(fn).toContain("DRIFT_AUDIT_BATCH_CAP");
+    expect(fn).toContain("if (!saturated)");
+  });
+});

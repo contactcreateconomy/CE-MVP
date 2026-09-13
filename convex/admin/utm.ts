@@ -33,7 +33,7 @@ import { query, mutation, internalMutation } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { assertAdminPermission } from "../lib/authz";
+import { assertAdminPermission, requireUser } from "../lib/authz";
 import { writeAudited, newCorrelationId } from "../lib/audit";
 import { checkRateLimit } from "../lib/rateLimit";
 import { appendAdjustment } from "../analytics/projections";
@@ -180,8 +180,7 @@ export const erasureRequest = mutation({
   args: {},
   returns: v.object({ requestId: v.id("analyticsDeletionRequests"), status: v.string() }),
   handler: async (ctx) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("analytics.erasure.request: authentication required");
+    const userId = await requireUser(ctx, "analytics.erasure.request");
     const user = await ctx.db.get(userId);
     const subjectId = (user as any)?.analyticsSubjectId as string | undefined;
     if (!subjectId) throw new Error("analytics.erasure.request: no analytics subject on this account");

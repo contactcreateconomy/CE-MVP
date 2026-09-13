@@ -8,8 +8,11 @@
  */
 
 import { useState } from "react";
+import { useMutation } from "convex/react";
 import { Clock } from "lucide-react";
 
+import { api } from "@/lib/convex";
+import { isConvexConfigured } from "@cemvp/convex-client";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,29 +23,32 @@ export default function WaitlistPage() {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<"idle" | "joined" | "already" | "rate-ip" | "rate-email">("idle");
+  // Reject-not-UI-hide: any server rejection the page cannot map to a
+  // contract state (3/4) is surfaced verbatim here — never a fake success.
+  const [serverError, setServerError] = useState<string | null>(null);
+  // waitlist.join is a publicMutation (CAP-014) — rate-limited + validated
+  // server-side (CAP-015 literals live in the mutation, not the client).
+  const joinWaitlist = useMutation(api.waitlist.join);
 
   const join = async () => {
     if (!email.trim()) return;
+    if (!isConvexConfigured()) {
+      setServerError("Convex is not configured.");
+      return;
+    }
     setSubmitting(true);
+    setServerError(null);
     try {
-      // waitlist.join is a publicMutation (CAP-014) — the API wiring point
-      // for the P1-09 rate literals. Fenced: exact consumer wiring
-      // delegation awaits the OQ3 ruling on the signin integration.
-      const res = await fetch("/api/convex/waitlist.join", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: email.trim().toLowerCase() }),
-      }).catch(() => null);
-
-      if (!res?.ok) {
-        const msg = res?.headers?.get("x-ratelimit-type") ?? "";
-        if (msg.includes("ip")) setResult("rate-ip");
-        else if (msg.includes("email")) setResult("rate-email");
-        else setResult("joined"); // optimistic — the mutation is idempotent
-      } else {
-        const data = await res.json().catch(() => ({}));
-        setResult(data.alreadyJoined ? "already" : "joined");
-      }
+      const res = await joinWaitlist({ email: email.trim().toLowerCase() });
+      setResult(res.alreadyJoined ? "already" : "joined");
+    } catch (err) {
+      // CAP-015 rejections carry the limit name in the thrown message
+      // ("rate_limit: waitlist.join.email exceeded (…)") — map those to the
+      // contract's States 3/4; everything else surfaces verbatim.
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("waitlist.join.ip")) setResult("rate-ip");
+      else if (msg.includes("waitlist.join.email")) setResult("rate-email");
+      else setServerError(msg || "Could not join the waitlist.");
     } finally {
       setSubmitting(false);
     }
@@ -98,6 +104,11 @@ export default function WaitlistPage() {
                 <span className="inline-flex items-center gap-2">
                   <Clock className="size-4" /> This email has already joined recently.
                 </span>
+              </Banner>
+            )}
+            {serverError && (
+              <Banner variant="warning" role="alert">
+                {serverError}
               </Banner>
             )}
 

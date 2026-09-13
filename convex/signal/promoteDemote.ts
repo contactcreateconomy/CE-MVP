@@ -30,6 +30,21 @@ const LEVELS = ["orbit", "comet", "moon", "planet", "star", "supernova", "nebula
 const PROMOTION_CAP = 1.5; // CAP-308: priorSeasonThreshold × 1.50
 const HOLDOVER_PCT = 0.1; // CAP-310: grace within ~10%
 
+/** The CURRENT season — derived, never hardcoded: the highest-seasonNumber
+ *  row is the season the engine operates on (the seeded Founding Season
+ *  today; seasonRecalibrate's published successor after each boundary). A
+ *  hardcoded `seasonNumber: 1` froze every cron on season 1 forever —
+ *  daily duplicate next-season inserts once 1 closed, and demoteAnnual
+ *  re-demoting against the closed season every run. Fail-closed: no
+ *  season row → callers no-op. */
+export async function currentSeasonTx(ctx: any): Promise<any | null> {
+  return ctx.db
+    .query("signalSeasons")
+    .withIndex("by_seasonNumber")
+    .order("desc")
+    .first();
+}
+
 /** CAP-308 — threshold precedence (pure). */
 export function thresholdPrecedence(percentileCandidate: number, priorSeasonThreshold?: number): { value: number; transition: boolean } {
   if (priorSeasonThreshold === undefined || priorSeasonThreshold === 0) {
@@ -50,10 +65,7 @@ export const seasonRecalibrate = internalMutation({
   args: {},
   returns: v.object({ action: v.string() }),
   handler: async (ctx) => {
-    const season = await ctx.db
-      .query("signalSeasons")
-      .withIndex("by_seasonNumber", (q: any) => q.eq("seasonNumber", 1))
-      .unique();
+    const season = await currentSeasonTx(ctx);
     if (!season) return { action: "no_season" };
     const now = Date.now();
     const T30 = season.endAt - 30 * 24 * 3_600_000;
@@ -77,6 +89,13 @@ export const seasonRecalibrate = internalMutation({
     }
     if (season.status === "closed") {
       // T+1 publish: the next season opens carrying capped thresholds (CAP-308)
+      // Idempotent upsert by season key: a re-run while the closed season is
+      // still the latest row never inserts a second successor season.
+      const existing = await ctx.db
+        .query("signalSeasons")
+        .withIndex("by_seasonNumber", (q: any) => q.eq("seasonNumber", season.seasonNumber + 1))
+        .unique();
+      if (existing) return { action: "noop" };
       const prior = season.thresholds ?? {};
       const capped: Record<string, number | undefined> = {};
       for (const [lvl, priorValue] of Object.entries(prior)) {
@@ -107,10 +126,7 @@ export const promoteSustained = internalMutation({
   args: {},
   returns: v.object({ promoted: v.number() }),
   handler: async (ctx) => {
-    const season = await ctx.db
-      .query("signalSeasons")
-      .withIndex("by_seasonNumber", (q: any) => q.eq("seasonNumber", 1))
-      .unique();
+    const season = await currentSeasonTx(ctx);
     if (!season) return { promoted: 0 };
     const dists = await ctx.db.query("distributions").take(500);
     let promoted = 0;
@@ -171,10 +187,7 @@ export const demoteAnnual = internalMutation({
   args: {},
   returns: v.object({ demoted: v.number(), holdover: v.number() }),
   handler: async (ctx) => {
-    const season = await ctx.db
-      .query("signalSeasons")
-      .withIndex("by_seasonNumber", (q: any) => q.eq("seasonNumber", 1))
-      .unique();
+    const season = await currentSeasonTx(ctx);
     if (!season || season.status !== "closed") return { demoted: 0, holdover: 0 }; // boundary only
     const dists = await ctx.db.query("distributions").take(500);
     let demoted = 0;
@@ -182,6 +195,15 @@ export const demoteAnnual = internalMutation({
     for (const dist of dists) {
       const idx = LEVELS.indexOf(dist.currentLevel as any);
       if (idx <= 0) continue;
+      // ANNUAL = once per (distribution, season): a distribution already
+      // demoted or held over at this boundary is never re-demoted by a
+      // later run of the same closed season (the T-0 freeze → T+1 publish
+      // window can straddle more than one cron fire).
+      const assignments = await ctx.db
+        .query("distributionLevelAssignments")
+        .withIndex("by_distribution_season", (q: any) => q.eq("distributionId", dist._id).eq("seasonId", season._id))
+        .take(12);
+      if (assignments.some((a: any) => a.status === "demoted" || a.status === "holdover")) continue;
       const defs = await ctx.db
         .query("signalLevelDefinitions")
         .withIndex("by_season_level", (q: any) => q.eq("seasonId", season._id).eq("level", LEVELS[idx] as any))
@@ -230,10 +252,7 @@ export const integrityDrop = internalMutation({
       .withIndex("by_owner", (q: any) => q.eq("ownerUserId", args.ownerUserId))
       .unique();
     if (!dist) return { dropped: false, level: "orbit" };
-    const season = await ctx.db
-      .query("signalSeasons")
-      .withIndex("by_seasonNumber", (q: any) => q.eq("seasonNumber", 1))
-      .unique();
+    const season = await currentSeasonTx(ctx);
     if (season) {
       await ctx.db.insert("distributionLevelAssignments", {
         distributionId: dist._id,
@@ -255,10 +274,7 @@ export const discovererCheck = internalMutation({
   args: {},
   returns: v.object({ minted: v.number() }),
   handler: async (ctx) => {
-    const season = await ctx.db
-      .query("signalSeasons")
-      .withIndex("by_seasonNumber", (q: any) => q.eq("seasonNumber", 1))
-      .unique();
+    const season = await currentSeasonTx(ctx);
     if (!season) return { minted: 0 };
     // For each level above the pool's cold-start floor, find the top
     // Might distribution; if no discoverer badge exists yet, mint it.

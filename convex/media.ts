@@ -7,7 +7,7 @@
 
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireUser } from "./lib/authz";
 import { checkRateLimit } from "./lib/rateLimit";
 import { writeAudit, newCorrelationId } from "./lib/audit";
 
@@ -15,8 +15,7 @@ export const generateUploadUrl = mutation({
   args: {},
   returns: v.string(),
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("media.generateUploadUrl: authentication required");
+    const userId = await requireUser(ctx, "media.generateUploadUrl");
     // CAP-013 (quoted): "5 / 1h per user"
     await checkRateLimit(ctx, "media.upload", { kind: "user", value: userId });
     const url = await ctx.storage.generateUploadUrl();

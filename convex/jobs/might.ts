@@ -23,6 +23,7 @@ import { internalMutation } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { appendActivity } from "../activity";
+import { currentSeasonTx } from "../signal/promoteDemote";
 
 const DAY_MS = 24 * 3_600_000;
 
@@ -96,7 +97,7 @@ export const levelCommitMonthly = internalMutation({
   args: {},
   returns: v.object({ committed: v.number(), promoted: v.number() }),
   handler: async (ctx) => {
-    const season = await ctx.db.query("signalSeasons").withIndex("by_seasonNumber", (q: any) => q.eq("seasonNumber", 1)).unique();
+    const season = await currentSeasonTx(ctx); // derived — never a hardcoded season number
     if (!season) return { committed: 0, promoted: 0 };
     const defs = await ctx.db
       .query("signalLevelDefinitions")

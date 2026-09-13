@@ -17,6 +17,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireUser } from "./lib/authz";
 import { writeAudited, newCorrelationId } from "./lib/audit";
 
 const CONTENT_DEADLINE_DAYS = 14;
@@ -24,6 +25,17 @@ const TERMINATE_DEADLINE_DAYS = 30;
 const MAX_CHARS = 2000;
 const MAX_EVIDENCE = 3;
 const TERMINATE_ACTIONS = new Set(["sanction.terminate", "account.terminated"]);
+
+/** The action-value families actually WRITTEN against a member (grep the
+ *  writers): the system auto-gate's holds/rejects on the member's own
+ *  content (moderation/autoGate.ts — actorUserId = the member, actorRole
+ *  "system_auto_gate"). The previous sanction-prefix filter matched a
+ *  value no writer ever emits on moderationActions — the member list was
+ *  ALWAYS empty. Sanctions (admin/sanctions.ts) record to
+ *  auditLog/trustHistory only and write no moderationActions row — those
+ *  appeal paths stay unreachable until they do (flagged, not papered
+ *  over here). */
+const APPEALABLE_ACTION_PREFIXES = ["auto_gate_"] as const;
 
 export const submit = mutation({
   args: {
@@ -33,8 +45,7 @@ export const submit = mutation({
   },
   returns: v.object({ caseId: v.id("moderationCases"), status: v.string() }),
   handler: async (ctx, args) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("appeal.submit: authentication required");
+    const userId = await requireUser(ctx, "appeal.submit");
 
     const action = await ctx.db.get(args.actionId);
     if (!action) throw new Error("appeal.submit: unknown action");
@@ -99,7 +110,11 @@ export const submit = mutation({
   },
 });
 
-/** The appealable-action read for the member's route. */
+/** The appealable-action read for the member's route: actions taken
+ *  AGAINST the caller they may appeal (R-APPEAL: the appealable unit is
+ *  the moderationActionId). Rows carrying the member as actorUserId are
+ *  the system auto-gate's holds/rejects on their own content — the one
+ *  writer family that records the sanctioned member on the row. */
 export const myActions = query({
   args: {},
   returns: v.any(),
@@ -111,7 +126,9 @@ export const myActions = query({
       .withIndex("by_actor_reasonCode", (q: any) => q.eq("actorUserId", userId))
       .take(50);
     const sanctionClass = rows.filter(
-      (r: any) => r.actorRole !== "member_appeal" && String(r.action).startsWith("sanction"),
+      (r: any) => r.actorRole !== "member_appeal" && APPEALABLE_ACTION_PREFIXES.some(
+        (prefix) => String(r.action).startsWith(prefix),
+      ),
     );
     const out = [];
     for (const r of sanctionClass) {

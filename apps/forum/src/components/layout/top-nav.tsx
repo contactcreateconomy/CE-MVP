@@ -9,6 +9,7 @@ import { Bell, LogOut, Moon, Plus, Search, Settings, Sun, UserCircle2 } from "lu
 import { useTheme } from "next-themes";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { formatRelativeDate } from "@/lib/format";
 import { CreateconomyLogoMark } from "@/components/ui/createconomy-logo-mark";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { useQuery, useMutation } from "convex/react";
@@ -27,27 +28,6 @@ const TYPE_ACCENT_CLASS: Record<"comment" | "upvote" | "follow" | "system", stri
   follow: "bg-(--feedback-success)",
   system: "bg-(--text-muted)",
 };
-
-function formatRelativeNotificationTime(createdAt: string) {
-  const created = new Date(createdAt).getTime();
-  const diffMs = Date.now() - created;
-  const minuteMs = 60_000;
-  const hourMs = 60 * minuteMs;
-  const dayMs = 24 * hourMs;
-
-  if (diffMs < hourMs) {
-    const minutes = Math.max(1, Math.floor(diffMs / minuteMs));
-    return `${minutes}m ago`;
-  }
-
-  if (diffMs < dayMs) {
-    const hours = Math.max(1, Math.floor(diffMs / hourMs));
-    return `${hours}h ago`;
-  }
-
-  const days = Math.max(1, Math.floor(diffMs / dayMs));
-  return `${days}d ago`;
-}
 
 function getInitials(name: string) {
   return name
@@ -96,6 +76,11 @@ function TopNavWithConvexNotifications() {
     eventCount: number;
     createdAt: number;
     readAt: number | null;
+    // /discussions/<slug|postId> ref resolved server-side (reads.list):
+    // postSeoMeta slug when one exists, raw posts._id otherwise — the
+    // [slug] resolver tolerates both. Null for objects with no thread
+    // surface (distribution/drip_batch/resource_quota).
+    postSlug: string | null;
   };
   const rows: NotificationRow[] = (
     (notificationList as { page?: ReadRow[] } | undefined)?.page ?? []
@@ -106,6 +91,7 @@ function TopNavWithConvexNotifications() {
     message: `${n.actorCount > 1 ? `${n.actorCount} members` : "Someone"}${n.eventCount > 1 ? ` · ${n.eventCount} events` : ""}`,
     createdAt: new Date(n.createdAt).toISOString(),
     read: Boolean(n.readAt),
+    postSlug: n.postSlug ?? undefined,
   }));
 
   return (
@@ -315,7 +301,7 @@ function TopNavInner({
                                   <p className="mt-1 line-clamp-2 pl-3.5 text-xs text-text-secondary">{notification.message}</p>
                                 </div>
                                 <span className="absolute right-3 top-2.5 text-label-sm text-text-muted">
-                                  {formatRelativeNotificationTime(notification.createdAt)}
+                                  {formatRelativeDate(notification.createdAt)}
                                 </span>
                               </DropdownMenu.Item>
                             ))

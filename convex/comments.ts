@@ -29,7 +29,7 @@ import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { assertCustomerCapability, assertAdminPermission } from "./lib/authz";
+import { assertCustomerCapability, assertAdminPermission, requireUser } from "./lib/authz";
 import { checkRateLimit } from "./lib/rateLimit";
 import { captureEvent } from "./lib/events";
 import { classifySafety } from "./lib/classifier";
@@ -399,8 +399,7 @@ export const edit = mutation({
   args: { commentId: v.id("comments"), body: v.string() },
   returns: v.object({ edited: v.boolean(), moderationStatus: v.string() }),
   handler: async (ctx, args) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("comments.edit: authentication required");
+    const userId = await requireUser(ctx, "comments.edit");
     const comment = await ctx.db.get(args.commentId);
     if (!comment) throw new Error("comments.edit: comment not found");
     if (comment.authorUserId !== userId) throw new Error("comments.edit: not your comment (CAP-121 ownership)");

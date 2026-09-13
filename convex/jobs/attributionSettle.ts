@@ -19,6 +19,7 @@
 import { internalMutation } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
+import { currentSeasonTx } from "../signal/promoteDemote";
 
 // Sealed constants (H5)
 const AUTHOR_SHARE = 0.85;
@@ -88,7 +89,7 @@ export const settle = internalMutation({
   returns: v.object({ finalized: v.number(), reversed: v.number() }),
   handler: async (ctx) => {
     const cutoff = Date.now() - SETTLE_WINDOW_DAYS * 24 * 3_600_000;
-    const season = await ctx.db.query("signalSeasons").withIndex("by_seasonNumber", (q: any) => q.eq("seasonNumber", 1)).unique();
+    const season = await currentSeasonTx(ctx); // derived — never a hardcoded season number
     if (!season) return { finalized: 0, reversed: 0 };
     const rows = await ctx.db
       .query("signalLedger")

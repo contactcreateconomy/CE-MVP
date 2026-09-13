@@ -8,7 +8,7 @@ import { join } from "node:path";
  * The CAP-525 two-field rule + the A13 visible-distinctness are the
  * FATAL-adjacent values this suite protects. */
 
-import { SELF_REPORT_WEIGHT } from "../../../../../../convex/store/sell";
+import { SELF_REPORT_WEIGHT, ANALYTICS_CELL_K, WISHLIST_SUPPRESSION_K } from "../../../../../../convex/store/sell";
 
 const convexRoot = join(__dirname, "../../../../../../convex");
 const sellSrc = readFileSync(join(convexRoot, "store/sell.ts"), "utf8");
@@ -81,10 +81,25 @@ describe("SLICE-P6-16 — CAP-270/239/257 seller actions", () => {
     expect(fn).toContain('product.status !== "approved"'); // server-side precondition (reject-not-UI-hide)
   });
 
-  it("analytics read honors CAP-450: k<5 intent cells suppressed server-side", () => {
+  it("analytics read honors CAP-450: k<5 cells suppressed server-side on EVERY bucket (not just intent)", () => {
     const fn = sellSrc.split("export const getAnalytics")[1]?.split("export const")[0] ?? "";
-    expect(fn).toContain(">= 5");
+    // each of the three honest buckets gates its own member-level sample
+    expect(fn).toContain("r.storeViews >= ANALYTICS_CELL_K");
+    expect(fn).toContain("r.uniqueQualifiedViewers >= ANALYTICS_CELL_K");
+    expect(fn).toContain("(r.verifiedConversions ?? 0) >= ANALYTICS_CELL_K");
+    // suppressed = null → the dashboard renders "—" (never a small count, never 0)
+    expect(fn).toContain(": null");
     expect(fn).not.toContain("buyer");
+    // the contract's k is 5 (M11 R-ANALYTICS: "min 5 distinct users per returned cell")
+    expect(ANALYTICS_CELL_K).toBe(5);
+  });
+
+  it("wishlist is STRONGER-suppressed than its parent intent cell (R-ANALYTICS: intent is private)", () => {
+    const fn = sellSrc.split("export const getAnalytics")[1]?.split("export const")[0] ?? "";
+    expect(fn).toContain("r.wishlistAdds >= WISHLIST_SUPPRESSION_K");
+    expect(WISHLIST_SUPPRESSION_K).toBeGreaterThan(ANALYTICS_CELL_K); // strictly stronger
+    // a sub-k wishlist count is null INSIDE an otherwise k≥5 cell — parent/child honesty
+    expect(fn).toContain("wishlist: r.wishlistAdds >= WISHLIST_SUPPRESSION_K ? r.wishlistAdds : null");
   });
 });
 

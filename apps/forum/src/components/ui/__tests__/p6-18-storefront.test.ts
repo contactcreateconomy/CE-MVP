@@ -133,10 +133,37 @@ describe("SLICE-P6-18 — product detail + composer block (CAP-245/524/255/244)"
     expect(storefrontClient).toContain("product.buyHref ?");
   });
 
-  it("CAP-244 composer block: ≤5 cap, structured token, no raw URL", () => {
+  it("CAP-244 composer block: ≤5 cap is TAGS PER POST, structured token, no raw URL", () => {
+    // CODE-REVIEW PASS-2: the picker's query truncated at take(5) — a
+    // member with >5 approved products could not tag #6+. The CAP-244 ≤5
+    // literal governs tags per post (enforced at publish + client cap),
+    // never the picker page size: the picker pages at 20 (the sibling
+    // store queries' size) with the platform's cursor continuation.
     const ownFn = src.split("export const listOwnProducts")[1]?.split("export const toggleWishlist")[0] ?? "";
-    expect(ownFn).toContain(".take(5)");
+    expect(ownFn).toContain("numItems: 20");
+    expect(ownFn).toContain("nextCursor: result.isDone ? null : result.continueCursor");
+    expect(ownFn).not.toContain(".take(5)");
     expect(composerBlock).toContain("[[product:");
+    expect(composerBlock).toContain("selected.length >= 5");
     expect(composerBlock).not.toContain("https://");
+  });
+
+  it("toolId linkage resolves ids — no free-string join against the id-typed by_toolId index", () => {
+    // CODE-REVIEW PASS-2: storefrontProducts.toolId is a free-string column
+    // while toolRatings.by_toolId is id-typed — raw string joins silently
+    // matched nothing. Reads resolve (id, then slug) and the shadow-post
+    // write carries the resolved id; sell.submitProduct validates at the
+    // boundary (schema column unchanged — founder-gated).
+    const detailFn = src.split("export const getProductDetail")[1]?.split("export const listOwnProducts")[0] ?? "";
+    expect(src).toContain("async function resolveToolId");
+    expect(detailFn).toContain("resolveToolId(ctx, product.toolId)");
+    expect(detailFn).not.toContain('q.eq("toolId", product.toolId)');
+    const shadowFn = src.split("export const createShadowPost")[1] ?? "";
+    expect(shadowFn).toContain("resolveToolId(ctx, product?.toolId)");
+    expect(shadowFn).not.toContain("[product.toolId]");
+    const sellSrc = readFileSync(join(convexRoot, "store/sell.ts"), "utf8");
+    const submitFn = sellSrc.split("export const submitProduct")[1]?.split("export const requestEdit")[0] ?? "";
+    expect(submitFn).toContain("matches no tools row");
+    expect(submitFn).not.toContain("toolId: args.toolId");
   });
 });

@@ -20,6 +20,7 @@ const sanctionsSrc = read("admin/sanctions.ts");
 const appealsSrc = read("admin/appeals.ts");
 const maxSrc = read("jobs/maxRefresh.ts");
 const seasonSrc = read("signal/promoteDemote.ts");
+const awardSrc = read("signal/award.ts");
 const cronsSrc = read("crons.ts");
 const postsSrc = read("posts.ts");
 const commentsSrc = read("comments.ts");
@@ -97,7 +98,15 @@ describe("SLICE-P7E-12 — report submit (CAP-324/325)", () => {
     expect(reportSrc).toContain('"report.critical"');
   });
   it("reporter count is DISTINCT members — not report volume", () => {
-    expect(reportSrc).toContain("reporterCountDistinct: 1");
+    // incremented on EVERY new reporter (previously frozen at 1 after the
+    // first report); the dedupeKey gate guarantees the +1 is distinct
+    expect(reportSrc).toContain("reporterCountDistinct: reporterBase + 1");
+  });
+  it("dedupeKey is enforced on write — one intake row per reporter+target+family", () => {
+    expect(reportSrc).toContain('withIndex("by_dedupe"');
+    expect(reportSrc).toContain("if (dup?.caseId) return");
+    // the immutable intake row still lands with the dedupe anchor
+    expect(reportSrc).toContain("dedupeKey,");
   });
 });
 
@@ -212,10 +221,24 @@ describe("SLICE-P7E-17 — MAX + plugins (CAP-132/136/137/138)", () => {
 
 describe("SLICE-P7E-18 — season engine (CAP-306..311/314/319)", () => {
   it("CAP-307 boundary: T-30 announce / T-0 freeze / T+1 publish", () => {
-    const fn = seasonSrc.split("seasonRecalibrate")[1];
+    const fn = seasonSrc.split("export const seasonRecalibrate")[1];
     expect(fn).toContain('"announced"');
     expect(fn).toContain('"closed"');
     expect(fn).toContain("published_next_season");
+  });
+  it("the CURRENT season is derived — never hardcoded season 1 (award + promoteDemote)", () => {
+    expect(seasonSrc).toContain("currentSeasonTx");
+    expect(awardSrc).toContain("currentSeasonTx(ctx)");
+    // no signal-module season lookup pins seasonNumber 1 anymore
+    for (const src of [seasonSrc, awardSrc]) {
+      expect(src).not.toContain('q.eq("seasonNumber", 1)');
+    }
+    expect(seasonSrc).toContain('.withIndex("by_seasonNumber")\n    .order("desc")');
+  });
+  it("T+1 publish is an idempotent upsert by season key — re-runs never duplicate seasons", () => {
+    const fn = seasonSrc.split("export const seasonRecalibrate")[1];
+    expect(fn).toContain("q.eq(\"seasonNumber\", season.seasonNumber + 1)");
+    expect(fn.indexOf(".unique();")).toBeLessThan(fn.indexOf('ctx.db.insert("signalSeasons"'));
   });
   it("CAP-308: min(percentileCandidate, prior×1.50) with the transition label (pure)", async () => {
     const { thresholdPrecedence } = await import("../../../../../../convex/signal/promoteDemote");
@@ -224,16 +247,23 @@ describe("SLICE-P7E-18 — season engine (CAP-306..311/314/319)", () => {
     expect(thresholdPrecedence(40, undefined)).toEqual({ value: 40, transition: false });
   });
   it("CAP-306 promotion gate: ~30d sustained + ≥2 outcome families + integrity clear", () => {
-    const fn = seasonSrc.split("promoteSustained")[1];
+    const fn = seasonSrc.split("export const promoteSustained")[1];
     expect(fn).toContain("30 * 24");
     expect(fn).toContain("families.size < 2");
     expect(fn).toContain('"neutralize"');
   });
   it("CAP-310: annual only, max 1 level, ~10% holdover; uncalibrated line never demotes", () => {
-    const fn = seasonSrc.split("demoteAnnual")[1];
+    const fn = seasonSrc.split("export const demoteAnnual")[1];
     expect(fn).toContain("HOLDOVER_PCT");
     expect(fn).toContain("LEVELS[idx - 1]");
     expect(fn).toContain("uncalibrated — no demotion invents a line");
+  });
+  it("CAP-310 demotion is once per (distribution, season) — no daily re-demotion on re-runs", () => {
+    const fn = seasonSrc.split("export const demoteAnnual")[1];
+    expect(fn).toContain('a.status === "demoted" || a.status === "holdover"');
+    // the latest-season lookup is what stops the closed season 1 from
+    // re-demoting forever once its successor is published
+    expect(fn).toContain("currentSeasonTx(ctx)");
   });
   it("CAP-311 integrity drop is immediate (floor); not competitive demotion", () => {
     expect(seasonSrc).toContain('level: "orbit", // the floor — immediate, integrity-class');

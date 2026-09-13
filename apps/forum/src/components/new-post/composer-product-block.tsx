@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- Convex query results untyped at the client edge */
 "use client";
 
 /**
@@ -12,7 +11,8 @@
  * in the register) — flagged in the tracker.
  */
 
-import { useQuery } from "convex/react";
+import { useState } from "react";
+import { useConvex, useQuery } from "convex/react";
 
 import { api } from "@/lib/convex";
 import { isConvexConfigured } from "@cemvp/convex-client";
@@ -35,17 +35,48 @@ export function ComposerProductBlock({
   onToggle: (product: TaggedProduct) => void;
 }) {
   const configured = isConvexConfigured();
+  const convex = useConvex();
+  // listOwnProducts pages (20/page, cursor continuation — the picker must
+  // reach products beyond the first page); appended pages accumulate in
+  // local state, same idiom as the tool-profile ratings continuation.
   const own = useQuery(
     api.store.public.listOwnProducts,
     configured ? {} : "skip",
   );
+  const [extraPages, setExtraPages] = useState<
+    { products: TaggedProduct[]; nextCursor: string | null }[]
+  >([]);
+  const [loadingMore, setLoadingMore] = useState(false);
   if (!configured || own === undefined) return null;
-  const products = (own.products ?? []) as TaggedProduct[];
+  const products = [
+    ...((own.products ?? []) as TaggedProduct[]),
+    ...extraPages.flatMap((p) => p.products),
+  ];
   if (products.length === 0) return null; // no approved products → no block
+
+  const effectiveCursor =
+    extraPages.length > 0 ? extraPages[extraPages.length - 1].nextCursor : (own.nextCursor ?? null);
+  const canContinue = effectiveCursor !== null && effectiveCursor !== undefined;
+
+  async function loadMore() {
+    if (!canContinue || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const page = await convex.query(api.store.public.listOwnProducts, {
+        cursor: effectiveCursor ?? undefined,
+      });
+      setExtraPages((prev) => [
+        ...prev,
+        { products: (page.products ?? []) as TaggedProduct[], nextCursor: page.nextCursor ?? null },
+      ]);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   const isSelected = (p: TaggedProduct) =>
     selected.some((s) => s.productId === p.productId);
-  const atCap = selected.length >= 5; // CAP-244: ≤5
+  const atCap = selected.length >= 5; // CAP-244: ≤5 TAGS per post (not the picker page size)
 
   return (
     <div className="space-y-2 rounded-lg border border-(--border-default) p-3">
@@ -73,6 +104,16 @@ export function ComposerProductBlock({
             </button>
           );
         })}
+        {canContinue ? (
+          <button
+            type="button"
+            onClick={() => void loadMore()}
+            disabled={loadingMore}
+            className="rounded-full border border-(--border-default) px-3 py-1 text-xs text-(--text-secondary) transition-colors hover:text-(--text-primary) disabled:opacity-50"
+          >
+            {loadingMore ? "Loading…" : "Show more"}
+          </button>
+        ) : null}
       </div>
       <p className="text-xs text-(--text-muted)">
         {selected.length}/5 tagged · products render as live reference blocks ·

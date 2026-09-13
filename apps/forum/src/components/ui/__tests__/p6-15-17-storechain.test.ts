@@ -68,9 +68,13 @@ describe("SLICE-P6-16 — the sell dashboard (CAP-233/234/239/270/257/450/525)",
     expect(fn).toContain("paused");
   });
 
-  it("CAP-450 read contract: k<5 cells suppressed server-side", () => {
-    const fn = sellSrc.split("export const getAnalytics")[1] ?? "";
-    expect(fn).toContain(">= 5");
+  it("CAP-450 read contract: k<5 cells suppressed server-side on EVERY bucket", () => {
+    const fn = (sellSrc.split("export const getAnalytics")[1] ?? "").split("export const")[0];
+    // all three honest buckets gate their own member-level sample at the
+    // contract k (5); suppressed → null (the dashboard renders "—", never 0)
+    expect(fn).toContain("r.storeViews >= ANALYTICS_CELL_K");
+    expect(fn).toContain("r.uniqueQualifiedViewers >= ANALYTICS_CELL_K");
+    expect(fn).toContain("(r.verifiedConversions ?? 0) >= ANALYTICS_CELL_K");
     expect(fn).toContain("null");
   });
 

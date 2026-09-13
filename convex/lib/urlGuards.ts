@@ -62,3 +62,33 @@ export function validateUrlSyntax(url: string): { ok: true; hostname: string } |
   }
   return { ok: true, hostname: parsed.hostname };
 }
+
+// ── CAP-087 (R-URL) — the composer-body URL predicate ────────────────────
+// This module is the one zero-dependency pure layer BOTH runtimes can
+// import (server functions and the browser composer bundle), so the shared
+// client affordance lives here. The list below mirrors posts.ts's
+// URL_PATTERNS 1:1 (the gate createPost/updatePost run BEFORE persistence,
+// rejecting with POST_URL_NOT_ALLOWED). posts.ts keeps its own list (that
+// file is not editable in this pass); the parity test in
+// apps/forum/src/components/new-post/__tests__/composer-affordances.test.ts
+// runs both over a corpus and fails on any divergence, so the mirror
+// cannot drift from the enforced rule. Server behavior is unchanged —
+// nothing server-side calls these.
+export const R_URL_BODY_PATTERNS: RegExp[] = [
+  /https?:\/\//i,
+  /www\./i,
+  /\b(?:[a-z0-9-]+\.)+[a-z]{2,}\b/i, // bare domain.tld — alpha TLD ≥2 chars, so decimals ("4.5", "v1.2") don't match
+  /\s*\(\s*(?:dot|\.)\s*\)\s*/i,   // obfuscation: "example (dot) com"
+  /\s*\[\s*(?:dot|\.)\s*\]\s*/i,
+];
+
+/**
+ * CAP-087 client mirror — true when the body string trips R-URL. The
+ * server rejects such bodies with the verbatim
+ * "POST_URL_NOT_ALLOWED: user posts cannot contain URLs (CAP-087)" — the
+ * composer surfaces that same string so what it offers/validates is
+ * exactly what the server accepts.
+ */
+export function bodyContainsDisallowedUrl(body: string): boolean {
+  return R_URL_BODY_PATTERNS.some((pattern) => pattern.test(body));
+}

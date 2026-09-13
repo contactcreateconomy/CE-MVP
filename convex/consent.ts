@@ -20,6 +20,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireUser } from "./lib/authz";
 
 export const CMP_PURPOSES = ["strictly_necessary", "functional", "analytics", "marketing"] as const;
 export const CMP_POLICY_VERSION = "cmp.v1";
@@ -91,8 +92,7 @@ export const withdraw = mutation({
   },
   returns: v.object({ withdrawn: v.boolean() }),
   handler: async (ctx, args) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("consent.withdraw: authentication required");
+    const userId = await requireUser(ctx, "consent.withdraw");
     const now = Date.now();
     const active = await ctx.db
       .query("consentRecords")

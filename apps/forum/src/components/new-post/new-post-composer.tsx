@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import type { ComponentType, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -18,7 +18,6 @@ import {
   HelpCircle,
   Italic,
   LayoutList,
-  Link2,
   List,
   Lock,
   Newspaper,
@@ -30,12 +29,14 @@ import {
   Star,
   Swords,
   Underline as UnderlineIcon,
+  X,
 } from "lucide-react";
 
 import { COMPOSE_PUBLISH_BTN_ID } from "@/components/compose/compose-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ImageUploader } from "@/components/ui/image-uploader";
+import { bodyContainsDisallowedUrl } from "../../../../../convex/lib/urlGuards";
 import { api } from "@/lib/convex";
 import {
   NEW_POST_DRAFT_STORAGE_KEY,
@@ -145,6 +146,14 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
   const [taggedProducts, setTaggedProducts] = useState<TaggedProduct[]>([]);
   const [categoryFields, setCategoryFields] = useState<Record<string, unknown>>({});
   const [coverImage, setCoverImage] = useState<string | undefined>(undefined);
+  // Cover read-back provenance: the uploader renders its own local-blob
+  // preview for THIS session's upload; the composer renders the read-back
+  // (restored draft storageId / pasted URL) so coverImage is never
+  // write-only.
+  const [coverFromUpload, setCoverFromUpload] = useState(false);
+  // R-URL live mirror (CAP-087) — true when the current body trips the
+  // same predicate the server enforces (shared pure helper).
+  const [bodyUrlViolation, setBodyUrlViolation] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const draftRestoredRef = useRef(false);
   const publishingRef = useRef(false);
@@ -195,7 +204,12 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
       Underline,
       TiptapLink.configure({
         openOnClick: false,
-        autolink: true,
+        // R-URL (CAP-087): user post bodies can never carry a URL — the
+        // server rejects them before persistence. autolink was the one
+        // remaining affordance ACCEPTING what the server always rejects
+        // (linkifying typed/pasted https://… into <a> marks), so it is off;
+        // the live mirror warning below is the honest feedback instead.
+        autolink: false,
         HTMLAttributes: { class: "text-(--brand-primary) underline underline-offset-2" },
       }),
       Placeholder.configure({
@@ -216,6 +230,19 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
     if (!editor) return;
     setTipTapPlaceholder(editor, categoryEditorPlaceholders[categoryKey] ?? "");
   }, [categoryKey, editor]);
+
+  useEffect(() => {
+    if (!editor) return;
+    // R-URL mirror (CAP-087): check the SAME string the server will (the
+    // editor HTML), on every update, so the author learns the rule while
+    // writing — not only at publish. Shared predicate, not a copy.
+    const check = () => setBodyUrlViolation(bodyContainsDisallowedUrl(editor.getHTML()));
+    check();
+    editor.on("update", check);
+    return () => {
+      editor.off("update", check);
+    };
+  }, [editor]);
 
   useEffect(() => {
     if (!editor) return;
@@ -240,7 +267,10 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
       }
       setTitle(typeof parsed.title === "string" ? parsed.title : "");
       setSummary(typeof parsed.summary === "string" ? parsed.summary : "");
-      if (parsed.coverImage) setCoverImage(parsed.coverImage);
+      if (parsed.coverImage) {
+        setCoverImage(parsed.coverImage);
+        setCoverFromUpload(false); // read-back renders it (no local blob yet)
+      }
       if (parsed.categoryFields && typeof parsed.categoryFields === "object") {
         setCategoryFields(parsed.categoryFields);
       }
@@ -291,6 +321,22 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
     }
   }, [categoryKey, categoryFields, coverImage, editor, showToast, summary, title]);
 
+  // ── Cover read-back ─────────────────────────────────────────────────────
+  // CONTRACT-2-compose Open Question 5 leaves composer media UNGOVERED (no
+  // preview state specified) — this is the minimal honest read-back, not a
+  // contract surface (flagged, not invented further): a restored draft's
+  // storageId resolves through media.getStorageUrl; a pasted URL previews
+  // directly. The uploader keeps its own session-upload preview.
+  const coverIsUrl = typeof coverImage === "string" && /^https?:\/\//i.test(coverImage);
+  const coverStorageUrl = useQuery(
+    api.media.getStorageUrl,
+    isConvexConfigured() && !coverFromUpload && !coverIsUrl && coverImage
+      ? { storageId: coverImage }
+      : "skip",
+  );
+  const coverPreviewSrc = coverIsUrl ? coverImage : coverStorageUrl ?? null;
+  const showCoverReadBack = !coverFromUpload && coverPreviewSrc !== null;
+
   const handlePublish = useCallback(async () => {
     if (publishingRef.current) return;
     if (!isConvexConfigured()) {
@@ -314,6 +360,14 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
     // CAP-244 structured token — internal id only, never a raw URL
     const tokens = productTokens(taggedProducts);
     const body = `${bodyHtml || `<p>${bodyText}</p>`}${tokens ? `<p>${tokens}</p>` : ""}`;
+    // R-URL pre-flight (CAP-087): the shared predicate on the exact body
+    // being sent — surfaces the server's verbatim rejection string without
+    // the round trip. The server gate still runs (and its rejection still
+    // surfaces verbatim in the catch below) — this mirrors, never replaces.
+    if (bodyContainsDisallowedUrl(body)) {
+      showToast("POST_URL_NOT_ALLOWED: user posts cannot contain URLs (CAP-087)");
+      return;
+    }
     publishingRef.current = true;
     try {
       const canonicalType = categoryKey === "qa" ? "help" : categoryKey;
@@ -465,20 +519,53 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
           />
 
           <div className="mb-6">
-            <ImageUploader
-              onUploadComplete={setCoverImage}
-              onClear={() => setCoverImage(undefined)}
-              value={coverImage}
-              aspectRatio="16/9"
-              className="mb-2"
-            />
+            {showCoverReadBack ? (
+              // Read-back preview (restored draft / pasted URL) — mirrors the
+              // uploader's own preview classes; the uploader keeps rendering
+              // this session's upload itself.
+              <div
+                className="group relative mb-2 overflow-hidden rounded-lg border border-(--border-default)"
+                style={{ aspectRatio: "16/9" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={coverPreviewSrc} alt="Cover image preview" className="h-full w-full object-cover" />
+                <button
+                  type="button"
+                  aria-label="Remove image"
+                  onClick={() => {
+                    setCoverImage(undefined);
+                    setCoverFromUpload(false);
+                  }}
+                  className="absolute right-2 top-2 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <ImageUploader
+                onUploadComplete={(storageId) => {
+                  setCoverImage(storageId);
+                  setCoverFromUpload(true);
+                }}
+                onClear={() => {
+                  setCoverImage(undefined);
+                  setCoverFromUpload(false);
+                }}
+                value={coverFromUpload ? coverImage : undefined}
+                aspectRatio="16/9"
+                className="mb-2"
+              />
+            )}
             <details className="text-xs text-(--text-muted)">
               <summary className="cursor-pointer hover:text-(--text-secondary)">Or paste a URL</summary>
               <input
                 type="url"
                 placeholder="https://example.com/image.png"
                 value={coverImage ?? ""}
-                onChange={(e) => setCoverImage(e.target.value || undefined)}
+                onChange={(e) => {
+                  setCoverImage(e.target.value || undefined);
+                  setCoverFromUpload(false);
+                }}
                 className="mt-1.5 w-full rounded-lg border border-(--border-default) bg-(--bg-surface) px-3 py-1.5 text-sm text-(--text-primary) outline-hidden focus:border-(--border-active)"
               />
             </details>
@@ -487,6 +574,16 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
           <div className="mb-8 border-b border-(--border-subtle)" />
 
           <p className="mb-3 text-sm leading-relaxed text-(--text-muted)">{writingHint}</p>
+
+          {bodyUrlViolation ? (
+            // R-URL live mirror (CAP-087): the server's verbatim rejection
+            // string — surfaced while writing, and again at publish. Outbound
+            // links ride the showcase projectUrl field / tagged products, never
+            // the body.
+            <p role="alert" className="mb-3 text-sm text-(--feedback-error)">
+              POST_URL_NOT_ALLOWED: user posts cannot contain URLs (CAP-087)
+            </p>
+          ) : null}
 
           <div className="relative">
             <BubbleMenu
@@ -538,7 +635,9 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
               </MenuBtn>
               {/* B2: the link affordance is retired — canonical posts enforce
                   R-URL (no raw URLs in bodies); showcase outbound rides the
-                  P4-15 projectUrl field, product blocks ride /go. */}
+                  P4-15 projectUrl field, product blocks ride /go. Autolink is
+                  off too (see the TiptapLink config): it was the last
+                  affordance accepting URLs the server always rejects. */}
             </BubbleMenu>
             <EditorContent editor={editor} />
           </div>

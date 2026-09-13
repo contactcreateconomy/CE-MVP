@@ -26,7 +26,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { assertCustomerCapability } from "./lib/authz";
+import { assertCustomerCapability, requireUser } from "./lib/authz";
 import { appendActivity } from "./activity";
 import { onQuotaExhausted } from "./notifications/quota";
 
@@ -221,8 +221,7 @@ export const download = mutation({
   args: { resourceId: v.id("resources") },
   returns: v.object({ url: v.string(), versionId: v.optional(v.id("resourceVersions")) }),
   handler: async (ctx, args) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("resource.download: authentication required");
+    const userId = await requireUser(ctx, "resource.download");
     const resource = await publishedResource(ctx, args.resourceId);
     const acquisition = await ctx.db
       .query("acquisitions")

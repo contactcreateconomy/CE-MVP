@@ -19,6 +19,7 @@ import { query, mutation } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireUser } from "../lib/authz";
 import { captureEvent } from "../lib/events";
 
 export const RESOURCE_VIEW_EVENT_ROW = {
@@ -90,8 +91,7 @@ export const getViewUrl = mutation({
   args: { slug: v.string() },
   returns: v.object({ url: v.optional(v.string()) }),
   handler: async (ctx, args) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("viewer: authentication required");
+    const userId = await requireUser(ctx, "viewer");
     const resource = await ctx.db
       .query("resources")
       .withIndex("by_slug", (q: any) => q.eq("slug", args.slug))

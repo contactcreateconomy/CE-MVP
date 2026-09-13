@@ -11,6 +11,8 @@
  */
 
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import type { Id } from "../_generated/dataModel";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 /** Either ctx flavor (audit writes happen in mutations; reads in queries). */
 export type GenericCtx = MutationCtx | QueryCtx;
@@ -144,6 +146,14 @@ export class AuthzError extends Error {
     super(message);
     this.name = "AuthzError";
   }
+}
+
+/** Shared authenticated-user guard — one helper instead of N hand-rolled
+ *  null-checks. Message shape preserved verbatim from the sites it replaces. */
+export async function requireUser(ctx: GenericCtx, context: string): Promise<Id<"users">> {
+  const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
+  if (!userId) throw new AuthzError("NOT_AUTHENTICATED", `${context}: authentication required`);
+  return userId;
 }
 
 /**

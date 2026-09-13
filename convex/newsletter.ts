@@ -17,6 +17,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireUser } from "./lib/authz";
 
 export const NEWSLETTER_COPY_VERSION = "trigger.v1"; // v1 = trigger-based (quoted)
 
@@ -47,8 +48,7 @@ export const consent = mutation({
   args: { surface: v.string(), confirmed: v.boolean(), ipHash: v.optional(v.string()) },
   returns: v.object({ status: v.string() }),
   handler: async (ctx, args) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("newsletter.consent: authentication required");
+    const userId = await requireUser(ctx, "newsletter.consent");
     const existing = await ctx.db
       .query("newsletterConsents")
       .withIndex("by_user", (q: any) => q.eq("userId", userId))
@@ -74,8 +74,7 @@ export const unsubscribe = mutation({
   args: {},
   returns: v.object({ status: v.string() }),
   handler: async (ctx) => {
-    const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
-    if (!userId) throw new Error("newsletter.unsubscribe: authentication required");
+    const userId = await requireUser(ctx, "newsletter.unsubscribe");
     const existing = await ctx.db
       .query("newsletterConsents")
       .withIndex("by_user", (q: any) => q.eq("userId", userId))
