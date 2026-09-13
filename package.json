@@ -10,6 +10,7 @@
     "typecheck": "pnpm --filter ./apps/forum typecheck",
     "test": "pnpm --filter ./apps/forum test",
     "test:run": "pnpm --filter ./apps/forum test:run",
+    "test:e2e": "playwright test",
     "dev:seller": "pnpm --filter @cemvp/seller dev",
     "dev:admin": "pnpm --filter @cemvp/admin dev",
     "dev:marketplace": "pnpm --filter @cemvp/marketplace dev",
@@ -28,8 +29,11 @@
     "convex:seed-legal": "convex run legalContent:seedDefaults"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.63.0",
     "convex": "^1.34.1",
-    "jose": "^6.2.2"
+    "jose": "^6.2.2",
+    "vitest-axe": "^0.1.0"
   },
   "engines": {
     "node": ">=24"
