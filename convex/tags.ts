@@ -70,6 +70,33 @@ export const listTaxonomy = query({
 export const getPostTags = query({
   args: { postId: v.id("posts") },
   handler: async (ctx, { postId }) => {
+    // SECURITY (scan round 2, finding 34): the read was unguarded — tag
+    // joins for ANY post id, including private drafts (draft topics/
+    // products discoverable from a leaked id). Now: owner (or moderator/
+    // administrator) for non-published posts; published+public posts read
+    // openly (the tag picker's edit-prefill + public tag chips both work).
+    const post = await ctx.db.get(postId);
+    if (!post) return [];
+    const nonPublic = post.lifecycleStatus !== "published" || post.visibility !== "public";
+    if (nonPublic) {
+      const viewerId = (await getAuthUserId(ctx)) as Id<"users"> | null;
+      const isOwner = viewerId !== null && post.authorUserId === viewerId;
+      if (!isOwner) {
+        // Moderator/Administrator may read tags on held/review content.
+        // (authz's assertAdminPermission throws; a light role read here
+        // avoids throwing on anonymous viewers.)
+        const roles = viewerId
+          ? await ctx.db
+              .query("roleAssignments")
+              .withIndex("by_user", (q: any) => q.eq("userId", viewerId))
+              .collect()
+          : [];
+        const staff = roles.some(
+          (r: any) => r.status === "active" && (r.role === "moderator" || r.role === "administrator"),
+        );
+        if (!staff) return [];
+      }
+    }
     const joins = await ctx.db
       .query("postTags")
       .withIndex("by_postId_tagId", (q: any) => q.eq("postId", postId))

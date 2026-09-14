@@ -93,7 +93,9 @@ async function assembleCard(ctx: any, score: any, fetchedPost?: any): Promise<an
     postId: post._id,
     type: post.type,
     title: post.title,
-    authorName: author?.displayName ?? author?.email?.split("@")[0] ?? "Member",
+    // SECURITY (scan round 2, finding 33): never the email local part —
+    // opaque label instead.
+    authorName: author?.displayName ?? "Member",
     publishedAt: post.publishedAt ?? post.createdAt,
     oneLiner: card?.oneLiner ?? post.title,
     runningCommentRef: card?.runningCommentRef ?? null,

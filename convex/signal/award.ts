@@ -223,6 +223,22 @@ export const sweep = internalMutation({
         const awardeeId = event.authorUserId as Id<"users"> | undefined;
         const actorId = event.userId as Id<"users"> | null;
         if (!awardeeId) { skipped += 1; continue; }
+        // SECURITY (scan round 2, finding 31): reaction replay — only NEW
+        // positive transitions award. The emitter now writes
+        // isCountableAtWrite=false for removals/negatives, and the sweep
+        // independently re-checks the event payload so an old (or forged)
+        // row can never credit a toggle-off or a negative reaction.
+        if (eventType === "comment.reacted") {
+          const removed = (event as any).removed === true;
+          const negative = (event as any).reactionType === "negative";
+          if (removed || negative || event.isCountableAtWrite === false) { skipped += 1; continue; }
+        }
+        // Findings 31/33 discipline: held/tombstoned comments award nothing
+        // (the content the Signal is derived from is not live).
+        if (event.targetType === "comment") {
+          const target = await ctx.db.get(event.targetId as Id<"comments">).catch(() => null);
+          if (!target || target.deletedAt || (target as any).moderationStatus === "held") { skipped += 1; continue; }
+        }
         const gate = await passesOutcomeGate(ctx, {
           actorId,
           awardeeId,

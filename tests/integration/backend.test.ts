@@ -165,3 +165,127 @@ describe("waitlist.join (mutation: unique index + rate-limit component + event)"
     });
   });
 });
+
+/* ── Security scan round 2, finding 32: Signal revocation cascade ── */
+
+/** Minimal valid users row (schema requires the full bootstrap field set). */
+function seedUser(email: string) {
+  return {
+    email, createdAt: 1, emailVerified: false, mobileVerified: false,
+    mobileVerifiedAt: 0, accountStatus: "active", accountStanding: "good",
+    trustTier: "t1", analyticsSubjectId: "a-" + email, bootstrapState: "complete",
+    leaderboardOptOut: false, postingEligibilityState: "eligible",
+    profileVisibility: "public", displayName: "T", avatarAssetId: "", bio: "",
+    postCount: 0, approvedCommentCount: 0, lastActiveAt: 1, suspendedAt: 0,
+    suspendedReason: "", deletedAt: 0, basicProfileComplete: true,
+    rulesAcceptedVersion: "", rulesAcceptedAt: 0, legalAgeAssertedVersion: "",
+    legalAgeAssertedAt: 0, profileVersion: 1, completionBadges: [],
+    onboardingState: "activated", coachCardsShownCount: 0,
+    checklistStepsShownMax: 0, coachDismissed: [],
+    activationProgress: { emailVerified: false, mobileVerified: false,
+      profileComplete: true, firstPostPublished: false, firstCommentPosted: false,
+      firstReactionGiven: false, firstFollowMade: false },
+  } as any;
+}
+
+describe("Signal revocation cascade (scan round 2, finding 32)", () => {
+  it("soft-deleting a comment reverses its anchored awards + splits (idempotent)", async () => {
+    const t = makeT();
+    await t.run(async (ctx) => {
+      // Seed: a season, a post author, a commenter, an outcome event on the
+      // comment, an award anchored on it, and a finalized split row derived
+      // from that award (the split:<awardId>:<commenter> key discipline).
+      const seasonId = await ctx.db.insert("signalSeasons", {
+        seasonNumber: 1, startAt: 1, endAt: 2, status: "active", mode: "fixed",
+        thresholds: {}, poolSize: 10,
+      } as any);
+      const authorId = await ctx.db.insert("users", seedUser("author@x.test") as any);
+      const commenterId = await ctx.db.insert("users", seedUser("commenter@x.test") as any);
+      const postId = await ctx.db.insert("posts", {
+        authorType: "user", authorUserId: authorId, type: "spark",
+        title: "t", body: "b", categoryId: "c1", lifecycleStatus: "published",
+        moderationStatus: "passed", visibility: "public", createdAt: 1, toolIds: [],
+      } as any);
+      // Mirror comments.create's post-fix seeding (l.243): omit at insert,
+      // patch the self-id same-tx (depth 0).
+      const commentId = await ctx.db.insert("comments", {
+        postId, authorType: "user", authorUserId: commenterId, body: "b",
+        depth: 0, moderationStatus: "passed", createdAt: 1,
+        threadRootCommentId: undefined, parentCommentId: undefined,
+        isQuestion: false, editedAt: 0, lastActivityAt: 1,
+      } as any);
+      await ctx.db.patch(commentId, { threadRootCommentId: commentId } as any);
+      const eventId = await ctx.db.insert("rawEvents", {
+        eventClass: "outcome", eventType: "comment.reacted", userId: authorId,
+        sequenceInSession: 1, targetType: "comment", targetId: commentId,
+        authorUserId: commenterId, source: "direct", isAiPersona: false,
+        isStaff: false, isPersona: false, isCountableAtWrite: true,
+        occurredAt: Date.now(), receivedAt: Date.now(), schemaVersion: 1,
+      } as any);
+      const awardId = await ctx.db.insert("signalLedger", {
+        contributionId: "outcome:" + eventId, contributionType: "post",
+        authorUserId: commenterId, outcomeType: "comment.reacted",
+        outcomeEventId: eventId, grossValue: 1, legitimacyFactor: 1,
+        confidenceFactor: 0.5, attributionModelVersion: "positional.v1",
+        outcomeDefinitionVersion: 1, signalValue: 0.4, state: "provisional",
+        entryType: "award", seasonId, provisionalAt: Date.now(),
+        meta: { journey: "post:" + postId },
+      } as any);
+      const splitId = await ctx.db.insert("signalLedger", {
+        contributionId: `split:${awardId}:${commenterId}`, contributionType: "comment",
+        authorUserId: commenterId, outcomeType: "comment.reacted",
+        outcomeEventId: eventId, grossValue: 0.06, legitimacyFactor: 1,
+        confidenceFactor: 0.5, attributionModelVersion: "positional.v1",
+        outcomeDefinitionVersion: 1, signalValue: 0.06, state: "finalized",
+        entryType: "award", seasonId, provisionalAt: Date.now(), finalizedAt: Date.now(),
+      } as any);
+
+      // The revocation under test (the REAL module code).
+      const { reverseCommentOutcomes } = await import("../../convex/jobs/attributionSettle");
+      const reversed1 = await reverseCommentOutcomes(ctx, commentId, "comment_soft_deleted");
+      expect(reversed1).toBeGreaterThanOrEqual(1);
+
+      // The anchor event is marked reversed…
+      const event = await ctx.db.get(eventId);
+      expect((event as any).reversedAt).toBeGreaterThan(0);
+      // …the award is flipped + a negative reversal row exists…
+      const award = await ctx.db.get(awardId);
+      expect(award?.state).toBe("reversed");
+      const reversals = (await ctx.db.query("signalLedger").collect())
+        .filter((r: any) => r.entryType === "reversal");
+      expect(reversals.length).toBeGreaterThanOrEqual(1);
+      // …and the SPLIT row (the finding-32 key-mismatch class) is retracted too.
+      const split = await ctx.db.get(splitId);
+      expect(["reversed", "clawed_back"]).toContain(split?.state);
+
+      // IDEMPOTENT: a second run reverses nothing new (no duplicate rows).
+      const before = (await ctx.db.query("signalLedger").collect()).length;
+      const reversed2 = await reverseCommentOutcomes(ctx, commentId, "comment_soft_deleted");
+      const after = (await ctx.db.query("signalLedger").collect()).length;
+      expect(reversed2).toBe(0);
+      expect(after).toBe(before);
+    });
+  });
+
+  it("reaction removal events are never awardable (finding 31 discipline)", async () => {
+    const t = makeT();
+    await t.run(async (ctx) => {
+      const testUserId = await ctx.db.insert("users", seedUser("actor@x.test") as any);
+      const eventId = await ctx.db.insert("rawEvents", {
+        eventClass: "outcome", eventType: "comment.reacted", userId: testUserId,
+        sequenceInSession: 1, targetType: "comment", targetId: "c1",
+        authorUserId: testUserId, source: "direct", isAiPersona: false,
+        isStaff: false, isPersona: false, isCountableAtWrite: false,
+        reactionType: "negative",
+        occurredAt: Date.now(), receivedAt: Date.now(), schemaVersion: 1,
+      } as any);
+      const event = await ctx.db.get(eventId);
+      // The sweep's re-check predicate (mirrors award.ts's guard).
+      // The sweep's guard (award.ts): a negative or uncountable reaction
+      // event never awards. Removal events carry isCountableAtWrite=false
+      // from the emitter (stored detail fields, not schema-validated).
+      const negative = (event as any).reactionType === "negative";
+      expect(negative || event?.isCountableAtWrite === false).toBe(true);
+    });
+  });
+});

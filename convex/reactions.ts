@@ -33,6 +33,7 @@ import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertCustomerCapability, requireUser } from "./lib/authz";
+import { checkRateLimit } from "./lib/rateLimit";
 import { captureEvent } from "./lib/events";
 import { checkCommentEligibility } from "./eligibility";
 import { appendActivity } from "./activity";
@@ -96,6 +97,12 @@ async function bumpThreadActivity(ctx: any, postId: Id<"posts">): Promise<void> 
 }
 
 async function captureReactionEvent(ctx: any, userId: Id<"users">, comment: any, detail: Record<string, unknown>): Promise<void> {
+  // SECURITY (scan round 2, finding 31): only NEW positive reactions are
+  // awardable outcomes. Removals and negative reactions write
+  // isCountableAtWrite: false — the Signal sweep must never credit a
+  // toggle-off or a negative reaction as positive reaction weight.
+  const removed = detail.removed === true;
+  const negative = detail.reactionType === "negative";
   await captureEvent(ctx, {
     eventType: "comment.reacted",
     schemaVersion: 1,
@@ -109,7 +116,7 @@ async function captureReactionEvent(ctx: any, userId: Id<"users">, comment: any,
     source: "direct",
     isStaff: false,
     isPersona: false,
-    isCountableAtWrite: true,
+    isCountableAtWrite: !removed && !negative,
     postId: comment.postId,
     ...detail,
   } as any);
@@ -121,6 +128,8 @@ export const toggleValuable = mutation({
   returns: v.object({ reacted: v.boolean() }),
   handler: async (ctx, args) => {
     const userId = await requireUser(ctx, "reactions.valuable");
+    // SECURITY (finding 31): transition throttle — toggle-farming rawEvents.
+    await checkRateLimit(ctx, "reactions.toggle", { kind: "user", value: userId });
     const comment = await loadComment(ctx, args.commentId);
     await assertReactorEligibility(ctx, userId, comment);
 
@@ -189,6 +198,8 @@ export const toggleNegative = mutation({
   returns: v.object({ reacted: v.boolean() }),
   handler: async (ctx, args) => {
     const userId = await requireUser(ctx, "reactions.negative");
+    // SECURITY (finding 31): transition throttle — toggle-farming rawEvents.
+    await checkRateLimit(ctx, "reactions.toggle", { kind: "user", value: userId });
     const comment = await loadComment(ctx, args.commentId);
     await assertReactorEligibility(ctx, userId, comment);
 

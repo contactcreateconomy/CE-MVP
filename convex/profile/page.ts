@@ -157,7 +157,9 @@ export const getProfilePage = query({
 
     return {
       identity: {
-        displayName: user.displayName ?? user.email?.split("@")[0] ?? "Member",
+        // SECURITY (scan round 2, finding 33): never the email local part —
+        // opaque label on public profiles.
+        displayName: user.displayName ?? "Member",
         username: user.username ?? normalized,
         bio: user.bio ?? null,
         roleArchetype: demographicsVisible ? (profile?.roleArchetype ?? null) : null,

@@ -103,7 +103,9 @@ async function authorNameOf(ctx: any, comment: any): Promise<string | null> {
   if (comment.authorType === "persona") return "AI persona"; // M8 name joins at P5-09
   if (!comment.authorUserId) return null;
   const user = await ctx.db.get(comment.authorUserId);
-  return user?.displayName ?? user?.email?.split("@")[0] ?? null;
+  // SECURITY (scan round 2, finding 33): never fall back to the email local
+  // part on public surfaces — opaque label instead.
+  return user?.displayName ?? "Member";
 }
 
 /** CAP-123 `comments.list` — top-level comments by sort mode. */

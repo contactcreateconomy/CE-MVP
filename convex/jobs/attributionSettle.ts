@@ -27,6 +27,36 @@ const COMMENTER_SHARE = 0.15;
 const COMMENTER_POOL_MAX = 10;
 const SETTLE_WINDOW_DAYS = 7; // config key signal.settle.windowDays mirrors this (calibration_pending.v1)
 
+/** SECURITY (scan round 2, finding 32): outcome anchors are FAMILY-PREFIXED
+ *  ids — `rawEvents` table ids for event-driven families, but `cta:<clickId>`
+ *  / `conv:<evidenceId>` for commerce families whose source rows live in
+ *  OTHER tables. Settlement previously db.get()'d the prefixed string as a
+ *  rawEvents id (always null → anchor checks silently passed). This resolver
+ *  maps each anchor back to its source row and reports whether the outcome
+ *  still qualifies (row gone / drifted / un-qualified → reversed). */
+async function anchorOutcomeReversed(ctx: any, ledgerRow: any): Promise<boolean> {
+  const anchor: string = String(ledgerRow.outcomeEventId ?? "");
+  if (anchor.startsWith("cta:")) {
+    const click = await ctx.db.get(anchor.slice(4) as Id<"storefrontClicks">).catch(() => null);
+    if (!click) return true; // source row gone → the outcome no longer stands
+    return click.qualification !== "qualified" || click.integrityStatus !== "settled";
+  }
+  if (anchor.startsWith("conv:")) {
+    const ev = await ctx.db.get(anchor.slice(5) as Id<"salesEvidence">).catch(() => null);
+    if (!ev) return true;
+    return ev.status !== "network_verified";
+  }
+  if (anchor.startsWith("split:")) {
+    // Split rows derive from an award — reversal cascades via
+    // reversesLedgerId, never re-derived here.
+    return false;
+  }
+  // Event-driven families: a rawEvents id.
+  const event = await ctx.db.get(anchor as Id<"rawEvents">).catch(() => null);
+  if (!event) return true; // anchor lost — treat as reversed (fail-closed)
+  return Boolean((event as any).reversedAt);
+}
+
 /** CAP-279 — journey-linked commenters: commenters on the contribution
  *  BEFORE the outcome event (chronological journey), bounded pool. */
 async function journeyCommenters(ctx: any, contributionId: string, before: number): Promise<Id<"users">[]> {
@@ -99,10 +129,11 @@ export const settle = internalMutation({
     let finalized = 0;
     let reversed = 0;
     for (const row of rows) {
-      // Reversal condition at settle: the anchor event was reversed after
-      // the award (rawEvents.reversedAt) — otherwise finalize
-      const anchor = await ctx.db.get(row.outcomeEventId as Id<"rawEvents">).catch(() => null);
-      const anchorReversed = anchor && (anchor as any).reversedAt;
+      // Reversal condition at settle (finding 32): the anchor outcome was
+      // reversed/drifted after the award — resolved BY FAMILY (rawEvents
+      // rows, qualified clicks, verified evidence), not a blind rawEvents
+      // lookup that silently passed for commerce anchors. Otherwise finalize.
+      const anchorReversed = await anchorOutcomeReversed(ctx, row);
       if (anchorReversed) {
         await reverseTx(ctx, row._id, "outcome_reversed_at_settle");
         reversed += 1;
@@ -143,12 +174,19 @@ export async function reverseTx(ctx: any, ledgerId: Id<"signalLedger">, reason: 
     finalizedAt: now,
     meta: { reason },
   });
-  // Cascade: reverse the positional split rows derived from this award
-  const splits = await ctx.db
+  // Cascade: reverse the positional split rows derived from this award.
+  // SECURITY (scan round 2, finding 32): the insert key is
+  // `split:<ledgerId>:<commenter>` (finalizeTx) but this lookup queried the
+  // exact key `split:<ledgerId>` — NEVER matched, so cascades silently
+  // no-oped. Index prefix-scan on contributionId retrieves every derived
+  // split row regardless of commenter suffix.
+  const splitPrefix = "split:" + ledgerId;
+  const splits = (await ctx.db
     .query("signalLedger")
     .withIndex("by_contribution", (q: any) =>
-      q.eq("contributionId", "split:" + ledgerId).eq("contributionType", "comment"))
-    .take(COMMENTER_POOL_MAX);
+      q.gte("contributionId", splitPrefix).lte("contributionId", splitPrefix + "\uffff"))
+    .take(COMMENTER_POOL_MAX + 1))
+    .filter((r: any) => r.contributionId.startsWith(splitPrefix));
   for (const split of splits) {
     if (split.state !== "finalized") continue;
     await ctx.db.patch(split._id, { state: "reversed", reversedAt: now });
@@ -210,6 +248,42 @@ export async function clawbackTx(ctx: any, actorUserId: Id<"users">, windowMs: n
       meta: { reason: "integrity_confirmed" },
     });
     clawed += 1;
+    // SECURITY (scan round 2, finding 32): clawback previously skipped the
+    // COMMENTER split rows derived from this award — a neutralized actor's
+    // commentary pool kept the 15% positional credit. The cascade now
+    // retracts them through the same prefix-scan reverseTx uses.
+    const clawPrefix = "split:" + row._id;
+    const splitRows = (await ctx.db
+      .query("signalLedger")
+      .withIndex("by_contribution", (q: any) =>
+        q.gte("contributionId", clawPrefix).lte("contributionId", clawPrefix + "\uffff"))
+      .take(COMMENTER_POOL_MAX + 1))
+      .filter((r: any) => r.contributionId.startsWith(clawPrefix));
+    for (const split of splitRows) {
+      if (split.state !== "finalized") continue;
+      await ctx.db.patch(split._id, { state: "clawed_back", reversedAt: Date.now() });
+      await ctx.db.insert("signalLedger", {
+        contributionId: "clawback:" + split._id,
+        contributionType: split.contributionType,
+        authorUserId: split.authorUserId,
+        outcomeType: split.outcomeType,
+        outcomeEventId: split.outcomeEventId,
+        grossValue: split.signalValue,
+        legitimacyFactor: split.legitimacyFactor,
+        confidenceFactor: split.confidenceFactor,
+        attributionModelVersion: split.attributionModelVersion,
+        outcomeDefinitionVersion: split.outcomeDefinitionVersion,
+        signalValue: -split.signalValue,
+        state: "finalized",
+        entryType: "clawback",
+        reversesLedgerId: split._id,
+        seasonId: split.seasonId,
+        provisionalAt: split.provisionalAt,
+        finalizedAt: Date.now(),
+        meta: { reason: "cascade:integrity_confirmed" },
+      });
+      clawed += 1;
+    }
   }
   return clawed;
 }
@@ -223,3 +297,36 @@ export const clawbackForActor = internalMutation({
     clawed: await clawbackTx(ctx, args.actorUserId, (args.windowDays ?? 90) * 24 * 3_600_000),
   }),
 });
+
+/** SECURITY (scan round 2, finding 32): content revocation — the missing
+ *  write-side trigger. Deleting (tombstoning) a comment or holding it for
+ *  unsafe content now (1) marks every outcome rawEvent anchored to that
+ *  comment `reversedAt` (the reversal trigger settle reads — previously
+ *  written by NOBODY), and (2) immediately reverses any provisional or
+ *  finalized award rows anchored on those events, cascading to their
+ *  positional split rows via reverseTx. Settled Signal no longer survives
+ *  deleted content. Idempotent: reverseTx no-ops non-final/non-provisional
+ *  rows and already-reversed events are skipped. */
+export async function reverseCommentOutcomes(ctx: any, commentId: string, reason: string): Promise<number> {
+  const events = await ctx.db
+    .query("rawEvents")
+    .withIndex("by_target_eventClass", (q: any) =>
+      q.eq("targetType", "comment").eq("targetId", commentId).eq("eventClass", "outcome"))
+    .take(100);
+  let reversed = 0;
+  for (const event of events) {
+    if ((event as any).reversedAt) continue;
+    await ctx.db.patch(event._id, { reversedAt: Date.now(), reversalReason: reason } as any);
+    // Retract awards anchored on this event (any state — provisional or
+    // finalized; reverseTx is append-only and idempotent).
+    const awards = await ctx.db
+      .query("signalLedger")
+      .withIndex("by_contribution", (q: any) => q.eq("contributionId", "outcome:" + event._id))
+      .take(20);
+    for (const award of awards) {
+      await reverseTx(ctx, award._id, reason);
+      reversed += 1;
+    }
+  }
+  return reversed;
+}

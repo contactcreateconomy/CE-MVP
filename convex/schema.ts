@@ -943,7 +943,7 @@ export default defineSchema({
   comments: defineTable({
     postId: v.id("posts"),
     parentCommentId: v.optional(v.id("comments")),
-    threadRootCommentId: v.id("comments"), // self-id convention on depth 0
+    threadRootCommentId: v.optional(v.id("comments")), // self-id convention on depth 0 — momentary-optional at INSERT only (comments.create omits + patches self-id same-tx; a bare "" previously failed v.id validation — latent-bug fix 2026-09-13)
     replyToCommentId: v.optional(v.id("comments")),
     depth: v.union(v.literal(0), v.literal(1)),
     authorType: v.union(v.literal("editorial"), v.literal("persona"), v.literal("user")),

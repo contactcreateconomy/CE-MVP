@@ -192,6 +192,9 @@ export const create = mutation({
       if (!parent || parent.postId !== args.postId) throw new Error("comments.create: parent comment not found on this post");
       if (parent.depth !== 0) throw new Error("comments.create: INV-1 — one reply depth only");
       if (parent.deletedAt) throw new Error("comments.create: parent is tombstoned (replies preserved, not extendable)");
+      // momentary-optional discipline: a depth-0 parent ALWAYS carries its
+      // self-id after the same-tx patch — an absent root is corruption.
+      if (!parent.threadRootCommentId) throw new Error("comments.create: parent threadRootCommentId missing (corrupt row)");
       threadRoot = parent.threadRootCommentId;
     }
 
@@ -240,7 +243,7 @@ export const create = mutation({
     const commentId = await ctx.db.insert("comments", {
       postId: args.postId,
       parentCommentId: args.parentCommentId,
-      threadRootCommentId: threadRoot ?? ("" as any), // patched to self-id below (depth 0)
+      threadRootCommentId: threadRoot ?? undefined, // self-id patched below (depth 0) — momentary-optional (LATENT-BUG FIX 2026-09-13: "" threw on the v.id validator; omitted-then-patched is atomic, readers never see the gap)
       replyToCommentId: args.replyToCommentId,
       depth,
       authorType: "user",
@@ -423,6 +426,13 @@ export const edit = mutation({
     await ctx.db.patch(args.commentId, { body: args.body, editedAt: now, lastActivityAt: now, moderationStatus });
     if (moderationStatus !== "passed") await openModerationCase(ctx, args.commentId, `edit_${!safety.available ? "classifier_unavailable" : "classifier_unsafe"}`);
 
+    // SECURITY (scan round 2, finding 32): a held edit revokes outcomes the
+    // prior body earned — held content must not keep crediting Signal.
+    if (moderationStatus === "held") {
+      const { reverseCommentOutcomes } = await import("./jobs/attributionSettle");
+      await reverseCommentOutcomes(ctx, args.commentId, "comment_edit_held");
+    }
+
     const scores = await commentScoresRow(ctx, args.commentId);
     if (scores) await ctx.db.patch(scores._id, { dirty: true, lastInteractionAt: now });
     const stats = await threadStatsRow(ctx, comment.postId);
@@ -471,6 +481,13 @@ export const softDelete = mutation({
 
     const now = Date.now();
     await ctx.db.patch(args.commentId, { deletedAt: now });
+
+    // SECURITY (scan round 2, finding 32): content revocation cascades —
+    // reverse every award anchored on this comment's outcome events (and
+    // their positional split rows). Settled Signal must not survive the
+    // deleted content it was derived from.
+    const { reverseCommentOutcomes } = await import("./jobs/attributionSettle");
+    await reverseCommentOutcomes(ctx, args.commentId, "comment_soft_deleted");
 
     // Same-tx postHelps clear (CAP-122 / DEC-M4-HARDEN)
     const help = await ctx.db

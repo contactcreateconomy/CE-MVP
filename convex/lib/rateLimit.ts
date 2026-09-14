@@ -81,6 +81,11 @@ export const RATE_LIMITS: Record<string, RateLimit[]> = {
   // comments.create lost it in the strangler cutover, leaving comment
   // submission unbounded (autoGate velocity only counts prior HOLDS).
   "member.comments.hour": [{ name: "member.comments.hour", max: 60, periodMs: 60 * 60_000, subject: "user" }],
+  // SECURITY (scan round 2, finding 31): reaction-transition throttle —
+  // register-unnamed velocity control capping toggle farming of
+  // comment.reacted rawEvents (each transition previously minted a fresh
+  // awardable event). FLAGGED default: 60/5m per user.
+  "reactions.toggle": [{ name: "reactions.toggle", max: 60, periodMs: 5 * 60_000, subject: "user" }],
   // SECURITY (scan 2026-09-13, finding 26): setup-surface throttles —
   // upsertBasic/consentRecord appended unbounded history rows. FLAGGED
   // defaults (register-unnamed): 5/h setup re-runs, 30/h consent writes.
