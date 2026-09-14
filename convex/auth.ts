@@ -74,6 +74,15 @@ function parseAuthRedirectOrigins(): Set<string> {
   return origins;
 }
 
+/** SECURITY (scan round 2, finding 33): never derive a PUBLIC display name
+ *  from the email local part — it leaks identifying data platform-wide
+ *  (profile/comment/feed surfaces). New accounts without an explicit name
+ *  get an opaque member label. */
+function opaqueMemberLabel(): string {
+  const rand = crypto.randomUUID().slice(0, 8);
+  return `member-${rand}`;
+}
+
 function deriveHandle(email: string, name?: string): string {
   // CAP-474 discipline via lib/handle (the same normalizer the username
   // reserve path uses) — only the SOURCE differs: name first, email
@@ -142,7 +151,8 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
           leaderboardOptOut: false,
           postingEligibilityState: "not_verified" as const,
           profileVisibility: "public" as const,
-          displayName: name ?? email.split("@")[0] ?? "member",
+          // SECURITY (finding 33): opaque label — never the email local part
+          displayName: name ?? opaqueMemberLabel(),
           avatarAssetId: "",
           bio: "",
           postCount: 0,
