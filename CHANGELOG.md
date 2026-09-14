@@ -7,6 +7,16 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Security hardening round 2: economy/privacy findings 31–34 + latent comment-create P0 (2026-09-13, commit `c93c672`)
+
+*Erdos economy-worker re-run — all four findings fixed, plus one P0 the new integration test surfaced.*
+
+- **31 (HIGH) Signal reaction replay**: only NEW positive reactions are awardable. The emitter writes `isCountableAtWrite: false` for removals and negative reactions; the award sweep independently re-checks (`removed`/`negative`/uncountable events skip) and refuses awards whose target comment is held or tombstoned; reaction transitions are rate-limited (`reactions.toggle` 60/5m per user — FLAGGED default).
+- **32 (HIGH) Signal revocation cascade**: (a) settlement now resolves outcome anchors BY FAMILY — `cta:<clickId>`/`conv:<evidenceId>` map to their source tables (drift/un-qualification ⇒ reversal; the previous blind `rawEvents.db.get` on a prefixed string always returned null and silently passed); (b) the split-row cascade and clawback now RANGE-SCAN the `split:<awardId>:<commenter>` keyspace — the previous exact-match on `split:<awardId>` never hit (Convex `eq` is exact, not prefix), so cascades silently no-oped; (c) clawback cascades to commenter split rows (previously skipped — a neutralized actor's commentary pool kept the 15% positional credit); (d) NEW `reverseCommentOutcomes` — the previously-dead `rawEvents.reversedAt` reversal trigger is now WRITTEN on comment soft-delete and held edits, immediately reversing anchored awards and cascading to splits, idempotently. Integration-tested end-to-end.
+- **33 (MEDIUM) email local-part leak**: public display names never derive from email. Signup defaults to an opaque `member-<random8>` label; profile/comment/feed helpers' fallbacks are now `"Member"` (were `email.split("@")[0]`). No data migration (dev data is disposable per 00-TRANSITION; existing rows keep their names).
+- **34 (LOW) draft tag reads**: `tags.getPostTags` now guards non-published/non-public posts — owner or moderator/administrator only; published+public posts read openly (edit prefill + public chips unaffected).
+- **LATENT P0 (found by the new test)**: `comments.create` inserted `threadRootCommentId: ""` on depth-0 — `v.id` validation rejects the empty string, so **no top-level comment could ever be created on a validating backend** (never exercised: forum tests are source-assertions, E2E smoke doesn't comment). The field is momentary-optional now: omitted at insert, self-id patched in the same transaction (atomic — readers never observe the gap); the reply path fails loudly if a depth-0 parent lacks its root. Schema comment documents the invariant.
+
 ### Security hardening: 30 findings from the 2026-09-13 security scan (all severities fixed)
 
 *Source-verified scan (CRITICAL 1 · HIGH 7 · MEDIUM 19 · LOW 3) — every finding verified against source before fixing; full gate re-run green (typecheck · lint · 952 forum + 80 convex tests · 572/572 coverage · build · E2E 4/4+1 skip).*
