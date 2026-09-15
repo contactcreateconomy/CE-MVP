@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { SkeletonText } from "@/components/ui/skeleton";
-import { api } from "../../../../../../../convex/_generated/api";
+import { api } from "@/lib/convex";
 
 export default function AdminHomePage() {
   const home = useQuery(api.admin.home?.compose, {});

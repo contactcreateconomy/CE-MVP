@@ -40,4 +40,8 @@ third leg of the tracking system (code → CHANGELOG.md, progress → wiki,
 
 ## Domain / Spec
 
+### 2026-09-15 — Admin console lives in `apps/admin`, not forum
+
+00-TOPOLOGY originally parked `apps/admin`. Founder extraction 2026-09-15: `/admin/*` pages moved to `apps/admin/src/app/admin/` (port 3001). Forum redirects `/admin`. Do not re-create admin routes under `apps/forum`. Auth cookies do not cross origins — staff sign in on :3001. `AUTH_REDIRECT_ORIGINS` must include `http://localhost:3001` for Google OAuth.
+
 <!-- lessons about the PRD, contracts, data model -->

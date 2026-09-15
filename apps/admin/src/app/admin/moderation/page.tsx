@@ -12,7 +12,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 
-import { api } from "../../../../../../../convex/_generated/api";
+import { api } from "@/lib/convex";
 import { Badge } from "@/components/ui/badge";
 import { formatRelativeDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";

@@ -33,8 +33,14 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Typecheck admin
+        run: pnpm typecheck:admin
+
       - name: Lint
         run: pnpm lint
+
+      - name: Lint admin
+        run: pnpm lint:admin
 
       - name: Test
         run: pnpm test:run
@@ -61,3 +67,6 @@ jobs:
         run: pnpm build
         # No NEXT_PUBLIC_CONVEX_URL: the codebase guards prerenders with
         # isConvexConfigured() exactly for CI/Vercel builds without Convex.
+
+      - name: Build admin
+        run: pnpm build:admin

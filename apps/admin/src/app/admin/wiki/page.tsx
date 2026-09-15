@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SkeletonText } from "@/components/ui/skeleton";
-import { api } from "../../../../../../../convex/_generated/api";
+import { api } from "@/lib/convex";
 
 export default function AdminWikiPage() {
   const [slug, setSlug] = useState("admin-home");

@@ -12,7 +12,7 @@ import { useMutation, useQuery } from "convex/react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { api } from "../../../../../../../convex/_generated/api";
+import { api } from "@/lib/convex";
 
 export default function AdminUtmPage() {
   const dict = useQuery(api.admin.utm?.getDictionary, {});

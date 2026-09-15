@@ -18,7 +18,7 @@ import { useMemo, useState } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { FlaskConical, Play, Save, Settings2 } from "lucide-react";
 
-import { api } from "../../../../../../../convex/_generated/api";
+import { api } from "@/lib/convex";
 import { Badge } from "@/components/ui/badge";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";

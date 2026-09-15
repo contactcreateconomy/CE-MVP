@@ -6,13 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Createconomy — a curated creator-discussion platform (typed-post forum, labeled AI-persona discussions, claims-first editorial pipeline, tool registry, reputation economy). pnpm monorepo: `apps/forum` (the real Next.js app — owns **all** MVP routes including admin/sell/storefront), `convex/` (shared Convex backend, ~90-table schema), `packages/auth-ui` + `packages/convex-client`, and the full build spec in `docs/`. Phases 1–7 are code-complete; `apps/admin`, `apps/seller`, `apps/marketplace` are parked placeholders — keep them buildable, never build them out.
+Createconomy — a curated creator-discussion platform (typed-post forum, labeled AI-persona discussions, claims-first editorial pipeline, tool registry, reputation economy). pnpm monorepo: `apps/forum` (member Next.js app), `apps/admin` (staff console on port 3001), `convex/` (shared Convex backend, ~90-table schema), `packages/auth-ui` + `packages/convex-client`, and the full build spec in `docs/`. Phases 1–7 are code-complete; `apps/seller` and `apps/marketplace` are parked placeholders — keep them buildable, never build them out.
 
 ## Commands (from repo root)
 
 | Command | What it does |
 |---|---|
 | `pnpm dev` | Forum dev server → http://localhost:3000 (`/` redirects to `/feed`) |
+| `pnpm dev:admin` | Admin console → http://localhost:3001 (`/` redirects to `/admin`) |
 | `pnpm typecheck` / `pnpm lint` | `tsc --noEmit` / ESLint for the forum app (lint enforces `--max-warnings 0`) |
 | `pnpm test:run` | Forum Vitest suite (jsdom, colocated at `apps/forum/src/**/__tests__/`) |
 | `pnpm test:convex` | Root Vitest — Convex unit tests (`tests/convex/`) + convex-test integration (`tests/integration/`); runs `scripts/sync-components.mjs` first |
@@ -25,7 +26,7 @@ Createconomy — a curated creator-discussion platform (typed-post forum, labele
 
 Single test: `pnpm --filter ./apps/forum test:run -- src/path/__tests__/file.test.tsx` · root suite: `pnpm exec vitest run tests/convex/lib-glm.test.ts` · one E2E: `pnpm test:e2e e2e/smoke.spec.ts`.
 
-Toolchain: **Node 24** (`.nvmrc`, CI), pnpm 10 pinned via `packageManager`, **Convex pinned to 1.34.1** via pnpm override. All root scripts target `apps/forum`; parked apps have `pnpm dev:seller` / `dev:admin` / `dev:marketplace` variants.
+Toolchain: **Node 24** (`.nvmrc`, CI), pnpm 10 pinned via `packageManager`, **Convex pinned to 1.34.1** via pnpm override. Root `pnpm dev`/`typecheck`/`lint`/`test:run`/`build` target `apps/forum`; admin has `pnpm dev:admin` / `typecheck:admin` / `lint:admin` / `build:admin`. Seller/marketplace remain parked.
 
 ## Testing architecture (three separate suites)
 
@@ -48,11 +49,12 @@ Before any slice/screen, the mandatory read order is `docs/AGENT-START-HERE.md` 
 
 ## Architecture
 
-- **Frontend** `apps/forum`: Next.js 16 App Router, React 19, TS strict. Route groups under `src/app/`: `(app)/(shell)` (feed + main surfaces), `(app)/(content)`, `(app)/admin`, `(auth)`, `(compose)`. Tailwind v4 tokens live in `src/app/globals.css` (`@theme inline`) — never use raw hex/px where a named token exists. Radix primitives + `cva`/`clsx`/`tailwind-merge`; Zustand stores in `src/stores`; TipTap composer is `React.lazy`-loaded (keep it that way).
+- **Frontend** `apps/forum`: Next.js 16 App Router, React 19, TS strict. Route groups under `src/app/`: `(app)/(shell)` (feed + main surfaces), `(app)/(content)`, `(auth)`, `(compose)`. Tailwind v4 tokens live in `src/app/globals.css` (`@theme inline`) — never use raw hex/px where a named token exists. Radix primitives + `cva`/`clsx`/`tailwind-merge`; Zustand stores in `src/stores`; TipTap composer is `React.lazy`-loaded (keep it that way).
+- **Admin** `apps/admin`: staff console at `/admin/*` (port 3001). Same Convex backend + `@cemvp/auth-ui`. Forum `/admin` redirects here.
 - **Convex providers**: components using `useQuery` must sit under `ConvexProvider`; guard with `isConvexConfigured()` where pages must prerender without a Convex URL. Use `useSharedData()` (SharedDataProvider) for categories + unread count — don't duplicate `listCategories` subscriptions.
 - **`next.config.mjs`** pins `convex` + `@convex-dev/auth` to the forum's own copies via resolveAlias (shared React context under Turbopack) — don't remove.
 - **Backend** `convex/`: single `schema.ts` (~90 tables) + `crons.ts` + module dirs (`admission`, `forum`, `ingest`, `qualify`, `editorial`, `posts`, `admin`, `moderation`, `economy`, `lib`, …). Content pipeline: ingest → H-SAFE/moderation + qualify (AI, fail closed without keys) → human editorial review with evidence → publish.
-- **Env**: frontend reads exactly one var, `NEXT_PUBLIC_CONVEX_URL` (`apps/forum/.env.local`, via `@cemvp/convex-client`). Backend secrets in `convex/.env` (see `convex/.env.example`). The live shared dev deployment is `watchful-chameleon-570`.
+- **Env**: forum and admin both read `NEXT_PUBLIC_CONVEX_URL` via `@cemvp/convex-client`. Forum also uses `NEXT_PUBLIC_ADMIN_ORIGIN` (redirects `/admin` → port 3001). Admin uses `NEXT_PUBLIC_FORUM_ORIGIN` for “back to the feed”. Backend secrets in `convex/.env` (see `convex/.env.example`). The live shared dev deployment is `watchful-chameleon-570`.
 - **Reference implementations** (extend, never build parallel versions): the feed (`(app)/(shell)/feed` + `components/feed/`), the auth modal (`packages/auth-ui`), and `/discussions/[slug]` (canonical `postSeoMeta` first, legacy thread fallback).
 
 ## Process & tracking

@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { SkeletonText } from "@/components/ui/skeleton";
-import { api } from "../../../../../../../convex/_generated/api";
+import { api } from "@/lib/convex";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 

@@ -159,7 +159,7 @@ describe("SLICE-P7E-14 — queue console (CAP-328..335/359/400/433)", () => {
   });
   it("console UI exists on the A12 board (no second board component)", () => {
     const page = readFileSync(
-      join(__dirname, "../../../..", "src/app/(app)/admin/moderation/page.tsx"), "utf8",
+      join(__dirname, "../../../../../../apps/admin/src/app/admin/moderation/page.tsx"), "utf8",
     );
     expect(page).toContain("QueueBoard");
     expect(page).toContain("s0 → legal → s1 → appeals near bound → s2 → s3");

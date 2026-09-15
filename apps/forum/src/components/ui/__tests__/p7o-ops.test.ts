@@ -7,7 +7,7 @@ import { join } from "node:path";
  * client emit. F-22 and FATAL-M16-01 are the precision items. */
 
 const convexRoot = join(__dirname, "../../../../../../convex");
-const forumRoot = join(__dirname, "../../../..");
+const adminRoot = join(__dirname, "../../../../../../apps/admin");
 const read = (root: string, rel: string) => readFileSync(join(root, rel), "utf8");
 
 const schemaSrc = read(convexRoot, "schema.ts");
@@ -210,9 +210,9 @@ describe("SLICE-P7O-09 — client observational emit (CAP-444/456)", () => {
 
 describe("OPS console pages", () => {
   it("all four routes render the honest-empty / directional postures", () => {
-    expect(read(forumRoot, "src/app/(app)/admin/analytics/page.tsx")).toContain("Cohort incomplete");
-    expect(read(forumRoot, "src/app/(app)/admin/reliability/page.tsx")).toContain("Approve");
-    expect(read(forumRoot, "src/app/(app)/admin/utm/page.tsx")).toContain("Generate");
-    expect(read(forumRoot, "src/app/(app)/admin/seo/page.tsx")).toContain("never zero");
+    expect(read(adminRoot, "src/app/admin/analytics/page.tsx")).toContain("Cohort incomplete");
+    expect(read(adminRoot, "src/app/admin/reliability/page.tsx")).toContain("Approve");
+    expect(read(adminRoot, "src/app/admin/utm/page.tsx")).toContain("Generate");
+    expect(read(adminRoot, "src/app/admin/seo/page.tsx")).toContain("never zero");
   });
 });

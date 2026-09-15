@@ -19,16 +19,17 @@ import {
   Search,
 } from "lucide-react";
 
-import { api } from "../../../../../../convex/_generated/api";
+import { api } from "@/lib/convex";
 import { isConvexConfigured } from "@cemvp/convex-client";
 import { useAuth } from "@cemvp/auth-ui";
 import { CommandPalette, type CommandSection } from "@/components/ui/command-palette";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { CreateconomyLogoMark } from "@/components/ui/createconomy-logo-mark";
 import { Banner } from "@/components/ui/banner";
 
 const EMPTY_WIDGETS: { widgetKey: string; title: string; routeKey: string }[] = [];
+const FORUM_ORIGIN = process.env.NEXT_PUBLIC_FORUM_ORIGIN ?? "http://localhost:3000";
 
 export default function AdminLayout({ children }: { children?: React.ReactNode }) {
   // Prerender/build guard: without NEXT_PUBLIC_CONVEX_URL there is no
@@ -44,9 +45,9 @@ function AdminLayoutInner({ children }: { children?: React.ReactNode }) {
   const pathname = usePathname();
   const [paletteOpen, setPaletteOpen] = useState(false);
 
-  // Same Google/password session as /feed (AppAuthProvider). Do NOT send
-  // staff to /signin — that page is the magic-link entry surface and was
-  // a second, disconnected auth flow.
+  // Same Google/password credentials as the forum app (AppAuthProvider).
+  // Cookies are origin-scoped — staff signs in on :3001 even if already
+  // signed in on the forum. Do NOT send staff to /signin.
   const { authStatus, openAuthModal, logout } = useAuth();
   const isAuthenticated = authStatus === "authenticated";
   const authLoading = authStatus === "loading";
@@ -82,7 +83,7 @@ function AdminLayoutInner({ children }: { children?: React.ReactNode }) {
 
   const handleSignOut = useCallback(async () => {
     await logout();
-    router.push("/feed");
+    router.push("/admin");
   }, [logout, router]);
 
   if (authLoading) {
@@ -111,7 +112,7 @@ function AdminLayoutInner({ children }: { children?: React.ReactNode }) {
         <p className="max-w-sm text-sm text-text-muted">
           This account has no staff role assigned. Ask a Founder to grant one (roles console, CAP-413).
         </p>
-        <Button variant="ghost" size="sm" onClick={() => router.push("/feed")}>Back to the feed</Button>
+        <a href={`${FORUM_ORIGIN}/feed`} className={buttonVariants({ variant: "ghost", size: "sm" })}>Back to the feed</a>
       </div>
     );
   }

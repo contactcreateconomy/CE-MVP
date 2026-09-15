@@ -10,7 +10,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "convex/react";
 import { Download, Lock, Eye } from "lucide-react";
 
-import { api } from "../../../../../../../convex/_generated/api";
+import { api } from "@/lib/convex";
 import { DataTable, DataTableToolbar, type DataTableColumn } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

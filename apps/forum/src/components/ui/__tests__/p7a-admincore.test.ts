@@ -7,7 +7,7 @@ import { join } from "node:path";
  * readiness. Quotes live in the source modules. */
 
 const convexRoot = join(__dirname, "../../../../../../convex");
-const forumRoot = join(__dirname, "../../../..");
+const adminRoot = join(__dirname, "../../../../../../apps/admin");
 const read = (root: string, rel: string) => readFileSync(join(root, rel), "utf8");
 
 const schemaSrc = read(convexRoot, "schema.ts");
@@ -217,7 +217,7 @@ describe("SLICE-P7A-10/11 — readiness (CAP-509/510/023/435)", () => {
     expect(fn).toContain('latest.overall !== "ready"');
   });
   it("no force-open control on the checklist screen (contract §1 quoted)", () => {
-    const page = read(forumRoot, "src/app/(app)/admin/readiness/page.tsx");
+    const page = read(adminRoot, "src/app/admin/readiness/page.tsx");
     expect(page).toContain("CAP-510");
     expect(page).not.toContain("signupModeSet");
   });

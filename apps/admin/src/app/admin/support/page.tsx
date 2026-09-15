@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { api } from "../../../../../../../convex/_generated/api";
+import { api } from "@/lib/convex";
 
 export default function AdminSupportPage() {
   const [userIdInput, setUserIdInput] = useState("");

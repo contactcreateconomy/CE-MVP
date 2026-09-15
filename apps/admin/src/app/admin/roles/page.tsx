@@ -8,7 +8,7 @@
 import { useQuery } from "convex/react";
 import { UserPlus } from "lucide-react";
 
-import { api } from "../../../../../../../convex/_generated/api";
+import { api } from "@/lib/convex";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

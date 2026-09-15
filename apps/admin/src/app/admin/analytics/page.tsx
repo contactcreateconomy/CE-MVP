@@ -14,7 +14,7 @@ import { useMutation, useQuery } from "convex/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { api } from "../../../../../../../convex/_generated/api";
+import { api } from "@/lib/convex";
 
 export default function AdminAnalyticsPage() {
   const dash = useQuery(api.admin.analytics?.founderDashboard, {});

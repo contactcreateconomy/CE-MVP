@@ -1,7 +1,7 @@
 /**
  * Route: /admin — SLICE-P3-02
  * The admin shell root. Renders the widget catalog as a card grid.
- * Per 00-TOPOLOGY.md: mounted inside the forum app.
+ * Served by apps/admin on its own origin (port 3001 locally).
  */
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";

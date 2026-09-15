@@ -13,7 +13,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { Save, ShieldAlert } from "lucide-react";
 
-import { api } from "../../../../../../../convex/_generated/api";
+import { api } from "@/lib/convex";
 import { DataTable, DataTableToolbar, type DataTableColumn } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

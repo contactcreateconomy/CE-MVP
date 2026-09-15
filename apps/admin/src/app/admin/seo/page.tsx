@@ -11,7 +11,7 @@ import { useQuery } from "convex/react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { api } from "../../../../../../../convex/_generated/api";
+import { api } from "@/lib/convex";
 
 const dash = (v: number | null | undefined) => (v === null || v === undefined ? "—" : String(v));
 
