@@ -82,6 +82,17 @@ describe("SLICE-P7A-02/04 — home compose + counters (CAP-391/411/412/427/428)"
       expect(Number(m.match(/\d+/)?.[0])).toBeLessThanOrEqual(600);
     }
   });
+  it("legalIntake.by_type_status is queried type-then-status (Convex index order)", () => {
+    const intakeSrc = read(convexRoot, "legal/intake.ts");
+    const readinessSrc = read(convexRoot, "admin/readiness.ts");
+    expect(intakeSrc).toContain('q.eq("type", type).eq("status", status)');
+    expect(homeSrc).toContain("listLegalIntakeByStatus");
+    expect(countersSrc).toContain("listLegalIntakeByStatus");
+    expect(readinessSrc).toContain("listLegalIntakeByStatus");
+    expect(homeSrc).not.toContain('.eq("status", "reviewing")');
+    expect(countersSrc).not.toContain('.eq("status", "reviewing")');
+    expect(readinessSrc).not.toContain('.eq("status", "reviewing")');
+  });
   it("CAP-412: counter failure → intervention; unavailable ≠ zero", () => {
     expect(countersSrc).toContain("interventionCreateTx");
     expect(countersSrc).toContain("unavailable, not zero");

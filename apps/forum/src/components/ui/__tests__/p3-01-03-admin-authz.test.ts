@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- schema/validator introspection + pure-fixture tests */
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 /* SLICE-P3-01/02/03 acceptance tests — two-layer admin authz, widget-route
  * resolution, next-request revoke, widget catalog seeder.
@@ -102,6 +104,19 @@ describe("SLICE-P3-01 — two-layer admin authz", () => {
     await expect(
       assertAdminPermission(adminCtx({ roleAssignments: [] })),
     ).rejects.toThrow("No active staff role");
+  });
+
+  it("CAP-390: live Convex Auth identity is used when getUserIdentity exists", async () => {
+    const ctx = adminCtx({ roleAssignments: [adminRole] }) as {
+      auth: { userId?: string; getUserIdentity?: () => Promise<null> };
+      db: unknown;
+    };
+    // Simulate a production ctx shape: identity API present, no fake userId.
+    // Without resolveAuthUserId this used to throw "Sign-in required" for
+    // every Google session.
+    delete ctx.auth.userId;
+    ctx.auth.getUserIdentity = async () => null;
+    await expect(assertAdminPermission(ctx)).rejects.toThrow("Sign-in required");
   });
 
   it("CAP-430 next-request revoke: revoked role excluded (reads fresh every call)", async () => {
@@ -218,6 +233,17 @@ describe("SLICE-P3-03 — adminWidgets catalog + seeder", () => {
   it("genome back-door NEVER in the catalog (shell §1: must not appear as a palette result)", () => {
     const genomeRoute = ADMIN_WIDGET_CATALOG.find((w) => w.routeKey.includes("genome"));
     expect(genomeRoute).toBeUndefined();
+  });
+
+  it("admin layout consumes the feed Google session, not /signin", () => {
+    const layout = readFileSync(
+      join(__dirname, "../../../..", "src/app/(app)/admin/layout.tsx"),
+      "utf8",
+    );
+    expect(layout).toContain("useAuth");
+    expect(layout).toContain("openAuthModal");
+    expect(layout).not.toContain('router.push("/signin")');
+    expect(layout).not.toContain("useConvexAuth");
   });
 
   it("every widget has a dataSourceKey (enum→code, no platform-wide enum invented)", () => {

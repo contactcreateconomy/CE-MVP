@@ -1,6 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { query } from "./_generated/server";
 import { v } from "convex/values";
+import { STAFF_ROLES } from "./lib/authz";
 
 /**
  * P7-CLEANUP: the legacy membership view retired with the forum-scoped
@@ -29,13 +30,20 @@ export const current = query({
     if (!user) {
       return null;
     }
+    const assignments = await ctx.db
+      .query("roleAssignments")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+    const fromRoles = assignments.some(
+      (a) => a.status === "active" && (STAFF_ROLES as readonly string[]).includes(a.role),
+    );
     return {
       _id: user._id,
       name: user.name,
       email: user.email,
       image: user.image,
       handle: user.handle,
-      isStaff: user.isStaff ?? undefined,
+      isStaff: fromRoles || user.isStaff === true ? true : undefined,
     };
   },
 });

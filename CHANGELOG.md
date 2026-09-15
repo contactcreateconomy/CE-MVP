@@ -7,6 +7,14 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Fix: Google admin session ignored on `/admin` (2026-09-15)
+
+Logged-in Google accounts (including the founder admin `roleAssignments` row) were sent to the magic-link `/signin` page when visiting `/admin`. Two bugs: the admin layout used a separate `useConvexAuth` gate that pushed `/signin` instead of the feed's Google AuthModal; and `assertAdminPermission` read a non-existent `ctx.auth.userId` instead of Convex Auth's `getAuthUserId`, so every OAuth session looked unauthenticated to staff checks. `/admin` now uses the same `useAuth()` session as `/feed`; `/signin` redirects already-authenticated users to `/feed` (app-shell rule 3). `grantFounder` now also stamps `users.isStaff=true` (the founder row already had `roleAssignments.administrator`; `isStaff` was null).
+
+### Fix: admin home compose crashed on legalIntake index order (2026-09-15)
+
+`admin.home.compose` queried `legalIntake.by_type_status` with only `status`, but the index is `(type, status)`. Home/counters/readiness now scan each bible type with `eq(type).eq(status)` (take-bounded).
+
 ### Security hardening round 2: economy/privacy findings 31–34 + latent comment-create P0 (2026-09-13, commit `c93c672`)
 
 *Erdos economy-worker re-run — all four findings fixed, plus one P0 the new integration test surfaced.*

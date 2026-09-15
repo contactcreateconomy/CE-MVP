@@ -14,10 +14,12 @@
  * is removed). Post-finalize: pending_context → /welcome, complete → /feed.
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { useAuth } from "@cemvp/auth-ui";
+import { getRoutingRedirect } from "@/lib/routing";
 import { Mail, AlertCircle, CheckCircle2, Clock } from "lucide-react";
 
 import { api } from "../../../../../../convex/_generated/api";
@@ -40,6 +42,7 @@ type SigninState =
 
 export default function SigninPage() {
   const router = useRouter();
+  const { authStatus } = useAuth();
   // Offline/no-env guard: without a configured Convex URL the root provider
   // deliberately omits ConvexAuthProvider (@convex-dev/auth) — useAuthActions
   // returns undefined during CI prerender, so the destructure must not throw
@@ -47,6 +50,15 @@ export default function SigninPage() {
   // checking state; the actions below can never fire without a provider.
   const authActions = useAuthActions() as ReturnType<typeof useAuthActions> | undefined;
   const signIn = authActions?.signIn;
+
+  // CONTRACT-1-app-shell rule 3: already-complete users on /signin → /feed.
+  // Google sessions from the feed modal are the same Convex Auth session.
+  useEffect(() => {
+    if (authStatus !== "authenticated") return;
+    const dest = getRoutingRedirect("/signin", "authenticated", "complete");
+    if (dest) router.replace(dest);
+  }, [authStatus, router]);
+
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [state, setState] = useState<SigninState>("checking-mode");

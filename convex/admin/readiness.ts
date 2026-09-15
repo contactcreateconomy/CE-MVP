@@ -28,6 +28,7 @@ import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertAdminPermission } from "../lib/authz";
+import { listLegalIntakeByStatus } from "../legal/intake";
 
 /** The 8-category names (DECISIONS-LOCKED #8 correction). */
 export const READINESS_CATEGORIES = [
@@ -80,10 +81,7 @@ async function evaluateCategory(ctx: any, category: string): Promise<CategoryRes
     }
     case "legal_intake": {
       // No overdue reviewing legalIntake rows
-      const reviewing = await ctx.db
-        .query("legalIntake")
-        .withIndex("by_type_status", (q: any) => q.eq("status", "reviewing"))
-        .take(50);
+      const reviewing = await listLegalIntakeByStatus(ctx, "reviewing", 20);
       const overdue = reviewing.filter((r: any) => r.actionDueAt && r.actionDueAt < Date.now());
       return overdue.length === 0
         ? { status: "pass", detail: "no overdue legal filings" }

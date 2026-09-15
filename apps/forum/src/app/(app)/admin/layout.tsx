@@ -13,7 +13,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useQuery, useConvexAuth } from "convex/react";
+import { useQuery } from "convex/react";
 import {
   LayoutGrid, ShieldCheck, Bell, FileQuestion, User,
   Search,
@@ -21,6 +21,7 @@ import {
 
 import { api } from "../../../../../../convex/_generated/api";
 import { isConvexConfigured } from "@cemvp/convex-client";
+import { useAuth } from "@cemvp/auth-ui";
 import { CommandPalette, type CommandSection } from "@/components/ui/command-palette";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,7 +32,7 @@ const EMPTY_WIDGETS: { widgetKey: string; title: string; routeKey: string }[] = 
 
 export default function AdminLayout({ children }: { children?: React.ReactNode }) {
   // Prerender/build guard: without NEXT_PUBLIC_CONVEX_URL there is no
-  // ConvexProvider, and useQuery/useConvexAuth throw even in "skip" mode.
+  // ConvexProvider, and useQuery throws even in "skip" mode.
   if (!isConvexConfigured()) {
     return <div className="p-8 text-sm text-neutral-400">Admin console requires a Convex deployment (set NEXT_PUBLIC_CONVEX_URL).</div>;
   }
@@ -43,15 +44,22 @@ function AdminLayoutInner({ children }: { children?: React.ReactNode }) {
   const pathname = usePathname();
   const [paletteOpen, setPaletteOpen] = useState(false);
 
-  // Auth gate first: an anonymous /admin visit renders a sign-in prompt
-  // instead of crashing on role-gated queries (useQuery rethrows errors).
-  const { isAuthenticated, isLoading } = useConvexAuth();
+  // Same Google/password session as /feed (AppAuthProvider). Do NOT send
+  // staff to /signin — that page is the magic-link entry surface and was
+  // a second, disconnected auth flow.
+  const { authStatus, openAuthModal, logout } = useAuth();
+  const isAuthenticated = authStatus === "authenticated";
+  const authLoading = authStatus === "loading";
 
-  // Widget catalog — filtered by the user's staff roles (CAP-392); the
-  // query degrades to [] for anonymous/non-staff (see convex/admin/shell.ts).
-  // EMPTY_WIDGETS is module-stable so useMemo deps don't churn per render.
-  const widgets = useQuery(api.admin.shell?.getWidgetCatalog) ?? EMPTY_WIDGETS;
-  const catalogLoaded = widgets !== undefined;
+  // Widget catalog — filtered by the user's staff roles (CAP-392); skip
+  // until the shared session is ready so a loading query isn't treated as
+  // "no staff role". EMPTY_WIDGETS is module-stable so useMemo deps don't churn.
+  const widgetsQuery = useQuery(
+    api.admin.shell.getWidgetCatalog,
+    isAuthenticated ? {} : "skip",
+  );
+  const widgets = widgetsQuery ?? EMPTY_WIDGETS;
+  const catalogLoaded = isAuthenticated && widgetsQuery !== undefined;
 
   // Permitted widgets for the sidebar
   const navItems = useMemo(() => {
@@ -72,11 +80,12 @@ function AdminLayoutInner({ children }: { children?: React.ReactNode }) {
     return items.length > 0 ? [{ label: "Consoles", items }] : [];
   }, [navItems, router]);
 
-  const handleSignOut = useCallback(() => {
-    router.push("/signin");
-  }, [router]);
+  const handleSignOut = useCallback(async () => {
+    await logout();
+    router.push("/feed");
+  }, [logout, router]);
 
-  if (isLoading) {
+  if (authLoading) {
     return <div className="flex min-h-screen items-center justify-center bg-bg-canvas p-6 text-sm text-text-muted">Loading…</div>;
   }
   if (!isAuthenticated) {
@@ -87,11 +96,14 @@ function AdminLayoutInner({ children }: { children?: React.ReactNode }) {
         <p className="max-w-sm text-sm text-text-muted">
           Staff access required. Sign in with your authorized account to continue.
         </p>
-        <Button variant="primary" size="sm" onClick={() => router.push("/signin")}>Sign in</Button>
+        <Button variant="primary" size="sm" onClick={() => openAuthModal("login")}>Sign in</Button>
       </div>
     );
   }
-  if (catalogLoaded && (widgets as unknown as { widgetKey: string }[]).length === 0) {
+  if (!catalogLoaded) {
+    return <div className="flex min-h-screen items-center justify-center bg-bg-canvas p-6 text-sm text-text-muted">Loading…</div>;
+  }
+  if ((widgets as unknown as { widgetKey: string }[]).length === 0) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-bg-canvas p-6 text-center">
         <ShieldCheck className="size-8 text-text-muted" />

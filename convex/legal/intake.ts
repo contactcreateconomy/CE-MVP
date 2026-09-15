@@ -35,6 +35,35 @@ const BD_MS = 24 * 3_600_000; // business-day approximation at v1 (US business d
 const DMCA_ACK = 3 * BD_MS;
 const DMCA_ACTION = 10 * BD_MS;
 
+/** Bible l.241 type enum — prefix for legalIntake.by_type_status (type, status). */
+export const LEGAL_INTAKE_TYPES = [
+  "dmca_notice",
+  "dmca_counter_notice",
+  "source_takedown",
+  "merchant_ip",
+  "right_of_erasure",
+  "grievance_india",
+] as const;
+
+/** Indexed read by status across all intake types. `by_type_status` is
+ *  (type, status) — Convex requires the fields in that order, so a
+ *  status-only eq is illegal. Each type is take-bounded. */
+export async function listLegalIntakeByStatus(
+  ctx: { db: { query: (table: "legalIntake") => any } },
+  status: string,
+  perTypeTake: number,
+): Promise<Array<Record<string, any>>> {
+  const out: Array<Record<string, any>> = [];
+  for (const type of LEGAL_INTAKE_TYPES) {
+    const rows = await ctx.db
+      .query("legalIntake")
+      .withIndex("by_type_status", (q: any) => q.eq("type", type).eq("status", status))
+      .take(perTypeTake);
+    out.push(...rows);
+  }
+  return out;
+}
+
 async function hashOf(payload: unknown): Promise<string> {
   const json = JSON.stringify(payload ?? {});
   const digest = await globalThis.crypto.subtle.digest("SHA-256", new TextEncoder().encode(json));

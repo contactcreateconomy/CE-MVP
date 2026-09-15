@@ -26,7 +26,13 @@ third leg of the tracking system (code → CHANGELOG.md, progress → wiki,
 
 ## Convex
 
-<!-- lessons about Convex CLI, schema pushes, deployments, crons -->
+### 2026-09-15 — Admin gates must use getAuthUserId, not ctx.auth.userId
+
+`ctx.auth.userId` is not a Convex Auth field — it only existed on test fakes. Production Google/OAuth sessions resolve through `getAuthUserId(ctx)` (`ctx.auth.getUserIdentity()` + the auth session). `assertAdminPermission` using `ctx.auth.userId` treated every live session as anonymous, so `/admin` bounced a signed-in founder to `/signin`. Rule: resolve identity with `resolveAuthUserId` (live identity API first, fake `userId` fallback for unit tests). The `/admin` shell must use `useAuth()` from `@cemvp/auth-ui` (same modal as `/feed`), never a second magic-link surface.
+
+### 2026-09-15 — Compound indexes must be queried left-to-right
+
+`legalIntake.by_type_status` is `(type, status)`. A `.eq("status", …)` skip of `type` throws at runtime ("didn't use the index fields in order") and took down `/admin/home`. Query each type prefix, or add a dedicated `by_status` index — never skip a leading field.
 
 ## Build / Toolchain
 

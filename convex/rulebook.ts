@@ -392,7 +392,7 @@ export const calibrate = internalAction({
 export const _callerStaffRoles = internalQuery({
   args: {},
   handler: async (ctx: any): Promise<string[]> => {
-    const userId = ctx.auth?.userId ?? (await ctx.auth?.getUserId?.());
+    const userId = await getAuthUserId(ctx);
     if (!userId) return [];
     const assignments = await ctx.db
       .query("roleAssignments")

@@ -29,4 +29,9 @@ describe("signin no-env prerender guard (PASS-2)", () => {
     expect(providerSrc).toContain("ConvexProviderBase client={client}");
     expect(providerSrc).toContain("<ConvexAuthProvider client={client}>");
   });
+
+  it("already-authenticated visitors are routed off /signin (app-shell rule 3)", () => {
+    expect(signinSrc).toContain("getRoutingRedirect");
+    expect(signinSrc).toContain("authStatus");
+  });
 });

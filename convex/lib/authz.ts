@@ -148,10 +148,27 @@ export class AuthzError extends Error {
   }
 }
 
+/**
+ * Resolve the signed-in users._id.
+ *
+ * Live Convex Auth sessions only exist on `getAuthUserId` (the library
+ * looks up the session from `ctx.auth.getUserIdentity()`). `ctx.auth.userId`
+ * is NOT a Convex field — it was a test-fake convenience, so production
+ * admin gates treated every Google/OAuth session as anonymous.
+ * Test fakes still set `ctx.auth.userId` and omit getUserIdentity.
+ */
+export async function resolveAuthUserId(ctx: any): Promise<Id<"users"> | null> {
+  if (typeof ctx.auth?.getUserIdentity === "function") {
+    return (await getAuthUserId(ctx)) as Id<"users"> | null;
+  }
+  const fallback = ctx.auth?.userId ?? (await ctx.auth?.getUserId?.());
+  return (fallback ?? null) as Id<"users"> | null;
+}
+
 /** Shared authenticated-user guard — one helper instead of N hand-rolled
  *  null-checks. Message shape preserved verbatim from the sites it replaces. */
 export async function requireUser(ctx: GenericCtx, context: string): Promise<Id<"users">> {
-  const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
+  const userId = await resolveAuthUserId(ctx);
   if (!userId) throw new AuthzError("NOT_AUTHENTICATED", `${context}: authentication required`);
   return userId;
 }
@@ -170,7 +187,7 @@ export async function assertCustomerCapability(
   capabilityKey: CapabilityKey,
 ): Promise<void> {
   // 0. must be authenticated
-  const userId = ctx.auth?.userId ?? (await ctx.auth?.getUserId?.());
+  const userId = await resolveAuthUserId(ctx);
   if (!userId) throw new AuthzError("NOT_AUTHENTICATED", "Sign-in required.");
 
   const user = await ctx.db.get(userId);
@@ -307,7 +324,7 @@ export class AdminAuthzError extends Error {
  * Returns the user's staff roles (for widget filtering). Empty = not staff.
  */
 export async function assertAdminPermission(ctx: any): Promise<StaffRole[]> {
-  const userId = ctx.auth?.userId ?? (await ctx.auth?.getUserId?.());
+  const userId = await resolveAuthUserId(ctx);
   if (!userId) throw new AdminAuthzError("NOT_STAFF", "Sign-in required.");
 
   const assignments = await ctx.db

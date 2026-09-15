@@ -225,6 +225,10 @@ export const grantFounder = internalMutation({
       throw new Error(`grantFounder: user email "${user.email}" ≠ supplied "${args.email}" — refusing`);
     }
 
+    if (user.isStaff !== true) {
+      await ctx.db.patch(args.userId, { isStaff: true });
+    }
+
     const existingRows = await ctx.db
       .query("roleAssignments")
       .filter((q: any) => q.eq(q.field("role"), "administrator"))

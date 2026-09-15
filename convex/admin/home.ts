@@ -21,6 +21,7 @@ import type { Id } from "../_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertAdminPermission } from "../lib/authz";
 import { DEEP_LINK_ROUTE_KEYS } from "./interventions";
+import { listLegalIntakeByStatus } from "../legal/intake";
 
 const MAX_NEXT_ACTIONS = 8;
 const STALE_AFTER_MS = 5 * 60_000; // counters go stale after 2 missed ~60s refreshes
@@ -52,10 +53,7 @@ async function buildStrip(ctx: any): Promise<StripItem[]> {
   }
 
   // 2. Legal overdue (awaiting_legal past actionDueAt — live, bounded)
-  const legal = await ctx.db
-    .query("legalIntake")
-    .withIndex("by_type_status", (q: any) => q.eq("status", "reviewing"))
-    .take(20);
+  const legal = await listLegalIntakeByStatus(ctx, "reviewing", 20);
   const now = Date.now();
   for (const l of legal) {
     if (!l.actionDueAt || l.actionDueAt > now) continue;

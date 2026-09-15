@@ -13,6 +13,7 @@
 import { internalMutation } from "../_generated/server";
 import { v } from "convex/values";
 import { interventionCreateTx } from "./interventions";
+import { listLegalIntakeByStatus } from "../legal/intake";
 
 const COUNTER_KEYS = [
   "moderation.s0_open",
@@ -35,10 +36,7 @@ async function computeCounter(ctx: any, key: string): Promise<number | null> {
       return rows.filter((r: any) => r.severity === "s0_critical").length;
     }
     case "legal.overdue": {
-      const rows = await ctx.db
-        .query("legalIntake")
-        .withIndex("by_type_status", (q: any) => q.eq("status", "reviewing"))
-        .take(20);
+      const rows = await listLegalIntakeByStatus(ctx, "reviewing", 20);
       return rows.filter((r: any) => r.actionDueAt && r.actionDueAt < now).length;
     }
     case "store.links_under_review": {
