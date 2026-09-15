@@ -5,6 +5,13 @@ import * as AvatarPrimitive from "@radix-ui/react-avatar";
 
 import { cn } from "@/lib/utils";
 
+/**
+ * Avatar — STYLE-KIT §11.6. Sizes xs(20)→4xl(128), always radius/full,
+ * 2px canvas border for stacking. Fallback: initials on a muted
+ * surface — NEUTRAL ONLY. No deterministic/hash-based palette coloring
+ * exists anywhere in the app (user-avatar.tsx ships the same neutral
+ * fallback; the per-level ring palette was archived 2026-08-31).
+ */
 const Avatar = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
@@ -12,7 +19,7 @@ const Avatar = React.forwardRef<
   <AvatarPrimitive.Root
     ref={ref}
     className={cn(
-      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
+      "relative flex shrink-0 overflow-hidden rounded-full ring-2 ring-bg-canvas",
       className,
     )}
     {...props}
@@ -39,7 +46,7 @@ const AvatarFallback = React.forwardRef<
   <AvatarPrimitive.Fallback
     ref={ref}
     className={cn(
-      "flex h-full w-full items-center justify-center rounded-full bg-muted",
+      "flex h-full w-full items-center justify-center rounded-full bg-bg-surface text-text-secondary",
       className,
     )}
     {...props}

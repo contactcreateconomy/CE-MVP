@@ -7,6 +7,15 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Extract: staff `/admin` console moved to `apps/admin` (2026-09-15)
+
+Founder override of 00-TOPOLOGY: the live admin tree (`/admin/*`) now lives in `apps/admin` on port 3001. Forum `/admin` and `/admin/:path*` redirect to `NEXT_PUBLIC_ADMIN_ORIGIN` (default `http://localhost:3001`). Same Convex backend and `@cemvp/auth-ui`; staff sign in again on the admin origin (cookies are origin-scoped). Google return to :3001 needs `AUTH_REDIRECT_ORIGINS` on the Convex deployment. Seller/marketplace stay parked.
+
+
+### Chore: gitignore `.env.local*` derivatives (2026-09-15)
+
+`.env.local.backup-*` files (deployment-env backups taken before Convex pushes) matched no ignore rule and surfaced as untracked — one accidental `git add -A` away from committing secrets. Added `.env.local.*` alongside the existing env rules (covers any `.env.local.<suffix>` in any directory; `.env.example` files stay tracked).
+
 ### Fix: `jobs/rank:distributionRecompute` cron crashed every minute (2026-09-14)
 
 Convex index bounds don't support `.neq()` — the claim query used `q.neq("dirtySince", null)` inside `withIndex`, throwing `o.neq is not a function` once per minute on the dev deployment (found in live deployment logs). Now a range scan: `q.gte("dirtySince", 0)` selects exactly the dirty rows (clean rows index as null on the optional number field). Verified live: zero cron errors in the 70s after the fix pushed.

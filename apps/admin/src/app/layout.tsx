@@ -20,8 +20,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "CEMVP Admin",
-  description: "Admin app placeholder",
+  title: "Createconomy Console",
+  description: "Staff admin console",
 };
 
 export default function RootLayout({

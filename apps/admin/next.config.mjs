@@ -22,6 +22,11 @@ const nextConfig = {
     };
     return config;
   },
+  async redirects() {
+    return [
+      { source: "/", destination: "/admin", permanent: false },
+    ];
+  },
   images: {
     remotePatterns: [
       {

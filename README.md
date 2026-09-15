@@ -59,7 +59,7 @@ Until the legal docs are seeded, `/privacy`, `/terms`, `/dmca`, `/repeat-infring
 | `pnpm build` | Production build (Turbopack) |
 | `node scripts/cap-coverage.mjs` | PRD capability coverage (expect 572/572) |
 
-All root scripts target `apps/forum` (e.g. `pnpm build`). Parked apps have `pnpm dev:seller` / `dev:admin` / `dev:marketplace` and matching build/lint/typecheck variants.
+All root scripts target `apps/forum` (e.g. `pnpm build`). The admin console is `pnpm dev:admin` on port 3001. Parked apps have `pnpm dev:seller` / `dev:marketplace` and matching build/lint/typecheck variants.
 
 ## Environment variables
 

@@ -237,7 +237,7 @@ describe("SLICE-P3-03 — adminWidgets catalog + seeder", () => {
 
   it("admin layout consumes the feed Google session, not /signin", () => {
     const layout = readFileSync(
-      join(__dirname, "../../../..", "src/app/(app)/admin/layout.tsx"),
+      join(__dirname, "../../../../../../apps/admin/src/app/admin/layout.tsx"),
       "utf8",
     );
     expect(layout).toContain("useAuth");

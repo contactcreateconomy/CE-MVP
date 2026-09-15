@@ -28,7 +28,7 @@ Three pieces of this app are already built, real, and verified working — not m
 
 **PRE-LAUNCH GATES (do not block build):** lawyer review of the four founder-drafted legal documents, and Readiness Category 8 (ranking calibration reviewed) — both gate `signup.mode=open` only.
 
-**GOVERNING DECISION RECORDS (read before any architecture-adjacent work):** `PRD/00-project-status/00-TRANSITION.md` (live→canonical: RESET + strangler ports, no data migration, no dual-write; never write a legacy `forum*` table), `PRD/00-project-status/00-TOPOLOGY.md` (forum app owns ALL MVP routes; admin/seller/marketplace apps parked; `app/admin/...` slice paths mean `apps/forum/src/app/(app)/admin/...`), `PRD/00-project-status/00-ROUTES.md` (live route names are canonical: `/discussions/[slug]`, `/new-post`, `/users/[handle]`, `/profile`+`/settings`). App setup: `PRD/app/SETUP.md`.
+**GOVERNING DECISION RECORDS (read before any architecture-adjacent work):** `PRD/00-project-status/00-TRANSITION.md` (live→canonical: RESET + strangler ports, no data migration, no dual-write; never write a legacy `forum*` table), `PRD/00-project-status/00-TOPOLOGY.md` (forum owns member routes; `apps/admin` owns `/admin/*` on port 3001; seller/marketplace parked; `app/admin/...` slice paths mean `apps/admin/src/app/admin/...`), `PRD/00-project-status/00-ROUTES.md` (live route names are canonical: `/discussions/[slug]`, `/new-post`, `/users/[handle]`, `/profile`+`/settings`). App setup: `PRD/app/SETUP.md`.
 
 EVERYTHING ELSE in the 54-screen inventory is being built fresh against the PRD spec — no existing code to extend, build per the contract and slice catalog from scratch.
 

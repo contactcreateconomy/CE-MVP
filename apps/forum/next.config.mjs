@@ -25,9 +25,12 @@ const nextConfig = {
     return config;
   },
   async redirects() {
+    const adminOrigin = process.env.NEXT_PUBLIC_ADMIN_ORIGIN ?? "http://localhost:3001";
     return [
       /** Prefer config redirect over RSC `redirect()` so `/` does not depend on the app-page pipeline (fewer stale-`.next` dev failures). */
       { source: "/", destination: "/feed", permanent: false },
+      { source: "/admin", destination: `${adminOrigin}/admin`, permanent: false },
+      { source: "/admin/:path*", destination: `${adminOrigin}/admin/:path*`, permanent: false },
     ];
   },
   async headers() {

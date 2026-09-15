@@ -49,7 +49,7 @@ Per-task lookup: slice in `docs/03-slices/SLICE-CATALOG-PHASE*.md` (scope/depend
 
 From `docs/00-project-status/` (founder-approved 2026-09-04 — read before any architecture-adjacent work):
 
-- **00-TOPOLOGY:** the forum app (`apps/forum`) owns **ALL MVP routes** (member, admin, sell, storefront). `apps/admin`, `apps/seller`, `apps/marketplace` are parked placeholders — keep them buildable, do not build them out. Slice paths like `app/admin/...` mean `apps/forum/src/app/(app)/admin/...`.
+- **00-TOPOLOGY:** `apps/forum` owns member routes (`/feed`, `/sell`, `/s/*`, …). `apps/admin` owns `/admin/*` on port 3001 (forum `/admin` redirects there). `apps/seller` and `apps/marketplace` remain parked placeholders. Slice paths like `app/admin/...` mean `apps/admin/src/app/admin/...`.
 - **00-ROUTES:** live route names are canonical: `/discussions/[slug]`, `/new-post`, `/users/[handle]`, `/profile` + `/settings` (they supersede older route fields in contracts/sheets — e.g. `/p/[slug]`, `/compose`). Do not rename routes to match contracts.
 - **00-TRANSITION:** RESET + strangler pattern — canonical tables are built alongside legacy `forum*` tables; live-app data is disposable demo data; no migration, no dual-write. **NEVER write a legacy `forum*` table.** SLICE-P7-CLEANUP drops the legacy tables at the end.
 - **Shared-file serialization:** `convex/schema.ts`, `convex/crons.ts`, and shared registries merge through one integration pass per phase.
@@ -58,8 +58,9 @@ From `docs/00-project-status/` (founder-approved 2026-09-04 — read before any 
 
 | Path | Contents |
 |---|---|
-| `apps/forum` | The real app (Next.js App Router, ~250 files; all MVP routes) |
-| `apps/admin`, `apps/seller`, `apps/marketplace` | Parked placeholder apps (single page each) |
+| `apps/forum` | Member app (Next.js App Router; `/feed`, `/discussions`, `/sell`, storefront) |
+| `apps/admin` | Staff console (`/admin/*` on port 3001; shared Convex) |
+| `apps/seller`, `apps/marketplace` | Parked placeholder apps (single page each) |
 | `packages/auth-ui` | Auth modal + providers (`@cemvp/auth-ui`) — reference implementation |
 | `packages/convex-client` | Tiny env helper (`isConvexConfigured()`, `getConvexUrl()`) |
 | `convex/` | Shared Convex backend: 89-table `schema.ts`, auth, crons, admission/ forum/ ingest/ qualify/ editorial/ posts/ admin/ lib/ |
@@ -72,13 +73,14 @@ From `docs/00-project-status/` (founder-approved 2026-09-04 — read before any 
 | Command | What it does |
 |---|---|
 | `pnpm dev` | Forum dev server → http://localhost:3000 (`/` redirects to `/feed`) |
+| `pnpm dev:admin` | Admin console → http://localhost:3001 (`/` redirects to `/admin`) |
 | `pnpm typecheck` / `pnpm lint` | tsc --noEmit / ESLint 9 (forum app) |
 | `pnpm test:run` | Vitest suite (forum app) |
 | `pnpm build` | Production build (Turbopack) |
 | `pnpm convex:dev` | Push Convex function changes / run dev sync |
 | `pnpm convex:codegen` | Regenerate `convex/_generated/` |
 | `pnpm convex:seed-legal` | Seed the 4 legal docs (requires one-time `npx convex login`) |
-| `pnpm dev:seller` / `dev:admin` / `dev:marketplace` | Run parked placeholder apps |
+| `pnpm dev:seller` / `dev:marketplace` | Run parked placeholder apps |
 | `pnpm convex:deploy:prod` | Prod push (Bucket-1 — flag before running) |
 | `node scripts/cap-coverage.mjs` | Capability coverage gate (572/572 expected) |
 

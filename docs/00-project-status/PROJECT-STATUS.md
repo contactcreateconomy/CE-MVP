@@ -45,9 +45,9 @@ They are complete, founder-ratified where required, and safe to rely on:
 - **`PRD/00-project-status/00-TRANSITION.md`** — the live→canonical migration posture:
   RESET + strangler ports, no data migration, no dual-write; never write a
   legacy `forum*` table.
-- **`PRD/00-project-status/00-TOPOLOGY.md`** — which app owns what: the forum app owns ALL
-  MVP routes; admin/seller/marketplace apps are parked; slice-path →
-  real-path mapping.
+- **`PRD/00-project-status/00-TOPOLOGY.md`** — which app owns what: forum owns member
+  routes; `apps/admin` owns `/admin/*` (port 3001, amended 2026-09-15); seller/marketplace
+  remain parked.
 - **`PRD/00-project-status/00-ROUTES.md`** — canonical route names (live names adopted,
   founder-approved 2026-09-04); the authoritative table that retired every
   route-drift "DECISION NEEDED" flag.
