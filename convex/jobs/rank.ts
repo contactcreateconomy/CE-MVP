@@ -212,10 +212,14 @@ export const distributionRecompute = internalMutation({
     const config = await loadDistConfig(ctx);
     const now = Date.now();
 
-    // Claim (clear-first lease — M6 pattern, quoted)
+    // Claim (clear-first lease — M6 pattern, quoted).
+    // Convex index bounds support eq/gte/lte/range — NOT neq ("o.neq is not
+    // a function" crashed the every-minute cron on the live deployment
+    // 2026-09-14). dirtySince is optional<number>: clean rows index as null,
+    // dirty rows carry Date.now() — so gte(0) selects exactly the dirty set.
     const claimed = await ctx.db
       .query("postDistributionScores")
-      .withIndex("by_dirtySince", (q: any) => q.neq("dirtySince", null))
+      .withIndex("by_dirtySince", (q: any) => q.gte("dirtySince", 0))
       .take(50);
     for (const row of claimed) {
       await ctx.db.patch(row._id, { dirtySince: undefined });

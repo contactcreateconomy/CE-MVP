@@ -7,6 +7,10 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Fix: `jobs/rank:distributionRecompute` cron crashed every minute (2026-09-14)
+
+Convex index bounds don't support `.neq()` — the claim query used `q.neq("dirtySince", null)` inside `withIndex`, throwing `o.neq is not a function` once per minute on the dev deployment (found in live deployment logs). Now a range scan: `q.gte("dirtySince", 0)` selects exactly the dirty rows (clean rows index as null on the optional number field). Verified live: zero cron errors in the 70s after the fix pushed.
+
 ### Fix: Google admin session ignored on `/admin` (2026-09-15)
 
 Logged-in Google accounts (including the founder admin `roleAssignments` row) were sent to the magic-link `/signin` page when visiting `/admin`. Two bugs: the admin layout used a separate `useConvexAuth` gate that pushed `/signin` instead of the feed's Google AuthModal; and `assertAdminPermission` read a non-existent `ctx.auth.userId` instead of Convex Auth's `getAuthUserId`, so every OAuth session looked unauthenticated to staff checks. `/admin` now uses the same `useAuth()` session as `/feed`; `/signin` redirects already-authenticated users to `/feed` (app-shell rule 3). `grantFounder` now also stamps `users.isStaff=true` (the founder row already had `roleAssignments.administrator`; `isStaff` was null).
