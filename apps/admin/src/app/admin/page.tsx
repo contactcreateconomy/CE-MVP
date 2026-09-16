@@ -1,36 +1,57 @@
+"use client";
+
 /**
  * Route: /admin — SLICE-P3-02
- * The admin shell root. Renders the widget catalog as a card grid.
- * Served by apps/admin on its own origin (port 3001 locally).
+ * Landing inside the shell. Widget cards come from the CAP-392 catalog
+ * already loaded by the layout (no extra screens).
  */
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { LayoutGrid } from "lucide-react";
+import Link from "next/link";
 
-export default function AdminHomePage() {
-  // The widget catalog is loaded by the layout's sidebar; this page
-  // renders a welcome/landing state. The actual widget list comes from
-  // the layout's useQuery (getPermittedWidgetCatalog).
+import { useConsoleShell } from "@/components/layout/console-shell-context";
+import { iconForRoute } from "@/components/layout/nav-config";
+import { PageHeader } from "@/components/layout/page-header";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+export default function AdminLandingPage() {
+  const { navItems, openPalette } = useConsoleShell();
+
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <h1 className="text-lg font-semibold text-text-primary">Admin Console</h1>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-text-secondary">
-            Select a console from the sidebar, or use the command palette
-            (search button / Ctrl+K) to navigate.
-          </p>
-          <div className="mt-4 flex items-center gap-2">
-            <Badge tone="info">
-              <LayoutGrid className="size-3" aria-hidden />
-              3 consoles registered
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="space-y-6">
+      <PageHeader
+        title="Admin Console"
+        description="Select a console from the sidebar, or search with ⌘K."
+        actions={
+          <Button variant="secondary" size="sm" onClick={openPalette}>
+            Search consoles
+          </Button>
+        }
+      />
+
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {navItems.map((item) => {
+          const Icon = iconForRoute(item.routeKey);
+          return (
+            <Link key={item.key} href={item.routeKey} className="block text-text-primary no-underline hover:text-text-primary hover:no-underline">
+              <Card className="h-full transition-[border-color,box-shadow] duration-normal ease-out-cubic hover:border-border-prominent hover:shadow-sm">
+                <CardHeader className="items-start">
+                  <div className="flex size-8 items-center justify-center rounded-md bg-bg-overlay text-text-secondary">
+                    <Icon className="size-4" aria-hidden />
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-1 pt-0">
+                  <CardTitle>{item.title}</CardTitle>
+                  <CardDescription>{item.routeKey}</CardDescription>
+                </CardContent>
+              </Card>
+            </Link>
+          );
+        })}
+      </div>
+
+      <Badge tone="info">{navItems.length} consoles registered</Badge>
     </div>
   );
 }

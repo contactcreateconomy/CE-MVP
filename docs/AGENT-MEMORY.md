@@ -40,6 +40,10 @@ third leg of the tracking system (code → CHANGELOG.md, progress → wiki,
 
 ## Domain / Spec
 
+### 2026-09-16 — Admin shell look/feel is shadcn-admin, tokens stay STYLE-KIT
+
+When restyling `apps/admin`, copy the [shadcn-admin](https://github.com/satnaing/shadcn-admin) composition (grouped sidebar, command search, user dropdown) onto existing STYLE-KIT tokens and CAP-390 chrome. Do not run `shadcn init` (it rewrites the palette), do not add inventory screens, and keep `/admin/personas/genome` out of the palette.
+
 ### 2026-09-16 — Twilio OTP is optional `/setup`, not signup/signin/comments
 
 Founder override: CAP-551 stays Twilio Verify but is one skippable profile-completion step. Do not require `mobileVerified` (or `TWILIO_*` env) for signup, sign-in, comments, or posting. Missing Twilio keys → `notConfigured`; Complete setup still proceeds. Password signup sets `emailVerified: true` so removing the signup OTP UI does not leave CAP-141 blocked on email. Dated addenda on DECISIONS-LOCKED #1, CONTRACT-5-setup, M7 sheet — do not rewrite locked historical INV-1 wording.

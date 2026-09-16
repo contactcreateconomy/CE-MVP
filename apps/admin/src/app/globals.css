@@ -519,7 +519,7 @@ body {
 }
 
 main {
-  @apply min-h-screen;
+  @apply min-h-0;
 }
 
 @layer base {

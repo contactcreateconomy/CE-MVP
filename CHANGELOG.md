@@ -7,6 +7,10 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Changed: admin console shell uses shadcn-admin layout patterns (2026-09-16)
+
+Staff chrome now matches the shadcn-admin sidebar/header composition (grouped nav, ⌘K search, user menu, mobile drawer) while staying on STYLE-KIT tokens and the existing CAP-392 widget catalog. No new screens.
+
 ### Changed: Twilio mobile OTP is optional `/setup`, not a signup/signin gate (2026-09-16)
 
 Founder override of DECISIONS-LOCKED #1's coupling to CAP-141: signup and sign-in no longer collect an OTP. CAP-551 remains one skippable step on `/setup`. Comment eligibility is email-verified + active + not-restricted (`mobileVerified` is not a gate). Missing `TWILIO_*` env returns `notConfigured` and does not hold auth, comments, or profile completion. Twilio account setup can land later.
