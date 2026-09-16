@@ -7,6 +7,18 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Changed: admin console shell uses shadcn-admin layout patterns (2026-09-16)
+
+Staff chrome now matches the shadcn-admin sidebar/header composition (grouped nav, ⌘K search, user menu, mobile drawer) while staying on STYLE-KIT tokens and the existing CAP-392 widget catalog. No new screens.
+
+### Changed: Twilio mobile OTP is optional `/setup`, not a signup/signin gate (2026-09-16)
+
+Founder override of DECISIONS-LOCKED #1's coupling to CAP-141: signup and sign-in no longer collect an OTP. CAP-551 remains one skippable step on `/setup`. Comment eligibility is email-verified + active + not-restricted (`mobileVerified` is not a gate). Missing `TWILIO_*` env returns `notConfigured` and does not hold auth, comments, or profile completion. Twilio account setup can land later.
+
+### Fix: admin console showed two sign-in surfaces (2026-09-16)
+
+The staff origin kept a custom “Staff access required / Sign in” gate in front of the shared `@cemvp/auth-ui` AuthModal, so anonymous visits to :3001 stacked two login screens. Admin now opens that same forum modal as the only sign-in UI (`AppAuthProvider requireAuth`); sessions stay origin-scoped (forum login does not admit the console).
+
 ### Extract: staff `/admin` console moved to `apps/admin` (2026-09-15)
 
 Founder override of 00-TOPOLOGY: the live admin tree (`/admin/*`) now lives in `apps/admin` on port 3001. Forum `/admin` and `/admin/:path*` redirect to `NEXT_PUBLIC_ADMIN_ORIGIN` (default `http://localhost:3001`). Same Convex backend and `@cemvp/auth-ui`; staff sign in again on the admin origin (cookies are origin-scoped). Google return to :3001 needs `AUTH_REDIRECT_ORIGINS` on the Convex deployment. Seller/marketplace stay parked.

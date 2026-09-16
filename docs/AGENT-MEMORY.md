@@ -40,6 +40,18 @@ third leg of the tracking system (code → CHANGELOG.md, progress → wiki,
 
 ## Domain / Spec
 
+### 2026-09-16 — Admin shell look/feel is shadcn-admin, tokens stay STYLE-KIT
+
+When restyling `apps/admin`, copy the [shadcn-admin](https://github.com/satnaing/shadcn-admin) composition (grouped sidebar, command search, user dropdown) onto existing STYLE-KIT tokens and CAP-390 chrome. Do not run `shadcn init` (it rewrites the palette), do not add inventory screens, and keep `/admin/personas/genome` out of the palette.
+
+### 2026-09-16 — Twilio OTP is optional `/setup`, not signup/signin/comments
+
+Founder override: CAP-551 stays Twilio Verify but is one skippable profile-completion step. Do not require `mobileVerified` (or `TWILIO_*` env) for signup, sign-in, comments, or posting. Missing Twilio keys → `notConfigured`; Complete setup still proceeds. Password signup sets `emailVerified: true` so removing the signup OTP UI does not leave CAP-141 blocked on email. Dated addenda on DECISIONS-LOCKED #1, CONTRACT-5-setup, M7 sheet — do not rewrite locked historical INV-1 wording.
+
+### 2026-09-16 — Admin has one AuthModal, not a second gate page
+
+The `/admin` shell used a custom “Staff access required / Sign in” page that then opened `@cemvp/auth-ui` AuthModal — two stacked login surfaces. Rule: staff origin stays separately authenticated (`requireAuth` on `AppAuthProvider`); the modal is the only sign-in UI. Do not add a second magic-link or staff-gate page in front of it.
+
 ### 2026-09-15 — Admin console lives in `apps/admin`, not forum
 
 00-TOPOLOGY originally parked `apps/admin`. Founder extraction 2026-09-15: `/admin/*` pages moved to `apps/admin/src/app/admin/` (port 3001). Forum redirects `/admin`. Do not re-create admin routes under `apps/forum`. Auth cookies do not cross origins — staff sign in on :3001. `AUTH_REDIRECT_ORIGINS` must include `http://localhost:3001` for Google OAuth.

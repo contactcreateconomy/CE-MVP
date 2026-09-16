@@ -12,8 +12,9 @@ import { useMutation, useQuery } from "convex/react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SkeletonText } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/layout/page-header";
 import { api } from "@/lib/convex";
 
 export default function AdminHomePage() {
@@ -38,12 +39,15 @@ export default function AdminHomePage() {
   const interventions = home.interventions ?? [];
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-lg font-semibold text-text-primary">Admin Home</h1>
+    <div className="space-y-6">
+      <PageHeader
+        title="Admin Home"
+        description="Next actions, counters, and open interventions."
+      />
 
       {/* The critical strip (R-HOME order, ≤8 next actions) */}
       <Card>
-        <CardHeader><h2 className="text-sm font-semibold uppercase tracking-wide text-text-muted">Next actions ({strip.length}/8)</h2></CardHeader>
+        <CardHeader><CardTitle className="uppercase tracking-wide text-text-muted">Next actions ({strip.length}/8)</CardTitle></CardHeader>
         <CardContent className="space-y-1">
           {strip.length === 0 ? (
             <p className="text-sm text-(--text-muted)">Nothing critical — the queue is clear.</p>
@@ -67,7 +71,7 @@ export default function AdminHomePage() {
 
       {/* Counters — stale → "—" not 0 (CAP-428, quoted) */}
       <Card>
-        <CardHeader><h2 className="text-sm font-semibold uppercase tracking-wide text-text-muted">Counters</h2></CardHeader>
+        <CardHeader><CardTitle className="uppercase tracking-wide text-text-muted">Counters</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {counters.map((c: any) => (
             <div key={c.counterKey} className="rounded-md border border-border-subtle p-3 text-center">
@@ -83,7 +87,7 @@ export default function AdminHomePage() {
 
       {/* Interventions (banner archetype via P3-06's shared primitive shape) */}
       <Card>
-        <CardHeader><h2 className="text-sm font-semibold uppercase tracking-wide text-text-muted">Interventions</h2></CardHeader>
+        <CardHeader><CardTitle className="uppercase tracking-wide text-text-muted">Interventions</CardTitle></CardHeader>
         <CardContent className="space-y-2">
           {interventions.length === 0 ? (
             <p className="text-sm text-(--text-muted)">No open interventions.</p>

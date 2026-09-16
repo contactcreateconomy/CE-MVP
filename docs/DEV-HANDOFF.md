@@ -87,11 +87,13 @@ provider (newsletter webhook 503s without it — the provider does
 SPF/DKIM/DMARC verification before posting).
 
 ### 9. Twilio Verify integration (DECISIONS-LOCKED #1, CAP-551)
+Optional `/setup` step — **not required for signup, sign-in, or comments** (founder 2026-09-16).
 ```bash
-# from the repo root
-pnpm add twilio
+# from the repo root — when you are ready to turn the optional step on
+# set on the Convex deployment (no SDK required; REST via fetch):
+# TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_VERIFY_SERVICE_SID
 ```
-Plus: set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SERVICE_SID` in `.env.local`. This unblocks CAP-141 (comment eligibility). The helper code in `convex/lib/` is Bucket-2; the account setup + package install + env vars are Bucket-1.
+Until those env vars exist, `mobile.sendOtp` / `mobile.verify` return `notConfigured` and the member can finish setup without verifying a number. This does **not** block CAP-141.
 
 ### 10. PostHog integration (Phase 7 CMP/reliability)
 ```bash
@@ -151,7 +153,7 @@ rm -rf C:/Users/akr604/Music/CEY/node_modules
 | 6 | Cron activation (deployment push) | P3-P7 | all scheduled jobs | per push |
 | 7 | **Moderation-classifier provider (H-SAFE)** | **P4** | **PIPELINE-BLOCKING — all content once forge is live (fail-closed hold until wired)** | 30 min |
 | 8 | **GLM API key + ingestion env seams** | **P4** | **PIPELINE-BLOCKING — claims.extract + soft scores fail closed without it** | 10 min |
-| 9 | Twilio Verify (package + account + env) | P5 | CAP-141 comment eligibility | 30 min |
+| 9 | Twilio Verify (account + env, when ready) | later | Optional `/setup` mobile step only | 30 min |
 | 10 | PostHog (package + account + env) | P7 | CMP consent + vendor deletion | 30 min |
 | 11 | Email provider (package + account + env) | production | magic-link in production | 30 min |
 | 12 | Per-phase seed pushes | ongoing | seed-dependent tables | per push |

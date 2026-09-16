@@ -2,7 +2,10 @@
  * eligibility — SLICE-P5-02: the M7 R-ELIGIBILITY machine (CAP-140 post
  * path + CAP-141 comment path) with append-only postingEligibilityEvents.
  *
- * CAP-141 (quoted): "Comment = email+mobile verified; no profile gate."
+ * CAP-141 (founder 2026-09-16): comment path is email-verified + active +
+ *   not-restricted; no profile gate; mobile OTP is optional on /setup
+ *   (CAP-551) and is not a comment or signup/signin gate. Twilio env may
+ *   land later — missing TWILIO_* does not hold comments.
  * CAP-140 (quoted): "On incomplete → preserve draft, return missing basic
  *   decisions. State machine persisted append-only." Post path = the
  *   comment requirements + the completed basic profile (CONTRACT-5-setup
@@ -11,10 +14,8 @@
  * Initial-state writer (contract OQ2, unpinned): the first check writes
  * the computed state — flagged, not invented elsewhere.
  *
- * CAP-551 note: mobileVerified is written by Twilio Verify
- * (DECISIONS-LOCKED #1) via setup.mobile.verify — buildable when
- * TWILIO_* env lands (gate G6). Until then the comment path fails closed
- * with reasonCode mobile_unverified: correct posture, not a bug.
+ * CAP-551 note: mobileVerified is written by Twilio Verify when configured
+ * (DECISIONS-LOCKED #1 provider; 2026-09-16: optional profile step).
  */
 
 import type { MutationCtx } from "./_generated/server";
@@ -48,7 +49,6 @@ export class EligibilityError extends Error {
 
 interface UserRow {
   emailVerified?: boolean;
-  mobileVerified?: boolean;
   accountStatus?: string;
   accountStanding?: string;
   basicProfileComplete?: boolean;
@@ -58,7 +58,6 @@ interface UserRow {
 function verificationMissing(user: UserRow): string[] {
   const missing: string[] = [];
   if (!user.emailVerified) missing.push("email_verified");
-  if (!user.mobileVerified) missing.push("mobile_verified");
   return missing;
 }
 
@@ -92,8 +91,8 @@ async function computeState(ctx: MutationCtx, userId: Id<"users">, path: "commen
 }
 
 /**
- * CAP-141 — the comment path. Email+mobile verified + active +
- * not-restricted; NO profile gate. Throws the typed error on failure.
+ * CAP-141 — the comment path. Email verified + active +
+ * not-restricted; NO profile gate; mobile OTP is optional.
  */
 export async function checkCommentEligibility(ctx: MutationCtx, userId: Id<"users">): Promise<void> {
   const { result } = await computeState(ctx, userId, "comment");

@@ -37,12 +37,12 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <ConvexProvider>
             {convexConfigured ? (
-              <AppAuthProvider>
+              <AppAuthProvider requireAuth>
                 {children}
                 <AuthModal />
               </AppAuthProvider>
             ) : (
-              <OfflineAuthProvider>
+              <OfflineAuthProvider requireAuth>
                 {children}
                 <AuthModal />
               </OfflineAuthProvider>

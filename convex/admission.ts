@@ -96,7 +96,7 @@ export const bootstrapUser = internalMutation({
       isStaff: false,
       analyticsSubjectId,
       bootstrapState: "pending_context",
-      postingEligibilityState: "not_verified",
+      postingEligibilityState: "basic_incomplete",
       profileVisibility: "public",
       leaderboardOptOut: false,
       onboardingState: "new",
@@ -115,7 +115,7 @@ export const bootstrapUser = internalMutation({
     // 2. empty privateUserData (sensitive split — bible l.43)
     await ctx.db.insert("privateUserData", {
       userId,
-      // mobileNumber: absent until CAP-551 Twilio write
+      // mobileNumber: absent until optional CAP-551 Twilio write on /setup
     });
 
     // 3. default member role (bible l.44 MUST-DEFINE)

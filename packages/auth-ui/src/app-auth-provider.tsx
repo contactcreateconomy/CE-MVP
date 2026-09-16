@@ -2,7 +2,7 @@
 
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useConvexAuth, useQuery } from "convex/react";
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
@@ -38,7 +38,14 @@ function mapProfileToUser(profile: ProfileView): AuthUser {
   };
 }
 
-export function AppAuthProvider({ children }: { children: ReactNode }) {
+export function AppAuthProvider({
+  children,
+  requireAuth = false,
+}: {
+  children: ReactNode;
+  /** Staff apps: keep the shared AuthModal open until a session exists. */
+  requireAuth?: boolean;
+}) {
   const { isLoading: convexLoading, isAuthenticated } = useConvexAuth();
   const { signIn, signOut } = useAuthActions();
   const profile = useQuery(api.profile.current, isAuthenticated ? {} : "skip");
@@ -66,9 +73,22 @@ export function AppAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const closeAuthModal = useCallback(() => {
+    if (requireAuth && !(isAuthenticated && profile)) {
+      return;
+    }
     setIsAuthModalOpen(false);
     setAuthError(null);
-  }, []);
+  }, [requireAuth, isAuthenticated, profile]);
+
+  useEffect(() => {
+    if (!requireAuth) return;
+    if (authStatus === "anonymous") {
+      setAuthMode("login");
+      setIsAuthModalOpen(true);
+    } else if (authStatus === "authenticated") {
+      setIsAuthModalOpen(false);
+    }
+  }, [requireAuth, authStatus]);
 
   const clearAuthError = useCallback(() => {
     setAuthError(null);
@@ -138,8 +158,10 @@ export function AppAuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     setAuthError(null);
     await signOut();
-    setIsAuthModalOpen(false);
-  }, [signOut]);
+    if (!requireAuth) {
+      setIsAuthModalOpen(false);
+    }
+  }, [signOut, requireAuth]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -150,6 +172,7 @@ export function AppAuthProvider({ children }: { children: ReactNode }) {
       authMode,
       isSubmitting,
       authError,
+      authRequired: requireAuth,
       openAuthModal,
       closeAuthModal,
       clearAuthError,
@@ -165,6 +188,7 @@ export function AppAuthProvider({ children }: { children: ReactNode }) {
       authMode,
       isSubmitting,
       authError,
+      requireAuth,
       openAuthModal,
       closeAuthModal,
       clearAuthError,

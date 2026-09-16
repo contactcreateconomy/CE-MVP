@@ -56,23 +56,18 @@ describe("SLICE-P5-02 — CAP-141 comment eligibility (no profile gate)", () => 
     await expect(checkCommentEligibility(ctx, "u1" as any)).resolves.toBeUndefined();
   });
 
-  it("mobile unverified → typed rejection naming the missing decision (CAP-551 G6 fence)", async () => {
+  it("email-verified member without mobile still comments (founder 2026-09-16: CAP-551 is optional)", async () => {
     const { ctx } = eligibilityCtx({ ...baseUser, mobileVerified: false });
-    await expect(checkCommentEligibility(ctx, "u1" as any)).rejects.toThrow(EligibilityError);
-    try {
-      await checkCommentEligibility(ctx, "u1" as any);
-    } catch (e) {
-      expect((e as EligibilityError).reasonCode).toBe("mobile_verified");
-    }
+    await expect(checkCommentEligibility(ctx, "u1" as any)).resolves.toBeUndefined();
   });
 
-  it("email unverified → not_verified with both missing codes", async () => {
+  it("email unverified → not_verified naming the missing decision", async () => {
     const { ctx } = eligibilityCtx({ ...baseUser, emailVerified: false, mobileVerified: false });
     try {
       await checkCommentEligibility(ctx, "u1" as any);
       expect.unreachable();
     } catch (e) {
-      expect((e as EligibilityError).missing.sort()).toEqual(["email_verified", "mobile_verified"]);
+      expect((e as EligibilityError).missing).toEqual(["email_verified"]);
     }
   });
 
@@ -89,6 +84,13 @@ describe("SLICE-P5-02 — CAP-140 post eligibility (basic-profile gate + missing
     expect(result.eligible).toBe(false);
     expect(result.missing).toEqual(["basic_profile"]);
     expect(result.state).toBe("basic_incomplete");
+  });
+
+  it("email-verified member without mobile can post once profile is complete", async () => {
+    const { ctx } = eligibilityCtx({ ...baseUser, mobileVerified: false });
+    const result = await checkPostEligibility(ctx, "u1" as any);
+    expect(result.eligible).toBe(true);
+    expect(result.missing).toEqual([]);
   });
 
   it("state transitions append postingEligibilityEvents (append-only machine)", async () => {

@@ -95,3 +95,7 @@ DEC-M7-ELIGIBILITY · DEC-M7-BASIC · DEC-M7-PROFILE · DEC-M7-COMPLETION · DEC
 
 ## 16. Forward-compat — the phase roadmap (north star)
 Everything above is shaped toward the platform's end-to-end arc (own marketing → sales in one platform): **(1) fundamentals + discussion → (2) ecommerce → (3) community tools → (4) marketplace → (5) social commerce → (6) influencer marketplace → (7) Signal as currency** (`_index` DEC-ROADMAP). The profile's separate-concern tables + versioning + the tools/socials capture are the seeds of the later buyer/seller/creator profiles — addable without a rewrite.
+
+## ADDENDUM 2026-09-16 — mobile OTP is optional profile completion
+
+Founder override of INV-1 / R-ELIGIBILITY "comment = email+mobile verified": **Twilio verification is not required at signup or sign-in.** CAP-551 is one optional `/setup` step (skippable). Comment eligibility is email-verified + active + not-restricted. Post eligibility is that set plus `basicProfileComplete`. `TWILIO_*` env may be configured later; until then the optional step is unavailable and setup/comments proceed. Historical INV-1 wording above is not rewritten.

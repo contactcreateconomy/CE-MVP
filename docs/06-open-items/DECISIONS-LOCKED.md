@@ -5,10 +5,12 @@
 
 ---
 
-## 1. SMS/OTP Provider — unblocks CAP-551 → CAP-141 (comment eligibility)
+## 1. SMS/OTP Provider — Twilio Verify (CAP-551 optional `/setup`; not a signup/signin/comment gate)
 
 **Decision:** Twilio Verify.
 **Action:** Wire CAP-551 to Twilio Verify's API (send/verify/expire/retry handled by Twilio). No custom OTP logic needed.
+
+**Founder override 2026-09-16:** Twilio verification is **not** required at signup or sign-in. CAP-551 is one **optional** `/setup` profile-completion step (skippable). Comment eligibility (CAP-141) no longer waits on `mobileVerified`. `TWILIO_*` env may be configured later — missing keys return `notConfigured` and do not hold comments, posts, or auth.
 
 ---
 
@@ -143,7 +145,7 @@ Each predicate: boolean, owned by implementing module, rechecked every 5 min, un
 
 | # | Decision | Blocks | Status |
 |---|---|---|---|
-| 1 | OTP: Twilio Verify | CAP-141 (all commenting) | ✅ Locked |
+| 1 | OTP: Twilio Verify | Optional `/setup` step (not CAP-141) | ✅ Locked; 2026-09-16 not a signup/comment gate |
 | 2 | Timezone: auto-detect, no Skip | Onboarding (E4) | ✅ Locked |
 | 3 | 7-bit activation checklist | P1-01b (first slice) | ✅ Locked |
 | 4 | policyFamily taxonomy | P7E-10/12 (moderation) | ✅ Locked |

@@ -8,7 +8,8 @@
  *   URLs. Same-mutation writes (quoted): "parent replyCount + threadStats
  *   + dirty-flag. atomic rawEvents append."
  *
- * CAP-141 (quoted): "Comment = email+mobile verified; no profile gate."
+ * CAP-141 (founder 2026-09-16): comment = email-verified + active +
+ *   not-restricted; no profile gate; mobile OTP is optional CAP-551.
  * CAP-321 (quoted): "deterministic checks → pass/hold/hard reject
  *   (URL/dup)". The classifier seam (lib/classifier) is G4-deferred:
  *   unavailable ⇒ moderationStatus=pending (fail-closed hold, never
@@ -203,7 +204,8 @@ export const create = mutation({
     if (args.body.trim().length === 0) throw new Error("comments.create: body required");
     if (args.body.length > COMMENT_BODY_MAX) throw new Error(`comments.create: body exceeds ${COMMENT_BODY_MAX} chars`);
 
-    // CAP-141 — email+mobile verified + active + not-restricted; no profile gate
+    // CAP-141 — email verified + active + not-restricted; no profile gate
+    // (founder 2026-09-16: mobile OTP is optional CAP-551, not a comment gate)
     await checkCommentEligibility(ctx, userId);
 
     // CAP-321 deterministic auto-mod: dup → hold; classifier → pass/hold

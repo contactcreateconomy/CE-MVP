@@ -12,9 +12,10 @@
  * Consent defaults (CAP-148): interests ON · demographics OFF ·
  *   behavioral ON · public ON — each grant appends userConsentRecords.
  *
- * CAP-551 mobile OTP is NOT here: DECISIONS-LOCKED #1 wires it to Twilio
- *   Verify, buildable when TWILIO_* env lands (gate G6). The
- *   users.mobileVerified read path exists; no OTP writer is invented.
+ * CAP-551 mobile OTP lives below as an OPTIONAL /setup step (founder
+ *   2026-09-16): not a signup/signin gate, not a comment gate. Missing
+ *   TWILIO_* env returns notConfigured; the member can finish setup
+ *   without it.
  *
  * Fences flagged, not silent: already-complete-member redirect (contract
  *   OQ5) — this surface returns state, the client routes; max interest
@@ -85,8 +86,8 @@ async function requireVerifiedMember(ctx: any): Promise<{ userId: Id<"users">; u
   const user = await ctx.db.get(userId);
   if (!user) throw new Error("setup: user not found");
   // Verified precondition (CAP-140's M1 half): email verified + active +
-  // not-restricted. Mobile is CAP-551 (Twilio-fenced) — NOT checked here;
-  // the comment path (CAP-141) owns that gate in P5-02.
+  // not-restricted. Mobile OTP (CAP-551) is optional on this screen and
+  // is not required to complete setup or to comment.
   if (!user.emailVerified) throw new Error("setup: email verification required (CAP-140)");
   if (user.accountStatus === "deleted") throw new Error("setup: account deleted");
   if (
@@ -403,6 +404,7 @@ export const getSetupState = query({
       selectedInterestTagIds: direct.filter((r: any) => r.status === "active").map((r: any) => r.tagId),
       consentFlags: profile?.consentFlags ?? DEFAULT_CONSENT_FLAGS,
       mobileVerified: user.mobileVerified ?? false,
+      mobileOtpConfigured: twilioConfig() !== null,
     };
   },
 });
@@ -424,11 +426,10 @@ export const listInterestTiles = query({
 });
 
 /* ── CAP-551 mobile OTP (DECISIONS-LOCKED #1: Twilio Verify) ──────────
- * "send/verify/expire/retry via Twilio API; no custom OTP logic; no
- * provider abstraction." REST via fetch (actions) — no SDK dependency.
- * FAIL-CLOSED on missing TWILIO_* env (gate G6): the mutations throw
- * `mobile_otp.not_configured` until the founder sets the env — the
- * CAP-141 comment gate then holds at mobile_unverified. Correct posture.
+ * Optional /setup step (founder 2026-09-16). Provider stays Twilio Verify
+ * (send/verify/expire/retry via Twilio API; no custom OTP logic). Missing
+ * TWILIO_* env returns notConfigured — signup, sign-in, comments, and
+ * basic-profile completion proceed without it.
  * Writes (quoted): users.mobileVerified=true + mobileVerifiedAt;
  * privateUserData.mobileNumber (never on the public row — CAP-002 split). */
 
@@ -529,9 +530,22 @@ export const mobileVerifyPersist = internalMutation({
   args: { userId: v.id("users"), mobileNumber: v.string() },
   returns: v.null(),
   handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
     await ctx.db.patch(args.userId, {
       mobileVerified: true,
       mobileVerifiedAt: Date.now(),
+      activationProgress: {
+        ...(user?.activationProgress ?? {
+          emailVerified: true,
+          mobileVerified: false,
+          profileComplete: false,
+          firstPostPublished: false,
+          firstCommentPosted: false,
+          firstReactionGiven: false,
+          firstFollowMade: false,
+        }),
+        mobileVerified: true,
+      },
     });
     const existing = await ctx.db
       .query("privateUserData")
@@ -545,5 +559,6 @@ export const mobileVerifyPersist = internalMutation({
         mobileNumber: args.mobileNumber,
       });
     }
+    return null;
   },
 });

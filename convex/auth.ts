@@ -140,7 +140,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
           email,
           ...(name ? { name } : null),
           createdAt: now,
-          emailVerified: false,
+          emailVerified: true,
           mobileVerified: false,
           mobileVerifiedAt: 0,
           accountStatus: "active" as const,
@@ -149,7 +149,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
           analyticsSubjectId: crypto.randomUUID(),
           bootstrapState: "pending_context" as const,
           leaderboardOptOut: false,
-          postingEligibilityState: "not_verified" as const,
+          postingEligibilityState: "basic_incomplete" as const,
           profileVisibility: "public" as const,
           // SECURITY (finding 33): opaque label — never the email local part
           displayName: name ?? opaqueMemberLabel(),
@@ -178,7 +178,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
             | "return_update"
           )[],
           activationProgress: {
-            emailVerified: false,
+            emailVerified: true,
             mobileVerified: false,
             profileComplete: false,
             firstPostPublished: false,
