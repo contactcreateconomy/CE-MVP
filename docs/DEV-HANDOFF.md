@@ -6,7 +6,8 @@
 > flags it, and moves to the next Bucket-2 item.
 >
 > **Audience:** the developer with terminal + Convex CLI access on the
-> deployment (`watchful-chameleon-570`).
+> **dev** deployment (`watchful-chameleon-570`). Production is
+> `energetic-kangaroo-55` — founder-only (`pnpm convex:deploy:prod`).
 
 ---
 

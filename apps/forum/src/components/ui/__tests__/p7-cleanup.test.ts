@@ -106,6 +106,8 @@ describe("SLICE-P7-CLEANUP criterion (b) — users tightened to bible-required",
   });
 
   it("the auth Password profile inserts the full canonical set at signup", () => {
+    const founderSrc = read(convexRoot, "lib/founder.ts");
+    expect(authSrc).toContain("canonicalSignupFields");
     for (const f of [
       'accountStatus: "active" as const',
       'bootstrapState: "pending_context" as const',
@@ -114,7 +116,7 @@ describe("SLICE-P7-CLEANUP criterion (b) — users tightened to bible-required",
       "activationProgress: {",
       "firstFollowMade: false",
     ]) {
-      expect(authSrc).toContain(f);
+      expect(founderSrc).toContain(f);
     }
   });
 

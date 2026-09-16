@@ -86,7 +86,7 @@ From `docs/00-project-status/` (founder-approved 2026-09-04 — read before any 
 
 Toolchain: Node ≥ 22, pnpm 10 (`packageManager` pins pnpm@10.28.2), Convex pinned to 1.34.1 via pnpm override, forum runs `next dev` on Turbopack.
 
-Git: work happens on phase branches (currently `001-phase4`); the PR target is `001-default` (not `main`).
+Git: work on numbered topic branches (`NNN-name`). **`main` is the default/production branch** — PRs and pushes to `main` run the full CI gate. `001-default` is an ordinary feature branch, not a merge target. NEVER push to `main` without explicit founder permission in-session. Convex function deploys stay manual (`pnpm convex:dev` for `watchful-chameleon-570`, `pnpm convex:deploy:prod` for `energetic-kangaroo-55`).
 
 Gotchas: a long-running dev server accumulates a stale Turbopack graph — after several slices of new files, module-not-found errors mean **restart `pnpm dev`**, not a code bug. `npx convex run` needs the colon form for nested function names (`rulebook:deploySeed`) on convex 1.34.
 

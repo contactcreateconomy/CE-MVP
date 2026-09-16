@@ -13,6 +13,7 @@ import type { Id } from "../_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertAdminPermission, AdminAuthzError } from "../lib/authz";
 import { writeAudited, newCorrelationId } from "../lib/audit";
+import { ensureFounderPrivileges, FOUNDER_EMAIL, isFounderEmail } from "../lib/founder";
 
 /** CAP-413 — Founder-only role assignment. */
 export const rolesAssign = mutation({
@@ -208,60 +209,91 @@ export const listOpsAssignments = query({
 
 
 /**
- * CAP-007 — grantFounder: the one-time CLI bootstrap of the FIRST
- * administrator (P2-AUTH-CUTOVER gate condition 1). Internal by design —
- * CLI/dashboard only, never a public surface. First-boot semantics: refuses
- * when an active administrator already exists (use roles.assign, CAP-413);
- * the FORCE_FOUNDER_REGRANT env escape hatch stays deployment-side.
- * Idempotent for the same user (re-run = no-op returning the existing row).
+ * CAP-007 — grantFounder: CLI bootstrap of the FIRST administrator
+ * (P2-AUTH-CUTOVER). Internal by design. Grants every staff role so the
+ * founder can open every admin widget (support_operator-only routes included).
+ * Refuses when a *different* user is already an active administrator unless
+ * FORCE_FOUNDER_REGRANT=true. Idempotent for the same user.
  */
 export const grantFounder = internalMutation({
   args: { userId: v.id("users"), email: v.optional(v.string()) },
+  returns: v.object({
+    already: v.boolean(),
+    granted: v.array(v.string()),
+  }),
   handler: async (ctx, args) => {
     const user = await ctx.db.get(args.userId);
     if (!user) throw new Error("grantFounder: user not found");
-    // The caller confirms the founder identity — mismatch aborts (CLI typo guard)
     if (args.email && user.email !== args.email) {
       throw new Error(`grantFounder: user email "${user.email}" ≠ supplied "${args.email}" — refusing`);
     }
 
-    if (user.isStaff !== true) {
-      await ctx.db.patch(args.userId, { isStaff: true });
-    }
-
     const existingRows = await ctx.db
       .query("roleAssignments")
-      .filter((q: any) => q.eq(q.field("role"), "administrator"))
-      .collect();
-    const active = existingRows.filter((r: any) => r.status === "active" && r.userId === args.userId);
-    if (active.length > 0) {
-      return { already: true, assignmentId: active[0]._id };
-    }
-    const anyActiveAdmin = existingRows.some((r: any) => r.status === "active");
-    if (anyActiveAdmin && process.env.FORCE_FOUNDER_REGRANT !== "true") {
+      .withIndex("by_role_status", (q) =>
+        q.eq("role", "administrator").eq("status", "active"),
+      )
+      .take(50);
+    const selfAdmin = existingRows.filter((r: any) => r.status === "active" && r.userId === args.userId);
+    const otherAdmin = existingRows.some(
+      (r: any) => r.status === "active" && r.userId !== args.userId,
+    );
+    if (otherAdmin && process.env.FORCE_FOUNDER_REGRANT !== "true") {
       throw new Error("grantFounder: an active administrator already exists — use roles.assign (CAP-413)");
     }
 
-    const now = Date.now();
-    const assignmentId = await ctx.db.insert("roleAssignments", {
-      userId: args.userId,
-      role: "administrator",
-      scopeType: "global",
-      scopeId: undefined, // null for global scope (optional field)
-      status: "active",
-      grantedAt: now,
-    });
-    // The audit row — System actor (CLI bootstrap; no user session exists)
+    const result = await ensureFounderPrivileges(ctx, args.userId);
+    if (selfAdmin.length > 0 && result.already) {
+      return { already: true, granted: [] };
+    }
     await ctx.db.insert("auditLog", {
       action: "admin.roles.grantFounder",
-      target: `roleAssignment:${assignmentId}`,
-      next: { userId: args.userId, role: "administrator", email: user.email ?? null },
+      target: `user:${args.userId}`,
+      next: { userId: args.userId, roles: result.granted, email: user.email ?? null },
       reasonCode: "founder_bootstrap",
       correlationId: newCorrelationId(),
       reversible: true,
-      createdAt: now,
+      createdAt: Date.now(),
     });
-    return { already: false, assignmentId };
+    return result;
+  },
+});
+
+/** Look up the documented founder email and grant every staff role. */
+export const grantFounderByEmail = internalMutation({
+  args: { email: v.optional(v.string()) },
+  returns: v.object({
+    ok: v.boolean(),
+    reason: v.optional(v.string()),
+    already: v.optional(v.boolean()),
+    granted: v.optional(v.array(v.string())),
+    userId: v.optional(v.id("users")),
+  }),
+  handler: async (ctx, args) => {
+    const email = (args.email ?? FOUNDER_EMAIL).trim().toLowerCase();
+    if (!isFounderEmail(email)) {
+      return { ok: false, reason: "email_not_founder" };
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email))
+      .unique();
+    if (!user) {
+      return { ok: false, reason: "no_user" };
+    }
+    const result = await ensureFounderPrivileges(ctx, user._id);
+    if (!result.already) {
+      await ctx.db.insert("auditLog", {
+        action: "admin.roles.grantFounderByEmail",
+        target: `user:${user._id}`,
+        next: { userId: user._id, roles: result.granted, email },
+        reasonCode: "founder_bootstrap",
+        correlationId: newCorrelationId(),
+        reversible: true,
+        createdAt: Date.now(),
+      });
+    }
+    return { ok: true, userId: user._id, ...result };
   },
 });
 

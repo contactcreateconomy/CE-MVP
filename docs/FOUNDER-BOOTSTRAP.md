@@ -1,139 +1,90 @@
-# Founder-Bootstrap Manual Verification — P2-AUTH-CUTOVER Gate
+# Founder bootstrap — forum + admin administrator access
 
-> **EXECUTED 2026-09-05** against dev deployment watchful-chameleon-570 (CAP-007 grantFounder; 1 active administrator verified). Retained as the procedure + ADMIN_EMAILS rollback record.
+> **Current (2026-09-16):** founder Google identity is
+> `contact.createconomy@gmail.com`. Staff authority is `roleAssignments`
+> (every `STAFF_ROLES` literal) + `users.isStaff=true`. `ADMIN_EMAILS` is
+> an allow-list *input* to that grant, not a second authz path.
 
-**Purpose:** Step-by-step instructions to verify the founder can access admin
-surfaces via `roleAssignments` alone, BEFORE any change to `ADMIN_EMAILS`.
-You perform these steps yourself — not the agent, not the test suite.
-
----
-
-## Prerequisites
-
-- Node.js + pnpm working (see `SETUP.md` at the repo root)
-- `npx convex login` completed (one-time)
-- `npx convex dev --once` pushed (functions live on the deployment)
-- The dev server running: `pnpm dev` from the repo root
+Forum (`:3000` / `discuss.createconomy.com`) and admin (`:3001` / the
+admin origin) share one Convex backend. Sessions are **origin-scoped** —
+sign in once on each origin with the same Google account.
 
 ---
 
-## Step 1 — Confirm ADMIN_EMAILS is still active (baseline)
+## What the code does
+
+1. **OAuth insert** (`convex/lib/founder.ts` `canonicalSignupFields`) —
+   Google/GitHub/Facebook/password writes the full bible-required `users`
+   shape so schema validation cannot reject the founder the way Auth-era
+   name/email-only rows did.
+2. **Closed-signup bypass** — CAP-001 still fail-closes everyone else.
+   `isFounderEmail` (documented email + `ADMIN_EMAILS` / `FOUNDER_EMAILS`)
+   skips the closed/waitlist reject so the first login after a wipe works.
+3. **Auto-grant on login** — `afterUserCreatedOrUpdated` calls
+   `ensureFounderPrivileges`, which sets `isStaff` and inserts any missing
+   staff roles (`administrator`, `editor`, `publisher`, `moderator`,
+   `store_operator`, `support_operator`). That covers widgets that require
+   only `support_operator` (`/admin/support`).
+4. **CLI recovery** — if the user row already exists:
 
 ```bash
-# Check the current env var is set (on your deployment dashboard or .env.local)
-grep ADMIN_EMAILS .env.local apps/forum/.env.local 2>/dev/null
+# from repo root; default email is contact.createconomy@gmail.com
+pnpm exec convex run admin/roles:grantFounderByEmail
+pnpm exec convex run --prod admin/roles:grantFounderByEmail
 ```
 
-Expected: the variable exists with at least one email. If absent, the legacy
-admin grant is already inactive and the baseline is different — note it.
-
-## Step 2 — Verify current admin access works (legacy path)
-
-Open `http://localhost:3000` and confirm you can sign in with your existing
-OAuth (GitHub/Google) or password. Note whether you have admin capabilities
-on any existing admin surface (even if it's just a moderator panel).
-
-**This is your rollback baseline — if something breaks later, re-adding
-`ADMIN_EMAILS` to the env restores this state.**
-
-## Step 3 — Run founder-bootstrap (CAP-007)
-
-This creates your `roleAssignments` administrator row:
-
-```bash
-# from the repo root
-npx convex run roleAssignments:grantFounder --identity <your-user-id>
-```
-
-**Getting your user-id:** run this query first:
-
-```bash
-npx convex run users:getByEmail '{"email":"<your-email>"}'
-```
-
-If that query doesn't exist yet (it's Phase 2 territory), check the Convex
-dashboard → Data → users → find your row → copy the `_id`.
-
-**Alternative if the CLI mutation doesn't exist yet** (the honest state —
-CAP-007 is an internal mutation that ships with P3-09):
-
-Insert directly via the Convex dashboard:
-1. Open the Convex dashboard for your deployment
-2. Data → `roleAssignments` table → "Add document"
-3. Create this document:
-
-```json
-{
-  "userId": "<your-users-_id>",
-  "role": "administrator",
-  "scopeType": "global",
-  "status": "active",
-  "grantedAt": <current-timestamp-ms>
-}
-```
-
-4. Click Save
-
-## Step 4 — Verify the roleAssignment exists
-
-```bash
-npx convex run roleAssignments:checkRole '{"userId":"<your-user-id>","role":"administrator"}'
-```
-
-Or in the dashboard: Data → `roleAssignments` → confirm the row you just
-created is there with `status: "active"`.
-
-## Step 5 — Verify admin access via roleAssignments ONLY
-
-**This is the critical test.** You need to verify that admin authority works
-through the NEW path, not the legacy one.
-
-**Method A — Temporary ADMIN_EMAILS removal (the real test):**
-
-1. Temporarily remove `ADMIN_EMAILS` from BOTH `.env.local` files
-2. Restart the dev server (`Ctrl+C` then `pnpm dev`)
-3. Sign in with your existing method
-4. Try to access any admin-gated surface
-5. **If it works:** the `roleAssignments` path is confirmed
-6. **If it does NOT work:** restore `ADMIN_EMAILS` immediately (rollback)
-
-**Method B — Direct API check (less disruptive):**
-
-```bash
-npx convex run lib/authz:testAdminPermission '{"userId":"<your-user-id>"}'
-```
-
-If this mutation doesn't exist yet, run this ad-hoc check:
-
-```bash
-npx convex run roleAssignments:countActive '{"role":"administrator"}'
-```
-
-Expected: at least 1 (you).
-
-## Step 6 — Document the result
-
-Write down (or have me record):
-- Date/time of verification
-- Which method (A or B) you used
-- Result: PASS or FAIL
-- If FAIL: what specifically didn't work
-
-## Step 7 — Restore state
-
-- If you used Method A: re-add `ADMIN_EMAILS` to both `.env.local` files
-  (keeping it until the FULL cutover is ready)
-- The `roleAssignments` row stays — it's the canonical path going forward
+`no_user` means sign in once with Google on that deployment, then re-run.
 
 ---
 
-## Rollback procedure (if admin access is lost post-cutover)
+## After a prod wipe (or first prod push)
 
-1. Add `ADMIN_EMAILS=<your-email>` to the repo-root `.env.local`
-2. Add `ADMIN_EMAILS=<your-email>` to `apps/forum/.env.local`
-3. Restart: `pnpm dev`
-4. The legacy admin grant in `convex/auth.ts`'s afterUser callback will
-   re-activate on your next sign-in
+```bash
+pnpm exec convex deploy -y                          # prod functions
+pnpm exec convex run --prod seed:bootstrap
+pnpm exec convex run --prod admin/widgetsCatalog:deploySeed
+pnpm exec convex run --prod legalContent:seedDefaults
+pnpm exec convex env set ADMIN_EMAILS contact.createconomy@gmail.com --prod
+```
 
-This rollback is documented in `SETUP.md` as required by the P2-AUTH-CUTOVER
-gate condition 4.
+Then open the **production** forum and admin URLs, Google-sign-in as
+`contact.createconomy@gmail.com` on each origin. The first successful
+login creates the user and grants every staff role. Re-run
+`grantFounderByEmail --prod` if the login happened before this code was
+deployed.
+
+Local/dev:
+
+```bash
+pnpm exec convex dev --once
+pnpm exec convex run seed:bootstrap
+pnpm exec convex run admin/widgetsCatalog:deploySeed
+pnpm exec convex run admin/roles:grantFounderByEmail
+```
+
+`AUTH_REDIRECT_ORIGINS` on the Convex deployment must include the admin
+origin (`http://localhost:3001` locally) so Google can return to the
+console.
+
+---
+
+## Rollback if admin access is lost
+
+```bash
+pnpm exec convex env set ADMIN_EMAILS contact.createconomy@gmail.com
+pnpm exec convex env set ADMIN_EMAILS contact.createconomy@gmail.com --prod
+# sign in again with that Google account (auto-grant), or:
+pnpm exec convex run admin/roles:grantFounderByEmail
+```
+
+Do **not** restore a second magic-link/staff-gate page. The shared
+`AuthModal` is the only sign-in UI.
+
+---
+
+## Historical note
+
+The 2026-09-05 procedure against `watchful-chameleon-570` (manual
+`roleAssignments` insert, then Method A `ADMIN_EMAILS` removal test) is
+superseded. Cutover condition “staff roles come from Founder bootstrap”
+is this grant, not an email-allowlist check inside `assertAdminPermission`.

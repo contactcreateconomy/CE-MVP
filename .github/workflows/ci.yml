@@ -1,10 +1,13 @@
 name: CI
 
+# `main` is the production/default branch. `001-default` is an ordinary
+# feature branch and is not a CI target. Convex function deploys stay
+# manual (`pnpm convex:dev` / `pnpm convex:deploy:prod`).
 on:
   pull_request:
-    branches: [001-default, main]
+    branches: [main]
   push:
-    branches: [001-default]
+    branches: [main]
 
 concurrency:
   group: ci-${{ github.ref }}
