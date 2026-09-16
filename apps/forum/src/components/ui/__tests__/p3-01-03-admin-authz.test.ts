@@ -235,15 +235,22 @@ describe("SLICE-P3-03 — adminWidgets catalog + seeder", () => {
     expect(genomeRoute).toBeUndefined();
   });
 
-  it("admin layout consumes the feed Google session, not /signin", () => {
+  it("admin shell uses the shared AuthModal, not a second sign-in page", () => {
     const layout = readFileSync(
       join(__dirname, "../../../../../../apps/admin/src/app/admin/layout.tsx"),
       "utf8",
     );
+    const root = readFileSync(
+      join(__dirname, "../../../../../../apps/admin/src/app/layout.tsx"),
+      "utf8",
+    );
     expect(layout).toContain("useAuth");
-    expect(layout).toContain("openAuthModal");
+    expect(layout).not.toContain("openAuthModal");
+    expect(layout).not.toContain("Staff access required. Sign in");
     expect(layout).not.toContain('router.push("/signin")');
     expect(layout).not.toContain("useConvexAuth");
+    expect(root).toContain("AppAuthProvider requireAuth");
+    expect(root).toContain("AuthModal");
   });
 
   it("every widget has a dataSourceKey (enum→code, no platform-wide enum invented)", () => {

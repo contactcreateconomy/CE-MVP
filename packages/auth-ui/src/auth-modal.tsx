@@ -16,6 +16,8 @@ export function AuthModal() {
     isSubmitting,
     authError,
     authEnvironmentNote,
+    authRequired,
+    authStatus,
     openAuthModal,
     closeAuthModal,
     clearAuthError,
@@ -24,8 +26,16 @@ export function AuthModal() {
     socialLogin,
   } = useAppAuth();
 
+  const dismissible = !authRequired || authStatus === "authenticated";
+
   return (
-    <Dialog.Root open={isAuthModalOpen} onOpenChange={(open) => (open ? openAuthModal(authMode) : closeAuthModal())}>
+    <Dialog.Root
+      open={isAuthModalOpen}
+      onOpenChange={(open) => {
+        if (open) openAuthModal(authMode);
+        else if (dismissible) closeAuthModal();
+      }}
+    >
       <Dialog.Portal>
         {/*
           Flex-center the panel instead of fixed + translate utilities. Tailwind v4 can emit the
@@ -40,17 +50,28 @@ export function AuthModal() {
               "auth-modal-content relative z-10 w-[min(560px,94vw)] overflow-hidden rounded-[20px] border border-white/10 bg-(--bg-surface)/92 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_32px_80px_rgba(0,0,0,0.55)] outline-hidden",
               "origin-center",
             )}
+            onPointerDownOutside={(event) => {
+              if (!dismissible) event.preventDefault();
+            }}
+            onInteractOutside={(event) => {
+              if (!dismissible) event.preventDefault();
+            }}
+            onEscapeKeyDown={(event) => {
+              if (!dismissible) event.preventDefault();
+            }}
           >
             <div className="relative px-7 sm:px-8 pt-6 pb-7">
-              <Dialog.Close asChild>
-                <button
-                  type="button"
-                  className="absolute right-5 top-5 rounded-full p-1.5 text-text-muted transition-colors hover:bg-bg-overlay hover:text-text-primary"
-                  aria-label="Close authentication dialog"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </Dialog.Close>
+              {dismissible ? (
+                <Dialog.Close asChild>
+                  <button
+                    type="button"
+                    className="absolute right-5 top-5 rounded-full p-1.5 text-text-muted transition-colors hover:bg-bg-overlay hover:text-text-primary"
+                    aria-label="Close authentication dialog"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </Dialog.Close>
+              ) : null}
 
               {authEnvironmentNote ? (
                 <div

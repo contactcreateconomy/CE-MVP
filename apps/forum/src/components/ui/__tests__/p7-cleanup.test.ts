@@ -110,7 +110,7 @@ describe("SLICE-P7-CLEANUP criterion (b) — users tightened to bible-required",
       'accountStatus: "active" as const',
       'bootstrapState: "pending_context" as const',
       "analyticsSubjectId: crypto.randomUUID()",
-      "postingEligibilityState: \"not_verified\" as const",
+      "postingEligibilityState: \"basic_incomplete\" as const",
       "activationProgress: {",
       "firstFollowMade: false",
     ]) {

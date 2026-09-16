@@ -1087,8 +1087,8 @@ export default defineSchema({
   /* ── M7 profile & onboarding (SLICE-P5-05; bible l.58-67, l.230-231) ──
    * users already carries the M7 eligibility block (P1-01b). trustHistory
    * (l.65) is M12-reputation-owned (Phase 7) — deliberately NOT defined
-   * here. CAP-551 mobile OTP stays fenced on TWILIO_* env (G6): the
-   * users.mobileVerified read path exists; the OTP writer is not built. */
+   * here. CAP-551 mobile OTP is optional on /setup (founder 2026-09-16);
+   * missing TWILIO_* env does not hold comments or signup. */
 
   /** bible l.58 — the common/stable profile layer. firstTapOrder = tap
    *  salience, CANNOT be backfilled (append-only order). toolsUsed is a

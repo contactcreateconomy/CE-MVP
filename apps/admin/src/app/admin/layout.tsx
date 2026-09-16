@@ -45,10 +45,10 @@ function AdminLayoutInner({ children }: { children?: React.ReactNode }) {
   const pathname = usePathname();
   const [paletteOpen, setPaletteOpen] = useState(false);
 
-  // Same Google/password credentials as the forum app (AppAuthProvider).
-  // Cookies are origin-scoped — staff signs in on :3001 even if already
-  // signed in on the forum. Do NOT send staff to /signin.
-  const { authStatus, openAuthModal, logout } = useAuth();
+  // Same Google/password AuthModal as the forum app. Session is origin-scoped
+  // (staff signs in on :3001 even if already signed in on the forum). The
+  // modal is the only sign-in UI — AppAuthProvider requireAuth opens it.
+  const { authStatus, logout } = useAuth();
   const isAuthenticated = authStatus === "authenticated";
   const authLoading = authStatus === "loading";
 
@@ -90,16 +90,7 @@ function AdminLayoutInner({ children }: { children?: React.ReactNode }) {
     return <div className="flex min-h-screen items-center justify-center bg-bg-canvas p-6 text-sm text-text-muted">Loading…</div>;
   }
   if (!isAuthenticated) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-bg-canvas p-6 text-center">
-        <ShieldCheck className="size-8 text-text-muted" />
-        <h1 className="text-lg font-semibold text-text-primary">Admin console</h1>
-        <p className="max-w-sm text-sm text-text-muted">
-          Staff access required. Sign in with your authorized account to continue.
-        </p>
-        <Button variant="primary" size="sm" onClick={() => openAuthModal("login")}>Sign in</Button>
-      </div>
-    );
+    return <div className="min-h-screen bg-bg-canvas" />;
   }
   if (!catalogLoaded) {
     return <div className="flex min-h-screen items-center justify-center bg-bg-canvas p-6 text-sm text-text-muted">Loading…</div>;

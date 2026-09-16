@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- schema introspection + mocked-ctx helper tests */
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 /* SLICE-P5-05 acceptance tests — M7 profile schema + /setup mutations +
  * CAP-570 activity helper. Sources: bible l.58-67 (M7), l.230-231
@@ -193,5 +195,23 @@ describe("SLICE-P5-05 — setup module (CAP-142/144/148)", () => {
     for (const fn of ["upsertBasic", "interestsSelect", "interestsRemove", "consentRecord"]) {
       expect(typeof (setupModule as any)[fn], fn).toBe("function");
     }
+  });
+
+  it("CAP-551 mobile OTP is an optional setup action, not a signup gate", () => {
+    expect(typeof (setupModule as any).mobileSendOtp).toBe("function");
+    expect(typeof (setupModule as any).mobileVerify).toBe("function");
+    const page = readFileSync(
+      join(__dirname, "../../../app/(app)/(shell)/setup/setup-page-client.tsx"),
+      "utf8",
+    );
+    expect(page).toContain("MobileOptionalStep");
+    expect(page).toContain("(optional)");
+    const signup = readFileSync(
+      join(__dirname, "../../../../../../packages/auth-ui/src/signup-form.tsx"),
+      "utf8",
+    );
+    expect(signup).not.toContain("verify your email before signing up");
+    expect(signup).not.toContain("123456");
+    expect(signup).not.toContain("Send code");
   });
 });

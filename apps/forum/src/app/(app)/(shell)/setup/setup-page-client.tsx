@@ -2,7 +2,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,127 @@ import { useAuth } from "@cemvp/auth-ui";
  */
 const RULES_VERSION = "rules.v1";
 const LEGAL_AGE_VERSION = "coppa.v1";
+
+function MobileOptionalStep({
+  mobileVerified,
+  mobileOtpConfigured,
+}: {
+  mobileVerified: boolean;
+  mobileOtpConfigured: boolean;
+}) {
+  const sendOtp = useAction(api.setup.mobileSendOtp);
+  const verifyMobile = useAction(api.setup.mobileVerify);
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [code, setCode] = useState("");
+  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [verified, setVerified] = useState(mobileVerified);
+
+  if (verified) {
+    return (
+      <div className="space-y-2">
+        <span className="text-sm font-medium text-(--text-primary)">Mobile number</span>
+        <p className="text-sm text-(--text-muted)">Verified. This step is complete.</p>
+      </div>
+    );
+  }
+
+  if (!mobileOtpConfigured) {
+    return (
+      <div className="space-y-2">
+        <span className="text-sm font-medium text-(--text-primary)">
+          Mobile number <span className="text-(--text-muted)">(optional)</span>
+        </span>
+        <p className="text-sm text-(--text-muted)">
+          You can finish setup without this. SMS verification can be added later.
+        </p>
+      </div>
+    );
+  }
+
+  const onSend = async () => {
+    setBusy(true);
+    setMessage(null);
+    try {
+      const result = await sendOtp({ mobileNumber: mobileNumber.trim() });
+      if (result.notConfigured) {
+        setMessage("SMS verification is not available yet. You can finish setup without it.");
+        return;
+      }
+      if (result.sent) {
+        setSent(true);
+        setMessage("Code sent. Enter it below.");
+      }
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : "Could not send code.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onVerify = async () => {
+    setBusy(true);
+    setMessage(null);
+    try {
+      const result = await verifyMobile({ mobileNumber: mobileNumber.trim(), code: code.trim() });
+      if (result.notConfigured) {
+        setMessage("SMS verification is not available yet. You can finish setup without it.");
+        return;
+      }
+      if (result.verified) {
+        setVerified(true);
+        setMessage(null);
+      } else {
+        setMessage("That code did not match. Try again.");
+      }
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : "Could not verify code.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <span className="text-sm font-medium text-(--text-primary)">
+        Mobile number <span className="text-(--text-muted)">(optional)</span>
+      </span>
+      <p className="text-sm text-(--text-muted)">Not required for signup, sign-in, or posting.</p>
+      <Input
+        type="tel"
+        inputMode="tel"
+        autoComplete="tel"
+        placeholder="+15551234567"
+        value={mobileNumber}
+        onChange={(e) => setMobileNumber(e.target.value)}
+        aria-label="Mobile number"
+      />
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" variant="secondary" size="sm" disabled={busy || mobileNumber.trim().length < 8} onClick={() => void onSend()}>
+          {busy && !sent ? "Sending…" : "Send code"}
+        </Button>
+      </div>
+      {sent ? (
+        <div className="space-y-2">
+          <Input
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            placeholder="6-digit code"
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            aria-label="Verification code"
+            maxLength={6}
+          />
+          <Button type="button" size="sm" disabled={busy || code.length !== 6} onClick={() => void onVerify()}>
+            {busy ? "Verifying…" : "Verify"}
+          </Button>
+        </div>
+      ) : null}
+      {message ? <p className="text-sm text-(--text-muted)">{message}</p> : null}
+    </div>
+  );
+}
 
 const CONSENT_LABELS: Record<string, string> = {
   interestsPersonalization: "Personalize from my interests",
@@ -116,6 +237,10 @@ export function SetupPageClient() {
             Your basic profile is complete and posting is unlocked. You can keep adjusting interests
             and consent any time in Settings.
           </p>
+          <MobileOptionalStep
+            mobileVerified={Boolean(state.mobileVerified)}
+            mobileOtpConfigured={Boolean(state.mobileOtpConfigured)}
+          />
           <div className="flex gap-2">
             <Button variant="secondary" onClick={() => (window.location.href = "/feed")}>
               Go to feed
@@ -240,6 +365,11 @@ export function SetupPageClient() {
             <span>I confirm I am of legal age to use this service (age/COPPA confirmation).</span>
           </label>
         </div>
+
+        <MobileOptionalStep
+          mobileVerified={Boolean(state.mobileVerified)}
+          mobileOtpConfigured={Boolean(state.mobileOtpConfigured)}
+        />
 
         {error ? <p className="text-sm text-(--status-danger, #b91c1c)">{error}</p> : null}
 

@@ -1,6 +1,6 @@
 # PROJECT-STATUS — Createconomy MVP build state, for the incoming dev team
 
-> **SUPERSEDED SNAPSHOT (2026-09-12):** this file was written at the 2026-09-05 scope-stop. Phases 1–7 are now code-complete (2026-09-10), 902/902 tests, the app runs live against Convex dev deployment watchful-chameleon-570 (seeds + founder bootstrap executed 2026-09-05), and a 2026-09-12 docs-vs-code audit reconciled remaining drift — see CHANGELOG.md [Unreleased] for the authoritative record. The tables below are historical.
+> **SUPERSEDED SNAPSHOT (2026-09-12):** this file was written at the 2026-09-05 scope-stop. Phases 1–7 are now code-complete (2026-09-10), 902/902 tests, the app runs live against Convex dev deployment watchful-chameleon-570 (seeds + founder bootstrap executed 2026-09-05), and a 2026-09-12 docs-vs-code audit reconciled remaining drift — see CHANGELOG.md [Unreleased] for the authoritative record. **2026-09-16:** Twilio Verify is optional `/setup` (not a signup/signin/comment gate). The tables below are historical.
 
 **Written 2026-09-05.** Read this cold before touching anything. It is the
 honest, complete account of what this repository contains, what was asked

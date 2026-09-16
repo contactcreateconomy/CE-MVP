@@ -1,28 +1,14 @@
 "use client";
 
-import { ArrowLeft, CheckCircle2, Eye, EyeOff, Loader2, Mail } from "lucide-react";
-import { type ChangeEvent, type FormEvent, type KeyboardEvent, type ClipboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react";
+import { type FormEvent, useMemo, useState } from "react";
 
 import type { SignupPayload } from "./types";
 import { cn } from "./utils/cn";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
-/* ── Placeholder backend functions ── */
-
-async function sendOtpCode(_email: string): Promise<string> {
-  await new Promise((r) => setTimeout(r, 600));
-  return "123456";
-}
-
-async function verifyOtpCode(_email: string, code: string): Promise<boolean> {
-  await new Promise((r) => setTimeout(r, 500));
-  return code === "123456";
-}
-
 /* ── Types ── */
-
-type EmailVerifyStep = "idle" | "verifying" | "error" | "verified";
 
 interface SignupFormProps {
   isSubmitting: boolean;
@@ -95,13 +81,6 @@ export function SignupForm({ isSubmitting, authError, onSubmit, onSwitchToLogin 
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [triedSubmit, setTriedSubmit] = useState(false);
 
-  // Email verification state
-  const [emailVerifyStep, setEmailVerifyStep] = useState<EmailVerifyStep>("idle");
-  const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(""));
-  const [otpErrorMessage, setOtpErrorMessage] = useState<string | null>(null);
-  const [isOtpLoading, setIsOtpLoading] = useState(false);
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
-
   const emailSyntaxIsValid = useMemo(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()), [email]);
 
   const nameError = useMemo(() => {
@@ -135,13 +114,6 @@ export function SignupForm({ isSubmitting, authError, onSubmit, onSwitchToLogin 
 
     return null;
   }, [email, emailSyntaxIsValid, triedSubmit]);
-
-  const emailVerifyError = useMemo(() => {
-    if (triedSubmit && emailSyntaxIsValid && emailVerifyStep !== "verified") {
-      return "Please verify your email before signing up.";
-    }
-    return null;
-  }, [triedSubmit, emailSyntaxIsValid, emailVerifyStep]);
 
   const passwordError = useMemo(() => {
     if (!triedSubmit && password.length === 0) {
@@ -184,102 +156,7 @@ export function SignupForm({ isSubmitting, authError, onSubmit, onSwitchToLogin 
     !termsError &&
     !!name.trim() &&
     !!email.trim() &&
-    password.length >= 8 &&
-    emailVerifyStep === "verified";
-
-  /* ── OTP handlers ── */
-
-  const handleVerifyClick = async () => {
-    if (!emailSyntaxIsValid || isSubmitting) return;
-    setIsOtpLoading(true);
-    try {
-      await sendOtpCode(email.trim());
-      setEmailVerifyStep("verifying");
-      setOtpDigits(Array(6).fill(""));
-      setOtpErrorMessage(null);
-    } catch {
-      setOtpErrorMessage("Could not send verification code. Please try again.");
-    } finally {
-      setIsOtpLoading(false);
-    }
-  };
-
-  const handleOtpDigitChange = (index: number, value: string) => {
-    const digit = value.replace(/\D/g, "").slice(-1);
-    const next = [...otpDigits];
-    next[index] = digit;
-    setOtpDigits(next);
-    if (emailVerifyStep === "error") setEmailVerifyStep("verifying");
-
-    if (digit && index < 5) {
-      otpRefs.current[index + 1]?.focus();
-    }
-
-    if (next.every((d) => d !== "") && digit) {
-      handleOtpSubmit(next.join(""));
-    }
-  };
-
-  const handleOtpKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleOtpPaste = (e: ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const text = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, 6);
-    if (!text) return;
-    const next = [...otpDigits];
-    for (let i = 0; i < text.length; i++) next[i] = text[i];
-    setOtpDigits(next);
-    if (emailVerifyStep === "error") setEmailVerifyStep("verifying");
-    const focusIdx = Math.min(text.length, 5);
-    otpRefs.current[focusIdx]?.focus();
-    if (next.every((d) => d !== "")) handleOtpSubmit(next.join(""));
-  };
-
-  const handleOtpSubmit = async (code: string) => {
-    setIsOtpLoading(true);
-    try {
-      const valid = await verifyOtpCode(email.trim(), code);
-      if (valid) {
-        setEmailVerifyStep("verified");
-        setOtpErrorMessage(null);
-      } else {
-        setEmailVerifyStep("error");
-        setOtpErrorMessage("Invalid code. Please try again.");
-      }
-    } catch {
-      setEmailVerifyStep("error");
-      setOtpErrorMessage("Verification failed. Please try again.");
-    } finally {
-      setIsOtpLoading(false);
-    }
-  };
-
-  const handleChangeEmail = () => {
-    setEmail("");
-    setEmailVerifyStep("idle");
-    setOtpDigits(Array(6).fill(""));
-    setOtpErrorMessage(null);
-  };
-
-  const handleResendCode = async () => {
-    setOtpDigits(Array(6).fill(""));
-    setOtpErrorMessage(null);
-    setEmailVerifyStep("verifying");
-    await sendOtpCode(email.trim());
-  };
-
-  /* ── Focus management ── */
-
-  useEffect(() => {
-    if (emailVerifyStep === "verifying" || emailVerifyStep === "error") {
-      const timer = setTimeout(() => otpRefs.current[0]?.focus(), 150);
-      return () => clearTimeout(timer);
-    }
-  }, [emailVerifyStep]);
+    password.length >= 8;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -297,9 +174,6 @@ export function SignupForm({ isSubmitting, authError, onSubmit, onSwitchToLogin 
       acceptedTerms,
     });
   };
-
-  const isOtpVisible = emailVerifyStep === "verifying" || emailVerifyStep === "error";
-  const isEmailVisible = emailVerifyStep === "idle" || emailVerifyStep === "verified";
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit} noValidate>
@@ -325,151 +199,27 @@ export function SignupForm({ isSubmitting, authError, onSubmit, onSwitchToLogin 
         ) : null}
       </div>
 
-      {/* ── Email verification section ── */}
-      <div className="relative min-h-[88px]">
-        {/* Layer 1: Email input */}
-        <div
-          className={cn(
-            "space-y-1.5 transition-[opacity,transform] duration-300 ease-out",
-            isEmailVisible ? "opacity-100 translate-y-0" : "pointer-events-none absolute inset-0 opacity-0 -translate-y-1",
-          )}
-        >
-          <label htmlFor="auth-signup-email" className="text-xs font-medium text-text-secondary">
-            Email
-          </label>
-          <div className="relative">
-            <Input
-              id="auth-signup-email"
-              type="email"
-              autoComplete="email"
-              placeholder="Enter your email"
-              className={cn(
-                "bg-bg-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
-                emailVerifyStep === "verified"
-                  ? "border-feedback-success/70 pr-24"
-                  : emailSyntaxIsValid
-                    ? "border-border-default pr-20"
-                    : "border-border-default",
-              )}
-              value={email}
-              onChange={(event) => {
-                setEmail(event.target.value);
-                if (emailVerifyStep === "verified") setEmailVerifyStep("idle");
-              }}
-              aria-invalid={Boolean(emailError)}
-              aria-describedby={emailError ? "auth-signup-email-error" : undefined}
-              disabled={isSubmitting}
-            />
-
-            {/* Inline Verify button — matches password strength badge format */}
-            {emailSyntaxIsValid && emailVerifyStep === "idle" && (
-              <button
-                type="button"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md border border-feedback-success/45 bg-feedback-success/12 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-feedback-success transition-[background-color,opacity] duration-200 hover:bg-feedback-success/20 active:bg-feedback-success/30"
-                onClick={handleVerifyClick}
-                disabled={isSubmitting || isOtpLoading}
-              >
-                {isOtpLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Verify"}
-              </button>
-            )}
-
-            {/* Verified badge */}
-            {emailVerifyStep === "verified" && (
-              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 rounded-md border border-feedback-success/45 bg-feedback-success/12 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-feedback-success transition-[opacity,transform] duration-200">
-                <CheckCircle2 className="h-3 w-3" />
-                Verified
-              </span>
-            )}
-          </div>
-          {emailVerifyStep === "verified" ? (
-            <button
-              type="button"
-              className="text-[11px] font-medium text-brand-primary hover:underline"
-              onClick={handleChangeEmail}
-              disabled={isSubmitting}
-            >
-              Use a different email
-            </button>
-          ) : emailError ? (
-            <p id="auth-signup-email-error" className="text-xs text-feedback-error">
-              {emailError}
-            </p>
-          ) : emailVerifyError ? (
-            <p className="text-xs text-feedback-error">{emailVerifyError}</p>
-          ) : null}
-        </div>
-
-        {/* Layer 2: OTP input */}
-        <div
-          className={cn(
-            "transition-[opacity,transform] duration-300 ease-out",
-            isOtpVisible ? "opacity-100 translate-y-0" : "pointer-events-none absolute inset-0 opacity-0 translate-y-1",
-            emailVerifyStep === "error" && "animate-[auth-otp-shake_0.4s_ease-in-out]",
-          )}
-        >
-          <div className="space-y-3">
-            <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-              <Mail className="h-3.5 w-3.5 shrink-0" />
-              <span>
-                Code sent to <span className="font-medium text-text-primary">{email}</span>
-              </span>
-            </div>
-
-            <div role="group" aria-label="Enter verification code" className="flex items-center justify-center gap-2">
-              {otpDigits.map((digit, i) => (
-                <input
-                  key={i}
-                  ref={(el) => {
-                    otpRefs.current[i] = el;
-                  }}
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete={i === 0 ? "one-time-code" : undefined}
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleOtpDigitChange(i, e.target.value)}
-                  onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => handleOtpKeyDown(i, e)}
-                  onPaste={i === 0 ? handleOtpPaste : undefined}
-                  disabled={isSubmitting || isOtpLoading}
-                  aria-label={`Digit ${i + 1} of 6`}
-                  className={cn(
-                    "h-11 w-11 rounded-lg border bg-bg-surface text-center text-lg font-semibold text-text-primary outline-hidden transition-[border-color,box-shadow] duration-200",
-                    digit
-                      ? "border-brand-primary/60 ring-2 ring-brand-primary/25 shadow-[0_0_8px_rgba(14,165,233,0.2)]"
-                      : "border-border-default shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)] [.dark_&]:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]",
-                    emailVerifyStep === "error" && !digit && "border-feedback-error/60",
-                  )}
-                />
-              ))}
-            </div>
-
-            {emailVerifyStep === "error" && otpErrorMessage ? (
-              <p role="alert" className="text-center text-xs text-feedback-error">
-                {otpErrorMessage}
-              </p>
-            ) : null}
-
-            <div className="flex items-center justify-between">
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 text-[11px] font-medium text-text-secondary transition-colors hover:text-text-primary"
-                onClick={handleChangeEmail}
-                disabled={isSubmitting}
-              >
-                <ArrowLeft className="h-3 w-3" />
-                Change email
-              </button>
-              <button
-                type="button"
-                className="text-[11px] font-medium text-brand-primary transition-colors hover:text-brand-primary/80"
-                onClick={handleResendCode}
-                disabled={isSubmitting || isOtpLoading}
-              >
-                Resend code
-              </button>
-            </div>
-          </div>
-        </div>
+      <div className="space-y-1.5">
+        <label htmlFor="auth-signup-email" className="text-xs font-medium text-text-secondary">
+          Email
+        </label>
+        <Input
+          id="auth-signup-email"
+          type="email"
+          autoComplete="email"
+          placeholder="Enter your email"
+          className="border-border-default bg-bg-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          aria-invalid={Boolean(emailError)}
+          aria-describedby={emailError ? "auth-signup-email-error" : undefined}
+          disabled={isSubmitting}
+        />
+        {emailError ? (
+          <p id="auth-signup-email-error" className="text-xs text-feedback-error">
+            {emailError}
+          </p>
+        ) : null}
       </div>
 
       <div className="space-y-1.5">

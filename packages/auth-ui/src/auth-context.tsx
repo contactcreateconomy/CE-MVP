@@ -13,6 +13,8 @@ export interface AuthContextValue {
   authMode: AuthMode;
   isSubmitting: boolean;
   authError: string | null;
+  /** When true, the modal stays open until a session exists (staff apps). */
+  authRequired: boolean;
   openAuthModal: (mode?: AuthMode) => void;
   closeAuthModal: () => void;
   clearAuthError: () => void;

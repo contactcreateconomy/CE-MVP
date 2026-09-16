@@ -3,7 +3,7 @@
 **Screen:** Profile Setup / Basic Profile (posting gate) — `/setup`
 **Wave:** 5B (M7 Posting Eligibility & Profile)
 **Template archetype:** Onboarding form
-**Primary CAP-IDs:** CAP-142, CAP-144, CAP-148 (gates the CAP-140 post path); CAP-551 (mobile OTP verify — data-model half; OTP provider OPEN)
+**Primary CAP-IDs:** CAP-142, CAP-144, CAP-148 (gates the CAP-140 post path); CAP-551 (optional mobile OTP on this screen — founder 2026-09-16; not a signup/signin/comment gate)
 **Actor:** member (verified)
 **Reconciliation:** Gate logic locked (all three independently confirmed /setup gates posting only). States: GPT's ~50 sub-states folded. **E-setup-2 CLOSED 2026-08-25.** E-mobile data-model half closed (CAP-551); OTP provider remains **FOUNDER-DECISION-M7-01**. See RECONCILIATION-5B §2.
 
@@ -80,3 +80,11 @@ CAP-551 wires to **Twilio Verify** (send/verify/expiry/retry handled by Twilio's
 API — no custom OTP logic; no provider abstraction to build). `mobileVerified` /
 `mobileVerifiedAt` write on Twilio confirmation; CAP-141 comment eligibility is
 fully unblocked. The `FOUNDER-DECISION-M7-01` ledger row is closed.
+
+## ADDENDUM 2026-09-16 — mobile OTP is optional profile completion
+
+Founder: Twilio verification is **not** required at signup or sign-in. CAP-551
+is one optional `/setup` step (skippable). Completing basic profile (CAP-142)
+does not wait on `mobileVerified`. Comment eligibility is email-verified +
+active + not-restricted. `TWILIO_*` env may be configured later; until then
+the optional step is unavailable and setup/comments proceed.

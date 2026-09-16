@@ -8,8 +8,14 @@ import type { AuthMode, LoginPayload, SignupPayload, SocialAuthProvider } from "
 const OFFLINE_SUBMIT_HINT =
   "Set NEXT_PUBLIC_CONVEX_URL in this app’s .env.local (and run Convex) to sign in.";
 
-export function OfflineAuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+export function OfflineAuthProvider({
+  children,
+  requireAuth = false,
+}: {
+  children: ReactNode;
+  requireAuth?: boolean;
+}) {
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(requireAuth);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -20,9 +26,10 @@ export function OfflineAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const closeAuthModal = useCallback(() => {
+    if (requireAuth) return;
     setIsAuthModalOpen(false);
     setAuthError(null);
-  }, []);
+  }, [requireAuth]);
 
   const clearAuthError = useCallback(() => {
     setAuthError(null);
@@ -38,8 +45,10 @@ export function OfflineAuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     setAuthError(null);
-    setIsAuthModalOpen(false);
-  }, []);
+    if (!requireAuth) {
+      setIsAuthModalOpen(false);
+    }
+  }, [requireAuth]);
 
   const login = useCallback(async (_payload: LoginPayload) => {
     await rejectSignIn();
@@ -58,6 +67,7 @@ export function OfflineAuthProvider({ children }: { children: ReactNode }) {
       authMode,
       isSubmitting: false,
       authError,
+      authRequired: requireAuth,
       openAuthModal,
       closeAuthModal,
       clearAuthError,
@@ -70,6 +80,7 @@ export function OfflineAuthProvider({ children }: { children: ReactNode }) {
       isAuthModalOpen,
       authMode,
       authError,
+      requireAuth,
       openAuthModal,
       closeAuthModal,
       clearAuthError,
