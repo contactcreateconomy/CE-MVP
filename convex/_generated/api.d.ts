@@ -83,6 +83,7 @@ import type * as lib_audit from "../lib/audit.js";
 import type * as lib_authz from "../lib/authz.js";
 import type * as lib_classifier from "../lib/classifier.js";
 import type * as lib_events from "../lib/events.js";
+import type * as lib_founder from "../lib/founder.js";
 import type * as lib_glm from "../lib/glm.js";
 import type * as lib_handle from "../lib/handle.js";
 import type * as lib_hash from "../lib/hash.js";
@@ -222,6 +223,7 @@ declare const fullApi: ApiFromModules<{
   "lib/authz": typeof lib_authz;
   "lib/classifier": typeof lib_classifier;
   "lib/events": typeof lib_events;
+  "lib/founder": typeof lib_founder;
   "lib/glm": typeof lib_glm;
   "lib/handle": typeof lib_handle;
   "lib/hash": typeof lib_hash;

@@ -6,6 +6,11 @@ import { Email } from "@convex-dev/auth/providers/Email";
 import { convexAuth } from "@convex-dev/auth/server";
 import { normalizeHandle } from "./lib/handle";
 import { checkAdmission } from "./admission";
+import {
+  canonicalSignupFields,
+  ensureFounderPrivileges,
+  isFounderEmail,
+} from "./lib/founder";
 
 /** CAP-016/017 (scan 2026-09-13, finding 22): magic-link throttles —
  *  5/15m per identifier, 3/1h per identifier — enforced at the ONE seam
@@ -74,15 +79,6 @@ function parseAuthRedirectOrigins(): Set<string> {
   return origins;
 }
 
-/** SECURITY (scan round 2, finding 33): never derive a PUBLIC display name
- *  from the email local part — it leaks identifying data platform-wide
- *  (profile/comment/feed surfaces). New accounts without an explicit name
- *  get an opaque member label. */
-function opaqueMemberLabel(): string {
-  const rand = crypto.randomUUID().slice(0, 8);
-  return `member-${rand}`;
-}
-
 function deriveHandle(email: string, name?: string): string {
   // CAP-474 discipline via lib/handle (the same normalizer the username
   // reserve path uses) — only the SOURCE differs: name first, email
@@ -135,63 +131,43 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
           typeof params.name === "string" && params.name.trim()
             ? params.name.trim()
             : undefined;
-        const now = Date.now();
+        return canonicalSignupFields(email, name);
+      },
+    }),
+    GitHub({
+      ...oauthEnv("AUTH_GITHUB_ID", "AUTH_GITHUB_SECRET"),
+      profile(profile) {
+        const email = String(profile.email ?? "").trim().toLowerCase();
         return {
-          email,
-          ...(name ? { name } : null),
-          createdAt: now,
-          emailVerified: true,
-          mobileVerified: false,
-          mobileVerifiedAt: 0,
-          accountStatus: "active" as const,
-          accountStanding: "good" as const,
-          trustTier: "t1" as const,
-          analyticsSubjectId: crypto.randomUUID(),
-          bootstrapState: "pending_context" as const,
-          leaderboardOptOut: false,
-          postingEligibilityState: "basic_incomplete" as const,
-          profileVisibility: "public" as const,
-          // SECURITY (finding 33): opaque label — never the email local part
-          displayName: name ?? opaqueMemberLabel(),
-          avatarAssetId: "",
-          bio: "",
-          postCount: 0,
-          approvedCommentCount: 0,
-          lastActiveAt: now,
-          suspendedAt: 0,
-          suspendedReason: "",
-          deletedAt: 0,
-          basicProfileComplete: false,
-          rulesAcceptedVersion: "",
-          rulesAcceptedAt: 0,
-          legalAgeAssertedVersion: "",
-          legalAgeAssertedAt: 0,
-          profileVersion: 1,
-          completionBadges: [] as string[],
-          onboardingState: "new" as const,
-          coachCardsShownCount: 0,
-          checklistStepsShownMax: 0,
-          coachDismissed: [] as (
-            | "discover_resource"
-            | "acquire_resource"
-            | "join_discussion"
-            | "return_update"
-          )[],
-          activationProgress: {
-            emailVerified: true,
-            mobileVerified: false,
-            profileComplete: false,
-            firstPostPublished: false,
-            firstCommentPosted: false,
-            firstReactionGiven: false,
-            firstFollowMade: false,
-          },
+          id: String(profile.id ?? ""),
+          ...canonicalSignupFields(email, profile.name ?? undefined),
+          ...(profile.avatar_url ? { image: profile.avatar_url } : null),
         };
       },
     }),
-    GitHub(oauthEnv("AUTH_GITHUB_ID", "AUTH_GITHUB_SECRET")),
-    Google(oauthEnv("AUTH_GOOGLE_ID", "AUTH_GOOGLE_SECRET")),
-    Facebook(oauthEnv("AUTH_FACEBOOK_ID", "AUTH_FACEBOOK_SECRET")),
+    Google({
+      ...oauthEnv("AUTH_GOOGLE_ID", "AUTH_GOOGLE_SECRET"),
+      profile(profile) {
+        const email = String(profile.email ?? "").trim().toLowerCase();
+        return {
+          id: String(profile.sub ?? ""),
+          ...canonicalSignupFields(email, profile.name ?? undefined),
+          ...(profile.picture ? { image: profile.picture } : null),
+        };
+      },
+    }),
+    Facebook({
+      ...oauthEnv("AUTH_FACEBOOK_ID", "AUTH_FACEBOOK_SECRET"),
+      profile(profile) {
+        const email = String(profile.email ?? "").trim().toLowerCase();
+        const image = profile.picture?.data?.url;
+        return {
+          id: String(profile.id ?? ""),
+          ...canonicalSignupFields(email, profile.name ?? undefined),
+          ...(image ? { image } : null),
+        };
+      },
+    }),
   ],
   callbacks: {
     async redirect({ redirectTo }) {
@@ -237,19 +213,23 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         // entire account creation (no orphan users row, no authAccounts
         // link), which is the fail-closed CAP-001 posture: signup closed/
         // waitlist ⇒ NO account exists after the attempt.
-        const admission = await checkAdmission(ctx);
-        if (admission === "reject") {
-          throw new Error("auth: signup is closed — account creation rejected (CAP-001)");
-        }
-        if (admission === "waitlist") {
-          // REVIEW-FIX (self-review of finding 3): do NOT insert a
-          // waitlistEntries row here — this callback runs inside the same
-          // transaction as the users insert, and the throw below rolls
-          // EVERYTHING back (the waitlist write would never persist).
-          // Waitlist capture stays on the public waitlist.join surface
-          // (CAP-015); this seam's single job is the fail-closed reject:
-          // waitlist-mode signup leaves NO account behind.
-          throw new Error("auth: signup is waitlist-only — join the waitlist from the sign-in screen (CAP-001/CAP-015)");
+        // Founder email is the documented CAP-007 exception: an empty/closed
+        // deployment must still admit the founder (FOUNDER-BOOTSTRAP).
+        if (!isFounderEmail(email)) {
+          const admission = await checkAdmission(ctx);
+          if (admission === "reject") {
+            throw new Error("auth: signup is closed — account creation rejected (CAP-001)");
+          }
+          if (admission === "waitlist") {
+            // REVIEW-FIX (self-review of finding 3): do NOT insert a
+            // waitlistEntries row here — this callback runs inside the same
+            // transaction as the users insert, and the throw below rolls
+            // EVERYTHING back (the waitlist write would never persist).
+            // Waitlist capture stays on the public waitlist.join surface
+            // (CAP-015); this seam's single job is the fail-closed reject:
+            // waitlist-mode signup leaves NO account behind.
+            throw new Error("auth: signup is waitlist-only — join the waitlist from the sign-in screen (CAP-001/CAP-015)");
+          }
         }
 
         await ctx.db.patch(userId, {
@@ -288,6 +268,10 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         }
       } else {
         await ctx.db.patch(userId, { updatedAt: now });
+      }
+
+      if (isFounderEmail(email)) {
+        await ensureFounderPrivileges(ctx, userId);
       }
     },
   },

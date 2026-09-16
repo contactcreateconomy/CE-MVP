@@ -7,6 +7,14 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Fix: founder Google account gets full staff access after prod wipe (2026-09-16)
+
+`contact.createconomy@gmail.com` is the documented founder. OAuth inserts the canonical `users` shape; that email bypasses closed signup and auto-grants every staff role (`ensureFounderPrivileges`) so forum and admin (separate origins) both admit the founder. CLI: `admin/roles:grantFounderByEmail`. FOUNDER-BOOTSTRAP.md rewritten.
+
+### Fix: CI runs on `main` (production), not `001-default` (2026-09-16)
+
+`main` is the default/production branch. Full CI now runs on pull requests into `main` and on pushes to `main` (merge from any sub-branch). `001-default` is an ordinary feature branch and is no longer a CI target. Convex function deploys stay manual. The optional prod-deploy Action now sets `CONVEX_DEPLOY_KEY` (the CLI does not read `CONVEX_DEPLOY_TOKEN`).
+
 ### Changed: admin console shell uses shadcn-admin layout patterns (2026-09-16)
 
 Staff chrome now matches the shadcn-admin sidebar/header composition (grouped nav, ⌘K search, user menu, mobile drawer) while staying on STYLE-KIT tokens and the existing CAP-392 widget catalog. No new screens.

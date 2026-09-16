@@ -92,18 +92,19 @@ modules (codegen needs the same CLI auth); the next authenticated
 
 ## Admin-access rollback (P2-AUTH-CUTOVER gate condition 4)
 
-If the founder loses admin access after the auth cutover (ADMIN_EMAILS
-removal — not yet performed), restore the legacy grant:
+If the founder loses admin access, restore the allow-list and re-grant:
 
 ```bash
 npx convex env set ADMIN_EMAILS contact.createconomy@gmail.com
-# restart `pnpm dev`; the legacy grant in convex/auth.ts's afterUser
-# callback re-activates on the next sign-in
+npx convex env set ADMIN_EMAILS contact.createconomy@gmail.com --prod
+# Sign in with that Google account on forum and admin (origin-scoped sessions).
+# Or, if the users row already exists:
+pnpm exec convex run admin/roles:grantFounderByEmail
+pnpm exec convex run --prod admin/roles:grantFounderByEmail
 ```
 
-The founder's canonical authority is the `roleAssignments` administrator row
-(granted 2026-09-05 via CAP-007 `grantFounder`; verified idempotent +
-email-guarded). ADMIN_EMAILS remains set until the full cutover.
+Canonical authority is `roleAssignments` for every staff role (not an
+`assertAdminPermission` email check). See `docs/FOUNDER-BOOTSTRAP.md`.
 
 ## Coverage gate
 

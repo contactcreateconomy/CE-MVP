@@ -34,7 +34,7 @@ Toolchain: **Node 24** (`.nvmrc`, CI), pnpm 10 pinned via `packageManager`, **Co
 2. **Convex backend** — root `vitest.config.ts`. `*.test.ts` files **cannot live under `convex/`** (the Convex bundler would deploy them), so pure-logic tests import from `convex/` into `tests/convex/`; integration tests in `tests/integration/` run real schema + the `@convex-dev/rate-limiter` component through `convex-test` (component files are copied in by `scripts/sync-components.mjs`).
 3. **E2E** — Playwright at root, chromium only. Pipeline E2Es (submit → H-SAFE → qualify) are quarantined behind `E2E_PIPELINE_ENABLED` until the founder-owned `GLM_API_KEY` / `MODERATION_CLASSIFIER_API_KEY` land (both fail closed).
 
-CI (`.github/workflows/ci.yml`, PRs to `001-default`/`main`) runs every gate above. Prod deploys are manual-gated via `convex-prod-deploy.yml` (type `PROD-DEPLOY`).
+CI (`.github/workflows/ci.yml`) runs every gate above on **PRs into `main` and pushes to `main`**. `001-default` is an ordinary feature branch, not a CI target. Convex function deploys stay manual (`pnpm convex:dev` / `pnpm convex:deploy:prod`); `convex-prod-deploy.yml` is an optional `PROD-DEPLOY` confirmation path and is not triggered by merge.
 
 ## Hard rules (non-negotiable — from AGENTS.md §4–5)
 
@@ -54,12 +54,12 @@ Before any slice/screen, the mandatory read order is `docs/AGENT-START-HERE.md` 
 - **Convex providers**: components using `useQuery` must sit under `ConvexProvider`; guard with `isConvexConfigured()` where pages must prerender without a Convex URL. Use `useSharedData()` (SharedDataProvider) for categories + unread count — don't duplicate `listCategories` subscriptions.
 - **`next.config.mjs`** pins `convex` + `@convex-dev/auth` to the forum's own copies via resolveAlias (shared React context under Turbopack) — don't remove.
 - **Backend** `convex/`: single `schema.ts` (~90 tables) + `crons.ts` + module dirs (`admission`, `forum`, `ingest`, `qualify`, `editorial`, `posts`, `admin`, `moderation`, `economy`, `lib`, …). Content pipeline: ingest → H-SAFE/moderation + qualify (AI, fail closed without keys) → human editorial review with evidence → publish.
-- **Env**: forum and admin both read `NEXT_PUBLIC_CONVEX_URL` via `@cemvp/convex-client`. Forum also uses `NEXT_PUBLIC_ADMIN_ORIGIN` (redirects `/admin` → port 3001). Admin uses `NEXT_PUBLIC_FORUM_ORIGIN` for “back to the feed”. Backend secrets in `convex/.env` (see `convex/.env.example`). The live shared dev deployment is `watchful-chameleon-570`.
+- **Env**: forum and admin both read `NEXT_PUBLIC_CONVEX_URL` via `@cemvp/convex-client`. Forum also uses `NEXT_PUBLIC_ADMIN_ORIGIN` (redirects `/admin` → port 3001). Admin uses `NEXT_PUBLIC_FORUM_ORIGIN` for “back to the feed”. Backend secrets in `convex/.env` (see `convex/.env.example`). Convex cloud: **dev** `watchful-chameleon-570` (`https://watchful-chameleon-570.convex.cloud`) · **prod** `energetic-kangaroo-55` (`https://energetic-kangaroo-55.convex.cloud`). Vercel Preview → dev; Vercel Production → prod. HTTP Actions / OAuth callbacks use `*.convex.site`.
 - **Reference implementations** (extend, never build parallel versions): the feed (`(app)/(shell)/feed` + `components/feed/`), the auth modal (`packages/auth-ui`), and `/discussions/[slug]` (canonical `postSeoMeta` first, legacy thread fallback).
 
 ## Process & tracking
 
-- **Git:** work on numbered topic branches (`NNN-name`); PR target is `001-default` (not `main`).
+- **Git:** work on numbered topic branches (`NNN-name`); PR target is **`main`** (production/default). `001-default` is a feature branch.
 - **Definition of done per slice:** CHANGELOG entry + wiki tracker update in the same session (wiki is its own git repo — see AGENTS.md §11). `wiki-tracker-sync.yml` posts a reminder if CHANGELOG wasn't touched.
 - **Bucket-1 items** (Convex CLI deploys, package installs, external accounts/keys) → stop, flag, hand off via `docs/DEV-HANDOFF.md`; founder-only steps in `docs/FOUNDER-BOOTSTRAP.md`.
 - Status of built vs. remaining: `docs/00-project-status/PROJECT-STATUS.md`.

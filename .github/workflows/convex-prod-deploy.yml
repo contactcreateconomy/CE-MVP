@@ -40,7 +40,8 @@ jobs:
       - name: Deploy Convex to production
         run: pnpm convex:deploy:prod
         env:
-          CONVEX_DEPLOY_TOKEN: ${{ secrets.CONVEX_DEPLOY_TOKEN }}
+          # Convex CLI only reads CONVEX_DEPLOY_KEY (not CONVEX_DEPLOY_TOKEN).
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
 
       # NOTE: AGENTS.md §7 lists `pnpm convex:prod:ensure-categories`, but that
       # script does not exist in package.json. If a prod category check is
