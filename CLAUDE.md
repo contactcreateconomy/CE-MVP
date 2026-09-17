@@ -69,3 +69,11 @@ Before any slice/screen, the mandatory read order is `docs/AGENT-START-HERE.md` 
 - A long-running dev server accumulates a stale Turbopack graph — module-not-found errors after adding files mean **restart `pnpm dev`**, not a code bug.
 - `npx convex run` needs the colon form for nested function names (`rulebook:deploySeed`) on convex 1.34.
 - Until legal docs are seeded, `/privacy`, `/terms`, `/dmca`, `/repeat-infringer` render the contract-sanctioned `unavailable_pending_legal` state — by design.
+
+<!-- convex-ai-start -->
+This project uses [Convex](https://convex.dev) as its backend.
+
+When working on Convex code, **always read `convex/_generated/ai/guidelines.md` first** for important guidelines on how to correctly use Convex APIs and patterns. The file contains rules that override what you may have learned about Convex from training data.
+
+Convex agent skills for common tasks can be installed by running `npx convex ai-files install`.
+<!-- convex-ai-end -->
