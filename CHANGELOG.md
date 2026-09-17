@@ -7,6 +7,19 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Fix: published posts now get `postDistributionScores` (and member slugs) (2026-09-17)
+
+`/feed` Hot/Top/New only scan `postDistributionScores`. `createPost` and editorial `persistPublish` wrote `posts` but never inserted a score row, so even a successful member publish stayed invisible. Shared `ensurePostDistributionScoreTx` / `ensurePostSeoMetaTx` now run in the same publish transaction. Dest-only `convex/dev/demoSeed.ts` (gated by `DEMO_SEED_ENABLED`, refuses production) seeds 10 display members × 15 typed posts plus admin-queue fixtures on watchful-chameleon-570.
+
+### Changed: feed sort bar matches the old sliding pill; type chips leave the column (2026-09-17)
+
+`/feed` now uses the old-forum TrendSorter (icon row, brand pill slide + glow). The All/Compare/Debate/… chips are gone from the feed column; Discover in the left rail still filters via `?category=`. Anonymous still lands on Hot; Fav stays member-only.
+
+### Changed: feed chrome (Vibing, Featured, Podium) sits in the right rail (2026-09-17)
+
+The three boxes no longer occupy a 3-column strip in the `/feed` column. They render in the existing right sidebar with the old-forum motion (soft-float enter, 4s crossfade + hover-pause on Vibing/Featured, sliding 24H/7D/1M pill + rank shimmer on Podium). Sort tabs and cards are unchanged.
+
+
 ### Changed: admin console uses the same canvas-dot-grid as the forum (2026-09-17)
 
 The `.canvas-dot-grid` token already lived in admin `globals.css` but was never applied. The `/admin` shell now overlays it behind chrome, matching the forum app-shell.

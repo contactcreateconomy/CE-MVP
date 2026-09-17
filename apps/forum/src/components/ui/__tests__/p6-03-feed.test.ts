@@ -15,6 +15,9 @@ const convexRoot = join(__dirname, "../../../../../../convex");
 const src = readFileSync(join(convexRoot, "feed.ts"), "utf8");
 const pageSrc = readFileSync(join(__dirname, "../../../app/(app)/(shell)/feed/page.tsx"), "utf8");
 const clientSrc = readFileSync(join(__dirname, "../../feed/canonical-feed-client.tsx"), "utf8");
+const vibingSrc = readFileSync(join(__dirname, "../../layout/whats-vibing-widget.tsx"), "utf8");
+const featuredSrc = readFileSync(join(__dirname, "../../layout/featured-widget.tsx"), "utf8");
+const rightSrc = readFileSync(join(__dirname, "../../layout/right-sidebar.tsx"), "utf8");
 
 describe("SLICE-P6-03 — the four sorts (CAP-182/183/184/185)", () => {
   it("organic sorts are INDEX SCANS over postDistributionScores (never compute-at-read)", () => {
@@ -70,7 +73,15 @@ describe("SLICE-P6-03 — chrome renders (CAP-186/191/194/554)", () => {
 
   it("Vibing renders the A7-degrade labeled list with neutral hook fallback", () => {
     expect(src).toContain("hook: hook && !hook.stale");
-    expect(clientSrc).toContain("What&apos;s Vibing");
+    expect(vibingSrc).toContain("What&apos;s Vibing");
+  });
+
+  it("Vibing, Featured, and Podium render in the right rail — not the feed column", () => {
+    expect(rightSrc).toContain("WhatsVibingWidget");
+    expect(rightSrc).toContain("FeaturedWidget");
+    expect(rightSrc).toContain("PodiumWidget");
+    expect(featuredSrc).toContain("Featured");
+    expect(clientSrc).not.toContain("lg:grid-cols-3");
   });
 });
 

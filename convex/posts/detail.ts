@@ -52,7 +52,14 @@ async function compareRows(ctx: any, toolIds: string[]): Promise<any[]> {
   const DIMENSIONS = ["ease_of_use", "output_quality", "reliability", "value_for_money"] as const;
   const rows = [];
   for (const toolId of toolIds) {
-    const tool = await ctx.db.get(toolId as Id<"tools">);
+    // Slugs and other non-ids throw from ctx.db.get — skip rather than 500
+    // the whole discussion page (demo fixtures and stale composer data).
+    let tool: any = null;
+    try {
+      tool = await ctx.db.get(toolId as Id<"tools">);
+    } catch {
+      continue;
+    }
     if (!tool) continue;
     const dims: Record<string, { avg: number | null; count: number }> = {};
     for (const dim of DIMENSIONS) {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUpRight, TrendingUp } from "lucide-react";
+import { ArrowUpRight, Sparkles } from "lucide-react";
 
 import { useQuery } from "convex/react";
 
@@ -13,19 +13,16 @@ import { cn } from "@/lib/utils";
 
 const SLIDE_INTERVAL_MS = 4000;
 
-function WhatsVibingWidgetInner() {
-  // P7-CLEANUP: the canonical vibing list (feed.getChrome — A7 degrade:
-  // labeled list, neutral-fallback hooks)
+type FeaturedRow = { postId: string; label: string };
+
+function FeaturedWidgetInner() {
   const chrome = useQuery(api.feed.getChrome, {});
   const items = useMemo(() => {
-    type VibingRow = { objectType: string; objectId: string; hook: string | null; humans: number };
-    const vibing = (chrome as { vibing?: VibingRow[] } | undefined)?.vibing ?? [];
-    return vibing.map((v, i) => ({
-      id: `${v.objectType}:${v.objectId}:${i}`,
-      kind: v.objectType,
-      label: v.hook ?? `Trending ${v.objectType}`,
-      href: v.objectType === "post" ? `/discussions/${v.objectId}` : "/feed",
-      engagedUsers: v.humans ?? 0,
+    const featured = (chrome as { featured?: FeaturedRow[] } | undefined)?.featured ?? [];
+    return featured.map((f) => ({
+      id: f.postId,
+      label: f.label,
+      href: `/discussions/${f.postId}`,
     }));
   }, [chrome]);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -35,19 +32,17 @@ function WhatsVibingWidgetInner() {
     if (items.length <= 1 || isPaused) {
       return;
     }
-
     const timer = window.setInterval(() => {
       setActiveIndex((current) => (current + 1) % items.length);
     }, SLIDE_INTERVAL_MS);
-
     return () => window.clearInterval(timer);
   }, [isPaused, items.length]);
 
   if (chrome === undefined) {
     return (
-      <Card className="animate-soft-float h-[250px] bg-(--bg-surface) border border-(--border-default) rounded-xl p-4">
+      <Card className="animate-soft-float h-[250px] bg-(--bg-surface) border border-(--border-default) rounded-xl p-4" style={{ animationDelay: "80ms" }}>
         <CardHeader className="p-0 pb-3">
-          <div className="h-4 w-32 animate-pulse rounded bg-(--bg-overlay)" />
+          <div className="h-4 w-24 animate-pulse rounded bg-(--bg-overlay)" />
         </CardHeader>
         <CardContent className="p-0">
           <div className="h-[140px] w-full animate-pulse rounded-2xl bg-(--bg-overlay)/50" />
@@ -59,6 +54,7 @@ function WhatsVibingWidgetInner() {
   return (
     <Card
       className="animate-soft-float h-[250px] bg-(--bg-surface) border border-(--border-default) rounded-xl p-4"
+      style={{ animationDelay: "80ms" }}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onFocusCapture={() => setIsPaused(true)}
@@ -66,23 +62,20 @@ function WhatsVibingWidgetInner() {
     >
       <CardHeader className="p-0 pb-3">
         <h2 className="inline-flex items-center gap-2 text-sm font-semibold text-(--text-primary)">
-          <TrendingUp className="h-4 w-4 text-(--brand-primary)" /> What&apos;s Vibing
+          <Sparkles className="h-4 w-4 text-(--brand-primary)" /> Featured
         </h2>
       </CardHeader>
 
       <CardContent className="flex h-[186px] flex-col justify-between p-0">
         {items.length === 0 ? (
-          <p className="text-sm text-(--text-muted)">Nothing vibing yet.</p>
+          <p className="text-sm text-(--text-muted)">No featured slots active.</p>
         ) : (
           <div className="relative h-full min-h-[140px] overflow-hidden rounded-2xl">
-          {items.map((item: { id: string; kind: string; label: string; href: string; engagedUsers: number }, index: number) => {
-            const category = item.kind.charAt(0).toUpperCase() + item.kind.slice(1);
-
-            return (
+            {items.map((item, index) => (
               <Link
                 key={item.id}
                 href={item.href}
-                aria-label={`Open trending post ${item.label}`}
+                aria-label={`Open featured post ${item.label}`}
                 className={cn(
                   "group absolute inset-0 flex h-full cursor-pointer flex-col justify-between rounded-2xl border border-(--border-prominent) bg-(--bg-overlay)/24 p-4 transition-all duration-500",
                   "hover:border-(--border-active)/45",
@@ -94,23 +87,19 @@ function WhatsVibingWidgetInner() {
                 )}
               >
                 <div className="space-y-2">
-                  <span className="block text-xs font-semibold text-(--brand-primary)">Trending in {category}</span>
+                  <span className="block text-xs font-semibold text-(--brand-primary)">Featured</span>
                   <h4 className="line-clamp-4 text-sm font-semibold leading-5 text-(--text-primary)">
-                    New post → {item.label}
+                    {item.label}
                   </h4>
                 </div>
-
-                <div className="flex items-center justify-between gap-2">
-                  <div className="inline-flex items-center gap-2 text-label-sm font-semibold uppercase tracking-[0.14em] text-(--text-muted)">
-                    <span>{item.engagedUsers.toLocaleString()} ENGAGED</span>
-                    <span className="inline-flex items-center justify-center text-(--text-secondary) transition-colors duration-normal group-hover:text-(--brand-primary)">
-                      <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-normal group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:animate-[pulse_1200ms_ease-in-out_infinite] group-hover:drop-shadow-[var(--glow-primary-md)]" />
-                    </span>
-                  </div>
+                <div className="inline-flex items-center gap-2 text-label-sm font-semibold uppercase tracking-[0.14em] text-(--text-muted)">
+                  <span>Read</span>
+                  <span className="inline-flex items-center justify-center text-(--text-secondary) transition-colors duration-normal group-hover:text-(--brand-primary)">
+                    <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-normal group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:animate-[pulse_1200ms_ease-in-out_infinite] group-hover:drop-shadow-[var(--glow-primary-md)]" />
+                  </span>
                 </div>
               </Link>
-            );
-          })}
+            ))}
           </div>
         )}
       </CardContent>
@@ -118,10 +107,9 @@ function WhatsVibingWidgetInner() {
   );
 }
 
-/** Only mounted from `RightSidebarWithConvex` today; guard keeps `useQuery` off the tree when Convex URL is missing. */
-export function WhatsVibingWidget() {
+export function FeaturedWidget() {
   if (!isConvexConfigured()) {
     return null;
   }
-  return <WhatsVibingWidgetInner />;
+  return <FeaturedWidgetInner />;
 }

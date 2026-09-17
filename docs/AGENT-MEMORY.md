@@ -65,6 +65,12 @@ Supersedes the earlier assumption that `001-default` was the PR target. GitHub d
 
 ## Convex
 
+### 2026-09-17 — `/feed` is an index over `postDistributionScores`, not `posts`
+Organic Hot/Top/New never scan `posts`. A published row with no `postDistributionScores` document is invisible. Rank crons only **patch** dirty existing score rows — they do not insert. Insert the score (and `postSeoMeta` slug) in the same transaction as publish (`ensurePostDistributionScoreTx`). Demo/visual fixtures belong in dest-gated `convex/dev/demoSeed.ts`, never `seed.bootstrap` (R-FOUNDER / CAP-022).
+
+### 2026-09-17 — `convex codegen` may type a new module without deploying it
+`pnpm convex:codegen` regenerated `internal.dev.demoSeed` locally while dest `convex run` still listed no `dev/demoSeed:*`. A dest push required `pnpm exec convex dev --once --typecheck=disable` (this repo has no `convex/tsconfig.json`). Confirm with `convex run`’s available-function list before assuming the upload landed.
+
 ### 2026-09-17 — Convex Auth default insert strips `emailVerified`
 
 First Google login on empty prod bounced to the login screen (`grantFounderByEmail` → `no_user`; dest still worked). `@convex-dev/auth` pulls `emailVerified`/`phoneVerified` off `profile()` and writes `emailVerificationTime` instead. Our `users.emailVerified` is required, so the insert failed and the HTTP callback silently redirected home. Fix: `callbacks.createOrUpdateUser` → `createOrLinkAuthUser` (library skips `afterUserCreatedOrUpdated` when that callback is set). Google OAuth client + `SITE_URL` were already correct.

@@ -23,6 +23,7 @@ import { classifySafety } from "./lib/classifier";
 import { autoGateTx, openCaseDeduped } from "./moderation/autoGate";
 import { captureEvent } from "./lib/events";
 import { appendActivity } from "./activity";
+import { ensurePostDistributionScoreTx, ensurePostSeoMetaTx } from "./lib/distributionScores";
 
 // ── R-URL pattern (CAP-087): https?://, www., bare domain.tld, obfuscation ──
 const URL_PATTERNS = [
@@ -313,9 +314,19 @@ export const createPost = mutation({
         changeType: "create", changedByUserId: userId, createdAt: Date.now(),
       });
 
-      // 4. CAP-570 call-site: post_published Journal append at the member
-      //    publish (B1: published = classifier-passed, live immediately)
-      if (lifecycleStatus === "published") {
+      // 4. CAP-570 + feed ranking + slug: only when the row is still
+      //    published after autoGateTx (a hold patches lifecycle to ready).
+      const live = await actx.db.get(postId);
+      if (live?.lifecycleStatus === "published") {
+        const publishedAt = live.publishedAt ?? Date.now();
+        await ensurePostDistributionScoreTx(actx, postId, publishedAt);
+        await ensurePostSeoMetaTx(actx, {
+          postId,
+          title: args.title,
+          body: args.body,
+          type: args.type,
+          now: publishedAt,
+        });
         await appendActivity(actx, {
           userId,
           eventType: "post_published",
@@ -324,7 +335,7 @@ export const createPost = mutation({
           summary: `Published a ${args.type} post`,
           meta: {
             postType: { value: args.type, privacy: "safe_for_public" },
-            moderationStatus: { value: moderationStatus, privacy: "safe_for_public" },
+            moderationStatus: { value: live.moderationStatus, privacy: "safe_for_public" },
           },
         });
       }

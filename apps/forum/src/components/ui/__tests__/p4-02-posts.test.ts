@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 /* SLICE-P4-02 acceptance tests — R-URL pattern coverage + W2-E4 verdictScore.
  * The mutation handlers are Convex FunctionReferences (not directly
@@ -72,5 +74,12 @@ describe("SLICE-P4-02 — posts module API surface", () => {
 
   it("CAP-105: listActiveTypes exported (postTypeConfig.list for composer)", () => {
     expect(postsModule.listActiveTypes).toBeDefined();
+  });
+
+  it("published createPost writes a postDistributionScores row + postSeoMeta slug", () => {
+    const src = readFileSync(join(__dirname, "../../../../../../convex/posts.ts"), "utf8");
+    expect(src).toContain("ensurePostDistributionScoreTx");
+    expect(src).toContain("ensurePostSeoMetaTx");
+    expect(src).toContain('live?.lifecycleStatus === "published"');
   });
 });

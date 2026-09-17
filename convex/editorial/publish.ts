@@ -35,6 +35,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { writeAudited, newCorrelationId } from "../lib/audit";
 import { checkNoUrls } from "../posts";
 import { assertEditorial } from "./review";
+import { ensurePostDistributionScoreTx, ensurePostSeoMetaTx } from "../lib/distributionScores";
 
 /** CAP-057 — the affiliate cap as a pure function (unit-tested). */
 export function affiliateCapViolation(injections: { toolId?: string }[]): string | null {
@@ -202,23 +203,17 @@ export const persistPublish = internalMutation({
     // from the final approved revision. GLM enrichment (titles/descriptions/
     // keywords) rides the pipeline when GLM runs; this guarantees the
     // canonical route key exists (P4-13's lookup).
-    const baseSlug = (draft.title ?? "post")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 60) || "post";
-    const slug = `${baseSlug}-${postId.slice(-6)}`;
-    await ctx.db.insert("postSeoMeta", {
+    await ensurePostSeoMetaTx(ctx, {
       postId,
-      seoTitle: (draft.title ?? "Untitled").slice(0, 120),
-      seoDescription: (draft.body ?? "").replace(/[#*>`]/g, "").trim().slice(0, 160),
-      slug,
-      keywords: [],
-      canonicalUrl: `/discussions/${slug}`,
-      structuredDataType: postType === "review" ? "review" : "article",
-      manuallyEdited: false,
-      generatedAt: now,
+      title: draft.title ?? "Untitled",
+      body: draft.body ?? "",
+      type: postType,
+      now,
     });
+    // Organic /feed scans postDistributionScores, not posts. Editorial
+    // rows stay filtered out of Hot/Top/New (authorType !== user) but
+    // chrome/search still need the projection.
+    await ensurePostDistributionScoreTx(ctx, postId, now);
 
     // Status flip — the candidate's terminal state (+ the post link for the
     // workspace's derivative surfaces)
