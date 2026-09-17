@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatRelativeDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { QueueBoard, type QueueCase } from "@/components/ui/queue-board";
 
 const ORDER_LABELS = ["S0 · Critical", "Legal", "S1 · High", "Appeals near bound", "S2 · Medium", "S3 · Low"];
@@ -93,16 +94,16 @@ export default function AdminModerationPage() {
               ) : (
                 <Badge tone="warning">Full review flow</Badge>
               )}
-              <label className="ml-2 flex items-center gap-1 text-xs text-text-muted">
-                <input
-                  type="checkbox"
+              <span className="ml-2 flex items-center gap-1 text-xs text-text-muted">
+                <Checkbox
                   checked={selected.includes(row.id)}
-                  onChange={(e) =>
-                    setSelected((prev) => (e.target.checked ? [...prev, row.id] : prev.filter((id) => id !== row.id)))
+                  onCheckedChange={(checked) =>
+                    setSelected((prev) => (checked ? [...prev, row.id] : prev.filter((id) => id !== row.id)))
                   }
+                  aria-label={`Batch ${row.id}`}
                 />
                 Batch
-              </label>
+              </span>
             </div>
           );
         }}

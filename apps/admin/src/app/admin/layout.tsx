@@ -33,12 +33,28 @@ import { iconForRoute, type NavItem } from "@/components/layout/nav-config";
 const EMPTY_WIDGETS: { widgetKey: string; title: string; routeKey: string }[] = [];
 const FORUM_ORIGIN = process.env.NEXT_PUBLIC_FORUM_ORIGIN ?? "http://localhost:3000";
 
+/** Forum app-shell overlay: STYLE-KIT canvas dots behind chrome. */
+function CanvasFrame({
+  children,
+  className,
+}: {
+  children?: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className="relative min-h-screen bg-bg-canvas">
+      <div className="canvas-dot-grid pointer-events-none absolute inset-0" aria-hidden />
+      <div className={cn("relative z-10 min-h-screen", className)}>{children}</div>
+    </div>
+  );
+}
+
 export default function AdminLayout({ children }: { children?: React.ReactNode }) {
   if (!isConvexConfigured()) {
     return (
-      <div className="p-8 text-body-sm text-text-muted">
+      <CanvasFrame className="p-8 text-body-sm text-text-muted">
         Admin console requires a Convex deployment (set NEXT_PUBLIC_CONVEX_URL).
-      </div>
+      </CanvasFrame>
     );
   }
   return <AdminLayoutInner>{children}</AdminLayoutInner>;
@@ -104,24 +120,24 @@ function AdminLayoutInner({ children }: { children?: React.ReactNode }) {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-bg-canvas p-6 text-body-sm text-text-muted">
+      <CanvasFrame className="flex items-center justify-center p-6 text-body-sm text-text-muted">
         Loading…
-      </div>
+      </CanvasFrame>
     );
   }
   if (!isAuthenticated) {
-    return <div className="min-h-screen bg-bg-canvas" />;
+    return <CanvasFrame />;
   }
   if (!catalogLoaded) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-bg-canvas p-6 text-body-sm text-text-muted">
+      <CanvasFrame className="flex items-center justify-center p-6 text-body-sm text-text-muted">
         Loading…
-      </div>
+      </CanvasFrame>
     );
   }
   if (navItems.length === 0) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-bg-canvas p-6 text-center">
+      <CanvasFrame className="flex flex-col items-center justify-center gap-3 p-6 text-center">
         <ShieldCheck className="size-8 text-text-muted" />
         <h1 className="text-heading-sm font-semibold text-text-primary">No admin access</h1>
         <p className="max-w-sm text-body-sm text-text-muted">
@@ -130,14 +146,14 @@ function AdminLayoutInner({ children }: { children?: React.ReactNode }) {
         <a href={`${FORUM_ORIGIN}/feed`} className={buttonVariants({ variant: "ghost", size: "sm" })}>
           Back to the feed
         </a>
-      </div>
+      </CanvasFrame>
     );
   }
 
   return (
     <TooltipProvider>
       <ConsoleShellProvider value={{ navItems, openPalette: () => setPaletteOpen(true) }}>
-        <div className="flex min-h-screen bg-bg-canvas">
+        <CanvasFrame className="flex">
           <a
             href="#admin-content"
             className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-max focus:rounded-md focus:bg-bg-surface focus:px-3 focus:py-2 focus:text-body-sm"
@@ -183,7 +199,7 @@ function AdminLayoutInner({ children }: { children?: React.ReactNode }) {
             sections={paletteSections}
             placeholder="Search admin consoles…"
           />
-        </div>
+        </CanvasFrame>
       </ConsoleShellProvider>
     </TooltipProvider>
   );

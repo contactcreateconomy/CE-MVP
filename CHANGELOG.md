@@ -7,6 +7,14 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Changed: admin console uses the same canvas-dot-grid as the forum (2026-09-17)
+
+The `.canvas-dot-grid` token already lived in admin `globals.css` but was never applied. The `/admin` shell now overlays it behind chrome, matching the forum app-shell.
+
+### Changed: admin pages use STYLE-KIT primitives instead of native form HTML (2026-09-17)
+
+Staff screens now use the existing admin kit (`Select`, `Input`, `Checkbox`, `Tabs`, `Toast`, `Spinner`, `DatetimePicker`) plus a new §11.2 `Textarea`. Stock shadcn CLI was not run; tokens and CAP-390 chrome are unchanged.
+
 ### Fix: first production Google login bounced to the same screen (2026-09-17)
 
 Convex Auth's default user insert strips `emailVerified` (Auth.js verified-flag) before writing `users`. Our schema requires that boolean, so the first OAuth create on an empty prod deployment failed and redirected back unsigned. Dest/local still worked because those accounts already existed (patch path). `callbacks.createOrUpdateUser` now inserts via `createOrLinkAuthUser`. Vercel: forum uses `NEXT_PUBLIC_ADMIN_ORIGIN` (console host); admin uses `NEXT_PUBLIC_FORUM_ORIGIN` (discuss host).

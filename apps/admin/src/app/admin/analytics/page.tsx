@@ -14,6 +14,7 @@ import { useMutation, useQuery } from "convex/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { SkeletonText } from "@/components/ui/skeleton";
 import { api } from "@/lib/convex";
 
 export default function AdminAnalyticsPage() {
@@ -28,7 +29,13 @@ export default function AdminAnalyticsPage() {
         Convex-authoritative. P0 decisions never use PostHog counts (CAP-463); denominators under 25 are directional.
       </p>
       {dash === undefined ? (
-        <Card><CardContent className="py-8 text-sm text-(--text-muted)">Loading…</CardContent></Card>
+        <Card>
+          <CardContent className="space-y-2 py-8">
+            <SkeletonText className="w-1/3" />
+            <SkeletonText className="w-full" />
+            <SkeletonText className="w-4/5" />
+          </CardContent>
+        </Card>
       ) : (
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

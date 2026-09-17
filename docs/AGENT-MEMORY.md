@@ -125,6 +125,10 @@ Canonical enum (`schema.ts` / `_data-model.md`): `member`, `editor`, `publisher`
 
 `/admin/personas/genome` is never in the catalog. Forum and admin share Convex; cookies do not cross origins — staff sign in on both.
 
+### 2026-09-17 — Admin kit already exists; do not `shadcn add`
+
+Staff pages still had native `<select>`/`<input>`/`<textarea>` despite STYLE-KIT wrappers in `apps/admin/src/components/ui`. Swap onto those primitives (and add a §11.2 Textarea twin of Input). Do not run `shadcn init`/`add` — it rewrites the palette. Keep A1/A11/A12/A14 composites.
+
 ### 2026-09-16 — Admin shell look/feel is shadcn-admin, tokens stay STYLE-KIT
 
 When restyling `apps/admin`, copy the [shadcn-admin](https://github.com/satnaing/shadcn-admin) composition (grouped sidebar, command search, user dropdown) onto existing STYLE-KIT tokens and CAP-390 chrome. Do not run `shadcn init` (it rewrites the palette), do not add inventory screens, and keep `/admin/personas/genome` out of the palette.

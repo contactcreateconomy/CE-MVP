@@ -12,6 +12,14 @@ import { useMutation, useQuery } from "convex/react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { api } from "@/lib/convex";
 
 export default function AdminUtmPage() {
@@ -48,15 +56,33 @@ export default function AdminUtmPage() {
         <CardHeader><h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">Generate (read-only — CAP-479)</h2></CardHeader>
         <CardContent className="space-y-2">
           <div className="grid gap-2 sm:grid-cols-3">
-            <select value={source} onChange={(e) => setSource(e.target.value)} disabled={empty} aria-label="utm_source" className="rounded-md border border-border-default bg-bg-surface px-3 py-2 text-sm">
-              <option value="">source…</option>
-              {sources.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
-            <select value={medium} onChange={(e) => setMedium(e.target.value)} disabled={empty} aria-label="utm_medium" className="rounded-md border border-border-default bg-bg-surface px-3 py-2 text-sm">
-              <option value="">medium…</option>
-              {mediums.map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
-            <input value={campaign} onChange={(e) => setCampaign(e.target.value)} placeholder="campaign" disabled={empty} aria-label="utm_campaign" className="rounded-md border border-border-default bg-bg-surface px-3 py-2 text-sm" />
+            <Select value={source || undefined} onValueChange={setSource} disabled={empty}>
+              <SelectTrigger aria-label="utm_source">
+                <SelectValue placeholder="source…" />
+              </SelectTrigger>
+              <SelectContent>
+                {sources.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={medium || undefined} onValueChange={setMedium} disabled={empty}>
+              <SelectTrigger aria-label="utm_medium">
+                <SelectValue placeholder="medium…" />
+              </SelectTrigger>
+              <SelectContent>
+                {mediums.map((m) => (
+                  <SelectItem key={m} value={m}>{m}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input
+              value={campaign}
+              onChange={(e) => setCampaign(e.target.value)}
+              placeholder="campaign"
+              disabled={empty}
+              aria-label="utm_campaign"
+            />
           </div>
           <Button
             size="sm"
