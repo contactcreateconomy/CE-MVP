@@ -28,6 +28,7 @@ import { DatetimePicker } from "@/components/ui/datetime-picker";
 import { Input } from "@/components/ui/input";
 import { SkeletonText } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { Toast } from "@/components/ui/toast";
 
 interface QueueRow {
@@ -148,12 +149,12 @@ export default function AdminEditorialPage() {
           </div>
           <div className="space-y-1">
             <label htmlFor="ed-body" className="text-xs text-(--text-secondary)">Body (markdown, no URLs)</label>
-            <textarea
+            <Textarea
               id="ed-body"
               value={draftBody}
               onChange={(e) => setDraftBody(e.target.value)}
               rows={16}
-              className="w-full rounded-lg border border-(--border-default) bg-(--bg-surface) p-3 font-mono text-sm text-(--text-primary) outline-hidden focus:border-(--border-active)"
+              className="font-mono"
             />
           </div>
           {editError ? <Banner variant="error">{editError}</Banner> : null}
@@ -443,12 +444,12 @@ export default function AdminEditorialPage() {
               legal-audit record (CAP-044) — required, non-deletable.
             </DialogDescription>
           </DialogHeader>
-          <textarea
+          <Textarea
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
             rows={4}
             placeholder="Why is this candidate rejected?"
-            className="w-full rounded-lg border border-(--border-default) bg-(--bg-surface) p-3 text-sm text-(--text-primary) outline-hidden focus:border-(--border-active)"
+            aria-label="Rejection reason"
           />
           <DialogFooter>
             <Button variant="ghost" size="sm" onClick={() => setRejectOpen(false)}>Cancel</Button>

@@ -28,6 +28,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { DataTable, DataTableToolbar, type DataTableColumn } from "@/components/ui/data-table";
 import { SkeletonText } from "@/components/ui/skeleton";
+import { Toast } from "@/components/ui/toast";
 
 interface RuleRow {
   _id: string;
@@ -62,7 +63,10 @@ export default function AdminRulebookPage() {
   const [numericEdits, setNumericEdits] = useState<Record<string, string>>({});
   const [typeEdits, setTypeEdits] = useState<Record<string, string[]>>({});
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [calibrateToast, setCalibrateToast] = useState<string | null>(null);
+  const [calibrateToast, setCalibrateToast] = useState<{
+    message: string;
+    variant: "success" | "error";
+  } | null>(null);
 
   const data = useQuery(api.rulebook.listRules);
   const examples = useQuery(api.rulebook.listCalibrationExamples);
@@ -138,15 +142,19 @@ export default function AdminRulebookPage() {
     try {
       const result = await triggerCalibrate({});
       const r = result as { replayed?: number; drifted?: number } | null;
-      setCalibrateToast(
-        r && typeof r.replayed === "number"
-          ? `Replay complete — ${r.replayed} example(s), ${r.drifted ?? 0} with threshold drift.`
-          : "Calibration replay completed.",
-      );
+      setCalibrateToast({
+        message:
+          r && typeof r.replayed === "number"
+            ? `Replay complete — ${r.replayed} example(s), ${r.drifted ?? 0} with threshold drift.`
+            : "Calibration replay completed.",
+        variant: "success",
+      });
     } catch (err) {
-      setCalibrateToast(err instanceof Error ? err.message : "Calibrate failed");
+      setCalibrateToast({
+        message: err instanceof Error ? err.message : "Calibrate failed",
+        variant: "error",
+      });
     }
-    window.setTimeout(() => setCalibrateToast(null), 4000);
   };
 
   const columns: DataTableColumn<RuleRow>[] = [
@@ -227,9 +235,11 @@ export default function AdminRulebookPage() {
       </Card>
 
       {calibrateToast ? (
-        <div role="status" className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full border border-(--border-default) bg-(--bg-surface-elevated) px-4 py-2 text-sm text-(--text-primary) shadow-(--shadow-lg)">
-          {calibrateToast}
-        </div>
+        <Toast
+          message={calibrateToast.message}
+          variant={calibrateToast.variant}
+          onDismiss={() => setCalibrateToast(null)}
+        />
       ) : null}
 
       <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>

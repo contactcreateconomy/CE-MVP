@@ -16,6 +16,8 @@ import { useMutation, useQuery } from "convex/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { DatetimePicker } from "@/components/ui/datetime-picker";
+import { Spinner } from "@/components/ui/skeleton";
 import { api } from "@/lib/convex";
 
 export default function AdminPersonaQueuePage() {
@@ -23,7 +25,7 @@ export default function AdminPersonaQueuePage() {
   if (queue === undefined) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-(--border-default) border-t-(--brand-primary)" />
+        <Spinner className="size-8" label="Loading" />
       </div>
     );
   }
@@ -128,13 +130,13 @@ function DraftCard({ draft, status }: { draft: any; status: string }) {
             Reject
           </Button>
           {status !== "scheduled" ? (
-            <span className="flex items-center gap-1">
-              <input
-                type="datetime-local"
-                value={scheduleAt}
-                onChange={(e) => setScheduleAt(e.target.value)}
-                className="rounded border border-(--border-default) bg-(--bg-surface) px-1.5 py-1 text-xs"
-                aria-label="Schedule fire time"
+            <span className="flex min-w-56 items-center gap-1">
+              <DatetimePicker
+                value={scheduleAt || null}
+                onChange={(iso) => setScheduleAt(iso ?? "")}
+                withTime
+                placeholder="Schedule fire time"
+                id={`schedule-${draft.id}`}
               />
               <Button variant="ghost" size="sm" disabled={busy || !scheduleAt}
                 onClick={() => void run(

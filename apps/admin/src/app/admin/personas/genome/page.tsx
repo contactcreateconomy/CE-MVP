@@ -18,6 +18,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { api } from "@/lib/convex";
 
 const EDITABLE_FIELDS = [
@@ -85,9 +92,16 @@ export default function AdminGenomePage() {
         <CardHeader><h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">Edit (CAP-178) — preview first (CAP-548)</h2></CardHeader>
         <CardContent className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <select value={field} onChange={(e) => setField(e.target.value)} className="rounded-md border border-(--border-default) bg-(--bg-surface) px-2 py-1.5 text-sm">
-              {EDITABLE_FIELDS.map((f) => <option key={f} value={f}>{f}</option>)}
-            </select>
+            <Select value={field} onValueChange={setField}>
+              <SelectTrigger aria-label="Genome field" className="w-56">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {EDITABLE_FIELDS.map((f) => (
+                  <SelectItem key={f} value={f}>{f}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Input value={newValue} onChange={(e) => setNewValue(e.target.value)} placeholder="new value" className="w-72" />
             <Input value={previewRef ?? ""} onChange={(e) => setPreviewRef(e.target.value || null)} placeholder="preview fixture ref (optional)" className="w-52" />
             <Button size="sm" disabled={!newValue.trim()} onClick={runEdit}>Commit edit</Button>

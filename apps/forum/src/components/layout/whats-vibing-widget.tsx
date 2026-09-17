@@ -17,7 +17,7 @@ function WhatsVibingWidgetInner() {
   // P7-CLEANUP: the canonical vibing list (feed.getChrome — A7 degrade:
   // labeled list, neutral-fallback hooks)
   const chrome = useQuery(api.feed.getChrome, {});
-  const fetched = useMemo(() => {
+  const items = useMemo(() => {
     type VibingRow = { objectType: string; objectId: string; hook: string | null; humans: number };
     const vibing = (chrome as { vibing?: VibingRow[] } | undefined)?.vibing ?? [];
     return vibing.map((v, i) => ({
@@ -28,7 +28,6 @@ function WhatsVibingWidgetInner() {
       engagedUsers: v.humans ?? 0,
     }));
   }, [chrome]);
-  const items = useMemo(() => fetched ?? [], [fetched]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -44,9 +43,9 @@ function WhatsVibingWidgetInner() {
     return () => window.clearInterval(timer);
   }, [isPaused, items.length]);
 
-  if (fetched === undefined) {
+  if (chrome === undefined) {
     return (
-      <Card className="animate-soft-float h-[250px] bg-(--bg-surface) border border-(--border-default) rounded-xl p-4" style={{ animationDelay: "160ms" }}>
+      <Card className="animate-soft-float h-[250px] bg-(--bg-surface) border border-(--border-default) rounded-xl p-4">
         <CardHeader className="p-0 pb-3">
           <div className="h-4 w-32 animate-pulse rounded bg-(--bg-overlay)" />
         </CardHeader>
@@ -57,14 +56,9 @@ function WhatsVibingWidgetInner() {
     );
   }
 
-  if (items.length === 0) {
-    return null;
-  }
-
   return (
     <Card
       className="animate-soft-float h-[250px] bg-(--bg-surface) border border-(--border-default) rounded-xl p-4"
-      style={{ animationDelay: "160ms" }}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onFocusCapture={() => setIsPaused(true)}
@@ -77,8 +71,11 @@ function WhatsVibingWidgetInner() {
       </CardHeader>
 
       <CardContent className="flex h-[186px] flex-col justify-between p-0">
-        <div className="relative h-full min-h-[140px] overflow-hidden rounded-2xl">
-          {items.map((item: any, index: number) => /* eslint-disable-line @typescript-eslint/no-explicit-any */ {
+        {items.length === 0 ? (
+          <p className="text-sm text-(--text-muted)">Nothing vibing yet.</p>
+        ) : (
+          <div className="relative h-full min-h-[140px] overflow-hidden rounded-2xl">
+          {items.map((item: { id: string; kind: string; label: string; href: string; engagedUsers: number }, index: number) => {
             const category = item.kind.charAt(0).toUpperCase() + item.kind.slice(1);
 
             return (
@@ -114,7 +111,8 @@ function WhatsVibingWidgetInner() {
               </Link>
             );
           })}
-        </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/skeleton";
 import { api } from "@/lib/convex";
 import { useAuth } from "@cemvp/auth-ui";
 
@@ -24,7 +25,7 @@ export default function AdminResourcesPage() {
   const [note, setNote] = useState<string | null>(null);
 
   if (queue === undefined) {
-    return <div className="flex min-h-[30vh] items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-(--border-default) border-t-(--brand-primary)" /></div>;
+    return <div className="flex min-h-[30vh] items-center justify-center"><Spinner className="size-8" label="Loading" /></div>;
   }
   if (queue === null) {
     return <Card><CardContent className="py-8 text-center text-sm text-(--text-muted)">Staff access required.</CardContent></Card>;

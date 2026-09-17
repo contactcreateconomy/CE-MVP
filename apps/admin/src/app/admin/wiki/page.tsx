@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SkeletonText } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/convex";
 
 export default function AdminWikiPage() {
@@ -27,20 +28,15 @@ export default function AdminWikiPage() {
       <h1 className="text-lg font-semibold text-text-primary">Operations Wiki</h1>
 
       {list !== undefined && list.slugs?.length > 0 ? (
-        <div className="flex flex-wrap gap-1">
-          {list.slugs.map((s: any) => (
-            <button
-              key={s.slug}
-              type="button"
-              onClick={() => setSlug(s.slug)}
-              className={`cursor-pointer rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                slug === s.slug ? "bg-brand-primary/10 text-brand-primary" : "bg-bg-overlay text-text-secondary hover:text-text-primary"
-              }`}
-            >
-              {s.title}
-            </button>
-          ))}
-        </div>
+        <Tabs value={slug} onValueChange={setSlug}>
+          <TabsList className="flex h-auto min-h-9 w-full flex-wrap justify-start">
+            {list.slugs.map((s: any) => (
+              <TabsTrigger key={s.slug} value={s.slug}>
+                {s.title}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       ) : null}
 
       {article === undefined ? (

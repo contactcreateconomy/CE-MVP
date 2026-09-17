@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- pure-gate + schema introspection tests */
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 /* SLICE-P4-11 acceptance tests. The publish transaction is exercised live
  * (deployment push + the phase exit-gate E2E); here we pin the pure gate
@@ -86,5 +88,13 @@ describe("SLICE-P4-11 — CAP-046 publish gate (pure)", () => {
   it("CAP-057 cap is enforced inside the publish gate (inject 3 → publish blocked)", () => {
     const withThree = { ...base, draft: { candidateRevision: 2, plannedAffiliateLinks: [{ toolId: "a" }, { toolId: "b" }, { toolId: "c" }] } };
     expect(publish.publishGateFailure({ candidate: withThree, latestRun: passRun })).toMatch(/CAP-057/);
+  });
+});
+
+describe("SLICE-P4-11 — feed projection at persistPublish", () => {
+  it("persistPublish writes postDistributionScores + postSeoMeta via the shared helper", () => {
+    const src = readFileSync(join(__dirname, "../../../../../../convex/editorial/publish.ts"), "utf8");
+    expect(src).toContain("ensurePostDistributionScoreTx");
+    expect(src).toContain("ensurePostSeoMetaTx");
   });
 });

@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
 import { Flame, Bookmark, TrendingUp, Clock3 } from "lucide-react";
+
+export type FeedSortMode = "top" | "hot" | "new" | "fav";
 
 const sortItems = [
   { key: "top", label: "Top", Icon: TrendingUp },
@@ -11,16 +11,21 @@ const sortItems = [
   { key: "fav", label: "Fav", Icon: Bookmark },
 ] as const;
 
-export function TrendSorter() {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+interface TrendSorterProps {
+  value: FeedSortMode;
+  onChange: (mode: FeedSortMode) => void;
+}
 
-  const rawSort = searchParams.get("sort");
-  const selectedSort = rawSort && sortItems.some((item) => item.key === rawSort) ? rawSort : "top";
-  const activeIndex = sortItems.findIndex((item) => item.key === selectedSort);
+/** Old-forum sliding pill: brand fill + glow, black label on the active slot. */
+export function TrendSorter({ value, onChange }: TrendSorterProps) {
+  const activeIndex = Math.max(0, sortItems.findIndex((item) => item.key === value));
 
   return (
-    <div className="relative mx-auto w-full max-w-[864px] rounded-full border border-(--border-default) bg-(--bg-surface)/70 p-1 backdrop-blur-md">
+    <div
+      className="relative mx-auto w-full max-w-[864px] rounded-full border border-(--border-default) bg-(--bg-surface)/70 p-1 backdrop-blur-md"
+      role="tablist"
+      aria-label="Sort mode"
+    >
       <div
         className="pointer-events-none absolute bottom-1 left-1 top-1 w-[calc(25%-0.25rem)] rounded-full bg-brand-primary shadow-glow-primary-pill transition-transform duration-slow ease-out"
         style={{ transform: `translateX(${activeIndex * 100}%)` }}
@@ -28,20 +33,20 @@ export function TrendSorter() {
 
       <div className="relative z-10 grid grid-cols-4">
         {sortItems.map(({ key, label, Icon }) => {
-          const isActive = selectedSort === key;
-          const next = new URLSearchParams(searchParams.toString());
-          next.set("sort", key);
-
+          const isActive = value === key;
           return (
-            <Link
+            <button
               key={key}
-              href={`${pathname}?${next.toString()}`}
-              className="flex h-9 items-center justify-center gap-1.5 rounded-full text-base font-semibold transition-colors duration-normal"
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => onChange(key)}
+              className="flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-full text-base font-semibold transition-colors duration-normal hover:text-(--text-primary)"
               style={{ color: isActive ? "black" : "var(--text-primary)" }}
             >
               <Icon className="h-3.5 w-3.5" strokeWidth={2.25} />
               <span>{label}</span>
-            </Link>
+            </button>
           );
         })}
       </div>

@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Banner } from "@/components/ui/banner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { SkeletonText } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ConfigRow {
   _id: string;
@@ -335,12 +336,12 @@ export default function AdminConfigPage() {
             </div>
             <div>
               <label className="text-xs font-medium text-text-secondary">User-facing body</label>
-              <textarea
+              <Textarea
                 value={legalBody}
                 onChange={(e) => setLegalBody(e.target.value)}
                 rows={4}
                 aria-label="User-facing body"
-                className="mt-1 w-full rounded-md border border-border-default bg-bg-surface px-3 py-2 text-sm text-text-primary"
+                className="mt-1"
               />
             </div>
           </div>

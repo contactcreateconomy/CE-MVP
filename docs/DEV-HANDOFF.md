@@ -117,6 +117,17 @@ npx convex run seed:bootstrap         # P1-08 (idempotent)
 npx convex run legalContent:seedDefaults  # legal docs (idempotent)
 npx convex run rulebook/deploySeed    # P4-06 (CAP-536 rulebook thresholds, idempotent)
 # + per-phase seeders as they land (CAP-566, CAP-569, CAP-571, CAP-572)
+
+# Dest-only visual fixtures (10 members × 15 posts). Refuses production
+# (`energetic-kangaroo-55` / discuss.createconomy.com). Never seed.bootstrap
+# (CAP-022 / R-FOUNDER — no users).
+# pnpm exec convex env set DEMO_SEED_ENABLED true
+# pnpm exec convex run seed:bootstrap
+# pnpm exec convex run admin/widgetsCatalog:deploySeed
+# pnpm exec convex run legalContent:seedDefaults
+# pnpm exec convex run dev/demoSeed:seed
+# pnpm exec convex env unset DEMO_SEED_ENABLED
+# Wipe: DEMO_SEED_ENABLED=true then pnpm exec convex run dev/demoSeed:wipe
 ```
 
 ---

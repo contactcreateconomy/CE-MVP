@@ -22,14 +22,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SkeletonText } from "@/components/ui/skeleton";
 import { Toast } from "@/components/ui/toast";
 
 const ENTITY_TYPES = ["vendor", "brand", "publisher", "internal"] as const;
 const COMMISSION_MODELS = ["cpa", "cps", "cpc", "revshare", "flat", "other"] as const;
 const DISCLOSURE_CLASSES = ["sponsored", "affiliate", "paid"] as const;
-
-const inputCls = "w-full rounded-lg border border-(--border-default) bg-(--bg-surface) px-3 py-2 text-sm text-(--text-primary) outline-hidden focus:border-(--border-active)";
+const RELATIONSHIP_STATUSES = ["active", "paused", "terminated"] as const;
 
 export default function AdminAffiliateInventoryPage() {
   const inventory = useQuery(api.affiliateInventory.listInventory, {});
@@ -180,9 +186,19 @@ export default function AdminAffiliateInventoryPage() {
           </DialogHeader>
           <div className="space-y-2">
             <Input placeholder="Name" value={entityForm?.name ?? ""} onChange={(ev) => setEntityForm({ ...entityForm, name: ev.target.value })} />
-            <select className={inputCls} value={entityForm?.entityType ?? "vendor"} onChange={(ev) => setEntityForm({ ...entityForm, entityType: ev.target.value })}>
-              {ENTITY_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
+            <Select
+              value={entityForm?.entityType ?? "vendor"}
+              onValueChange={(v) => setEntityForm({ ...entityForm, entityType: v })}
+            >
+              <SelectTrigger aria-label="Entity type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ENTITY_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Input placeholder="https://website.example" value={entityForm?.websiteUrl ?? ""} onChange={(ev) => setEntityForm({ ...entityForm, websiteUrl: ev.target.value })} />
             <input
               ref={logoInputRef}
@@ -231,12 +247,32 @@ export default function AdminAffiliateInventoryPage() {
             <Input placeholder="Program name" value={relForm?.programName ?? ""} onChange={(ev) => setRelForm({ ...relForm, programName: ev.target.value })} />
             <Input placeholder="Tool id (optional binding)" value={relForm?.toolId ?? ""} onChange={(ev) => setRelForm({ ...relForm, toolId: ev.target.value || undefined })} />
             <div className="grid grid-cols-2 gap-2">
-              <select className={inputCls} value={relForm?.relationshipStatus ?? "active"} onChange={(ev) => setRelForm({ ...relForm, relationshipStatus: ev.target.value })}>
-                {["active", "paused", "terminated"].map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-              <select className={inputCls} value={relForm?.commissionModel ?? "cps"} onChange={(ev) => setRelForm({ ...relForm, commissionModel: ev.target.value })}>
-                {COMMISSION_MODELS.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
+              <Select
+                value={relForm?.relationshipStatus ?? "active"}
+                onValueChange={(v) => setRelForm({ ...relForm, relationshipStatus: v })}
+              >
+                <SelectTrigger aria-label="Relationship status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {RELATIONSHIP_STATUSES.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={relForm?.commissionModel ?? "cps"}
+                onValueChange={(v) => setRelForm({ ...relForm, commissionModel: v })}
+              >
+                <SelectTrigger aria-label="Commission model">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {COMMISSION_MODELS.map((m) => (
+                    <SelectItem key={m} value={m}>{m}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <Input type="number" placeholder="Cookie window (days)" value={relForm?.cookieWindow ?? 30} onChange={(ev) => setRelForm({ ...relForm, cookieWindow: Number(ev.target.value) })} />
           </div>
@@ -267,9 +303,19 @@ export default function AdminAffiliateInventoryPage() {
           <div className="space-y-2">
             <Input placeholder="https://affiliate.example/offer" value={linkForm?.url ?? ""} onChange={(ev) => setLinkForm({ ...linkForm, url: ev.target.value })} />
             <Input placeholder="Tool id (optional)" value={linkForm?.toolId ?? ""} onChange={(ev) => setLinkForm({ ...linkForm, toolId: ev.target.value || undefined })} />
-            <select className={inputCls} value={linkForm?.disclosureClass ?? "affiliate"} onChange={(ev) => setLinkForm({ ...linkForm, disclosureClass: ev.target.value })}>
-              {DISCLOSURE_CLASSES.map((d) => <option key={d} value={d}>{d}</option>)}
-            </select>
+            <Select
+              value={linkForm?.disclosureClass ?? "affiliate"}
+              onValueChange={(v) => setLinkForm({ ...linkForm, disclosureClass: v })}
+            >
+              <SelectTrigger aria-label="Disclosure class">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {DISCLOSURE_CLASSES.map((d) => (
+                  <SelectItem key={d} value={d}>{d}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <DialogFooter>
             <Button variant="ghost" size="sm" onClick={() => setLinkOpen(false)}>Cancel</Button>

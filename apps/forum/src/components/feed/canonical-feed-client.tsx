@@ -4,9 +4,9 @@
 /**
  * CanonicalFeedClient — SLICE-P6-03 (CAP-182…186/194/198…201/553): the
  * canonical /feed over postDistributionScores + cardSummaries. Four sorts
- * (anonymous lands on Hot — quoted), type nav from postTypeConfig (locked
- * types hidden), hero band + Featured (labeled) + Vibing list (A7 degrade)
- * + Podium ("forming" until M12), snapshot pagination, per-card why-drawer
+ * (anonymous lands on Hot — quoted), type filter via Discover `?category=`
+ * (left rail); hero band in the shell; Featured + Vibing + Podium in the
+ * right rail ("forming" until M12), snapshot pagination, per-card why-drawer
  * + hide/mute/report + unhide. The legacy demo feed is retired from this
  * route (00-TRANSITION: canonical replaces; demo data disposable).
  */
@@ -17,13 +17,12 @@ import { useMutation, useQuery } from "convex/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { TrendSorter, type FeedSortMode } from "@/components/feed/trend-sorter";
 import { api } from "@/lib/convex";
 import { isConvexConfigured } from "@cemvp/convex-client";
 import { useAuth } from "@cemvp/auth-ui";
 
-type SortMode = "hot" | "top" | "new" | "fav";
-
-const SORT_LABELS: Record<SortMode, string> = { hot: "Hot", top: "Top", new: "New", fav: "Fav" };
+type SortMode = FeedSortMode;
 
 export function CanonicalFeedClient({ initialTypeFilter = null }: { initialTypeFilter?: string | null }) {
   const configured = isConvexConfigured();
@@ -97,103 +96,15 @@ export function CanonicalFeedClient({ initialTypeFilter = null }: { initialTypeF
         </div>
       ) : null}
 
-      {/* Vibing (A7 degrade: labeled list) + Featured frames + Podium */}
-      <div className="grid gap-3 lg:grid-cols-3">
-        <Card>
-          <CardContent className="space-y-1 py-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">What&apos;s Vibing</h2>
-            {chrome?.vibing?.length ? (
-              <ul className="space-y-1 text-sm">
-                {chrome.vibing.map((v: any) => (
-                  <li key={`${v.objectType}:${v.objectId}`} className="flex items-baseline justify-between gap-2">
-                    <span className="text-(--text-secondary)">{v.hook ?? "Trending now"}</span>
-                    <span className="text-xs text-(--text-muted)">{v.humans} people</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-(--text-muted)">Nothing vibing yet.</p>
-            )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="space-y-1 py-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">Featured</h2>
-            {chrome?.featured?.length ? (
-              <ul className="space-y-1 text-sm">
-                {chrome.featured.map((f: any) => (
-                  <li key={f.postId}>
-                    <a href={`/discussions/${f.postId}`} className="text-(--text-secondary) underline-offset-2 hover:underline">
-                      {f.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-(--text-muted)">No featured slots active.</p>
-            )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="space-y-1 py-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">Podium</h2>
-            {chrome?.podium?.forming ? (
-              <p className="text-sm text-(--text-muted)">Podium is forming — recognition opens with the community.</p>
-            ) : (
-              <ul className="space-y-1 text-sm">
-                {(chrome?.podium?.entries ?? []).map((e: any) => (
-                  <li key={e.userId} className="text-(--text-secondary)">#{e.rank} · {e.points} pts</li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Sorts + type nav */}
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex gap-1" role="tablist" aria-label="Sort mode">
-          {(["hot", "top", "new", ...(member ? (["fav"] as SortMode[]) : [])] as SortMode[]).map((mode) => (
-            <button
-              key={mode}
-              role="tab"
-              aria-selected={effectiveSort === mode}
-              onClick={() => {
-                setSort(mode);
-                setPages([]);
-                setCursor(undefined);
-              }}
-              className={`cursor-pointer rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                effectiveSort === mode ? "bg-brand-primary/10 text-brand-primary" : "bg-bg-overlay text-text-secondary hover:text-text-primary"
-              }`}
-            >
-              {SORT_LABELS[mode]}
-            </button>
-          ))}
-        </div>
-        <span className="mx-1 h-5 w-px bg-(--border-default)" aria-hidden />
-        <div className="flex flex-wrap gap-1">
-          <button
-            onClick={() => setTypeFilter(null)}
-            className={`cursor-pointer rounded-full px-2.5 py-1 text-xs font-medium ${typeFilter === null ? "bg-bg-overlay text-text-primary" : "text-text-muted hover:text-text-secondary"}`}
-          >
-            All
-          </button>
-          {(chrome?.typeNav ?? []).map((t: any) => (
-            <button
-              key={t.type}
-              onClick={() => {
-                setTypeFilter(t.type);
-                setPages([]);
-                setCursor(undefined);
-              }}
-              className={`cursor-pointer rounded-full px-2.5 py-1 text-xs font-medium ${typeFilter === t.type ? "bg-bg-overlay text-text-primary" : "text-text-muted hover:text-text-secondary"}`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <TrendSorter
+        value={effectiveSort}
+        onChange={(mode) => {
+          if (mode === "fav" && !member) return;
+          setSort(mode);
+          setPages([]);
+          setCursor(undefined);
+        }}
+      />
 
       {/* Cards */}
       {page === undefined && pages.length === 0 ? (
