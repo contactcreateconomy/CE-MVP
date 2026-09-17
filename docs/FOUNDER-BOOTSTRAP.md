@@ -20,11 +20,12 @@ sign in once on each origin with the same Google account.
 2. **Closed-signup bypass** — CAP-001 still fail-closes everyone else.
    `isFounderEmail` (documented email + `ADMIN_EMAILS` / `FOUNDER_EMAILS`)
    skips the closed/waitlist reject so the first login after a wipe works.
-3. **Auto-grant on login** — `afterUserCreatedOrUpdated` calls
-   `ensureFounderPrivileges`, which sets `isStaff` and inserts any missing
-   staff roles (`administrator`, `editor`, `publisher`, `moderator`,
-   `store_operator`, `support_operator`). That covers widgets that require
-   only `support_operator` (`/admin/support`).
+3. **Auto-grant on login** — `callbacks.createOrUpdateUser` (`createOrLinkAuthUser`)
+   inserts the canonical `users` row (Convex Auth's default insert strips
+   `emailVerified` and fails our schema) then calls `ensureFounderPrivileges`,
+   which sets `isStaff` and inserts any missing staff roles (`administrator`,
+   `editor`, `publisher`, `moderator`, `store_operator`, `support_operator`).
+   That covers widgets that require only `support_operator` (`/admin/support`).
 4. **CLI recovery** — if the user row already exists:
 
 ```bash

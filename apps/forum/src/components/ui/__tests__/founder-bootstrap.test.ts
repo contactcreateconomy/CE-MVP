@@ -29,9 +29,12 @@ describe("founder bootstrap", () => {
 
   it("auth admits the founder when signup is closed and grants all staff roles", () => {
     const auth = readFileSync(join(convexRoot, "auth.ts"), "utf8");
-    expect(auth).toContain("isFounderEmail");
-    expect(auth).toContain("ensureFounderPrivileges");
+    expect(auth).toContain("createOrUpdateUser");
+    expect(auth).toContain("createOrLinkAuthUser");
     expect(auth).toContain("canonicalSignupFields");
+    const founder = readFileSync(join(convexRoot, "lib/founder.ts"), "utf8");
+    expect(founder).toContain("isFounderEmail");
+    expect(founder).toContain("ensureFounderPrivileges");
     const roles = readFileSync(join(convexRoot, "admin/roles.ts"), "utf8");
     expect(roles).toContain("grantFounderByEmail");
     expect(STAFF_ROLES).toEqual(
@@ -44,5 +47,11 @@ describe("founder bootstrap", () => {
         "support_operator",
       ]),
     );
+  });
+
+  it("owns the user insert because Convex Auth strips emailVerified", () => {
+    const founder = readFileSync(join(convexRoot, "lib/founder.ts"), "utf8");
+    expect(founder).toContain("export async function createOrLinkAuthUser");
+    expect(founder).toContain("...canonicalSignupFields(email, name)");
   });
 });
