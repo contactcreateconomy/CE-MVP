@@ -22,6 +22,10 @@ third leg of the tracking system (code → CHANGELOG.md, progress → wiki,
 
 ## CI / DevOps
 
+### 2026-09-17 — Vercel origin var names are per-app (do not swap)
+
+Forum Production: `NEXT_PUBLIC_CONVEX_URL` = kangaroo cloud, `NEXT_PUBLIC_ADMIN_ORIGIN` = `https://console.createconomy.com`. Admin Production: same Convex URL, `NEXT_PUBLIC_FORUM_ORIGIN` = `https://discuss.createconomy.com`. Forum must not set `NEXT_PUBLIC_FORUM_ORIGIN`; admin must not set `NEXT_PUBLIC_ADMIN_ORIGIN`. Putting the console URL on admin's `NEXT_PUBLIC_FORUM_ORIGIN` only breaks "Back to the feed" — it does not cause the Google bounce. First-create OAuth on empty prod failed because Convex Auth strips `emailVerified` (see Convex section).
+
 ### 2026-09-16 — Convex dest/prod env names (no values)
 
 Verified `convex env list` on dest (`watchful-chameleon-570`) and prod (`energetic-kangaroo-55`): **same nine names on both**. Values not recorded here.
@@ -60,6 +64,10 @@ Supersedes the earlier assumption that `001-default` was the PR target. GitHub d
 <!-- lessons about GitHub Actions, Vercel, deployment, branch protection -->
 
 ## Convex
+
+### 2026-09-17 — Convex Auth default insert strips `emailVerified`
+
+First Google login on empty prod bounced to the login screen (`grantFounderByEmail` → `no_user`; dest still worked). `@convex-dev/auth` pulls `emailVerified`/`phoneVerified` off `profile()` and writes `emailVerificationTime` instead. Our `users.emailVerified` is required, so the insert failed and the HTTP callback silently redirected home. Fix: `callbacks.createOrUpdateUser` → `createOrLinkAuthUser` (library skips `afterUserCreatedOrUpdated` when that callback is set). Google OAuth client + `SITE_URL` were already correct.
 
 ### 2026-09-16 — Founder email auto-grants all staff roles
 

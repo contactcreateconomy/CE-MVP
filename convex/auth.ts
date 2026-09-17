@@ -4,13 +4,7 @@ import Google from "@auth/core/providers/google";
 import { Password } from "@convex-dev/auth/providers/Password";
 import { Email } from "@convex-dev/auth/providers/Email";
 import { convexAuth } from "@convex-dev/auth/server";
-import { normalizeHandle } from "./lib/handle";
-import { checkAdmission } from "./admission";
-import {
-  canonicalSignupFields,
-  ensureFounderPrivileges,
-  isFounderEmail,
-} from "./lib/founder";
+import { canonicalSignupFields, createOrLinkAuthUser } from "./lib/founder";
 
 /** CAP-016/017 (scan 2026-09-13, finding 22): magic-link throttles —
  *  5/15m per identifier, 3/1h per identifier — enforced at the ONE seam
@@ -79,15 +73,6 @@ function parseAuthRedirectOrigins(): Set<string> {
   return origins;
 }
 
-function deriveHandle(email: string, name?: string): string {
-  // CAP-474 discipline via lib/handle (the same normalizer the username
-  // reserve path uses) — only the SOURCE differs: name first, email
-  // local-part fallback. Previously a cruder divergent regex lived here
-  // ("José" → `jos-` handle vs `jose` username).
-  if (name?.trim()) return normalizeHandle(name.trim());
-  return normalizeHandle(email.split("@")[0] ?? "user");
-}
-
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [
     // SLICE-P2-04: Email (magic-link/token) added alongside existing providers.
@@ -117,12 +102,9 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       },
     }),
     Password({
-      // P7-CLEANUP: returns the FULL bible-required canonical set so the
-      // strict users schema validates on the library's insert (the profile
-      // is persisted only on signUp — signIn of an existing account never
-      // writes these). tokenIdentifier is the one field omitted: the auth
-      // subject exists only after this row is created (patched in the
-      // afterUserCreatedOrUpdated callback below).
+      // Identity only — `createOrUpdateUser` writes the canonical users row.
+      // Convex Auth's default insert strips `emailVerified`, which our schema
+      // requires; that is why first prod Google login bounced to the same screen.
       profile(params) {
         const email = String(params.email ?? "")
           .trim()
@@ -200,79 +182,14 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       }
       return fallback;
     },
-    async afterUserCreatedOrUpdated(ctx, { userId, existingUserId, profile }) {
-      const now = Date.now();
-      const email = typeof profile.email === "string" ? profile.email.trim().toLowerCase() : "";
-      const name = typeof profile.name === "string" ? profile.name : undefined;
-      const handle = deriveHandle(email || "user@local", name);
-
-      if (existingUserId === null) {
-        // SECURITY (scan 2026-09-13, finding 3): admission + bootstrap on
-        // the create path. The library calls this callback INSIDE the same
-        // transaction as the users insert — throwing here rolls back the
-        // entire account creation (no orphan users row, no authAccounts
-        // link), which is the fail-closed CAP-001 posture: signup closed/
-        // waitlist ⇒ NO account exists after the attempt.
-        // Founder email is the documented CAP-007 exception: an empty/closed
-        // deployment must still admit the founder (FOUNDER-BOOTSTRAP).
-        if (!isFounderEmail(email)) {
-          const admission = await checkAdmission(ctx);
-          if (admission === "reject") {
-            throw new Error("auth: signup is closed — account creation rejected (CAP-001)");
-          }
-          if (admission === "waitlist") {
-            // REVIEW-FIX (self-review of finding 3): do NOT insert a
-            // waitlistEntries row here — this callback runs inside the same
-            // transaction as the users insert, and the throw below rolls
-            // EVERYTHING back (the waitlist write would never persist).
-            // Waitlist capture stays on the public waitlist.join surface
-            // (CAP-015); this seam's single job is the fail-closed reject:
-            // waitlist-mode signup leaves NO account behind.
-            throw new Error("auth: signup is waitlist-only — join the waitlist from the sign-in screen (CAP-001/CAP-015)");
-          }
-        }
-
-        await ctx.db.patch(userId, {
-          handle,
-          createdAt: now,
-          updatedAt: now,
-        });
-
-        // SECURITY (finding 3): CAP-002 bootstrap was never invoked here —
-        // password/OAuth accounts were created with NO member role, NO
-        // privateUserData row, and no analytics id. These in-transaction
-        // inserts give every new account the same atomic bootstrap the
-        // admission path guarantees (users + privateUserData +
-        // roleAssignments all-or-nothing, FATAL-M1A-01).
-        const db = ctx.db as any;
-        const existingPrivate = await db
-          .query("privateUserData")
-          .withIndex("by_user", (q: any) => q.eq("userId", userId))
-          .unique();
-        if (!existingPrivate) {
-          await db.insert("privateUserData", { userId });
-        }
-        const memberRole = await db
-          .query("roleAssignments")
-          .withIndex("by_user", (q: any) => q.eq("userId", userId))
-          .filter((q: any) => q.eq(q.field("role"), "member"))
-          .first();
-        if (!memberRole) {
-          await ctx.db.insert("roleAssignments", {
-            userId,
-            role: "member",
-            scopeType: "global",
-            status: "active",
-            grantedAt: now,
-          });
-        }
-      } else {
-        await ctx.db.patch(userId, { updatedAt: now });
-      }
-
-      if (isFounderEmail(email)) {
-        await ensureFounderPrivileges(ctx, userId);
-      }
+    // Own the insert: Convex Auth's default path strips `emailVerified` and
+    // then our required-field schema rejects the document. When this callback
+    // is set, `afterUserCreatedOrUpdated` is not called.
+    async createOrUpdateUser(ctx, args) {
+      return await createOrLinkAuthUser(ctx, {
+        existingUserId: args.existingUserId,
+        profile: args.profile,
+      });
     },
   },
 });

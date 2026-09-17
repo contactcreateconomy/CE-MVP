@@ -7,6 +7,10 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Fix: first production Google login bounced to the same screen (2026-09-17)
+
+Convex Auth's default user insert strips `emailVerified` (Auth.js verified-flag) before writing `users`. Our schema requires that boolean, so the first OAuth create on an empty prod deployment failed and redirected back unsigned. Dest/local still worked because those accounts already existed (patch path). `callbacks.createOrUpdateUser` now inserts via `createOrLinkAuthUser`. Vercel: forum uses `NEXT_PUBLIC_ADMIN_ORIGIN` (console host); admin uses `NEXT_PUBLIC_FORUM_ORIGIN` (discuss host).
+
 ### Fix: founder Google account gets full staff access after prod wipe (2026-09-16)
 
 `contact.createconomy@gmail.com` is the documented founder. OAuth inserts the canonical `users` shape; that email bypasses closed signup and auto-grants every staff role (`ensureFounderPrivileges`) so forum and admin (separate origins) both admit the founder. CLI: `admin/roles:grantFounderByEmail`. FOUNDER-BOOTSTRAP.md rewritten.
