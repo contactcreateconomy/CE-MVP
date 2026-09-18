@@ -1,6 +1,9 @@
 ---
 # BUY Interstitial / Redirect
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** replaced a raw-hex-with-fallback color with the named token `text-(--feedback-error-text)`.
+
+
 **Route:** `/go/[linkId]`
 **Status:** NOT STARTED
 **Route drift:** none

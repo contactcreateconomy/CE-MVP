@@ -28,7 +28,7 @@
  * console flips no path around it.
  */
 
-import { internalMutation, mutation } from "../_generated/server";
+import { internalMutation, mutation, query } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
@@ -37,6 +37,11 @@ import { writeAudited, newCorrelationId } from "../lib/audit";
 import { compileSystemPrompt } from "./generate";
 
 /** Flagged config defaults (register-unnamed — typed-config rows seeded). */
+/** CAP-167 drift-flag threshold (register-unnamed, flagged default) —
+ *  module-scoped so `driftCheck` (writer) and `populationSignals`
+ *  (console reader) share exactly one value. */
+const DRIFT_THRESHOLD = 0.4;
+
 export const LIFECYCLE_DEFAULTS = {
   activationTrialDays: 7,
   activationTrialMaxComments: 3,
@@ -357,6 +362,28 @@ export const reviveConfirm = mutation({
   },
 });
 
+/** Shared recommendation computation (CAP-166) — used by the daily cron
+ *  AND the console's read-only display query below. Factored out so the
+ *  console renders the SAME signal the cron computed, not a separate
+ *  approximation. */
+async function computeRecommendation(ctx: any) {
+  const active = await ctx.db.query("personas").withIndex("by_lifecycleStatus", (q: any) => q.eq("lifecycleStatus", "active")).take(50);
+  const retired = await ctx.db.query("personas").withIndex("by_lifecycleStatus", (q: any) => q.eq("lifecycleStatus", "retired")).take(50);
+  const waning = await ctx.db.query("personas").withIndex("by_lifecycleStatus", (q: any) => q.eq("lifecycleStatus", "waning")).take(50);
+  const birthsToday = await eventsToday(ctx, "birth");
+  const retirementsToday = await eventsToday(ctx, "retirement");
+  const recommendation =
+    active.length === 0 && birthsToday === 0
+      ? "birth:population_empty"
+      : waning.length >= 2 && retirementsToday === 0
+        ? "retire:two_or_more_waning"
+        : "hold";
+  return {
+    recommendation,
+    detail: { active: active.length, waning: waning.length, retired: retired.length, birthsToday, retirementsToday },
+  };
+}
+
 /** CAP-166 — population.recommend (daily cron): recommends births/
  *  retirements to the operator queue. Writes NOTHING to personas (quoted:
  *  "admin executes"). Max 1 birth + 1 retirement per day (INV-7) shapes
@@ -364,22 +391,45 @@ export const reviveConfirm = mutation({
 export const populationRecommend = internalMutation({
   args: {},
   returns: v.object({ recommendation: v.string(), detail: v.any() }),
+  handler: async (ctx) => computeRecommendation(ctx),
+});
+
+/**
+ * CAP-166/167 console display — screen audit 2026-09-18: CONTRACT-5-
+ * admin-personas §3.A names "Recommendation queue" and "Drift flags" as
+ * console input states, but both cron outputs (`populationRecommend`'s
+ * return value, `driftCheck`'s persisted `personaCadenceState.
+ * lastDriftScore`) had no query surfacing them — `/admin/personas`
+ * rendered only a roster-count summary. This is a read-only admin query
+ * (contract Open Question #8: no list query is register-named, so this
+ * reuses the crons' own already-defined signals rather than inventing a
+ * new queue entity). */
+export const populationSignals = query({
+  args: {},
+  returns: v.object({
+    recommendation: v.string(),
+    detail: v.any(),
+    driftFlagged: v.array(v.object({
+      personaId: v.id("personas"),
+      displayName: v.string(),
+      lastDriftScore: v.number(),
+    })),
+  }),
   handler: async (ctx) => {
+    await assertAdminPermission(ctx);
+    const { recommendation, detail } = await computeRecommendation(ctx);
     const active = await ctx.db.query("personas").withIndex("by_lifecycleStatus", (q: any) => q.eq("lifecycleStatus", "active")).take(50);
-    const retired = await ctx.db.query("personas").withIndex("by_lifecycleStatus", (q: any) => q.eq("lifecycleStatus", "retired")).take(50);
-    const waning = await ctx.db.query("personas").withIndex("by_lifecycleStatus", (q: any) => q.eq("lifecycleStatus", "waning")).take(50);
-    const birthsToday = await eventsToday(ctx, "birth");
-    const retirementsToday = await eventsToday(ctx, "retirement");
-    const recommendation =
-      active.length === 0 && birthsToday === 0
-        ? "birth:population_empty"
-        : waning.length >= 2 && retirementsToday === 0
-          ? "retire:two_or_more_waning"
-          : "hold";
-    return {
-      recommendation,
-      detail: { active: active.length, waning: waning.length, retired: retired.length, birthsToday, retirementsToday },
-    };
+    const driftFlagged: Array<{ personaId: Id<"personas">; displayName: string; lastDriftScore: number }> = [];
+    for (const persona of active) {
+      const state = await ctx.db
+        .query("personaCadenceState")
+        .withIndex("by_personaId", (q: any) => q.eq("personaId", persona._id))
+        .unique();
+      if (state && typeof state.lastDriftScore === "number" && state.lastDriftScore > DRIFT_THRESHOLD) {
+        driftFlagged.push({ personaId: persona._id, displayName: persona.displayName, lastDriftScore: state.lastDriftScore });
+      }
+    }
+    return { recommendation, detail, driftFlagged };
   },
 });
 
@@ -391,7 +441,6 @@ export const driftCheck = internalMutation({
   returns: v.object({ checked: v.number(), flagged: v.array(v.id("personas")) }),
   handler: async (ctx) => {
     const active = await ctx.db.query("personas").withIndex("by_lifecycleStatus", (q: any) => q.eq("lifecycleStatus", "active")).take(50);
-    const DRIFT_THRESHOLD = 0.4; // flagged default (register-unnamed)
     const flagged: Id<"personas">[] = [];
     for (const persona of active) {
       const state = await ctx.db

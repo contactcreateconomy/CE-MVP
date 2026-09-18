@@ -1,6 +1,9 @@
 ---
 # UTM Builder
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** `getDictionary` previously accepted any staff role via a misleadingly-named `requireAnyAdmin` helper — narrowed to `administrator`, matching the contract.
+
+
 **Route:** `/admin/utm`
 **Status:** NOT STARTED (no `app/admin/` tree exists)
 **Route drift:** none — E-route CLOSED 2026-08-26: CAP-479's trigger was renamed from `/admin/utm-builder` to `/admin/utm`, matching the inventory (inventory wins). Note the residual actor drift: CAP-479 Actor = Founder/Admin vs inventory "administrator" (contract OQ#3).

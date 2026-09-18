@@ -1,7 +1,8 @@
 # Waitlist Join
 
 **Route:** `/waitlist`
-**Status:** NOT STARTED (no route under `PRD/app/apps/forum/src/app/`)
+**Status:** LIVE — `apps/forum/src/app/(auth)/waitlist/page.tsx` (SLICE-P2-05). Calls the real `waitlist.join` publicMutation; idle/joined/already-joined/rate-limited(ip,email)/server-error states all implemented.
+**Remediation (2026-09-18 screen audit):** Logo swapped from the Mark to the Full logo component (§10.2 "auth" usage) — see wave-1-signin.md for the matching fix and the shared `createconomy-logo-full.tsx` component this introduced.
 **Contract:** PRD/02-contracts/wave-1/CONTRACT-1-waitlist-FINAL.md
 **Slice(s):** SLICE-P2-05 (screen + `waitlist.join` publicMutation + CAP-015 gates)
 

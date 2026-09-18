@@ -1,6 +1,9 @@
 ---
 # Resource Viewer
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** removed a contract-violating acquisition gate — CONTRACT-6-resource-viewer §3B / DEC-S15 / INV-6 are explicit that member viewing must **never** be gated behind a prior acquisition (acquire and view are deliberately separate surfaces); the viewer previously required one. Added a "Back to library" link.
+
+
 **Route:** `/resources/[slug]/view`
 **Status:** NOT STARTED
 **Route drift:** none

@@ -1,5 +1,7 @@
 # Post Composer
 
+**Status (2026-09-18 screen audit correction):** LIVE at `/new-post`. **Fixed (this pass):** the composer now collects the full typed-field set per post type (toolId, score, pros/cons, qualitativeGrid, etc.) via a new `typed-fields-panel.tsx` — the prior composer never captured these, so `posts.create` always inserted extension rows with `undefined`/empty typed fields. Showcase posts now get `approvalStatus` set and full CAP-100 project-URL allowlist validation on **create** (previously only enforced on update, so create could bypass it).
+
 **Route:** `/new-post` (canonical — adopted 2026-09-04 per `PRD/00-project-status/00-ROUTES.md`, which supersedes this field's spec names; contracts' `/compose` · `/compose/[type]` are historical aliases)
 **Status:** LIVE at `/new-post` — `PRD/app/apps/forum/src/app/(compose)/new-post/page.tsx` (plus `new-post-page-client.tsx`). The live flow is the pre-Transition reference composer (writes legacy `forumPosts`); the canonical backend (`convex/posts.ts`, SLICE-P4-02) is built and the typed-forms composer rebuild on it is pending. Tag picker (SLICE-P4-03) embeds when that rebuild lands.
 **Route drift:** ~~DECISION NEEDED~~ RESOLVED 2026-09-04 — `00-project-status/00-ROUTES.md` row `/compose` · `/compose/[type]` → `/new-post` (keep live name; spec side updates).

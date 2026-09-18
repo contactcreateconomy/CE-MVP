@@ -207,19 +207,22 @@ export const getCurationState = query({
   handler: async (ctx) => {
     const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
     if (!userId) return null;
-    let staff = false;
+    let roles: string[] = [];
     try {
-      staff = (await assertAdminPermission(ctx)).length > 0;
+      roles = await assertAdminPermission(ctx);
     } catch {
-      staff = false;
+      roles = [];
     }
-    if (!staff) return null;
+    if (roles.length === 0) return null;
     const heroSlots = await ctx.db.query("heroSlots").withIndex("by_slotOrder").take(10);
     const featured = await ctx.db
       .query("vibingFeatured")
       .withIndex("by_status", (q: any) => q.eq("status", "active"))
       .take(5);
     return {
+      // CAP-554 emergency-pull is Administrator-only — the client gates
+      // the button on this, matching the mutation's own check.
+      isAdministrator: roles.includes("administrator"),
       heroSlots: heroSlots.map((s: any) => ({
         slotId: s._id, slotOrder: s.slotOrder, postId: s.postId,
         headlineOverride: s.headlineOverride ?? null, status: s.status,

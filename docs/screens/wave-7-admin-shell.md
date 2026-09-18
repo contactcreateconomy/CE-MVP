@@ -1,6 +1,9 @@
 ---
 # Admin Shell + Command Palette
 
+**Status (2026-09-18 screen audit correction):** LIVE (nav, search, command palette, env badge, role badge, Wiki link, profile menu all present). **Open, not fixed this pass:** no alert-count badge or live operational-mode indicator (hardcoded "normal"); no admin-app noindex metadata; CAP-392 per-route widget gating isn't enforced server-side (a direct URL to a page file still renders even if hidden from nav) — flagged in CHANGELOG.
+
+
 **Route:** `/admin` (+ nested widget routes)
 **Status:** NOT STARTED (no `app/admin/` tree exists)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-admin-shell-FINAL.md

@@ -2012,6 +2012,16 @@ export default defineSchema({
     // CAP-560 write target (register, quoted): "storefrontProducts (link to
     // the shadow post's ID)" — set at approval by createShadowPost.
     shadowPostId: v.optional(v.id("posts")),
+    // _data-model.md `product.rejectionReason` enum (9) — screen audit
+    // 2026-09-18: was missing from the table entirely (CAP-238's reject
+    // mutation only wrote the reason into auditLog.reasonCode, never onto
+    // the product row itself).
+    rejectionReason: v.optional(v.union(
+      v.literal("unsafe"), v.literal("off_topic"), v.literal("masked_link"),
+      v.literal("ownership_unverified"), v.literal("prohibited_category"),
+      v.literal("metadata_violation"), v.literal("duplicate"),
+      v.literal("price_unverifiable"), v.literal("other"),
+    )),
     sortOrder: v.number(),
     createdAt: v.number(),
   })

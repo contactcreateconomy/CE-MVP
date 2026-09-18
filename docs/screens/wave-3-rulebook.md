@@ -1,5 +1,7 @@
 # Qualification Thresholds & Rules
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** the boolean rule toggles used a raw `Checkbox` component; replaced with a new STYLE-KIT §11.2-compliant `Switch` component (`apps/admin/src/components/ui/switch.tsx`, mirrored in the forum app).
+
 **Route:** `/admin/rulebook`
 **Status:** NOT STARTED
 **Contract:** PRD/02-contracts/wave-3/CONTRACT-3-rulebook-FINAL.md

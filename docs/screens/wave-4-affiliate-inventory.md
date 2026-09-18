@@ -1,5 +1,7 @@
 # Affiliate Commercial Inventory
 
+**Status (2026-09-18 screen audit correction):** LIVE. Audited against CONTRACT-4-affiliate-inventory-FINAL.md — compliant, no deviations found.
+
 **Route:** `/admin/affiliate-inventory`
 **Status:** NOT STARTED
 **Contract:** PRD/02-contracts/wave-4/CONTRACT-4-affiliate-inventory-FINAL.md

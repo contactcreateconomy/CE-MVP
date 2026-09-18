@@ -1,6 +1,9 @@
 ---
 # Admin Wiki
 
+**Status (2026-09-18 screen audit correction):** LIVE. Audited against CONTRACT-7-admin-wiki-FINAL.md — the all-staff read gate and sanitize-on-write are correctly implemented; compliant.
+
+
 **Route:** `/admin/wiki`
 **Status:** NOT STARTED (no `app/admin/` tree exists)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-admin-wiki-FINAL.md

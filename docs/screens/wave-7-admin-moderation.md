@@ -1,6 +1,9 @@
 ---
 # Moderation Console / Case Queue
 
+**Status (2026-09-18 screen audit correction):** LIVE (A12 QueueBoard; CAP-330 band ordering fixed earlier this pass). **Fixed (this pass):** `claim` and `renewLease` wrote no audit-log entry at all (CAP-426: "auditLog is the accountability record — 100% of mod actions") — both now go through `writeAudited`. `resolve` had no claim/lease check, so any Moderator/Administrator could resolve a case regardless of who (if anyone) had claimed it — added the CAP-328 gate (caller must hold the active lease); the console UI now only shows the Action/No-action buttons once a case is claimed. **Open, not fixed this pass:** the CAP-335 batch verb names don't match the contract's five allowlisted literals; no per-case-type domain actions (showcase/mechanic/rating/comment) are exposed from this console; sanctions/terminate/appeals resolution aren't wired to the UI — flagged in CHANGELOG.
+
+
 **Route:** `/admin/moderation`
 **Status:** NOT STARTED (no `app/admin/` tree exists)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-admin-moderation-FINAL.md

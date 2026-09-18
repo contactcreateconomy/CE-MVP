@@ -37,7 +37,25 @@ export function ContributePageClient() {
     return <div className="flex min-h-[30vh] items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-(--border-default) border-t-(--brand-primary)" /></div>;
   }
 
-  // E3: the disabled render — reachable, honest, mutations server-reject
+  // CONTRACT-6-contribute §1 (verbatim): "member only, no anonymous
+  // access" — this gate is checked BEFORE the E3 flag branch below, so an
+  // anonymous visitor never sees even the disabled surface.
+  if (!member) {
+    return (
+      <section className="space-y-4" aria-label="Contribute">
+        <header className="space-y-1">
+          <h1 className="text-2xl font-semibold text-(--text-primary)">Contribute a reference</h1>
+        </header>
+        <Card><CardContent className="py-8 text-center text-sm text-(--text-muted)"><a href="/signin" className="underline">Sign in</a> to contribute.</CardContent></Card>
+      </section>
+    );
+  }
+
+  // Wave 6B E3 (LOCKED, verbatim): "the member sees a disabled contribute
+  // surface: a banner ... plus a disabled dropzone and disabled submit
+  // (controls present, not actionable)" — screen audit 2026-09-18: the
+  // prior render replaced the whole form with banner-only copy; the
+  // controls themselves must still be visible (disabled), not removed.
   if (!state.enabled) {
     return (
       <section className="space-y-4" aria-label="Contribute (closed)">
@@ -45,11 +63,20 @@ export function ContributePageClient() {
           <h1 className="text-2xl font-semibold text-(--text-primary)">Contribute a reference</h1>
         </header>
         <Card>
-          <CardContent className="space-y-2 py-8 text-center">
+          <CardContent className="space-y-2 py-6">
             <p className="text-sm font-medium text-(--text-primary)">Community reference intake is closed during the soft beta.</p>
             <p className="text-sm text-(--text-muted)">
               We&apos;re currently publishing in-house and operator-curated resources. Community contributions open soon — the platform will announce it.
             </p>
+          </CardContent>
+        </Card>
+        <Card aria-disabled="true">
+          <CardHeader><h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">Submit reference (disabled)</h2></CardHeader>
+          <CardContent className="space-y-2 opacity-50">
+            <div className="flex min-h-24 items-center justify-center rounded-md border-2 border-dashed border-(--border-default) text-sm text-(--text-muted)">
+              Drop a file — intake is closed
+            </div>
+            <Button size="sm" disabled>Submit for review</Button>
           </CardContent>
         </Card>
       </section>
@@ -65,10 +92,7 @@ export function ContributePageClient() {
         </p>
       </header>
 
-      {!member ? (
-        <Card><CardContent className="py-8 text-center text-sm text-(--text-muted)"><a href="/signin" className="underline">Sign in</a> to contribute.</CardContent></Card>
-      ) : (
-        <>
+      <>
           <Card>
             <CardHeader><h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">1 · Contributor contract</h2></CardHeader>
             <CardContent className="space-y-2">
@@ -110,8 +134,7 @@ export function ContributePageClient() {
               {note ? <p className="text-xs text-(--text-muted)">{note}</p> : null}
             </CardContent>
           </Card>
-        </>
-      )}
+      </>
     </section>
   );
 }

@@ -9,13 +9,15 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation } from "convex/react";
 import { Globe, CheckCircle2 } from "lucide-react";
 
+import { api } from "../../../../../../convex/_generated/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Banner } from "@/components/ui/banner";
-import { CreateconomyLogoMark } from "@/components/ui/createconomy-logo-mark";
+import { CreateconomyLogoFull } from "@/components/ui/createconomy-logo-full";
 
 // Common IANA zones for the confirmation dropdown (the auto-detected zone is
 // pre-selected; user confirms or changes). Full list would use the
@@ -30,6 +32,7 @@ const COMMON_TIMEZONES = [
 
 export default function WelcomePage() {
   const router = useRouter();
+  const finalizeWelcome = useMutation(api.bootstrap.finalizeWelcome);
   const [timezone, setTimezone] = useState("UTC");
   const [detected, setDetected] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -48,24 +51,38 @@ export default function WelcomePage() {
     setSubmitting(true);
     setError(null);
     try {
-      // finalizeBootstrap (CAP-003) — called via the generated API.
-      // The mutation writes timezone + flips bootstrapState to complete +
-      // fires the CAP-004 signup event (same-mutation, CAP-436).
-      // Implementation note: the API call wiring is completed when the
-      // auth callback's createOrUpdateUser chains into the admission flow.
+      // finalizeBootstrap (CAP-003) — writes timezone once, flips
+      // bootstrapState to complete, fires the CAP-004 signup event
+      // (same-mutation, CAP-436). Routing-convention rule 3: a now-complete
+      // user leaving /welcome goes to /feed.
+      await finalizeWelcome({ timezone });
       router.push("/feed");
     } catch (err) {
-      setError((err as Error).message || "Something went wrong. Please try again.");
+      const msg = (err as Error).message || "";
+      // Contract states 4-6: invalid timezone / guard failure / write-once
+      // conflict — each rejects without side effects (CAP-003).
+      if (msg.includes("Invalid timezone")) {
+        setError("That timezone isn't recognized. Pick another from the list.");
+      } else if (msg.includes("Guard failure")) {
+        setError("Your account isn't ready to finish setup yet. Please contact support.");
+      } else if (msg.includes("Write-once conflict")) {
+        // Already complete — routing convention rule 3 owns this; the
+        // component just gets the user off this now-stale screen.
+        router.replace("/feed");
+        return;
+      } else {
+        setError(msg || "Something went wrong. Please try again.");
+      }
     } finally {
       setSubmitting(false);
     }
-  }, [router]);
+  }, [finalizeWelcome, timezone, router]);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-bg-canvas p-6">
       <div className="w-full max-w-(--container-auth)">
         <div className="mb-6 flex justify-center">
-          <CreateconomyLogoMark className="size-6" />
+          <CreateconomyLogoFull />
         </div>
 
         <Card>

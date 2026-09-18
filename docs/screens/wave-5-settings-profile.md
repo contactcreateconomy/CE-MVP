@@ -1,5 +1,7 @@
 # Profile Settings & Privacy
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** raw HTML `<select>` elements (role, age band, social platform) replaced with the STYLE-KIT `Select` component; raw-hex-with-fallback colors replaced with `text-(--feedback-error-text)` / `text-(--feedback-warning-text)`.
+
 **Route:** `/settings/profile`
 **Status:** LIVE, ROUTE DRIFT — live code split across `/profile` (PRD/app/apps/forum/src/app/(app)/(shell)/profile/page.tsx) and `/settings` (PRD/app/apps/forum/src/app/(app)/(shell)/settings/page.tsx)
 **Route drift:** spec `/settings/profile` vs live `/profile` + `/settings` (split, no single `/settings/profile` route) — DECISION NEEDED: rename live route to match spec, OR update spec to match live route. Not silently picked.

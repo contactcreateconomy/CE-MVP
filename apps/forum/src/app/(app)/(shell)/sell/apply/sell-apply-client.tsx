@@ -41,6 +41,8 @@ function SellApplyClientWithConvex() {
   const submit = useMutation(api.store.apply.submit);
 
   const [networks, setNetworks] = useState("");
+  const [categories, setCategories] = useState("");
+  const [expectedProductCount, setExpectedProductCount] = useState("1");
   const [experience, setExperience] = useState("");
   const [att, setAtt] = useState<Att>({ owns: false, programPermits: false, regionEligible: false, willDisclose: false });
   const [dataHonesty, setDataHonesty] = useState(false);
@@ -67,7 +69,13 @@ function SellApplyClientWithConvex() {
         </p>
       </header>
 
-      {state.existingRequest ? (
+      {/* Screen audit 2026-09-18: a `rejected` request must not block
+          re-application — `store.apply.submit` itself only rejects a
+          resubmit while a `submitted` request is pending; the UI was
+          over-blocking by showing the status card for every past status
+          (including terminal `rejected`) and never rendering the form
+          underneath it. */}
+      {state.existingRequest && state.existingRequest.status !== "rejected" ? (
         <Card>
           <CardContent className="space-y-1 py-6 text-center">
             <Badge tone={state.existingRequest.status === "approved" ? "success" : "info"}>
@@ -94,12 +102,28 @@ function SellApplyClientWithConvex() {
         </Card>
       ) : (
         <>
+          {state.existingRequest?.status === "rejected" ? (
+            <Card>
+              <CardContent className="py-3 text-sm text-(--text-muted)">
+                Your previous application was rejected{state.existingRequest.reasonCode ? ` (${state.existingRequest.reasonCode})` : ""}. You can apply again below.
+              </CardContent>
+            </Card>
+          ) : null}
           <Card>
             <CardHeader><h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">Your application</h2></CardHeader>
             <CardContent className="space-y-3">
               <div className="space-y-1">
+                <label htmlFor="categories" className="text-sm font-medium text-(--text-primary)">Intended categories (comma-separated)</label>
+                <Input id="categories" value={categories} onChange={(e) => setCategories(e.target.value)} placeholder="creator-tools, software" />
+              </div>
+              <div className="space-y-1">
                 <label htmlFor="networks" className="text-sm font-medium text-(--text-primary)">Affiliate networks (comma-separated)</label>
                 <Input id="networks" value={networks} onChange={(e) => setNetworks(e.target.value)} placeholder="impact, shareasale" />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="expectedProductCount" className="text-sm font-medium text-(--text-primary)">Expected number of products</label>
+                <Input id="expectedProductCount" type="number" min={1} value={expectedProductCount}
+                  onChange={(e) => setExpectedProductCount(e.target.value)} className="w-32" />
               </div>
               <div className="space-y-1">
                 <label htmlFor="experience" className="text-sm font-medium text-(--text-primary)">Experience note</label>
@@ -125,7 +149,8 @@ function SellApplyClientWithConvex() {
             <CardHeader><h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">Data honesty (CAP-262)</h2></CardHeader>
             <CardContent className="space-y-2">
               <p className="text-sm text-(--text-secondary)">
-                Store analytics are aggregate-only: Traffic / Intent / Confirmed — never buyer identities. Version {state.dataUseVersion}.
+                Store analytics are aggregate-only: Traffic / Intent / Confirmed — never buyer identities. Version {state.dataUseVersion}.{" "}
+                <a href="/how-we-use-your-store-data" className="underline">Read the full data-use policy</a>.
               </p>
               <label className="flex items-start gap-3 text-sm text-(--text-secondary)">
                 <Checkbox aria-label="Accept data-honesty terms" checked={dataHonesty} onCheckedChange={(v: boolean) => setDataHonesty(v)} />
@@ -137,8 +162,10 @@ function SellApplyClientWithConvex() {
           <Button disabled={!canSubmit} onClick={() => {
             setBusy(true); setNote(null);
             submit({
-              categories: [], networks: networks.split(",").map((n) => n.trim()).filter(Boolean),
-              expectedProductCount: 1, experienceNote: experience.trim(),
+              categories: categories.split(",").map((n) => n.trim()).filter(Boolean),
+              networks: networks.split(",").map((n) => n.trim()).filter(Boolean),
+              expectedProductCount: Math.max(1, Number.parseInt(expectedProductCount, 10) || 1),
+              experienceNote: experience.trim(),
               attestations: att, termsVersion: "store-terms.v1", acceptDataHonesty: true,
             })
               .then(() => setNote("Application submitted — the review team will respond."))

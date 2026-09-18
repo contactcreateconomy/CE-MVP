@@ -23,6 +23,14 @@ export default function AdminSupportPage() {
   const [extra, setExtra] = useState("3");
   const [incidentId, setIncidentId] = useState("");
   const [grantReason, setGrantReason] = useState("");
+  // CAP-402/403 wiring bug (screen audit 2026-09-18): `quotaGrant` takes
+  // an `operationalIncidents` id; `quotaNeutralize` takes the returned
+  // `quotaGrants` id — two distinct id-typed tables. The UI previously
+  // reused the incident-id input for both, so Neutralize always targeted
+  // the wrong row (or threw). Track the grant id returned by Grant
+  // separately, with its own editable field for neutralizing a grant
+  // looked up by another means.
+  const [grantId, setGrantId] = useState("");
   const [tz, setTz] = useState("Asia/Kolkata");
   const [tzReason, setTzReason] = useState("");
   const [note, setNote] = useState("");
@@ -86,24 +94,24 @@ export default function AdminSupportPage() {
             <Input value={incidentId} onChange={(e) => setIncidentId(e.target.value)} placeholder="incident id (unique per grant)" aria-label="Incident id" />
           </div>
           <Input value={grantReason} onChange={(e) => setGrantReason(e.target.value)} placeholder="reason" aria-label="Grant reason" />
-          <div className="flex gap-2">
+          <Button
+            size="sm"
+            disabled={!userIdInput || !incidentId || !grantReason.trim()}
+            onClick={() =>
+              grant({ userId: userIdInput as any, extraAcquires: Number(extra), incidentId: incidentId as any, reason: grantReason })
+                .then((r) => { setGrantId(r.grantId); setFeedback(`Grant created (≤7d expiry). Grant id: ${r.grantId}`); })
+                .catch((e) => setFeedback(String(e?.message ?? e)))
+            }
+          >
+            Grant
+          </Button>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Input value={grantId} onChange={(e) => setGrantId(e.target.value)} placeholder="grant id (from Grant above, or looked up)" aria-label="Grant id" />
             <Button
-              size="sm"
-              disabled={!userIdInput || !incidentId || !grantReason.trim()}
-              onClick={() =>
-                run(
-                  grant({ userId: userIdInput as any, extraAcquires: Number(extra), incidentId: incidentId as any, reason: grantReason }),
-                  "Grant created (≤7d expiry).",
-                )
-              }
+              variant="secondary" size="sm" disabled={!grantId}
+              onClick={() => run(neutralize({ grantId: grantId as any }), "Grant neutralized.")}
             >
-              Grant
-            </Button>
-            <Button
-              variant="secondary" size="sm" disabled={!incidentId}
-              onClick={() => run(neutralize({ grantId: incidentId as any }), "Note: neutralize takes the GRANT id.")}
-            >
-              Neutralize (by grant id)
+              Neutralize
             </Button>
           </div>
           <p className="text-xs text-(--text-muted)">≤5 extra acquires · ≤7d · max 1 active/user · unique incident · &gt;3/90d escalates to Admin (CAP-432).</p>

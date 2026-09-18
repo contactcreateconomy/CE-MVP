@@ -130,6 +130,7 @@ export const getDetail = query({
           publishedAt: post.publishedAt ?? null,
           toolIds: [],
           archived: true,
+          isViewerAuthor: false,
         },
         seo: seo
           ? { slug: seo.slug, seoTitle: seo.seoTitle, seoDescription: seo.seoDescription }
@@ -138,6 +139,7 @@ export const getDetail = query({
         threadContext: { type: post.type, mechanic: null, userVote: null },
         compare: null,
         affiliateCtas: [],
+        reviewTool: null,
       };
     }
 
@@ -184,6 +186,21 @@ export const getDetail = query({
     // CAP-092 — live compare rows (nothing stored)
     const compare = post.type === "compare" ? await compareRows(ctx, extension?.toolIds ?? post.toolIds ?? []) : null;
 
+    // Contract §3.A.2 renders "toolId" as part of the review block — resolve
+    // it to a name/slug so the client can link to /tools/[slug] instead of
+    // showing a raw internal id (screen audit 2026-09-18). Guarded: toolId
+    // may be "" (never-composed reviews created before this audit's
+    // composer fix) or reference a deleted tool.
+    let reviewTool: { name: string; slug: string } | null = null;
+    if (post.type === "review" && extension?.toolId) {
+      try {
+        const tool = await ctx.db.get(extension.toolId as Id<"tools">);
+        if (tool) reviewTool = { name: tool.name, slug: tool.slug };
+      } catch {
+        reviewTool = null;
+      }
+    }
+
     // Structured affiliate CTAs (CAP-049 render contract: rel sponsored
     // nofollow noopener, never prose)
     const affiliateLinks = await ctx.db
@@ -202,6 +219,11 @@ export const getDetail = query({
         authorType: post.authorType, editorialByline: post.editorialByline ?? null,
         publishedAt: post.publishedAt ?? null, toolIds: post.toolIds,
         archived: post.lifecycleStatus === "archived", // tombstone render (CAP-089)
+        // CAP-095 static_creator gating (screen audit 2026-09-18): the client
+        // needs to know if the signed-in viewer is the post author to show
+        // the list-item add form when mode="static_creator" (listItems.add
+        // now enforces this same author-only rule server-side).
+        isViewerAuthor: userId != null && post.authorUserId === userId,
       },
       seo: seo
         ? { slug: seo.slug, seoTitle: seo.seoTitle, seoDescription: seo.seoDescription }
@@ -210,6 +232,7 @@ export const getDetail = query({
       threadContext: { type: post.type, mechanic, userVote },
       compare,
       affiliateCtas: ctas,
+      reviewTool,
     };
   },
 });

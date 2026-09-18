@@ -1,6 +1,9 @@
 ---
 # Store Validation Queue
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** `REJECT_REASONS` was an 8-value enum invented independently of `_data-model.md`'s canonical 9-value `product.rejectionReason` enum (and `unsafe`/`off_topic` need to stay distinct per INV-11) — corrected to match verbatim, added the missing `rejectionReason` field to the `storefrontProducts` schema, and `rejectProduct` now actually persists the reason onto the product row (previously it only logged the reason into the audit entry, never onto the document itself). Admin UI now uses a `Select` for the rejection reason instead of a hardcoded value.
+
+
 **Route:** `/admin/store`
 **Status:** NOT STARTED
 **Route drift:** none

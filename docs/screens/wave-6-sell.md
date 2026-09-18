@@ -1,6 +1,9 @@
 ---
 # Rocketeer Dashboard (manage · analytics · evidence)
 
+**Status (2026-09-18 screen audit correction):** LIVE. Audited alongside wave-6-sell-apply.md — no separate deviations found on the dashboard itself.
+
+
 **Route:** `/sell`
 **Status:** NOT STARTED
 **Route drift:** none

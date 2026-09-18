@@ -1,6 +1,9 @@
 ---
 # Contribute / Reference Upload
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** anonymous visitors previously saw the "intake closed" banner before being asked to sign in (contract requires member-only, no anonymous access at all) — reordered to redirect anonymous visitors to `/signin` first. For authenticated members when the feature flag is off, the disabled dropzone/submit controls are now rendered (disabled, not removed) per the E3 LOCKED decision — the prior render replaced them with banner copy only.
+
+
 **Route:** `/contribute`
 **Status:** NOT STARTED
 **Route drift:** none

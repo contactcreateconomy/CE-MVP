@@ -1,6 +1,9 @@
 ---
 # Support Console
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** the quota Grant/Neutralize UI reused the same input for both an `operationalIncidents` id (CAP-402 Grant) and the returned `quotaGrants` id (CAP-403 Neutralize) — two distinct id-typed tables — so Neutralize always targeted the wrong row or threw. Split into separate tracked fields; Grant now surfaces the `grantId` it returns for use in Neutralize.
+
+
 **Route:** `/admin/support`
 **Status:** NOT STARTED (no `app/admin/` tree exists)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-admin-support-FINAL.md

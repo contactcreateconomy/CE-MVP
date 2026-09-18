@@ -1,6 +1,9 @@
 ---
 # Landing Page
 
+**Status (2026-09-18 screen audit correction):** **Open, not fixed this pass — architecture-level gap flagged in CHANGELOG.** The §12.3 landing template exists at `/landing` but anonymous `/` unconditionally redirects to `/feed` and never reaches it; the template itself is a single centered column, not the full §12.3 multi-section layout; UTM first-touch capture (CAP-465) is `localStorage`-only, not wired to a `utm.capture` mutation. This is a larger rebuild (routing + layout + CMP-availability-for-anonymous), deliberately not attempted as a quick fix in this remediation pass — see CHANGELOG.
+
+
 **Route:** `/` (anonymous)
 **Status:** NOT STARTED — live `/` redirects to `/feed` (PRD/app/apps/forum/src/app/page.tsx: `redirect("/feed")`, also declared in `next.config.mjs` `redirects()`), which is NOT the spec's anon landing page
 **Route drift:** live root is a hard redirect to `/feed`; the spec's anonymous §12.3 landing layout has no build at all. Authenticated `/` remains Feed/Home (Wave 6) per contract §1 — the anon/mode-split at `/` is unbuilt.

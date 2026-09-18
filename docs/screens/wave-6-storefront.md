@@ -1,6 +1,9 @@
 ---
 # Storefront (public)
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** see wave-6-product-detail.md.
+
+
 **Route:** `/s/[handle]`
 **Status:** NOT STARTED
 **Route drift:** none (note: the wave-6 live-status map parenthesized this screen as `/store/[handle]`; the inventory row and the contract both specify `/s/[handle]`, which is used here — no code exists yet, so no drift exists)

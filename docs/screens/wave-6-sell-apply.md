@@ -1,6 +1,9 @@
 ---
 # Store Application
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** re-application after a `rejected` status was blocked entirely (the form never rendered again); now shows a rejection notice and allows re-applying. `categories` and `expectedProductCount` were always sent as `[]` / `1` regardless of user input — wired to real form fields. Added the missing link to `/how-we-use-your-store-data`.
+
+
 **Route:** `/sell/apply`
 **Status:** NOT STARTED
 **Route drift:** none

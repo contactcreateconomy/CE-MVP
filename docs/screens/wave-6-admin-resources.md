@@ -1,5 +1,7 @@
 # Resource Ops Console
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** `rightsReview`'s accept path skipped the `content_review` lane entirely (went straight to `accepted_for_forge`), making the `content_review` status and its `contentReview` mutation unreachable — corrected. Split the single `RightsActions` component (which rendered on both lanes but was only valid for one) into `RightsActions` / `ContentActions`. Added `canPublish` (Publisher/store_operator/Administrator) and `canLegalHold` (Moderator-only) RBAC flags and gated the corresponding `LifecyclePanel` controls, which previously had no role gating at all.
+
 **Route:** /admin/resources
 **Status:** NOT STARTED
 **Contract:** PRD/02-contracts/wave-6/CONTRACT-6-admin-resources-FINAL.md

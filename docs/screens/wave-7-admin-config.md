@@ -1,6 +1,9 @@
 ---
 # Config Console (+ STOP + kill-switches)
 
+**Status (2026-09-18 screen audit correction):** LIVE (namespace/CAS editor + legal reason-code editor). **Fixed (this pass):** `kill.flip`, `stop.activate`, `stop.resume`, `signup.mode.set`, and `mirror.disable` previously accepted **any** staff role (only the broad CAP-390 shell gate) — narrowed to `administrator`, matching the contract's "Actors: administrator, Founder" line. **Open, not fixed this pass:** no dedicated STOP/kill-switch/signup-mode UI panel exists (only the generic namespace table editor) — flagged in CHANGELOG.
+
+
 **Route:** `/admin/config`
 **Status:** NOT STARTED (no `app/admin/` tree exists)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-admin-config-FINAL.md

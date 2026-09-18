@@ -1,6 +1,9 @@
 ---
 # Analytics Dashboard (Founder)
 
+**Status (2026-09-18 screen audit correction):** LIVE. Audited: the CAP-452 weekly-decision mutation is correctly Founder-gated server-side. **Open, not fixed this pass:** the UI still shows the "Record weekly decision" button to every administrator rather than hiding/disabling it for non-Founder viewers; metric cards render raw JSON snippets rather than the contract's `n% (x/y)` + timestamp format — flagged in CHANGELOG.
+
+
 **Route:** `/admin/analytics`
 **Status:** NOT STARTED (no `app/admin/` tree exists)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-admin-analytics-FINAL.md

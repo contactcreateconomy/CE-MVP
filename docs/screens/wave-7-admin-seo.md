@@ -1,6 +1,9 @@
 ---
 # SEO Health
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** `seoHealthView` previously accepted any staff role via the same `requireAnyAdmin` helper — narrowed to `administrator`, matching CAP-567.
+
+
 **Route:** `/admin/seo`
 **Status:** NOT STARTED (no `app/admin/` tree exists)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-admin-seo-FINAL.md

@@ -73,14 +73,12 @@ export const getViewerState = query({
     }
     const version = (await ctx.db.get(resource.currentVersionId)) as any;
     if (!version?.fileAssetId) return { ...base, notFound: true };
-    // The acquisition gate: viewing requires the resource in the library
-    // (view ≠ quota, but the viewer is a member benefit downstream of
-    // acquire — the URL itself is the CAP-213 download surface's twin)
-    const acquisition = await ctx.db
-      .query("acquisitions")
-      .withIndex("by_user_resource", (q: any) => q.eq("userId", userId).eq("resourceId", resource._id))
-      .unique();
-    if (!acquisition) return { ...base, requiresAcquisition: true };
+    // CONTRACT-6-resource-viewer §3B (verbatim): "member → full view
+    // (complete forged PDF, no interstitial)" — INV-6/DEC-S15 is explicit
+    // that viewing is physically separate from acquire (which lives on
+    // /resources) and must NEVER be gated behind an acquisition. A prior
+    // acquisition check here was a contract violation (screen audit
+    // 2026-09-18) — removed; member identity alone is the full-view gate.
     return { ...base, assetId: version.fileAssetId, teaser: false };
   },
 });
@@ -97,16 +95,14 @@ export const getViewUrl = mutation({
       .withIndex("by_slug", (q: any) => q.eq("slug", args.slug))
       .unique();
     if (!resource?.currentVersionId) throw new Error("viewer: not found");
-    // Same gates as getViewerState — the URL mint is the download surface's
-    // twin: unpublished resources never resolve, and the acquisition gate
-    // holds (view ≠ quota, but the viewer is downstream of acquire). The
-    // mutation previously minted signed URLs for ANY slug, bypassing both.
+    // Same gate as getViewerState — the URL mint is the download surface's
+    // twin ONLY in that it resolves the same clean asset; unpublished
+    // resources never resolve. Per CONTRACT-6-resource-viewer §3A/§3B
+    // (INV-6/DEC-S15), member view is NEVER gated behind an acquisition —
+    // that gate was removed in the 2026-09-18 screen audit. The mutation
+    // previously minted signed URLs for ANY slug, bypassing publish status;
+    // that check remains.
     if (resource.status !== "published") throw new Error("viewer: not found");
-    const acquisition = await ctx.db
-      .query("acquisitions")
-      .withIndex("by_user_resource", (q: any) => q.eq("userId", userId).eq("resourceId", resource._id))
-      .unique();
-    if (!acquisition) throw new Error("viewer: acquisition required");
     const version = (await ctx.db.get(resource.currentVersionId)) as any;
     if (!version?.fileAssetId) throw new Error("viewer: no current clean artifact");
     const url = await ctx.storage.getUrl(version.fileAssetId);

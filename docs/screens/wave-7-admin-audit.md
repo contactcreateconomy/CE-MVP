@@ -1,6 +1,9 @@
 ---
 # Audit Log Viewer
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** `auditQuery` and `auditExport` (CAP-421/422, "Actors: administrator, Founder") previously accepted any staff role — narrowed to `administrator`. `spotCheck` (CAP-357, "one Founder records the check") now requires the derived Founder specifically, via a new shared `isFounder`/`assertFounder` helper added to `convex/lib/authz.ts` (Founder = the bootstrapped first active `administrator`, the same derivation already used by `roles.assign` and the analytics weekly-decision gate — previously duplicated inline in two places, now centralized). `auditExport` and `spotCheck` also no longer take a client-supplied `actorId` (was spoofable attribution) — the actor is now derived from the session.
+
+
 **Route:** `/admin/audit`
 **Status:** NOT STARTED (no `app/admin/` tree exists)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-admin-audit-FINAL.md

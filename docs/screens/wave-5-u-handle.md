@@ -1,5 +1,7 @@
 # Profile (merged Profile + Distribution)
 
+**Status (2026-09-18 screen audit correction):** LIVE — base profile (Overview/Journal) compliant with CONTRACT-5-u-handle-FINAL.md. The M12 Metrics-tab enrichment (CONTRACT-7-profile-economy-FINAL.md) is **partially built**: the Metrics tab, Reach/Signals/Awards triad, A8 ladder, join/leave, and leaderboard opt-out are live; the CAP-299 Create-Distribution modal, `distributionLevelAssignments`-derived ladder status (holdover/demoted/dormant), and the stale Overview awards-shelf placeholder remain open — logged in CHANGELOG, not built this pass (scope/risk).
+
 **Route:** `/u/[handle]`
 **Status:** LIVE, ROUTE DRIFT — live `/users/[handle]` at PRD/app/apps/forum/src/app/(app)/(shell)/users/[handle]/page.tsx (Metrics tab NOT STARTED — only Overview-era code exists)
 **Route drift:** spec `/u/[handle]` vs live `/users/[handle]` — DECISION NEEDED: rename live route to match spec, OR update spec to match live route. Not silently picked.

@@ -1,6 +1,9 @@
 ---
 # Consent Management (CMP)
 
+**Status (2026-09-18 screen audit correction):** LIVE for authenticated members. **Open, not fixed this pass:** the contract's actor list includes `anonymous`, but `CmpOverlay` returns `null` before authentication resolves — no anonymous grant path exists (CAP-387). This was reviewed and deliberately left as-is: it is a pre-existing, already-documented deferred decision (E1/CAP-387 is an open item, not a regression), not silently fixed or re-flagged as new.
+
+
 **Route:** global overlay — no route (mounts in the App Shell's reserved slot)
 **Status:** NOT STARTED (no CMP overlay component exists in the app tree; P2-06 reserved the slot with CAP-504 default-deny)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-cmp-FINAL.md

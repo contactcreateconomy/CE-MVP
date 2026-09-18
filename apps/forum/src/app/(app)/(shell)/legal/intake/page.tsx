@@ -17,10 +17,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { api } from "@/lib/convex";
+import { useAuth } from "@cemvp/auth-ui";
 
 type Branch = "dmca" | "counter" | "grievance" | "erasure";
 
+// CONTRACT-7-legal-intake §1/§4 (verbatim, addendum §5): only the DMCA
+// notice branch is the CAP-217 anonymous statutory minimum — counter-
+// notice, grievance, and erasure all call authenticated mutations
+// (`requireUser` in convex/legal/intake.ts). Screen audit 2026-09-18: the
+// UI previously rendered all four tabs' full forms with no sign-in gate,
+// so an anonymous visitor could fill the form and only discover the
+// auth requirement after submit failed.
+const AUTH_REQUIRED_BRANCHES: ReadonlySet<Branch> = new Set(["counter", "grievance", "erasure"]);
+
 export default function LegalIntakePage() {
+  const { authStatus } = useAuth();
   const [branch, setBranch] = useState<Branch>("dmca");
   const [note, setNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -40,6 +51,8 @@ export default function LegalIntakePage() {
   const counter = useMutation(api.legal.intake.counterNotice);
   const authenticated = useMutation(api.legal.intake.legalIntakeAuthenticated);
   const erasure = useMutation(api.legal.intake.erasureSubmit);
+
+  const needsSignIn = AUTH_REQUIRED_BRANCHES.has(branch) && authStatus !== "authenticated";
 
   const run = (fn: Promise<any>, ok: (r: any) => string) => {
     setBusy(true);
@@ -76,6 +89,14 @@ export default function LegalIntakePage() {
           </button>
         ))}
       </div>
+
+      {needsSignIn ? (
+        <Card>
+          <CardContent className="py-8 text-center text-sm text-(--text-muted)">
+            <a href="/signin" className="underline">Sign in</a> to file this type of request.
+          </CardContent>
+        </Card>
+      ) : null}
 
       {branch === "dmca" ? (
         <Card>
@@ -117,7 +138,7 @@ export default function LegalIntakePage() {
         </Card>
       ) : null}
 
-      {branch === "counter" ? (
+      {branch === "counter" && !needsSignIn ? (
         <Card>
           <CardHeader>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">DMCA counter-notice</h2>
@@ -157,7 +178,7 @@ export default function LegalIntakePage() {
         </Card>
       ) : null}
 
-      {branch === "grievance" ? (
+      {branch === "grievance" && !needsSignIn ? (
         <Card>
           <CardHeader>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">Grievance (India)</h2>
@@ -190,7 +211,7 @@ export default function LegalIntakePage() {
         </Card>
       ) : null}
 
-      {branch === "erasure" ? (
+      {branch === "erasure" && !needsSignIn ? (
         <Card>
           <CardHeader>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">Right of erasure</h2>

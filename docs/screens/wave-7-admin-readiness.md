@@ -1,6 +1,9 @@
 ---
 # Launch Readiness
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** the CAP-435 `checklist` query previously accepted any administrator; the contract explicitly distinguishes "Query checklist | **Founder**" from "Evaluate | Founder/**Admin**" (its own reconciliation notes flag this exact nuance) — narrowed `checklist` to the derived Founder specifically.
+
+
 **Route:** `/admin/readiness`
 **Status:** NOT STARTED (no `app/admin/` tree exists)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-admin-readiness-FINAL.md

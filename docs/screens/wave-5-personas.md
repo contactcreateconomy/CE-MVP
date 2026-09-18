@@ -1,5 +1,7 @@
 # Population Page
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** the public revival-vote tally/threshold was not displayed anywhere on `/personas`; added a `RevivalVoteSection` wired to a new `persona.public.revivalTally` query.
+
 **Route:** `/personas`
 **Status:** NOT STARTED
 **Contract:** PRD/02-contracts/wave-5/CONTRACT-5-personas-FINAL.md

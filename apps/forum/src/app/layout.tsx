@@ -11,6 +11,7 @@ import { SharedDataProvider } from "@/providers/shared-data-context";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { NavigationProgressProvider } from "@/providers/navigation-progress-provider";
 import { NavigationProgressBar } from "@/components/ui/navigation-progress-bar";
+import { RoutingGuard } from "@/components/routing-guard";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -46,6 +47,7 @@ export default function RootLayout({
             {convexConfigured ? (
               <AppAuthProvider>
                 <SharedDataProvider>
+                  <RoutingGuard />
                   {children}
                   <AuthModal />
                 </SharedDataProvider>

@@ -1,6 +1,9 @@
 ---
 # Search Results (posts / tools / profiles)
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** post results now link by canonical `slug` (were `postId`); people results now exclude `profileVisibility === "private"` profiles (were leaking into search).
+
+
 **Route:** `/search`
 **Status:** LIVE — PRD/app/apps/forum/src/app/(app)/(shell)/search/page.tsx (+ search-page-client.tsx, loading.tsx in the same directory) — route matches spec
 **Route drift:** none

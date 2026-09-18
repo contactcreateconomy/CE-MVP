@@ -1,5 +1,7 @@
 # Tool Profile
 
+**Status (2026-09-18 screen audit correction):** LIVE. Audited against CONTRACT-2-tool-profile-FINAL.md — compliant, no deviations found.
+
 **Route:** `/tools/[slug]`
 **Status:** NOT STARTED (no route under `PRD/app/apps/forum/src/app/`)
 **Contract:** PRD/02-contracts/wave-2/CONTRACT-2-tool-profile-FINAL.md

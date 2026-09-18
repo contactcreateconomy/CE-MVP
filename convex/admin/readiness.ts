@@ -27,7 +27,7 @@ import { query, mutation, internalMutation } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { assertAdminPermission } from "../lib/authz";
+import { assertAdminPermission, isFounder } from "../lib/authz";
 import { listLegalIntakeByStatus } from "../legal/intake";
 
 /** The 8-category names (DECISIONS-LOCKED #8 correction). */
@@ -220,7 +220,12 @@ export const assertSignupOpenAllowed = internalMutation({
   },
 });
 
-/** CAP-435 — the Founder checklist query: latest (+ prior when cheap). */
+/** CAP-435 — the Founder checklist query: latest (+ prior when cheap).
+ *  Contract §1/§4 (verbatim): "Query checklist | Founder" — distinct from
+ *  CAP-509 `evaluate` above, which is Founder/**Admin** (the contract's
+ *  own reconciliation note #6 flags this exact Founder-vs-Administrator
+ *  nuance). Screen audit 2026-09-18: this previously accepted any
+ *  administrator, not just the derived Founder. */
 export const checklist = query({
   args: {},
   returns: v.any(),
@@ -228,7 +233,9 @@ export const checklist = query({
     const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
     if (!userId) return { state: "unauthenticated" };
     const roles = await assertAdminPermission(ctx);
-    if (!roles.includes("administrator")) return { state: "forbidden" };
+    if (!roles.includes("administrator") || !(await isFounder(ctx, userId))) {
+      return { state: "forbidden" };
+    }
     const rows = await ctx.db
       .query("launchReadinessResults")
       .withIndex("by_evaluatedAt")

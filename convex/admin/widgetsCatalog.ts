@@ -82,7 +82,10 @@ export const ADMIN_WIDGET_CATALOG: WidgetDef[] = [
     widgetType: "console",
     title: "Roles & Ops Coverage",
     routeKey: "/admin/roles",
-    requiredPermissionKeys: ["administrator", "editor"],
+    // CONTRACT-7-admin-roles §1 (verbatim): "Actors: Founder, administrator"
+    // — screen audit 2026-09-18: "editor" had no business seeing the RBAC
+    // matrix or ops-coverage slots; narrowed to match the contract exactly.
+    requiredPermissionKeys: ["administrator"],
     status: "active",
     homeEligible: false,
     defaultOrder: 20,

@@ -347,6 +347,42 @@ export async function assertAdminPermission(ctx: any): Promise<StaffRole[]> {
 }
 
 /**
+ * Founder derivation (no distinct `role`/flag exists — CAP-007's canonical
+ * pattern, previously duplicated in `admin/roles.ts` `rolesAssign` and
+ * `admin/analytics.ts` `requireFounderOrAdmin`): the Founder is the
+ * bootstrapped FIRST still-active `administrator` role assignment, ordered
+ * by `grantedAt`. Screen audit 2026-09-18: centralized here so every
+ * Founder-gated capability (CAP-357/413/452/…) derives it identically
+ * instead of re-implementing the same query.
+ */
+export async function isFounder(ctx: any, userId: Id<"users">): Promise<boolean> {
+  const admins = await ctx.db
+    .query("roleAssignments")
+    .filter((q: any) => q.eq(q.field("role"), "administrator"))
+    .take(50);
+  const first = admins
+    .filter((a: any) => a.status === "active")
+    .sort((a: any, b: any) => a.grantedAt - b.grantedAt)[0];
+  return Boolean(first && first.userId === userId);
+}
+
+/** Throws unless the caller is both an active administrator AND the
+ *  derived Founder (see `isFounder`). Use for the narrow subset of
+ *  capabilities whose contract says "Founder" specifically (single-person
+ *  accountability, e.g. CAP-357/413/452) — NOT the broader "administrator,
+ *  Founder" actor lines, which `assertAdminPermission` + an
+ *  `administrator`-role check already satisfy. */
+export async function assertFounder(ctx: any): Promise<Id<"users">> {
+  const userId = await resolveAuthUserId(ctx);
+  if (!userId) throw new AdminAuthzError("NOT_STAFF", "Sign-in required.");
+  const roles = await assertAdminPermission(ctx);
+  if (!roles.includes("administrator") || !(await isFounder(ctx, userId))) {
+    throw new AdminAuthzError("NOT_STAFF", "Founder-only capability.");
+  }
+  return userId;
+}
+
+/**
  * CAP-392 — widget-route resolution. Contract §3 States C (quoted):
  * "registered+permitted → render · hidden/unregistered → FEATURE_DISABLED/
  * NOT_FOUND · flag false → fail-closed · metadata-present-but-executable-

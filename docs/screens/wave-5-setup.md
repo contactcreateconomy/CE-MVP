@@ -1,5 +1,7 @@
 # Profile Setup / Basic Profile (posting gate)
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** replaced a raw-hex-with-fallback color (`text-(--status-danger, #b91c1c)`, a non-existent token) with the named token `text-(--feedback-error-text)`.
+
 **Route:** `/setup`
 **Status:** NOT STARTED
 **Contract:** PRD/02-contracts/wave-5/CONTRACT-5-setup-FINAL.md

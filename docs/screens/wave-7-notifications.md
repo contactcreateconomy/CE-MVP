@@ -1,6 +1,9 @@
 ---
 # Notifications
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** empty-state copy corrected to the contract-mandated "No notifications yet" (was different invented copy); added a skeleton loading state (was a bare `null`, i.e. no loading affordance).
+
+
 **Route:** `/notifications`
 **Status:** LIVE (PRD/app/apps/forum/src/app/(app)/(shell)/notifications/page.tsx — route matches spec; `notifications-page-client.tsx` + `loading.tsx` also present)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-notifications-FINAL.md

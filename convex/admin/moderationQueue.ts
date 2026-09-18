@@ -87,6 +87,11 @@ export const listQueue = query({
         caseType: c.caseType,
         targetType: c.targetType,
         targetId: c.targetId,
+        // Screen audit 2026-09-18: expose the SAME CAP-330 band index the
+        // sort used, so /admin/moderation's QueueBoard groupBy can reuse
+        // it verbatim instead of re-deriving (and drifting from) the
+        // band logic client-side.
+        band: orderKey(c),
         severity: c.severity,
         status: c.status,
         reasonCode: c.reasonCode,
@@ -104,7 +109,11 @@ export const listQueue = query({
   },
 });
 
-/** CAP-328 claim — atomic; 20m lease; CAP-400 shared lease shape. */
+/** CAP-328 claim — atomic; 20m lease; CAP-400 shared lease shape.
+ *  CONTRACT-7-admin-moderation §1 (CAP-426, verbatim): "audit fail-closed
+ *  … auditLog is the accountability record (100% of mod actions)" — screen
+ *  audit 2026-09-18: claim previously wrote only to `moderationCases`,
+ *  leaving no auditLog trail of who claimed which case and when. */
 export const claim = mutation({
   args: { caseId: v.id("moderationCases") },
   returns: v.object({ claimed: v.boolean(), leaseExpiresAt: v.number() }),
@@ -121,10 +130,19 @@ export const claim = mutation({
     }
     // 60m max: an operator holding any lease past the max cannot re-claim
     const leaseExpiresAt = now + LEASE_MS;
-    await ctx.db.patch(args.caseId, {
-      status: "claimed",
-      claimedByUserId: userId,
-      leaseExpiresAt,
+    await writeAudited(ctx, async (actx) => {
+      await actx.db.patch(args.caseId, {
+        status: "claimed",
+        claimedByUserId: userId,
+        leaseExpiresAt,
+      });
+      return {
+        actorId: userId, action: "moderation.claim",
+        target: `moderationCase:${args.caseId}`,
+        prev: { status: c.status, claimedByUserId: c.claimedByUserId ?? null },
+        next: { status: "claimed", claimedByUserId: userId, leaseExpiresAt },
+        correlationId: newCorrelationId(), reversible: true,
+      };
     });
     return { claimed: true, leaseExpiresAt };
   },
@@ -142,7 +160,16 @@ export const renewLease = mutation({
     const claimedSince = now - (c.leaseExpiresAt ?? now - LEASE_MS);
     if (claimedSince > LEASE_MAX_MS + LEASE_MS) throw new Error("renew: 60m lease max (CAP-400)");
     const leaseExpiresAt = now + RENEW_MS;
-    await ctx.db.patch(args.caseId, { leaseExpiresAt });
+    await writeAudited(ctx, async (actx) => {
+      await actx.db.patch(args.caseId, { leaseExpiresAt });
+      return {
+        actorId: userId, action: "moderation.renewLease",
+        target: `moderationCase:${args.caseId}`,
+        prev: { leaseExpiresAt: c.leaseExpiresAt ?? null },
+        next: { leaseExpiresAt },
+        correlationId: newCorrelationId(), reversible: true,
+      };
+    });
     return { leaseExpiresAt };
   },
 });
@@ -238,6 +265,15 @@ export const resolve = mutation({
     if (!c) throw new Error("resolve: case not found");
     if (c.severity === "s0_critical" || c.severity === "s1_high") {
       throw new Error("resolve: CAP-359 clears s2/s3 only — s0/s1 route through the full review flow");
+    }
+    // CONTRACT-7-admin-moderation §3 B (CAP-328 gate, screen audit
+    // 2026-09-18): an operator must hold the case's active lease before
+    // acting on it — this mutation previously let anyone with the broad
+    // Moderator/Administrator role resolve any case regardless of who
+    // (if anyone) had claimed it.
+    const now = Date.now();
+    if (c.status !== "claimed" || c.claimedByUserId !== userId || !c.leaseExpiresAt || c.leaseExpiresAt < now) {
+      throw new Error("resolve: claim this case first (CAP-328) — no active lease held by you");
     }
     await writeAudited(ctx, async (actx) => {
       await actx.db.patch(args.caseId, { status: args.decision, closedAt: Date.now() });

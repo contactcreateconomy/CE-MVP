@@ -46,4 +46,40 @@ describe("SLICE-P2-06 — Platform-Wide Routing Convention (F-15)", () => {
     expect(isProtectedRoute("/profile")).toBe(true);
     expect(isProtectedRoute("/new-post")).toBe(true);
   });
+
+  // Screen audit 2026-09-18 regression lock: RoutingGuard is mounted at
+  // the true app root (apps/forum/src/app/layout.tsx), so `isProtectedRoute`
+  // now gates EVERY route, not just /signin's own local check. A
+  // PUBLIC_ROUTES allowlist model previously locked anonymous visitors
+  // out of every contract-mandated anonymous surface below — these must
+  // stay public (default-public, explicit protected-prefix list).
+  it("default-public: every screen with a contract 'anonymous' actor branch is not protected", () => {
+    for (const path of [
+      "/tools", "/tools/some-slug",
+      "/discussions/some-slug",
+      "/personas", "/personas/abc123",
+      "/search",
+      "/resources", "/resources/some-slug/view",
+      "/s/some-handle", "/s/some-handle/some-product",
+      "/users/some-handle",
+      "/go/some-link-id",
+      "/legal/intake",
+      "/about", "/help", "/how-we-review", "/editorial-policy",
+      "/ai-disclosure", "/how-we-use-your-store-data",
+      "/repeat-infringer", "/terms", "/dmca",
+      "/discover", "/leaderboard",
+    ]) {
+      expect(isProtectedRoute(path)).toBe(false);
+    }
+  });
+
+  it("protected prefixes cover dynamic sub-routes (e.g. /settings/profile, /sell/apply)", () => {
+    expect(isProtectedRoute("/settings/profile")).toBe(true);
+    expect(isProtectedRoute("/sell/apply")).toBe(true);
+    expect(isProtectedRoute("/appeal/some-action-id")).toBe(true);
+    expect(isProtectedRoute("/contribute")).toBe(true);
+    expect(isProtectedRoute("/notifications")).toBe(true);
+    expect(isProtectedRoute("/setup")).toBe(true);
+    expect(isProtectedRoute("/drafts")).toBe(true);
+  });
 });

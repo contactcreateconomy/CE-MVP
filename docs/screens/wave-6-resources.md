@@ -1,6 +1,9 @@
 ---
 # Resource Library
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** see wave-6-resource-viewer.md — the member-view acquisition gate removed platform-wide.
+
+
 **Route:** `/resources`
 **Status:** NOT STARTED
 **Route drift:** none

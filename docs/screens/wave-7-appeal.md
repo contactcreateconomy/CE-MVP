@@ -1,6 +1,9 @@
 ---
 # Appeal Submission
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** the route had no authentication gate at all (contract requires member-only, no anonymous access) — added, with a sign-in prompt for anonymous visitors. Wired to `appeal.myActions` to show the case's deadline/status and gate the submit button on `windowOpen`/`caseStatus` (previously a fully-anonymous, fully-open form that only failed after submission attempts).
+
+
 **Route:** `/appeal/[actionId]` (dynamic `[actionId]` — a `moderationActions` id carrying `appealDeadlineAt`)
 **Status:** NOT STARTED (no `app/appeal/` directory exists in the app tree)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-appeal-FINAL.md

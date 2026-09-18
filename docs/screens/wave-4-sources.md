@@ -1,5 +1,7 @@
 # Source Console
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** the source-configuration form was missing input fields for `robotsStatus`, `rightsBasis`, and `termsReviewStatus`, all of which the backend already tracked — added.
+
 **Route:** `/admin/sources`
 **Status:** NOT STARTED
 **Contract:** PRD/02-contracts/wave-4/CONTRACT-4-sources-FINAL.md

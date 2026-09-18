@@ -1,5 +1,7 @@
 # Tool Directory
 
+**Status (2026-09-18 screen audit correction):** LIVE. Audited against CONTRACT-2-tool-directory-FINAL.md — compliant, no deviations found.
+
 **Route:** `/tools`
 **Status:** NOT STARTED (no route under `PRD/app/apps/forum/src/app/`)
 **Contract:** PRD/02-contracts/wave-2/CONTRACT-2-tool-directory-FINAL.md

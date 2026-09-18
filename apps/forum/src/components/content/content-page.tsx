@@ -42,7 +42,7 @@ function ContentToast({ message, onDismiss }: { message: string; onDismiss: () =
 function ContentGlobalHeader({ thread, commentCount, mode, onModeChange }: { thread: SeedThread; commentCount: number; mode: "max" | "minimal"; onModeChange?: (mode: "max" | "minimal") => void }) {
   return (
     <div className="sticky top-14 z-50 bg-[var(--bg-canvas)]/90 backdrop-blur-md border-b border-[var(--border-subtle)]">
-      <div className="mx-auto max-w-[1440px] px-4 lg:px-8 h-11 flex items-center gap-3">
+      <div className="mx-auto max-w-(--container-app) px-4 lg:px-8 h-11 flex items-center gap-3">
         <p className="text-xs font-medium text-[var(--text-secondary)] truncate flex-1 min-w-0">
           {thread.title}
         </p>
@@ -109,7 +109,7 @@ export function ContentPage({ mode, thread, comments, onModeChange }: ContentPag
       <ContentGlobalHeader thread={thread} commentCount={totalComments} mode={mode} onModeChange={onModeChange} />
       <ReadingProgressBar />
 
-      <div className="mx-auto max-w-[1440px] px-4 lg:px-8 pt-6 pb-20">
+      <div className="mx-auto max-w-(--container-app) px-4 lg:px-8 pt-6 pb-20">
         <div className="flex gap-6 lg:gap-8 items-start">
           {/* Main column */}
           <div className="min-w-0 flex-1">

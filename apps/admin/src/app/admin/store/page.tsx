@@ -15,9 +15,25 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/skeleton";
 import { api } from "@/lib/convex";
 import { useAuth } from "@cemvp/auth-ui";
+
+// _data-model.md `product.rejectionReason` (9, verbatim) — mirrors
+// convex/admin/store.ts REJECT_REASONS (screen audit 2026-09-18: the
+// prior UI hardcoded a single "off_topic" reject with no reason picker).
+const REJECT_REASONS = [
+  "unsafe", "off_topic", "masked_link", "ownership_unverified",
+  "prohibited_category", "metadata_violation", "duplicate",
+  "price_unverifiable", "other",
+] as const;
 
 export default function AdminStorePage() {
   const { authStatus } = useAuth();
@@ -30,6 +46,7 @@ export default function AdminStorePage() {
   const [note, setNote] = useState<string | null>(null);
   const [productId, setProductId] = useState("");
   const [linkId, setLinkId] = useState("");
+  const [rejectReason, setRejectReason] = useState<string>(REJECT_REASONS[1]);
 
   const run = async (fn: () => Promise<unknown>, ok: string) => {
     setBusy(true); setNote(null);
@@ -85,9 +102,17 @@ export default function AdminStorePage() {
               onClick={() => void run(() => approve({ storefrontProductId: productId as any, storefrontLinkId: linkId as any, packageHash: `pkg:${productId}:${Date.now()}` }), "LOCKED (approved_locked).")}>
               Approve &amp; lock
             </Button>
+            <Select value={rejectReason} onValueChange={setRejectReason}>
+              <SelectTrigger aria-label="Rejection reason" className="w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {REJECT_REASONS.map((r) => <SelectItem key={r} value={r}>{r.replace(/_/g, " ")}</SelectItem>)}
+              </SelectContent>
+            </Select>
             <Button size="sm" variant="ghost" disabled={busy || !productId}
-              onClick={() => void run(() => rejectProduct({ storefrontProductId: productId as any, reason: "off_topic" }), "Rejected (off_topic).")}>
-              Reject off-topic
+              onClick={() => void run(() => rejectProduct({ storefrontProductId: productId as any, reason: rejectReason as any }), `Rejected (${rejectReason}).`)}>
+              Reject
             </Button>
           </div>
           {queue.pendingLinks.length > 0 ? (

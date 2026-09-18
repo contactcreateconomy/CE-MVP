@@ -1,6 +1,9 @@
 ---
 # Hero & Featured Management
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** the Administrator-only "Emergency pull" (CAP-… pullFeatured) button was visible to any staff role; now gated on a new `isAdministrator` flag returned by `getCurationState`.
+
+
 **Route:** `/admin/curation`
 **Status:** NOT STARTED
 **Route drift:** none

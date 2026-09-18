@@ -1,6 +1,9 @@
 ---
 # Reliability / Jobs & Dead-letter
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Open, not fixed this pass:** the dead-letter list conflates its loading and empty states (no skeleton); redrive has no confirm modal and doesn't check the contract's runbook-completion gate — flagged in CHANGELOG.
+
+
 **Route:** `/admin/reliability`
 **Status:** NOT STARTED (no `app/admin/` tree exists)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-admin-reliability-FINAL.md

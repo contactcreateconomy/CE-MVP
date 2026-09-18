@@ -16,7 +16,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useAuth } from "@cemvp/auth-ui";
 import { getRoutingRedirect } from "@/lib/routing";
@@ -27,17 +27,22 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Banner } from "@/components/ui/banner";
-import { CreateconomyLogoMark } from "@/components/ui/createconomy-logo-mark";
+import { CreateconomyLogoFull } from "@/components/ui/createconomy-logo-full";
 
 type SigninState =
   | "checking-mode"      // querying effectiveSignupMode
   | "open-email"         // State 1: open mode, email entry
   | "open-code"          // State 6: magic-link requested, code entry
   | "waitlist"           // State 2: waitlist mode, email capture only
+  | "waitlist-joined"    // State 2: waitlist join succeeded
+  | "waitlist-already"   // waitlist.join idempotent duplicate
   | "closed"             // State 3: closed mode, reject
   | "rate-limited-ip"    // State 7
   | "rate-limited-email" // State 8
   | "rate-limited-finalize" // State 9
+  | "waitlist-rate-ip"   // CAP-015: 10/h per IP (waitlist branch)
+  | "waitlist-rate-email" // CAP-015: 3/24h per email (waitlist branch)
+  | "waitlist-error"     // waitlist.join failed for a non-rate-limit reason
   | "error";             // generic error (link expired, etc.)
 
 export default function SigninPage() {
@@ -66,6 +71,9 @@ export default function SigninPage() {
 
   // Query admission mode (FATAL-M1A-02 server-side)
   const admissionMode = useQuery(api.admission.getEffectiveMode);
+  // CAP-001 waitlist branch: writes waitlistEntries only (no users row, no
+  // role) — the SAME publicMutation the dedicated /waitlist screen uses.
+  const joinWaitlistMutation = useMutation(api.waitlist.join);
 
   // If we have the mode, update state
   if (admissionMode !== undefined && state === "checking-mode") {
@@ -118,31 +126,36 @@ export default function SigninPage() {
     setSubmitting(true);
     try {
       // State 2: waitlist-mode — email capture only; writes waitlistEntries,
-      // no user/role (CAP-001; CAP-478 "no L08 signup_completed").
-      // Fenced (contract OQ3): submit mutation delegation awaits ruling —
-      // the form renders per state 2; its submit calls the public waitlist
-      // mutation when that one-line ruling lands.
-      console.log("waitlist join:", email);
-      setState("open-code"); // show confirmation state
+      // no user/role (CAP-001; CAP-478 "no L08 signup_completed"). Same
+      // publicMutation the dedicated /waitlist screen calls (contract OQ3
+      // resolved by evidence: CAP-014 names one write target and one
+      // registered mutation — no second one exists to delegate to).
+      const res = await joinWaitlistMutation({ email: email.trim().toLowerCase() });
+      setState(res.alreadyJoined ? "waitlist-already" : "waitlist-joined");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("waitlist.join.ip")) setState("waitlist-rate-ip");
+      else if (msg.includes("waitlist.join.email")) setState("waitlist-rate-email");
+      else setState("waitlist-error");
     } finally {
       setSubmitting(false);
     }
-  }, [email]);
+  }, [email, joinWaitlistMutation]);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-bg-canvas p-6">
       <div className="w-full max-w-(--container-auth)">
         <div className="mb-6 flex justify-center">
-          <CreateconomyLogoMark className="size-6" />
+          <CreateconomyLogoFull />
         </div>
 
         <Card>
           <CardHeader className="text-center">
             <h1 className="text-lg font-semibold text-text-primary">
-              {state === "waitlist" ? "Join the waitlist" : "Sign in to Createconomy"}
+              {state.startsWith("waitlist") ? "Join the waitlist" : "Sign in to Createconomy"}
             </h1>
             <p className="text-sm text-text-secondary">
-              {state === "waitlist"
+              {state.startsWith("waitlist")
                 ? "We'll notify you when a spot opens up."
                 : "Enter your email and we'll send you a sign-in code."}
             </p>
@@ -169,6 +182,31 @@ export default function SigninPage() {
                   Join waitlist
                 </Button>
               </>
+            )}
+
+            {/* State 2 (success): joined / already joined */}
+            {state === "waitlist-joined" && (
+              <Banner variant="success">
+                You&apos;re on the list. We&apos;ll be in touch when a spot opens.
+              </Banner>
+            )}
+            {state === "waitlist-already" && (
+              <Banner variant="info">This email is already on the waitlist.</Banner>
+            )}
+            {/* CAP-015: 10/h per IP, 3/24h per email — waitlist branch */}
+            {state === "waitlist-rate-ip" && (
+              <Banner variant="warning" role="alert">
+                <span className="inline-flex items-center gap-2">
+                  <Clock className="size-4" /> Too many sign-ups from this network. Try again later.
+                </span>
+              </Banner>
+            )}
+            {state === "waitlist-rate-email" && (
+              <Banner variant="warning" role="alert">
+                <span className="inline-flex items-center gap-2">
+                  <Clock className="size-4" /> This email has already joined recently.
+                </span>
+              </Banner>
             )}
 
             {/* State 1: open — email entry */}
@@ -240,6 +278,13 @@ export default function SigninPage() {
               <Banner variant="error" role="alert">
                 <span className="inline-flex items-center gap-2">
                   <AlertCircle className="size-4" /> That code didn&apos;t work. It may have expired — request a new one.
+                </span>
+              </Banner>
+            )}
+            {state === "waitlist-error" && (
+              <Banner variant="error" role="alert">
+                <span className="inline-flex items-center gap-2">
+                  <AlertCircle className="size-4" /> Could not join the waitlist. Please try again.
                 </span>
               </Banner>
             )}

@@ -1,5 +1,7 @@
 # Post Detail (all 8 active types + mechanics)
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** review-type posts now resolve and render `reviewTool.name` / `verdictSummary` / `pros` / `cons` (the detail query never joined `toolId` before, so these fields silently rendered blank). Compare posts now render `qualitativeGrid` as the structured object the UI expects (composer previously wrote it as a single string, a shape mismatch). `static_creator` lists can now be populated by their own author (a `gateListMember` bug rejected the author's own adds).
+
 **Route:** `/p/[slug]`
 **Status:** LIVE, ROUTE DRIFT — live route is `/discussions/[slug]` at `PRD/app/apps/forum/src/app/(app)/discussions/[slug]/page.tsx` (plus `loading.tsx` and a `(slug)` dir layout)
 **Route drift:** spec `/p/[slug]` vs live `/discussions/[slug]` — DECISION NEEDED: rename live route to match spec, OR update spec to match live route. Not silently picked.

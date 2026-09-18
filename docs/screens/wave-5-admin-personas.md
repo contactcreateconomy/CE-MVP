@@ -1,5 +1,7 @@
 # Persona Population Console
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** the `PopulationBanner` only showed raw persona counts; it now surfaces the CAP-166 birth/retire recommendation and the CAP-167 drift-flagged persona list via a new `persona.lifecycle.populationSignals` query.
+
 **Route:** `/admin/personas`
 **Status:** NOT STARTED
 **Contract:** PRD/02-contracts/wave-5/CONTRACT-5-admin-personas-FINAL.md

@@ -1,5 +1,7 @@
 # Persona Profile
 
+**Status (2026-09-18 screen audit correction):** LIVE. Audited against CONTRACT-5-persona-profile-FINAL.md — compliant, no deviations found.
+
 **Route:** `/personas/[id]`
 **Status:** NOT STARTED
 **Contract:** PRD/02-contracts/wave-5/CONTRACT-5-persona-profile-FINAL.md

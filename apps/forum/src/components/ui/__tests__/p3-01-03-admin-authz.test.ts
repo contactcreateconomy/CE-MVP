@@ -224,8 +224,11 @@ describe("SLICE-P3-03 — adminWidgets catalog + seeder", () => {
     expect(ADMIN_WIDGET_CATALOG.length).toBeGreaterThanOrEqual(3); // grows per phase (P4-12: affiliate-inventory)
     const config = ADMIN_WIDGET_CATALOG.find((w) => w.routeKey === "/admin/config");
     expect(config?.requiredPermissionKeys).toEqual(["administrator"]);
+    // CONTRACT-7-admin-roles §1 (verbatim): "Actors: Founder, administrator"
+    // — screen audit 2026-09-18: "editor" had no business seeing the RBAC
+    // matrix / ops-coverage slots; the catalog was narrowed to match.
     const roles = ADMIN_WIDGET_CATALOG.find((w) => w.routeKey === "/admin/roles");
-    expect(roles?.requiredPermissionKeys).toEqual(["administrator", "editor"]);
+    expect(roles?.requiredPermissionKeys).toEqual(["administrator"]);
     const audit = ADMIN_WIDGET_CATALOG.find((w) => w.routeKey === "/admin/audit");
     expect(audit?.requiredPermissionKeys).toEqual(["administrator"]);
   });

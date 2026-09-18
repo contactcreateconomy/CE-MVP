@@ -1,7 +1,8 @@
 # Sign In (magic link)
 
 **Route:** `/signin`
-**Status:** NOT STARTED (note: auth modal machinery exists in `PRD/app/packages/auth-ui/` — `app-auth-provider.tsx`, `auth-modal.tsx`, `login-form.tsx`, `signup-form.tsx` — but there is no `/signin` route in `PRD/app/apps/forum/src/app/`)
+**Status:** LIVE — `apps/forum/src/app/(auth)/signin/page.tsx` (SLICE-P2-04). All 9 contract states implemented (open-email, code-entry, waitlist, closed, existing-user bypass via routing convention, 3 rate-limit states, generic error). Full logo (§10.2) now used per remediation below.
+**Remediation (2026-09-18 screen audit):** The waitlist-mode branch (§3 State 2) was a stub — `joinWaitlist()` only did `console.log(email)` and moved to the magic-link code-entry copy ("Code sent to... enter the 6-digit code"), so an anonymous visitor in waitlist-mode never actually joined `waitlistEntries` and saw the wrong confirmation copy. Wired to the same `waitlist.join` publicMutation the dedicated `/waitlist` screen calls (CAP-014/015), with its own joined/already-joined/rate-limited/error states and copy. Logo swapped from the Mark to the Full logo component (§10.2 explicitly lists "auth" as a Full-logo usage; only the Mark existed before this audit).
 **Contract:** PRD/02-contracts/wave-1/CONTRACT-1-signin-FINAL.md
 **Slice(s):** SLICE-P2-04 (screen + magic-link flow + rate gates; the admission backend it renders is SLICE-P2-01)
 

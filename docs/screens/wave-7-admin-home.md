@@ -1,6 +1,9 @@
 ---
 # Admin Home
 
+**Status (2026-09-18 screen audit correction):** LIVE — CAP-391 compose and CAP-408/409/410 intervention ack/resolve/snooze are correctly Administrator-gated. **Open, not fixed this pass:** STOP writes to the `jobRuns` table instead of the contract's `operationalIncidents` entity, so an active STOP may not surface in the Home strip/counters — flagged in CHANGELOG.
+
+
 **Route:** `/admin/home`
 **Status:** NOT STARTED (no `app/admin/` tree exists)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-admin-home-FINAL.md

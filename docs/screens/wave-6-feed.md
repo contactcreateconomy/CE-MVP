@@ -1,6 +1,9 @@
 ---
 # Feed / Home
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** discussion links (hero band + cards) now use the canonical `slug` instead of `postId` (were broken/legacy-shaped links); added the missing "Mute" card action (backend already supported it); replaced a raw `color: "black"` literal in the active sort-pill state with the `text-text-inverse` token.
+
+
 **Route:** `/` (authed) · `/feed`
 **Status:** LIVE — PRD/app/apps/forum/src/app/(app)/(shell)/feed/page.tsx (+ screen-specific components at PRD/app/apps/forum/src/components/feed/: feed-client.tsx, feed-route-client.tsx, feed-undo-toast.tsx, post-card.tsx, post-actions-menu.tsx, post-interaction-row.tsx, comments-preview-cycler.tsx, report-post-dialog.tsx, top-post-hero-carousel.tsx, trend-sorter.tsx) — route matches spec
 **Route drift:** none

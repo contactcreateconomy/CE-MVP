@@ -1,5 +1,7 @@
 # Persona Genome Config (back-door)
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** replaced a raw-hex-with-fallback color (`text-(--feedback-success, #15803d)`) with the named token `text-(--feedback-success-text)`.
+
 **Route:** `/admin/personas/genome`
 **Status:** NOT STARTED
 **Contract:** PRD/02-contracts/wave-5/CONTRACT-5-personas-genome-FINAL.md

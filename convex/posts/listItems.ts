@@ -2,7 +2,8 @@
  * listItems — SLICE-P4-14: the list mechanic (CAP-095/096/097).
  *
  * CAP-095 Notes (quoted): "Content ≤200 chars; static_creator → only
- *   author edits."
+ *   author edits." (add AND remove — screen audit 2026-09-18 fixed add,
+ *   which previously rejected the post author too.)
  * CAP-096 — remove-own + voteCount recompute (count derived from
  *   listItemVotes — bible l.93).
  * CAP-097 Notes (quoted): "Unique (userId, postListItemId); voteCount
@@ -18,7 +19,17 @@ import type { Id } from "../_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertCustomerCapability } from "../lib/authz";
 
-/** Community item writes require community_ranked mode + a verified member. */
+/**
+ * Item-write gate — CAP-095: "content ≤200 chars; static_creator → only
+ * author edits." community_ranked → any verified member with `create_post`
+ * may add; static_creator → ONLY the post's author may add.
+ *
+ * BUG FIX (2026-09-18 screen audit): this previously rejected EVERY add on
+ * a static_creator list unconditionally — including the post's own author
+ * — which made static_creator lists permanently un-populatable (no seed
+ * path exists at posts.create either, per contract OQ#10). `remove` already
+ * had the correct author-branch (line ~74); `add` never matched it.
+ */
 async function gateListMember(ctx: any, postListId: Id<"postLists">): Promise<{ userId: Id<"users">; list: any }> {
   await assertCustomerCapability(ctx, "create_post");
   const userId = (await getAuthUserId(ctx)) as Id<"users">;
@@ -26,12 +37,16 @@ async function gateListMember(ctx: any, postListId: Id<"postLists">): Promise<{ 
   const list = await ctx.db.get(postListId);
   if (!list) throw new Error("listItems: postLists row not found");
   if (list.mode !== "community_ranked") {
-    throw new Error(`listItems: mode "${list.mode}" is not member-editable (CAP-095: static_creator → only author edits)`);
+    const isPostAuthor = await isListPostAuthor(ctx, list, userId);
+    if (!isPostAuthor) {
+      throw new Error(`listItems: mode "${list.mode}" is not member-editable (CAP-095: static_creator → only author edits)`);
+    }
   }
   return { userId, list };
 }
 
-/** CAP-095 — add: content ≤200 chars; community_ranked verified members. */
+/** CAP-095 — add: content ≤200 chars; community_ranked verified members,
+ *  static_creator the post's author only. */
 export const add = mutation({
   args: { postListId: v.id("postLists"), content: v.string() },
   handler: async (ctx, args) => {

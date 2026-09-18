@@ -109,7 +109,7 @@ export default function AdminGenomePage() {
           <p className="text-xs text-(--text-muted)">
             The console previews the compiled prompt from draft params before you commit; the fixture ref rides the audit row.
           </p>
-          {note ? <p className="text-xs text-(--feedback-success, #15803d)">{note}</p> : null}
+          {note ? <p className="text-xs text-(--feedback-success-text)">{note}</p> : null}
         </CardContent>
       </Card>
 

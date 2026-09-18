@@ -24,6 +24,7 @@ import { autoGateTx, openCaseDeduped } from "./moderation/autoGate";
 import { captureEvent } from "./lib/events";
 import { appendActivity } from "./activity";
 import { ensurePostDistributionScoreTx, ensurePostSeoMetaTx } from "./lib/distributionScores";
+import { validateProjectUrl as validateProjectUrlAllowlist } from "./posts/showcase";
 
 // ── R-URL pattern (CAP-087): https?://, www., bare domain.tld, obfuscation ──
 const URL_PATTERNS = [
@@ -58,11 +59,11 @@ export function hasProductTag(body: string): boolean {
   return new RegExp(PRODUCT_TAG_SOURCE).test(body);
 }
 
-/** Showcase projectUrl field validation — the single controlled outbound
- *  URL. P4-15's submitProjectUrl adds the allowlist + approval flow; here
- *  only transport + shape are checked. (The allowlist admission itself
- *  lives in posts/showcase.ts and is enforced on EVERY write path — see
- *  updatePost, scan 2026-09-13 finding 9.) */
+/** Showcase projectUrl field shape-only validation — used on the edit path
+ *  as a cheap pre-check ahead of the full posts/showcase.ts allowlist
+ *  admission (see updatePost below, and createPost above, both of which
+ *  also run the full CAP-100 allowlist check — screen audit 2026-09-18,
+ *  scan 2026-09-13 finding 9). */
 function validateProjectUrlShape(url: string): void {
   try {
     const parsed = new URL(url);
@@ -71,7 +72,6 @@ function validateProjectUrlShape(url: string): void {
     throw new Error("POST_URL_NOT_ALLOWED: showcase projectUrl must be a valid HTTPS URL");
   }
 }
-const validateProjectUrl = validateProjectUrlShape;
 
 /** W2-E4 — verdictScore auto-compute (average of dimensions, excluding not_applicable vfm). */
 function computeVerdictScore(dimensionScores: Record<string, number | "not_applicable">): number {
@@ -171,7 +171,27 @@ export const createPost = mutation({
     // R-URL: CAP-087 — check body for URLs (before persistence, before
     // moderation); the showcase projectUrl FIELD is validated separately.
     checkNoUrls(args.body);
-    if (args.type === "showcase" && args.projectUrl) validateProjectUrl(args.projectUrl);
+    // CAP-100 — the FULL server-side URL admission (allowlist + SSRF/shape
+    // checks), not just shape. SECURITY FIX (2026-09-18 screen audit,
+    // wave 2): this previously ran ONLY validateProjectUrlShape (HTTPS-only)
+    // at create time, while updatePost ran the full posts/showcase.ts
+    // allowlist check on every edit — an attacker could set an
+    // unauthorized-host projectUrl at CREATE and it would persist
+    // unvalidated (insertExtensionRow below never re-checked it either).
+    // Fail-closed to the SAME rule as submitProjectUrl/updatePost: missing
+    // allowlist config rejects the write entirely.
+    if (args.type === "showcase" && args.projectUrl) {
+      const config = await ctx.db
+        .query("systemConfig")
+        .withIndex("by_key", (q: any) => q.eq("key", "showcase.allowedDomains"))
+        .first();
+      if (!config) {
+        throw new Error("posts.create: showcase.allowedDomains is not configured — fail-closed (CAP-100)");
+      }
+      const allowlist = Array.isArray(config.value) ? (config.value as string[]) : [];
+      const check = validateProjectUrlAllowlist(args.projectUrl, allowlist);
+      if (!check.ok) throw new Error(`POST_URL_NOT_ALLOWED: ${check.reason}`);
+    }
 
     // INV-2: user posts must have authorUserId, no personaId
     const userId = await getAuthUserId(ctx) as any;
@@ -366,7 +386,12 @@ export const createPost = mutation({
 });
 
 /** Insert the type-specific extension row (1:1 with posts). */
-async function insertExtensionRow(actx: any, postId: string, args: any): Promise<void> {
+// Exported (not a public Convex function — a plain TS helper) so
+// integration tests can exercise the extension-row insert directly without
+// re-building the whole R-GATE/eligibility/classifier/rate-limit chain
+// (screen audit 2026-09-18 — this path had zero test coverage, which is
+// how the missing-approvalStatus schema bug went unnoticed).
+export async function insertExtensionRow(actx: any, postId: string, args: any): Promise<void> {
   const data = args.extensionData ?? {};
   switch (args.type) {
     case "review": {
@@ -396,7 +421,20 @@ async function insertExtensionRow(actx: any, postId: string, args: any): Promise
       await actx.db.insert("postLists", { postId, mode: data.mode ?? "community_ranked", intro: data.intro ?? "" });
       break;
     case "showcase":
-      await actx.db.insert("postShowcases", { postId, theThing: data.theThing ?? args.body, projectUrl: args.projectUrl });
+      // BUG FIX (2026-09-18 screen audit): postShowcases.approvalStatus is
+      // schema-required (v.union, no default) — the insert threw at runtime
+      // whenever this case ran (never exercised: the composer never sent
+      // projectUrl, and there was no create-path test). args.projectUrl was
+      // already run through the full CAP-100 allowlist check above (in the
+      // handler, before this transactional insert), so a present value here
+      // is safe to mark "pending" immediately — same outcome as
+      // showcase.submitProjectUrl (contract §3 State 7).
+      await actx.db.insert("postShowcases", {
+        postId,
+        theThing: data.theThing ?? args.body,
+        projectUrl: args.projectUrl,
+        approvalStatus: args.projectUrl ? "pending" : "none",
+      });
       break;
     case "help":
       await actx.db.insert("postHelps", { postId, problemStatement: data.problemStatement ?? args.title, resolvedStatus: "open" });

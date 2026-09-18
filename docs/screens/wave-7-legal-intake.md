@@ -1,6 +1,9 @@
 ---
 # Legal & Rights Intake (DMCA · counter · grievance · erasure)
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** the counter-notice, grievance, and erasure tabs (all member-only per contract) rendered their full forms to anonymous visitors, guaranteeing a failed submission — now show a sign-in prompt instead when unauthenticated.
+
+
 **Route:** `/legal/intake`
 **Status:** NOT STARTED (no `app/legal/` directory exists in the app tree)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-legal-intake-FINAL.md

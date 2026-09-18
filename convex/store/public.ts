@@ -137,6 +137,11 @@ export const getProductDetail = query({
 
     const product = await ctx.db.get(args.product as Id<"storefrontProducts">);
     if (!product || product.storefrontId !== store._id) return { state: "product_not_found" };
+    // Screen audit 2026-09-18: the storefront grid (`listProducts` above)
+    // only ever lists `status === "approved"` products; the detail route
+    // must apply the same gate, or a draft/rejected/withdrawn product's
+    // id is still fully renderable ("live") to anyone who has the URL.
+    if (product.status !== "approved") return { state: "product_not_found" };
 
     const version = product.currentVersionId ? await ctx.db.get(product.currentVersionId) : null;
     const link = version?.storefrontLinkId ? await ctx.db.get(version.storefrontLinkId) : null;

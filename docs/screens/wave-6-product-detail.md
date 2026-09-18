@@ -1,6 +1,9 @@
 ---
 # Product Detail + Discussion
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** `/s/[handle]/[product]` could render draft/rejected/withdrawn products directly by URL even though the storefront grid only ever lists `approved` ones — added the same status gate to `getProductDetail`. The owner-only "Hide for review" button was visible to every viewer; gated on `isOwner`.
+
+
 **Route:** `/s/[handle]/[product]`
 **Status:** NOT STARTED
 **Route drift:** none

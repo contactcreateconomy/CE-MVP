@@ -1,6 +1,9 @@
 ---
 # Repeat-Infringer Policy
 
+**Status (2026-09-18 screen audit correction):** LIVE. **Fixed (this pass):** added `generateMetadata`/noindex while the doc is unpublished, matching the Wave-1 legal-family convention (was missing entirely). **Open, not fixed this pass:** no aggregate-statistics UI (E3 CLOSED state — "N repeat infringers actioned this period") exists yet; the page renders under the full app shell rather than the contract's wordmark-only 720px reading-column layout — flagged in CHANGELOG for follow-up.
+
+
 **Route:** `/repeat-infringer`
 **Status:** NOT STARTED (no route directory exists in the app tree)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-repeat-infringer-FINAL.md

@@ -1,6 +1,9 @@
 ---
 # Trust & Policy Pages
 
+**Status (2026-09-18 screen audit correction):** Covers `/about`, `/help`, `/how-we-review`, `/editorial-policy`, `/ai-disclosure`, `/how-we-use-your-store-data` — all LIVE. **Fixed (this pass):** added `generateMetadata`/noindex-while-unpublished to all six routes (only the Wave-1 legal pages had this before). **Open, not fixed this pass:** all six render under the full app shell rather than a wordmark-only legal/trust layout; none has founder-owned content seeded yet (each renders the honest `unavailable_pending_legal` state); `/ai-disclosure` has no on-page machine-readable AI-disclosure marker — flagged in CHANGELOG for follow-up.
+
+
 **Route:** `/how-we-review` · `/editorial-policy` · `/ai-disclosure` · `/about` · `/help` · `/how-we-use-your-store-data` (six anonymous routes, one shared template — NOT six independent contracts)
 **Status:** NOT STARTED (none of the six route directories exist in the app tree)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-trust-pages-FINAL.md

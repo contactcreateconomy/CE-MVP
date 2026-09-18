@@ -1,6 +1,9 @@
 ---
 # RBAC & Ops Assignments
 
+**Status (2026-09-18 screen audit correction):** LIVE (read-only RBAC matrix + ops-coverage list; CAP-413 Founder-only assign and CAP-564 administrator-gated revoke are correctly enforced on the backend). **Fixed (this pass):** `listAssignments`, `listOpsAssignments`, `opsUpsert`, and `opsAck` previously accepted any staff role — narrowed to `administrator`; the widget-catalog entry was narrowed from `[administrator, editor]` to `[administrator]` (editor had no business on this route per contract). **Open, not fixed this pass:** the assign/revoke/ops-upsert/ack UI forms are not wired (the mutations exist and are now correctly gated, but nothing in the UI calls them yet) — flagged in CHANGELOG.
+
+
 **Route:** `/admin/roles`
 **Status:** NOT STARTED (no `app/admin/` tree exists)
 **Contract:** PRD/02-contracts/wave-7/CONTRACT-7-admin-roles-FINAL.md

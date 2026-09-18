@@ -371,7 +371,7 @@ export function SetupPageClient() {
           mobileOtpConfigured={Boolean(state.mobileOtpConfigured)}
         />
 
-        {error ? <p className="text-sm text-(--status-danger, #b91c1c)">{error}</p> : null}
+        {error ? <p className="text-sm text-(--feedback-error-text)">{error}</p> : null}
 
         <Button disabled={!canSubmit} onClick={() => void onSubmit()}>
           {submitting ? "Saving…" : "Complete setup"}
