@@ -15,6 +15,20 @@ import { assertAdminPermission, AdminAuthzError } from "../lib/authz";
 import { writeAudited, newCorrelationId } from "../lib/audit";
 import { ensureFounderPrivileges, FOUNDER_EMAIL, isFounderEmail } from "../lib/founder";
 
+/** CONTRACT-7-admin-roles §1 (verbatim): "Actors: Founder, administrator"
+ *  for the whole RBAC matrix (reads + CAP-415/416 ops writes) — screen
+ *  audit 2026-09-18: `listAssignments`/`listOpsAssignments`/`opsUpsert`/
+ *  `opsAck` previously only called the broad CAP-390 shell gate, so any
+ *  staff role could read the full RBAC matrix or upsert/ack ops-coverage
+ *  slots (CAP-413 already correctly Founder-only; CAP-564 already
+ *  correctly administrator-gated). */
+async function requireAdministrator(ctx: any) {
+  const roles = await assertAdminPermission(ctx);
+  if (!roles.includes("administrator")) {
+    throw new AdminAuthzError("NOT_STAFF", "admin.roles requires administrator or Founder.");
+  }
+}
+
 /** CAP-413 — Founder-only role assignment. */
 export const rolesAssign = mutation({
   args: {
@@ -154,7 +168,7 @@ export const opsUpsert = mutation({
     reason: v.string(),
   },
   handler: async (ctx, args) => {
-    await assertAdminPermission(ctx);
+    await requireAdministrator(ctx);
     return await writeAudited(ctx, async (actx) => {
       const id = await actx.db.insert("opsAssignments", { slot: args.slot, userId: args.userId, status: "filled", updatedAt: Date.now() });
       return { actorId: args.actorId, action: "opsAssignments.upsert", target: `opsAssignment:${id}`, prev: null, next: { slot: args.slot, userId: args.userId }, reasonCode: args.reason, correlationId: newCorrelationId(), reversible: true };
@@ -179,7 +193,7 @@ export const opsAck = mutation({
     reason: v.string(),
   },
   handler: async (ctx, args) => {
-    await assertAdminPermission(ctx);
+    await requireAdministrator(ctx);
     return await writeAudited(ctx, async (actx) => {
       const existing = await actx.db.query("opsAssignments").withIndex("by_slot", (q: any) => q.eq("slot", args.slot)).first();
       if (existing) {
@@ -194,7 +208,7 @@ export const opsAck = mutation({
 export const listAssignments = query({
   args: {},
   handler: async (ctx) => {
-    await assertAdminPermission(ctx);
+    await requireAdministrator(ctx);
     return await ctx.db.query("roleAssignments").collect();
   },
 });
@@ -202,7 +216,7 @@ export const listAssignments = query({
 export const listOpsAssignments = query({
   args: {},
   handler: async (ctx) => {
-    await assertAdminPermission(ctx);
+    await requireAdministrator(ctx);
     return await ctx.db.query("opsAssignments").collect();
   },
 });

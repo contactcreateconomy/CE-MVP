@@ -115,7 +115,7 @@ function PersonaRow({ persona }: { persona: any }) {
         ) : (
           <Button variant="secondary" size="sm" disabled={busy} onClick={() => void run(() => revive({ personaId: persona.id }))}>Revive (confirm)</Button>
         )}
-        {err ? <span className="text-xs text-(--feedback-error, #b91c1c)">{err}</span> : null}
+        {err ? <span className="text-xs text-(--feedback-error-text)">{err}</span> : null}
       </div>
     </li>
   );
@@ -196,21 +196,48 @@ function BirthCard() {
   );
 }
 
-/** CAP-166/167 output — recommendation + drift flags (read-only banner;
- *  the operator executes through the actions above). */
+/**
+ * CAP-166/167 output — recommendation + drift flags (read-only; the
+ * operator executes through the roster actions above).
+ *
+ * Screen audit 2026-09-18: this previously only summarized roster counts
+ * and never surfaced either cron's actual output (contract §3.A names
+ * "Recommendation queue" and "Drift flags" as console input states) —
+ * `persona.lifecycle.populationSignals` now reuses the crons' own signal
+ * computation (recommendation string + persisted drift scores) so the
+ * console shows the SAME thing the cron acted on, not an approximation.
+ */
 function PopulationBanner() {
-  // Recommendation + drift surfaces read from the cron outputs; the crons
-  // run server-side. v1 surfaces the roster-derived state honestly.
-  const roster = useQuery(api.persona.public.listRoster, {});
-  if (!roster) return null;
+  const signals = useQuery(api.persona.lifecycle.populationSignals, {});
+  if (!signals) return null;
   return (
     <Card>
       <CardHeader><h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">Population manager (CAP-166/167 — output only)</h2></CardHeader>
-      <CardContent className="space-y-1 text-sm text-(--text-secondary)">
+      <CardContent className="space-y-2 text-sm text-(--text-secondary)">
         <p>
-          Active {roster.sections.active.length} · newly-arrived {roster.sections.newlyArrived.length} ·
-          waning {roster.sections.waning.length} · retired {roster.sections.retired.length}.
+          <span className="font-medium text-(--text-primary)">Recommendation:</span> {signals.recommendation}
+          <span className="ml-2 text-xs text-(--text-muted)">
+            (active {signals.detail.active} · waning {signals.detail.waning} · retired {signals.detail.retired} ·
+            births today {signals.detail.birthsToday} · retirements today {signals.detail.retirementsToday})
+          </span>
         </p>
+        {signals.driftFlagged.length > 0 ? (
+          <div className="space-y-1">
+            <p className="text-xs font-semibold uppercase tracking-wide text-(--text-muted)">
+              Drift flags — re-ground or retire (CAP-167, never auto-actioned)
+            </p>
+            <ul className="space-y-0.5">
+              {signals.driftFlagged.map((f) => (
+                <li key={f.personaId} className="flex items-center gap-2 text-xs">
+                  <Badge tone="warning">drift {f.lastDriftScore.toFixed(2)}</Badge>
+                  <a href={`/personas/${f.personaId}`} className="text-(--text-primary) hover:underline">{f.displayName}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p className="text-xs text-(--text-muted)">No drift flags — weekly check finds no active persona over threshold.</p>
+        )}
         <p className="text-xs text-(--text-muted)">
           The daily recommender + weekly drift check write flags/queue items only — this console executes.
         </p>

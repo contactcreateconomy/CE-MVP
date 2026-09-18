@@ -34,10 +34,15 @@ export const LOCKED_LINK_FIELDS = [
   "subAffiliatePolicy", "validationState",
 ] as const;
 
+// _data-model.md `product.rejectionReason` (9, verbatim) — screen audit
+// 2026-09-18: the prior literal set here didn't match the canonical enum
+// at all (it had invented its own 8 reasons instead of using the
+// register's 9). unsafe ≠ off_topic stays distinct either way (INV-11).
 export const REJECT_REASONS = [
-  "unsafe_destination", "off_topic", "misleading_claims", "broken_link",
-  "wrong_network", "missing_disclosure", "region_mismatch", "quality_below_bar",
-] as const; // CAP-238 — the enumerated dropdown (8; unsafe ≠ off_topic, INV-11)
+  "unsafe", "off_topic", "masked_link", "ownership_unverified",
+  "prohibited_category", "metadata_violation", "duplicate",
+  "price_unverifiable", "other",
+] as const; // CAP-238 — the enumerated dropdown (9; unsafe ≠ off_topic, INV-11)
 
 async function requireStoreOperator(ctx: any): Promise<Id<"users">> {
   const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
@@ -266,7 +271,7 @@ export const rejectProduct = mutation({
   handler: async (ctx, args) => {
     const userId = await requireStoreOperator(ctx);
     await writeAudited(ctx, async (actx) => {
-      await actx.db.patch(args.storefrontProductId, { status: "rejected" });
+      await actx.db.patch(args.storefrontProductId, { status: "rejected", rejectionReason: args.reason });
       return {
         actorId: userId, action: "store.rejectProduct", target: `storefrontProducts:${args.storefrontProductId}`,
         prev: null, next: { status: "rejected", reason: args.reason },

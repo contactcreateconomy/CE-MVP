@@ -28,6 +28,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { DataTable, DataTableToolbar, type DataTableColumn } from "@/components/ui/data-table";
 import { SkeletonText } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { Toast } from "@/components/ui/toast";
 
 interface RuleRow {
@@ -253,14 +254,17 @@ export default function AdminRulebookPage() {
           </DialogHeader>
 
           <div className="space-y-4">
-            <label className="flex items-center gap-2 text-sm text-(--text-primary)">
-              <Checkbox
+            <div className="flex items-center gap-2 text-sm text-(--text-primary)">
+              {/* §11.2 Toggle/Switch — CONTRACT-3-rulebook §6 names this
+                  control explicitly for per-rule `enabled` (screen audit
+                  2026-09-18: was a Checkbox, a different affordance). */}
+              <Switch
                 checked={editEnabled}
                 onCheckedChange={setEditEnabled}
                 aria-label={`${editing?.ruleKey ?? "Rule"} enabled`}
               />
-              Enabled
-            </label>
+              <span>Enabled</span>
+            </div>
 
             {Object.keys(numericEdits).length > 0 ? (
               <div className="space-y-2">

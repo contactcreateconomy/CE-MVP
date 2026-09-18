@@ -17,6 +17,7 @@ import { api } from "../../../../../convex/_generated/api";
 import { Banner } from "@/components/ui/banner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SkeletonHeading, SkeletonText } from "@/components/ui/skeleton";
+import { CreateconomyWordmark } from "@/components/ui/createconomy-logo-full";
 
 export function LegalDocPage({ docKey }: { docKey: string }) {
   const doc = useQuery(api.legalContent.getPublished, { docKey });
@@ -36,6 +37,7 @@ export function LegalDocPage({ docKey }: { docKey: string }) {
     // contract State 2: unavailable_pending_legal — honest absence
     return (
       <section className="mx-auto w-full max-w-(--container-reading) space-y-3 p-6">
+        <CreateconomyWordmark className="text-sm" />
         <h1 className="text-2xl font-semibold text-(--text-primary)">Legal</h1>
         <Banner variant="neutral">
           This document has no published version yet — content is pending legal
@@ -52,6 +54,7 @@ export function LegalDocPage({ docKey }: { docKey: string }) {
 
   return (
     <section className="animate-route-emerge mx-auto w-full max-w-(--container-reading) space-y-4 p-6">
+      <CreateconomyWordmark className="text-sm" />
       {/* §11.23 legal prose: 720px column, sequential headings, versioned footer */}
       <article className="legal-prose">
         <ReactMarkdown

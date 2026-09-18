@@ -31,7 +31,12 @@ interface ThreadComment {
 
 export function ProductDetailClient({ handle, product }: { handle: string; product: string }) {
   const configured = isConvexConfigured();
-  const { authStatus } = useAuth();
+  const { authStatus, user } = useAuth();
+  // CAP-561 is owner-only ("A write to a locked field..." aside — the
+  // *action* itself is owner-scoped: `hideForReview` throws for non-owners
+  // server-side). Screen audit 2026-09-18: the button previously rendered
+  // for every viewer, inviting a guaranteed-to-fail mutation call.
+  const isOwner = authStatus === "authenticated" && !!user?.handle && user.handle === handle;
   const detail = useQuery(
     api.store.public.getProductDetail,
     configured ? ({ handle, product } as any) : "skip",
@@ -180,17 +185,19 @@ export function ProductDetailClient({ handle, product }: { handle: string; produ
                         {/* CAP-561 — owner hide-for-moderator-review; NEVER
                             delete (the comment goes held + a shared-queue
                             case; moderator disposition per M13) */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            void hideForReview({ commentId: comment.id as any })
-                              .then(() => setNote("Comment hidden for moderator review."))
-                              .catch((e) => setNote(String(e?.message ?? e)));
-                          }}
-                        >
-                          Hide for review
-                        </Button>
+                        {isOwner && !comment.tombstone ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              void hideForReview({ commentId: comment.id as any })
+                                .then(() => setNote("Comment hidden for moderator review."))
+                                .catch((e) => setNote(String(e?.message ?? e)));
+                            }}
+                          >
+                            Hide for review
+                          </Button>
+                        ) : null}
                       </div>
                     </CardContent>
                   </Card>

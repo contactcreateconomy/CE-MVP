@@ -310,8 +310,16 @@ export const clientEmit = mutation({
   },
 });
 
+/** CONTRACT-7-admin-utm §1 / CONTRACT-7-admin-seo §1 (verbatim): both name
+ *  "administrator" as the reader actor for CAP-479's dictionary read model
+ *  and CAP-567's SEO health view — screen audit 2026-09-18: despite its
+ *  name, this previously called only the broad CAP-390 shell gate
+ *  (`assertAdminPermission`), so any staff role could read either. */
 async function requireAnyAdmin(ctx: any): Promise<void> {
   const userId = await getAuthUserId(ctx);
   if (!userId) throw new Error("admin: authentication required");
-  await assertAdminPermission(ctx);
+  const roles = await assertAdminPermission(ctx);
+  if (!roles.includes("administrator")) {
+    throw new Error("admin.utm: administrator role required");
+  }
 }

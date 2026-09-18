@@ -284,6 +284,28 @@ export default function AdminSourcesPage() {
               </div>
             </div>
 
+            {/* robotsStatus/rightsBasis/termsReviewStatus — screen audit
+                2026-09-18: these three fields are named in the data model
+                and written by the save mutation, but had no input control
+                at all (silently stuck at their register-time defaults
+                forever, even across edits of an existing source). Value
+                sets are undefined (contract OQ#5/#6) so free Text Input,
+                not an invented Select enum. */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <label htmlFor="src-robots" className="text-xs text-(--text-secondary)">robots.txt status</label>
+                <Input id="src-robots" value={form.robotsStatus} placeholder="unknown" onChange={(e) => setForm((f) => ({ ...f, robotsStatus: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="src-rights" className="text-xs text-(--text-secondary)">Rights basis</label>
+                <Input id="src-rights" value={form.rightsBasis} placeholder="unset" onChange={(e) => setForm((f) => ({ ...f, rightsBasis: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="src-terms" className="text-xs text-(--text-secondary)">Terms review</label>
+                <Input id="src-terms" value={form.termsReviewStatus} placeholder="pending" onChange={(e) => setForm((f) => ({ ...f, termsReviewStatus: e.target.value }))} />
+              </div>
+            </div>
+
             {formError ? <Banner variant="error">{formError}</Banner> : null}
           </div>
 

@@ -66,12 +66,19 @@ export const searchQuery = query({
         .take(200);
       posts.push(...rows);
     }
-    const matchedPosts = posts
+    const filteredPosts = posts
       .filter((p: any) => p.moderationStatus === "passed" || p.moderationStatus === "not_required")
       .filter((p: any) => p.title.toLowerCase().includes(term) || p.body.toLowerCase().includes(term))
-      .map((p: any) => ({ postId: p._id, type: p.type, title: p.title }))
       .sort((a: any, b: any) => a.title.localeCompare(b.title))
       .slice(0, PER_CLASS);
+    // Screen audit 2026-09-18: the client links to the canonical
+    // /discussions/[slug] route (00-ROUTES) — postId never resolves there,
+    // so the slug must ride the result the same way feed cards need it.
+    const matchedPosts = [];
+    for (const p of filteredPosts) {
+      const seo = await ctx.db.query("postSeoMeta").withIndex("by_postId", (q: any) => q.eq("postId", p._id)).unique();
+      matchedPosts.push({ postId: p._id, slug: seo?.slug ?? null, type: p.type, title: p.title });
+    }
 
     // Tools: name keyword
     const tools = await ctx.db.query("tools").take(200);
@@ -86,6 +93,8 @@ export const searchQuery = query({
     const matchedPeople = people
       .filter((u: any) => (u.username ?? "").toLowerCase().includes(term) || (u.displayName ?? "").toLowerCase().includes(term))
       .filter((u: any) => u.accountStatus !== "deleted")
+      // CAP-552 profileVisibility=private must not surface in public search.
+      .filter((u: any) => u.profileVisibility !== "private")
       .map((u: any) => ({ username: u.username ?? null, displayName: u.displayName ?? "Member" }))
       .sort((a: any, b: any) => a.displayName.localeCompare(b.displayName))
       .slice(0, PER_CLASS);

@@ -9,8 +9,23 @@
 
 import { query, mutation } from "../_generated/server";
 import { v } from "convex/values";
-import { assertAdminPermission } from "../lib/authz";
+import { assertAdminPermission, assertFounder, resolveAuthUserId } from "../lib/authz";
 import { writeAudited, newCorrelationId } from "../lib/audit";
+
+/** CONTRACT-7-admin-audit §1 (verbatim): "Actors: administrator, Founder"
+ *  for CAP-421/422 — NOT the CAP-390 broad shell-entry gate (any staff
+ *  role), which `assertAdminPermission` alone enforces. Screen audit
+ *  2026-09-18: this module previously only called the broad gate, so any
+ *  staff role (editor/moderator/etc.) could read/export the full audit
+ *  log. "Administrator" is the broader of the two named actors, so it
+ *  already covers Founder (a Founder is always also an administrator —
+ *  see `lib/authz.ts` `isFounder`). */
+async function requireAdministrator(ctx: any) {
+  const roles = await assertAdminPermission(ctx);
+  if (!roles.includes("administrator")) {
+    throw new Error("admin.audit: administrator (Founder) role required");
+  }
+}
 
 /** CAP-421 — filtered audit query. Filter fields per contract §3 A:
  *  actor / action / target / time / env / correlation. Cursor-paginated. */
@@ -25,8 +40,9 @@ export const auditQuery = query({
     cursor: v.optional(v.string()),
     limit: v.optional(v.number()),
   },
+  returns: v.object({ rows: v.array(v.any()), cursor: v.union(v.string(), v.null()), hasMore: v.boolean() }),
   handler: async (ctx, args) => {
-    await assertAdminPermission(ctx);
+    await requireAdministrator(ctx);
     const limit = Math.min(args.limit ?? 50, 200);
 
     let q = ctx.db.query("auditLog").withIndex("by_action_createdAt", (q: any) => {
@@ -55,11 +71,16 @@ export const auditQuery = query({
  *  v1 = server-generated JSON behind a confirm modal. */
 export const auditExport = mutation({
   args: {
-    actorId: v.id("users"),
     filters: v.optional(v.any()),
   },
+  returns: v.any(),
   handler: async (ctx, args) => {
-    await assertAdminPermission(ctx);
+    await requireAdministrator(ctx);
+    // The actor is derived server-side, never client-supplied (screen
+    // audit 2026-09-18 — `actorId: v.id("users")` previously let any
+    // caller attribute the export to a different user in the audit trail).
+    const actorId = await resolveAuthUserId(ctx);
+    if (!actorId) throw new Error("admin.audit: authentication required");
     // The export-audit write itself is the fail-closed gate: if writeAudited
     // throws (e.g., auditLog insert fails), the whole mutation rolls back
     // and NO export is produced.
@@ -67,7 +88,7 @@ export const auditExport = mutation({
       const rows = await actx.db.query("auditLog").order("desc").take(1000);
       const data = JSON.stringify(rows, null, 2);
       return {
-        actorId: args.actorId,
+        actorId,
         action: "audit.export",
         target: "auditLog:export",
         prev: null,
@@ -85,17 +106,22 @@ export const auditExport = mutation({
 });
 
 /** CAP-357 — Founder monthly spot-check record.
- *  "no dual-control theatre" — one Founder records the check; it logs itself. */
+ *  "no dual-control theatre" — one Founder records the check; it logs
+ *  itself. Screen audit 2026-09-18: unlike CAP-421/422 above (whose
+ *  "administrator, Founder" actor line is satisfied by any administrator),
+ *  this capability names the Founder specifically as a single-person
+ *  accountability act — `assertFounder` requires the derived Founder,
+ *  not merely any administrator. */
 export const spotCheck = mutation({
   args: {
-    actorId: v.id("users"),
     notes: v.string(),
   },
+  returns: v.any(),
   handler: async (ctx, args) => {
-    await assertAdminPermission(ctx);
+    const actorId = await assertFounder(ctx);
     return await writeAudited(ctx, async (actx) => {
       return {
-        actorId: args.actorId,
+        actorId,
         action: "audit.spotCheck",
         target: "auditLog:spotCheck",
         prev: null,

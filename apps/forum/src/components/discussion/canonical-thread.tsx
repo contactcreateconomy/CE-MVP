@@ -234,7 +234,7 @@ function CommentRow({ comment, postId, accepted, onReport }: { comment: CommentC
         <p className="mt-2 whitespace-pre-wrap text-sm text-(--text-secondary)">{comment.body}</p>
       )}
 
-      {err ? <p className="mt-2 text-xs text-(--feedback-error, #b91c1c)">{err}</p> : null}
+      {err ? <p className="mt-2 text-xs text-(--feedback-error-text)">{err}</p> : null}
 
       {!comment.tombstone ? (
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
@@ -393,7 +393,7 @@ function ComposeBox({ postId, parent }: { postId: string; parent?: CommentCard }
           <Button size="sm" disabled={busy || body.trim().length === 0} onClick={() => void submit()}>
             {busy ? "Posting…" : parent ? "Reply" : "Comment"}
           </Button>
-          {err ? <span className="text-xs text-(--feedback-error, #b91c1c)">{err}</span> : null}
+          {err ? <span className="text-xs text-(--feedback-error-text)">{err}</span> : null}
         </div>
       </CardContent>
     </Card>

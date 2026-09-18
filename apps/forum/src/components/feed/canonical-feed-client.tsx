@@ -85,7 +85,7 @@ export function CanonicalFeedClient({ initialTypeFilter = null }: { initialTypeF
       {chrome?.hero?.length ? (
         <div className="grid gap-3 sm:grid-cols-2">
           {chrome.hero.map((h: any) => (
-            <a key={h.postId} href={`/discussions/${h.postId}`} className="card-surface rounded-xl border border-(--border-subtle) p-4 transition-colors hover:border-(--border-prominent)">
+            <a key={h.postId} href={`/discussions/${h.slug ?? h.postId}`} className="card-surface rounded-xl border border-(--border-subtle) p-4 transition-colors hover:border-(--border-prominent)">
               <div className="flex items-center gap-2">
                 <Badge tone="brand">{h.isCommunityTop ? "Community Top" : "Featured"}</Badge>
                 <span className="text-xs text-(--text-muted)">{h.disclosureClass}</span>
@@ -196,7 +196,7 @@ function FeedCard({
               {card.discussingCount > 0 ? <span>{card.discussingCount} discussing</span> : null}
             </span>
           </div>
-          <a href={`/discussions/${card.postId}`} className="block text-base font-semibold text-(--text-primary) underline-offset-2 hover:underline">
+          <a href={`/discussions/${card.slug ?? card.postId}`} className="block text-base font-semibold text-(--text-primary) underline-offset-2 hover:underline">
             {card.title}
           </a>
           <p className="text-sm text-(--text-secondary)">{card.oneLiner}</p>
@@ -220,6 +220,18 @@ function FeedCard({
                   }}
                 >
                   Hide
+                </button>
+                <button
+                  className="cursor-pointer hover:text-text-primary"
+                  disabled={busy}
+                  onClick={() => {
+                    setBusy(true);
+                    cardAction({ postId: card.postId, action: "mute" })
+                      .then(() => onHidden(card.postId))
+                      .finally(() => setBusy(false));
+                  }}
+                >
+                  Mute
                 </button>
                 <button
                   className="cursor-pointer hover:text-text-primary"

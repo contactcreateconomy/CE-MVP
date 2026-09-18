@@ -22,7 +22,7 @@ export function ResourceViewClient({ slug }: { slug: string }) {
   const getUrl = useMutation(api.resources.view.getViewUrl);
   const [url, setUrl] = useState<string | null>(null);
 
-  const ready = state && !state.teaser && !state.requiresAcquisition && !state.notFound && state.enabled !== false;
+  const ready = state && !state.teaser && !state.notFound && state.enabled !== false;
 
   useEffect(() => {
     if (!ready) return;
@@ -49,6 +49,7 @@ export function ResourceViewClient({ slug }: { slug: string }) {
   return (
     <section className="space-y-3" aria-label="Resource viewer">
       <header className="space-y-1">
+        <a href="/resources" className="text-xs text-(--text-muted) underline-offset-2 hover:underline">← Back to library</a>
         <h1 className="text-2xl font-semibold text-(--text-primary)">{state.title}</h1>
         <p className="text-xs text-(--text-muted)">{state.attributionLine}</p>
         {state.forgeDisclosure ? <p className="text-xs text-(--text-muted)">{state.forgeDisclosure}</p> : null}
@@ -59,12 +60,6 @@ export function ResourceViewClient({ slug }: { slug: string }) {
           <CardContent className="space-y-2 py-10 text-center">
             <p className="text-sm text-(--text-secondary)">Sign in to read this resource in the secure viewer.</p>
             <a href="/signin" className="text-sm text-brand-primary underline-offset-2 hover:underline">Sign in</a>
-          </CardContent>
-        </Card>
-      ) : state.requiresAcquisition ? (
-        <Card>
-          <CardContent className="py-10 text-center text-sm text-(--text-muted)">
-            Acquire this resource from the <a href="/resources" className="underline">library</a> first.
           </CardContent>
         </Card>
       ) : url ? (

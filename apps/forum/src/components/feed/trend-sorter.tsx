@@ -41,8 +41,9 @@ export function TrendSorter({ value, onChange }: TrendSorterProps) {
               role="tab"
               aria-selected={isActive}
               onClick={() => onChange(key)}
-              className="flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-full text-base font-semibold transition-colors duration-normal hover:text-(--text-primary)"
-              style={{ color: isActive ? "black" : "var(--text-primary)" }}
+              className={`flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-full text-base font-semibold transition-colors duration-normal ${
+                isActive ? "text-text-inverse" : "text-(--text-primary) hover:text-(--text-primary)"
+              }`}
             >
               <Icon className="h-3.5 w-3.5" strokeWidth={2.25} />
               <span>{label}</span>

@@ -17,7 +17,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Banner } from "@/components/ui/banner";
-import { CreateconomyLogoMark } from "@/components/ui/createconomy-logo-mark";
+import { CreateconomyLogoFull } from "@/components/ui/createconomy-logo-full";
 
 export default function WaitlistPage() {
   const [email, setEmail] = useState("");
@@ -58,7 +58,7 @@ export default function WaitlistPage() {
     <main className="flex min-h-screen items-center justify-center bg-bg-canvas p-6">
       <div className="w-full max-w-(--container-auth)">
         <div className="mb-6 flex justify-center">
-          <CreateconomyLogoMark className="size-6" />
+          <CreateconomyLogoFull />
         </div>
 
         <Card>

@@ -28,9 +28,6 @@ export function PersonasPageClient() {
   const configured = isConvexConfigured();
   const { authStatus } = useAuth();
   const roster = useQuery(api.persona.public.listRoster, configured ? {} : "skip");
-  const vote = useMutation(api.persona.public.revivalVote);
-  const [votedFor, setVotedFor] = useState<Set<string>>(new Set());
-  const [note, setNote] = useState<string | null>(null);
 
   if (!configured) return null;
   if (roster === undefined) {
@@ -85,29 +82,7 @@ export function PersonasPageClient() {
                           <span className="text-(--text-muted)">{p.trackRecordCount} contributions</span>
                         </div>
                         {key === "retired" ? (
-                          authStatus === "authenticated" ? (
-                            <div className="space-y-1">
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                disabled={votedFor.has(p.id)}
-                                onClick={() => {
-                                  setNote(null);
-                                  vote({ personaId: p.id as any })
-                                    .then((r: any) => {
-                                      if (r?.voted) setVotedFor((prev) => new Set([...prev, p.id]));
-                                      else setNote(r?.reason ?? "Not eligible to vote.");
-                                    })
-                                    .catch((e) => setNote(e instanceof Error ? e.message : "Vote failed"));
-                                }}
-                              >
-                                {votedFor.has(p.id) ? "Voted ✓" : "Bring back"}
-                              </Button>
-                              {note ? <p className="text-xs text-(--text-muted)">{note}</p> : null}
-                            </div>
-                          ) : (
-                            <p className="text-xs text-(--text-muted)">Sign in to vote for a comeback.</p>
-                          )
+                          <RevivalVoteSection personaId={p.id} authenticated={authStatus === "authenticated"} />
                         ) : null}
                       </CardContent>
                     </Card>
@@ -119,5 +94,60 @@ export function PersonasPageClient() {
         );
       })}
     </section>
+  );
+}
+
+/**
+ * RevivalVoteSection — CAP-177 tally (screen audit 2026-09-18: `revivalTally`
+ * was fully built server-side but never queried from the client — retired
+ * personas rendered a bare "Bring back" button with no vote count or
+ * threshold, and "already voted" tracked only in local component state
+ * that reset on every reload instead of reading server-truth `myVote`).
+ * Contract §3.D requires a visible tally (no-votes / below-threshold /
+ * threshold-met); §3.C requires "already-voted" to reflect the Unique
+ * (userId, personaId) constraint, not client memory.
+ */
+function RevivalVoteSection({ personaId, authenticated }: { personaId: string; authenticated: boolean }) {
+  const tally = useQuery(api.persona.public.revivalTally, { personaId: personaId as any });
+  const vote = useMutation(api.persona.public.revivalVote);
+  const [note, setNote] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  if (!authenticated) {
+    return <p className="text-xs text-(--text-muted)">Sign in to vote for a comeback.</p>;
+  }
+  if (tally === undefined) {
+    return <p className="text-xs text-(--text-muted)">Loading vote tally…</p>;
+  }
+
+  const t = tally as { count: number; threshold: number; thresholdMet: boolean; myVote: boolean };
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-2">
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={t.myVote || pending}
+          onClick={() => {
+            setNote(null);
+            setPending(true);
+            vote({ personaId: personaId as any })
+              .then((r: { voted: boolean; reason?: string }) => {
+                if (!r.voted) setNote(r.reason ?? "Not eligible to vote.");
+              })
+              .catch((e) => setNote(e instanceof Error ? e.message : "Vote failed"))
+              .finally(() => setPending(false));
+          }}
+        >
+          {t.myVote ? "Voted ✓" : "Bring back"}
+        </Button>
+        {/* CAP-177 tally display — never auto-revives; operator-confirmed only */}
+        <Badge tone={t.thresholdMet ? "success" : "neutral"}>
+          {t.count} / {t.threshold} votes{t.thresholdMet ? " — threshold met" : ""}
+        </Badge>
+      </div>
+      {note ? <p className="text-xs text-(--text-muted)">{note}</p> : null}
+    </div>
   );
 }

@@ -72,7 +72,7 @@ function CompareGrid({ rows }: { rows: any[] }) {
 }
 
 export function PostDetailClient({ detail }: { detail: any }) {
-  const { post, extension, threadContext, compare, affiliateCtas } = detail;
+  const { post, extension, threadContext, compare, affiliateCtas, reviewTool } = detail;
   const mechanic = threadContext?.mechanic;
 
   if (post.archived) {
@@ -131,10 +131,45 @@ export function PostDetailClient({ detail }: { detail: any }) {
 
       {post.type === "review" && extension ? (
         <Card>
-          <CardContent className="space-y-1 p-4">
+          <CardContent className="space-y-2 p-4">
             <h2 className="text-sm font-semibold text-(--text-primary)">Verdict</h2>
+            {reviewTool ? (
+              <a
+                href={`/tools/${reviewTool.slug}`}
+                className="inline-flex items-center text-sm text-(--text-accent) underline underline-offset-2"
+              >
+                Reviewing: {reviewTool.name} ↗
+              </a>
+            ) : null}
             <p className="text-2xl font-bold text-(--text-accent)">{extension.verdictScore ?? "—"}</p>
-            <p className="text-xs text-(--text-muted)">Editorial verdict — display-only, never feeds the community aggregate.</p>
+            <p className="text-xs text-(--text-muted)">
+              Auto-computed from the author&apos;s per-dimension scores — display-only, never feeds the community
+              aggregate (`toolRatings` is the sole aggregate feed).
+            </p>
+            {extension.verdictSummary ? (
+              <p className="text-sm text-(--text-secondary)">{extension.verdictSummary}</p>
+            ) : null}
+            {(Array.isArray(extension.pros) && extension.pros.length > 0) ||
+            (Array.isArray(extension.cons) && extension.cons.length > 0) ? (
+              <div className="grid gap-3 pt-1 sm:grid-cols-2">
+                {Array.isArray(extension.pros) && extension.pros.length > 0 ? (
+                  <div>
+                    <p className="text-xs font-semibold uppercase text-(--text-muted)">Pros</p>
+                    <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm text-(--text-secondary)">
+                      {extension.pros.map((p: string, i: number) => <li key={i}>{p}</li>)}
+                    </ul>
+                  </div>
+                ) : null}
+                {Array.isArray(extension.cons) && extension.cons.length > 0 ? (
+                  <div>
+                    <p className="text-xs font-semibold uppercase text-(--text-muted)">Cons</p>
+                    <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm text-(--text-secondary)">
+                      {extension.cons.map((c: string, i: number) => <li key={i}>{c}</li>)}
+                    </ul>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </CardContent>
         </Card>
       ) : null}
@@ -187,7 +222,9 @@ export function PostDetailClient({ detail }: { detail: any }) {
                 </li>
               ))}
             </ol>
-            {mechanic.mode === "community_ranked" ? <ListAddForm postListId={extension._id} /> : null}
+            {mechanic.mode === "community_ranked" || (mechanic.mode === "static_creator" && post.isViewerAuthor) ? (
+              <ListAddForm postListId={extension._id} />
+            ) : null}
           </CardContent>
         </Card>
       ) : null}

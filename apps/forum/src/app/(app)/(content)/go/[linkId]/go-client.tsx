@@ -104,7 +104,7 @@ export function GoClient({ linkId }: { linkId: string }) {
         <p className="text-xs text-(--text-muted)">Opened outside the app — continue is manual by design.</p>
       ) : null}
       {released && !isInApp ? <p className="text-xs text-(--text-muted)">Destination prepared — click Continue.</p> : null}
-      {note ? <p className="text-xs text-(--feedback-error, #b91c1c)">{note}</p> : null}
+      {note ? <p className="text-xs text-(--feedback-error-text)">{note}</p> : null}
     </CardContent></Card>
   );
 }

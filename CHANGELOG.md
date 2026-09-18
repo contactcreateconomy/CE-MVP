@@ -7,6 +7,59 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Changed: forum sign-in matches admin AuthModal; `/welcome` retired (2026-09-18)
+
+Forum `/signin` no longer uses the magic-link/email-code card. It opens the same `@cemvp/auth-ui` AuthModal as the admin console (email/password + Google/GitHub). `/welcome` is retired: the route server-redirects to `/feed`, and `RoutingGuard` silently finalizes `pending_context` with the browser timezone (UTC fallback) per DECISIONS-LOCKED #2, so new members are not trapped on a timezone chooser.
+
+### Fix: full-repo screen audit vs. contracts + STYLE-KIT — RBAC, correctness, and doc-drift remediation (2026-09-18)
+
+A wave-by-wave audit of all 54 screens in `apps/forum` and `apps/admin` against their `docs/02-contracts/wave-N/CONTRACT-*-FINAL.md` files and `docs/04-design-system/STYLE-KIT.md` (the authoritative sources — `docs/screens/*.md` was found to be a stale pre-Phase-2 snapshot and is now corrected per-file with a 2026-09-18 status banner). Explicitly out of scope and untouched: auth backend mechanics, the admin app's separate port/origin, and Twilio/mobile-OTP as a non-gating optional `/setup` step (confirmed still non-gating).
+
+**RBAC narrowing (any-staff-role → contract-specified actor) — the highest-value fixes:**
+- `convex/admin/audit.ts`: `auditQuery`/`auditExport` (CAP-421/422) narrowed to `administrator`; `spotCheck` (CAP-357, "one Founder records the check") narrowed to the derived Founder specifically via a new shared `isFounder`/`assertFounder` helper in `convex/lib/authz.ts` (Founder = the bootstrapped first active `administrator` — the derivation already duplicated inline in `admin/roles.ts` and `admin/analytics.ts`, now centralized). `auditExport`/`spotCheck` no longer take a client-supplied `actorId` (was spoofable audit attribution).
+- `convex/admin/stop.ts`: `killFlip`/`stopActivate`/`stopResume`/`signupModeSet`/`mirrorDisable` narrowed to `administrator` (previously any staff role could flip a platform-wide kill-switch or STOP).
+- `convex/admin/roles.ts` + `convex/admin/widgetsCatalog.ts`: `listAssignments`/`listOpsAssignments`/`opsUpsert`/`opsAck` narrowed to `administrator`; the `/admin/roles` widget catalog entry narrowed from `[administrator, editor]` to `[administrator]`.
+- `convex/admin/utm.ts`: `getDictionary` and `seoHealthView` narrowed to `administrator` (a misleadingly-named `requireAnyAdmin` helper accepted any staff role).
+- `convex/admin/readiness.ts`: CAP-435 `checklist` narrowed to the derived Founder specifically — the contract explicitly distinguishes "Query checklist | Founder" from "Evaluate | Founder/Admin".
+- `convex/admin/moderationQueue.ts`: `claim`/`renewLease` now write `auditLog` entries (CAP-426: "100% of mod actions" had a silent gap); `resolve` now enforces the CAP-328 claim/lease gate (previously any Moderator/Administrator could resolve a case regardless of who claimed it); `apps/admin/.../moderation/page.tsx` only shows Action/No-action once a case is claimed.
+
+**Backend/pipeline correctness fixes:**
+- `convex/posts.ts` / `convex/new-post` composer: added a `typed-fields-panel.tsx` so the composer actually captures per-type fields (toolId, score, pros/cons, qualitativeGrid); showcase posts now get `approvalStatus` + full CAP-100 URL-allowlist validation on create (previously update-only).
+- `convex/posts/detail.ts` + `post-detail-client.tsx`: review posts now render the resolved tool name/verdict/pros/cons; compare posts render `qualitativeGrid` as the structured object the composer now writes.
+- `convex/posts/listItems.ts`: fixed `gateListMember` rejecting an author's own adds to their `static_creator` list.
+- `convex/admin/resources.ts`: `rightsReview`'s accept path skipped the `content_review` lane entirely — corrected; added `canPublish`/`canLegalHold` RBAC flags consumed by `LifecyclePanel`.
+- `convex/admin/store.ts` + `convex/schema.ts`: `REJECT_REASONS` was an invented 8-value enum instead of `_data-model.md`'s canonical 9-value `product.rejectionReason` — corrected; `storefrontProducts.rejectionReason` is now actually persisted (previously only logged into the audit entry).
+- `convex/store/public.ts`: `getProductDetail` now gates non-`approved` products as not-found (a draft/rejected product was fully viewable by direct URL); "Hide for review" is now owner-gated in the UI.
+- `convex/resources/view.ts` + resource-viewer client: removed a contract-violating acquisition gate on member viewing (CONTRACT-6-resource-viewer §3B/DEC-S15/INV-6 are explicit that viewing must never require a prior acquisition).
+- `convex/feed.ts` / `convex/search.ts`: discussion links now resolve the canonical `slug` (were linking by `postId`); search excludes `profileVisibility: "private"` profiles from people results.
+- `convex/admin/curation.ts`: the Administrator-only "Emergency pull" is now actually gated on a new `isAdministrator` flag (was visible to any staff role in the UI).
+- `convex/persona/lifecycle.ts`: new `populationSignals` query surfaces the CAP-166 recommendation and CAP-167 drift flags that `/admin/personas` previously computed but never displayed.
+- `apps/forum/.../appeal/[actionId]`, `.../legal/intake`, `.../contribute`: added missing member-only auth gates (all three previously rendered full forms to anonymous visitors that were guaranteed to fail on submit); `/contribute`'s disabled state now shows the required disabled controls per the E3 LOCKED decision instead of banner-only copy.
+- `apps/forum/.../sell/apply`: allowed re-application after a `rejected` status (was permanently blocked); wired real `categories`/`expectedProductCount` inputs (were hardcoded).
+- `apps/forum/.../notifications`: empty-state copy corrected to the contract-mandated "No notifications yet"; added a skeleton loading state.
+- `apps/forum/src/lib/routing.ts`: replaced a `PUBLIC_ROUTES` allowlist (which had started blocking legitimately-public pages once `RoutingGuard` was globally mounted) with a `PROTECTED_ROUTE_PREFIXES` denylist — public by default, explicit opt-in to protection.
+- Six trust pages (`/about`, `/help`, `/how-we-review`, `/editorial-policy`, `/ai-disclosure`, `/how-we-use-your-store-data`) and `/repeat-infringer` gained the `generateMetadata`/noindex-while-unpublished convention already used by `/privacy`/`/terms`/`/dmca`.
+- `apps/admin/.../support/page.tsx`: fixed `quotaGrant`/`quotaNeutralize` reusing one id field for two distinct id-typed tables (`operationalIncidents` vs `quotaGrants`), which made Neutralize always target the wrong row.
+
+**Design-system token fixes:** raw-hex-with-CSS-var-fallback colors (`text-(--feedback-error, #b91c1c)` and friends) replaced with the named tokens across `/setup`, `/settings/profile`, `/go/[linkId]`, `personas/genome`, `canonical-thread.tsx`; a raw `color: "black"` literal in the feed's `TrendSorter` replaced with `text-text-inverse`; `max-w-[1440px]` (an arbitrary value matching STYLE-KIT's documented 1440px app-container width, but not expressed as a token) replaced with `max-w-(--container-app)` in `app-shell.tsx`, `content-shell.tsx`, `top-nav.tsx`, `content-page.tsx`. Added a missing `Switch` component (STYLE-KIT §11.2) to both apps, replacing raw `Checkbox` toggles in `/admin/rulebook`.
+
+**New capabilities wired to existing backend:** `/personas` now shows the live revival-vote tally/threshold (`persona.public.revivalTally`); `/admin/sources` gained input fields for `robotsStatus`/`rightsBasis`/`termsReviewStatus` (backend already tracked them).
+
+**Known remaining gaps, deliberately not built in this pass (flagged, not silently skipped) — see `docs/screens/wave-7-*.md` 2026-09-18 banners for the per-screen detail:**
+- Landing (`/landing`) is not wired to anonymous `/` (which unconditionally redirects to `/feed`), and its layout doesn't match the full §12.3 multi-section archetype — a routing + layout + CMP-availability rebuild, not a quick fix.
+- CMP (`CmpOverlay`) has no anonymous-visitor grant path (CAP-387) — pre-existing, already-documented deferred item, not a new regression.
+- `/admin/config` has no dedicated STOP/kill-switch/signup-mode UI panel (the now-correctly-gated mutations are only reachable via the generic namespace table editor).
+- `/admin/roles`' assign/revoke/ops-upsert/ack mutations are correctly gated but have no UI wired to them yet.
+- `/admin/moderation`'s CAP-335 batch verb names don't match the contract's five literals, and per-case-type domain actions (showcase/rating/comment) plus sanctions/terminate/appeals resolution aren't exposed in the console.
+- `/admin/analytics` still shows the "Record weekly decision" control to every administrator (server-side Founder gate is correct) and renders raw metric JSON instead of the contract's `n% (x/y)` format.
+- `/admin/reliability` conflates loading/empty states and has no redrive confirm-modal or runbook gate.
+- `/admin/shell` has no live alert-count badge or operational-mode indicator (hardcoded "normal"), and CAP-392 per-route widget gating isn't enforced server-side.
+- `/admin/home`'s STOP entity writes to `jobRuns` instead of the contract's `operationalIncidents` table.
+- The Metrics-tab enrichment on `/users/[handle]` (CONTRACT-7-profile-economy) is missing the CAP-299 Create-Distribution modal and `distributionLevelAssignments`-derived ladder status; Overview still shows a stale "Awards shelf arrives with Wave-7" placeholder even though Metrics now has a real shelf.
+- The six trust pages and `/repeat-infringer` render under the full app shell rather than a wordmark-only 720px reading-column layout, and have no founder-owned content seeded yet (both render the honest `unavailable_pending_legal` state, which is correct MVP behavior, not a bug).
+
+**Verification:** `pnpm typecheck` / `pnpm typecheck:admin` / `pnpm lint` / `pnpm lint:admin` / `pnpm test:run` (972/972) / `pnpm test:convex` (94/94) / `pnpm build` all green; `node scripts/cap-coverage.mjs` unchanged at 572/572. No legacy `forum*` table reads/writes found (P7-CLEANUP verified still clean); `mobileVerified` confirmed to appear only in `/setup`/seed/bootstrap code, never as a gate.
+
 ### Fix: published posts now get `postDistributionScores` (and member slugs) (2026-09-17)
 
 `/feed` Hot/Top/New only scan `postDistributionScores`. `createPost` and editorial `persistPublish` wrote `posts` but never inserted a score row, so even a successful member publish stayed invisible. Shared `ensurePostDistributionScoreTx` / `ensurePostSeoMetaTx` now run in the same publish transaction. Dest-only `convex/dev/demoSeed.ts` (gated by `DEMO_SEED_ENABLED`, refuses production) seeds 10 display members × 15 typed posts plus admin-queue fixtures on watchful-chameleon-570.

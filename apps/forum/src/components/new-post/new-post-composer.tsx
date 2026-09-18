@@ -56,6 +56,12 @@ import {
   productTokens,
   type TaggedProduct,
 } from "@/components/new-post/composer-product-block";
+import {
+  EMPTY_TYPED_FIELDS,
+  linesToList,
+  TypedFieldsPanel,
+  type TypedFieldsState,
+} from "@/components/new-post/typed-fields-panel";
 
 const categoryIconMap: Record<CategoryKey, ComponentType<{ className?: string; strokeWidth?: number }>> = {
   news: Newspaper,
@@ -145,6 +151,9 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
   // CAP-244 — tagged own approved products (≤5; structured token at publish)
   const [taggedProducts, setTaggedProducts] = useState<TaggedProduct[]>([]);
   const [categoryFields, setCategoryFields] = useState<Record<string, unknown>>({});
+  // CONTRACT-2-compose §3.B typed extension fields (screen audit 2026-09-18
+  // fix — see typed-fields-panel.tsx docblock for why these were missing).
+  const [typedFields, setTypedFields] = useState<TypedFieldsState>(EMPTY_TYPED_FIELDS);
   const [coverImage, setCoverImage] = useState<string | undefined>(undefined);
   // Cover read-back provenance: the uploader renders its own local-blob
   // preview for THIS session's upload; the composer renders the read-back
@@ -258,7 +267,11 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
     try {
       const raw = localStorage.getItem(NEW_POST_DRAFT_STORAGE_KEY);
       if (!raw) return;
-      const parsed = JSON.parse(raw) as NewPostDraftPayload & { categoryFields?: Record<string, unknown>; coverImage?: string };
+      const parsed = JSON.parse(raw) as NewPostDraftPayload & {
+        categoryFields?: Record<string, unknown>;
+        coverImage?: string;
+        typedFields?: TypedFieldsState;
+      };
       if (!parsed || typeof parsed.editorHtml !== "string") return;
       if (titleRef.current.trim() !== "" || editor.getText().trim() !== "") return;
       draftRestoredRef.current = true;
@@ -273,6 +286,9 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
       }
       if (parsed.categoryFields && typeof parsed.categoryFields === "object") {
         setCategoryFields(parsed.categoryFields);
+      }
+      if (parsed.typedFields && typeof parsed.typedFields === "object") {
+        setTypedFields({ ...EMPTY_TYPED_FIELDS, ...parsed.typedFields });
       }
       editor.commands.setContent(parsed.editorHtml || "<p></p>");
       showToast("Draft restored");
@@ -312,6 +328,7 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
       updatedAt: Date.now(),
       categoryFields,
       coverImage,
+      typedFields,
     };
     try {
       localStorage.setItem(NEW_POST_DRAFT_STORAGE_KEY, JSON.stringify(payload));
@@ -319,7 +336,7 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
     } catch {
       showToast("Could not save draft.");
     }
-  }, [categoryKey, categoryFields, coverImage, editor, showToast, summary, title]);
+  }, [categoryKey, categoryFields, coverImage, editor, showToast, summary, title, typedFields]);
 
   // ── Cover read-back ─────────────────────────────────────────────────────
   // CONTRACT-2-compose Open Question 5 leaves composer media UNGOVERED (no
@@ -356,6 +373,29 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
       showToast("Write something in the body before publishing.");
       return;
     }
+    // CONTRACT-2-compose §3.B — the typed extension fields are required per
+    // type (review needs a toolId + the 3 always-ratable dimensions;
+    // compare needs 2-4 distinct tools). Everything else on the panel
+    // (verdict summary/pros/cons, qualitativeGrid, list intro, showcase
+    // projectUrl) is optional per the data model (`?` fields).
+    if (categoryKey === "review") {
+      if (!typedFields.toolId) {
+        showToast("Select the tool you're reviewing.");
+        return;
+      }
+      const requiredDims = ["ease_of_use", "output_quality", "reliability"] as const;
+      if (requiredDims.some((d) => typeof typedFields.dimensionScores[d] !== "number")) {
+        showToast("Rate ease of use, output quality, and reliability (1-5) before publishing.");
+        return;
+      }
+    }
+    if (categoryKey === "compare") {
+      const selected = new Set(typedFields.toolIds.filter(Boolean));
+      if (selected.size < 2) {
+        showToast("Select at least 2 different tools to compare.");
+        return;
+      }
+    }
     const bodyHtml = editor?.getHTML().trim() ?? "";
     // CAP-244 structured token — internal id only, never a raw URL
     const tokens = productTokens(taggedProducts);
@@ -371,6 +411,29 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
     publishingRef.current = true;
     try {
       const canonicalType = categoryKey === "qa" ? "help" : categoryKey;
+      // CONTRACT-2-compose §3.B typed extension data, per active type only
+      // — createPost's insertExtensionRow reads these from extensionData
+      // (review/list) or top-level args (compare's toolIds, review's
+      // dimensionScores, showcase's projectUrl).
+      const typedExtension: Record<string, unknown> = {};
+      if (categoryKey === "review") {
+        typedExtension.toolId = typedFields.toolId;
+        if (typedFields.verdictSummary.trim()) typedExtension.verdictSummary = typedFields.verdictSummary.trim();
+        const pros = linesToList(typedFields.pros);
+        const cons = linesToList(typedFields.cons);
+        if (pros.length) typedExtension.pros = pros;
+        if (cons.length) typedExtension.cons = cons;
+      } else if (categoryKey === "compare") {
+        const grid: Record<string, string> = {};
+        if (typedFields.qualitativeGrid.useCase.trim()) grid["Use case"] = typedFields.qualitativeGrid.useCase.trim();
+        if (typedFields.qualitativeGrid.workflow.trim()) grid["Workflow"] = typedFields.qualitativeGrid.workflow.trim();
+        if (typedFields.qualitativeGrid.limitations.trim())
+          grid["Limitations"] = typedFields.qualitativeGrid.limitations.trim();
+        if (Object.keys(grid).length) typedExtension.qualitativeGrid = grid;
+      } else if (categoryKey === "list") {
+        typedExtension.mode = typedFields.listMode;
+        typedExtension.intro = typedFields.listIntro.trim();
+      }
       await createPost({
         type: canonicalType as
           | "review"
@@ -383,12 +446,19 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
         title: title.trim(),
         body,
         categoryId: categoryKey,
+        toolIds: categoryKey === "compare" ? typedFields.toolIds.filter(Boolean) : undefined,
+        dimensionScores: categoryKey === "review" ? typedFields.dimensionScores : undefined,
+        projectUrl:
+          categoryKey === "showcase" && typedFields.projectUrl.trim()
+            ? typedFields.projectUrl.trim()
+            : undefined,
         // Legacy-composer extras ride extensionData (postSeoMeta generates
         // the canonical SEO description; coverImage has no canonical column)
         extensionData: {
           summary: summary.trim() || title.trim().slice(0, 160),
           coverImage: coverImage ?? null,
           categoryFields: categoryFields ?? null,
+          ...typedExtension,
         },
       });
       try {
@@ -416,6 +486,7 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
     showToast,
     summary,
     taggedProducts,
+    typedFields,
     title,
   ]);
 
@@ -571,6 +642,8 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
             </details>
           </div>
 
+          <TypedFieldsPanel categoryKey={categoryKey} fields={typedFields} onChange={setTypedFields} />
+
           <div className="mb-8 border-b border-(--border-subtle)" />
 
           <p className="mb-3 text-sm leading-relaxed text-(--text-muted)">{writingHint}</p>
@@ -641,13 +714,6 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
             </BubbleMenu>
             <EditorContent editor={editor} />
           </div>
-
-          {(() => {
-            // Typed compose forms archived 2026-08-31 — per-type extension fields
-            // are specified at /compose/[type] (CONTRACT-2), not the legacy inline flow.
-            void categoryFields;
-            return null;
-          })()}
         </div>
       )}
 

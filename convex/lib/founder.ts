@@ -117,6 +117,28 @@ export async function createOrLinkAuthUser(
     updatedAt: now,
     ...(image ? { image } : null),
   });
+  const existingPrivate = await ctx.db
+    .query("privateUserData")
+    .withIndex("by_user", (q: any) => q.eq("userId", args.existingUserId))
+    .unique();
+  if (!existingPrivate) {
+    await ctx.db.insert("privateUserData", { userId: args.existingUserId });
+  }
+  const memberRole = await ctx.db
+    .query("roleAssignments")
+    .withIndex("by_user_role_status", (q: any) =>
+      q.eq("userId", args.existingUserId).eq("role", "member").eq("status", "active"),
+    )
+    .unique();
+  if (!memberRole) {
+    await ctx.db.insert("roleAssignments", {
+      userId: args.existingUserId,
+      role: "member",
+      scopeType: "global",
+      status: "active",
+      grantedAt: now,
+    });
+  }
   if (isFounderEmail(email)) {
     await ensureFounderPrivileges(ctx, args.existingUserId);
   }

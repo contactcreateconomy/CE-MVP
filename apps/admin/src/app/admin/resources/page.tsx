@@ -49,9 +49,13 @@ export default function AdminResourcesPage() {
                 <Badge tone="neutral">{r.sourceClass}</Badge>
                 <span className="text-(--text-secondary)">{r.rightsBasis ?? "—"}</span>
                 <span className="text-xs text-(--text-muted)">{r.referenceId.slice(-8)}</span>
-                {lane === "rights_review" || lane === "content_review" ? (
+                {lane === "rights_review" ? (
                   <span className="ml-auto">
                     <RightsActions referenceId={r.referenceId} onNote={setNote} />
+                  </span>
+                ) : lane === "content_review" ? (
+                  <span className="ml-auto">
+                    <ContentActions referenceId={r.referenceId} onNote={setNote} />
                   </span>
                 ) : null}
               </div>
@@ -60,14 +64,37 @@ export default function AdminResourcesPage() {
         </Card>
       ))}
       {note ? <p className="text-xs text-(--text-muted)">{note}</p> : null}
-      <LifecyclePanel />
-      <KillSwitchPanel />
+      <LifecyclePanel canPublish={Boolean(queue.canPublish)} canLegalHold={Boolean(queue.canLegalHold)} />
+      {queue.isAdministrator ? <KillSwitchPanel /> : null}
     </section>
   );
 }
 
+/** rights_review lane — CAP-205 only (accept hands off to content_review). */
 function RightsActions({ referenceId, onNote }: { referenceId: string; onNote: (s: string) => void }) {
   const rightsReview = useMutation(api.admin.resources.rightsReview);
+  const [busy, setBusy] = useState(false);
+  const act = async (fn: () => Promise<unknown>, ok: string) => {
+    setBusy(true);
+    try { await fn(); onNote(ok); } catch (e) { onNote(e instanceof Error ? e.message : "Failed"); } finally { setBusy(false); }
+  };
+  return (
+    <span className="flex gap-1">
+      <Button size="sm" variant="secondary" disabled={busy}
+        onClick={() => void act(() => rightsReview({ referenceId: referenceId as any, accept: true }), "Rights accepted → content review.")}>
+        Accept rights
+      </Button>
+      <Button size="sm" variant="ghost" disabled={busy}
+        onClick={() => void act(() => rightsReview({ referenceId: referenceId as any, accept: false }), "Rejected.")}>
+        Reject
+      </Button>
+    </span>
+  );
+}
+
+/** content_review lane — CAP-206 (accept → accepted_for_forge; off-topic
+ *  and unsafe are DISTINCT reject reasons, INV-11 — never collapsed). */
+function ContentActions({ referenceId, onNote }: { referenceId: string; onNote: (s: string) => void }) {
   const contentReview = useMutation(api.admin.resources.contentReview);
   const [busy, setBusy] = useState(false);
   const act = async (fn: () => Promise<unknown>, ok: string) => {
@@ -77,22 +104,22 @@ function RightsActions({ referenceId, onNote }: { referenceId: string; onNote: (
   return (
     <span className="flex gap-1">
       <Button size="sm" variant="secondary" disabled={busy}
-        onClick={() => void act(() => rightsReview({ referenceId: referenceId as any, accept: true }), "Rights accepted.")}>
-        Accept rights
+        onClick={() => void act(() => contentReview({ referenceId: referenceId as any, decision: "accept" }), "Content accepted → accepted_for_forge.")}>
+        Accept content
       </Button>
       <Button size="sm" variant="ghost" disabled={busy}
-        onClick={() => void act(() => rightsReview({ referenceId: referenceId as any, accept: false }), "Rejected.")}>
-        Reject
-      </Button>
-      <Button size="sm" variant="ghost" disabled={busy}
-        onClick={() => void act(() => contentReview({ referenceId: referenceId as any, decision: "reject_off_topic" }), "Off-topic (distinct from unsafe).")}>
+        onClick={() => void act(() => contentReview({ referenceId: referenceId as any, decision: "reject_off_topic" }), "Rejected — off-topic.")}>
         Off-topic
+      </Button>
+      <Button size="sm" variant="ghost" disabled={busy}
+        onClick={() => void act(() => contentReview({ referenceId: referenceId as any, decision: "reject_unsafe" }), "Rejected — unsafe.")}>
+        Unsafe
       </Button>
     </span>
   );
 }
 
-function LifecyclePanel() {
+function LifecyclePanel({ canPublish, canLegalHold }: { canPublish: boolean; canLegalHold: boolean }) {
   const publish = useMutation(api.admin.resourcesLifecycle.publish);
   const lifecycleWrite = useMutation(api.admin.resourcesLifecycle.lifecycleWrite);
   const [resourceId, setResourceId] = useState("");
@@ -103,17 +130,28 @@ function LifecyclePanel() {
     setBusy(true); setNote(null);
     try { await fn(); setNote(ok); } catch (e) { setNote(e instanceof Error ? e.message : "Failed"); } finally { setBusy(false); }
   };
+  // CAP-209/210: Publisher/store_operator only — Editor excluded.
+  // CAP-557: under_legal_review is Moderator-only (narrower still).
+  const statusButtons: Array<"paused" | "archived" | "review" | "under_legal_review"> = [
+    "paused", "archived", "review", ...(canLegalHold ? (["under_legal_review"] as const) : []),
+  ];
   return (
     <Card>
       <CardHeader><h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-muted)">Lifecycle (CAP-209/555–559)</h2></CardHeader>
       <CardContent className="flex flex-wrap items-center gap-2">
         <Input value={resourceId} onChange={(e) => setResourceId(e.target.value)} placeholder="resourceId" className="w-52" aria-label="Resource id" />
-        <Input value={versionId} onChange={(e) => setVersionId(e.target.value)} placeholder="approved versionId" className="w-52" aria-label="Version id" />
-        <Button size="sm" disabled={busy || !resourceId || !versionId}
-          onClick={() => void act(() => publish({ resourceId: resourceId as any, versionId: versionId as any }), "Published (exactly one isCurrent).")}>
-          Publish
-        </Button>
-        {(["paused", "archived", "review", "under_legal_review"] as const).map((next) => (
+        {canPublish ? (
+          <>
+            <Input value={versionId} onChange={(e) => setVersionId(e.target.value)} placeholder="approved versionId" className="w-52" aria-label="Version id" />
+            <Button size="sm" disabled={busy || !resourceId || !versionId}
+              onClick={() => void act(() => publish({ resourceId: resourceId as any, versionId: versionId as any }), "Published (exactly one isCurrent).")}>
+              Publish
+            </Button>
+          </>
+        ) : (
+          <span className="text-xs text-(--text-muted)">Publish requires Publisher/store_operator (CAP-209/210 — Editor excluded)</span>
+        )}
+        {statusButtons.map((next) => (
           <Button key={next} size="sm" variant="secondary" disabled={busy || !resourceId}
             onClick={() => void act(() => lifecycleWrite({ resourceId: resourceId as any, next }), `Status → ${next}.`)}>
             {next.replace(/_/g, " ")}

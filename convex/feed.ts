@@ -89,8 +89,17 @@ async function assembleCard(ctx: any, score: any, fetchedPost?: any): Promise<an
     .withIndex("by_postId", (q: any) => q.eq("postId", score.postId))
     .unique();
   const author = post.authorUserId ? await ctx.db.get(post.authorUserId) : null;
+  // Screen audit 2026-09-18: the client links to /discussions/[slug]
+  // (canonical route, 00-ROUTES) — it was linking by postId (never
+  // resolves), so the slug must ride the card the same way the hero
+  // already carries it (line ~242 below).
+  const seo = await ctx.db
+    .query("postSeoMeta")
+    .withIndex("by_postId", (q: any) => q.eq("postId", post._id))
+    .unique();
   return {
     postId: post._id,
+    slug: seo?.slug ?? null,
     type: post.type,
     title: post.title,
     // SECURITY (scan round 2, finding 33): never the email local part —

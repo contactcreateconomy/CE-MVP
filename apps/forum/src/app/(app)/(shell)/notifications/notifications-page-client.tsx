@@ -7,6 +7,7 @@ import { Bell } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/convex";
 import { formatRelativeDate } from "@/lib/format";
 import { isConvexConfigured } from "@cemvp/convex-client";
@@ -80,7 +81,22 @@ function NotificationsPageWithConvex({
   }
 
   if (viewerNotifications === undefined) {
-    return null;
+    // CONTRACT-7-notifications §3F: loading → §11.9 Skeleton (previously
+    // a bare `null`, i.e. no loading affordance at all).
+    return (
+      <section className="animate-route-emerge space-y-4">
+        <Card>
+          <CardHeader>
+            <h1 className="inline-flex items-center gap-2 text-2xl font-semibold text-(--text-primary)">
+              <Bell className="h-5 w-5" /> Notifications
+            </h1>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {[0, 1, 2].map((i) => <Skeleton key={i} className="h-14 w-full rounded-md" />)}
+          </CardContent>
+        </Card>
+      </section>
+    );
   }
 
   return (
@@ -94,8 +110,10 @@ function NotificationsPageWithConvex({
 
         <CardContent className="space-y-2">
           {items.length === 0 ? (
+            // CONTRACT-7-notifications §3F (verbatim, CAP-371 honest-empty):
+            // "No notifications yet" — never a fabricated placeholder.
             <p className="py-6 text-center text-sm text-(--text-muted)">
-              You&apos;re all caught up — nothing new right now.
+              No notifications yet
             </p>
           ) : (
             items.map((notification: any) => {

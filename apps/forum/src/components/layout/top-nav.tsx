@@ -158,7 +158,7 @@ function TopNavInner({
           scrolled ? "h-3 opacity-100" : "h-0 opacity-0"
         )} 
       />
-      <div className="mx-auto w-full max-w-[1440px] px-4 md:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-(--container-app) px-4 md:px-6 lg:px-8">
         <div
           className={cn(
             "relative w-full border transition-[transform,background-color,border-color,box-shadow,border-radius] duration-slow ease-out will-change-transform",

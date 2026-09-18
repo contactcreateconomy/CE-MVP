@@ -61,7 +61,7 @@ export function SearchPageClient({ initialQuery }: { initialQuery?: string }) {
       {results ? (
         <div className="space-y-4">
           <ResultGroup title="Posts" empty="No matching posts." items={results.posts.map((p: any) => (
-            <a key={p.postId} href={`/discussions/${p.postId}`} className="flex items-center gap-2 text-sm text-(--text-secondary) underline-offset-2 hover:underline">
+            <a key={p.postId} href={`/discussions/${p.slug ?? p.postId}`} className="flex items-center gap-2 text-sm text-(--text-secondary) underline-offset-2 hover:underline">
               <Badge tone="neutral">{p.type}</Badge> {p.title}
             </a>
           ))} />

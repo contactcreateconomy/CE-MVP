@@ -47,10 +47,10 @@ describe("SLICE-P6-14 — inspection + screen (CAP-235/236)", () => {
     expect(validateSrc).toContain("catch");
   });
 
-  it("CAP-236 INV-11: unsafe and off_topic stay distinct in the reject enum", () => {
-    expect(REJECT_REASONS).toContain("unsafe_destination");
+  it("CAP-236 INV-11: unsafe and off_topic stay distinct in the reject enum (matches _data-model.md product.rejectionReason verbatim, 9 values)", () => {
+    expect(REJECT_REASONS).toContain("unsafe");
     expect(REJECT_REASONS).toContain("off_topic");
-    expect(REJECT_REASONS).toHaveLength(8);
+    expect(REJECT_REASONS).toHaveLength(9);
   });
 });
 

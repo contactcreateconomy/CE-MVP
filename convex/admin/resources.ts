@@ -49,7 +49,11 @@ export const rightsReview = mutation({
     const userId = await requireOperator(ctx, ["editor", "publisher", "store_operator", "administrator"]);
     const ref = await ctx.db.get(args.referenceId);
     if (!ref || ref.status !== "rights_review") throw new Error("rights.review: reference not in rights_review");
-    const status = args.accept ? "accepted_for_forge" : "rejected";
+    // Screen audit 2026-09-18 / contract §3A pipeline (verbatim): rights_review
+    // → content_review (CAP-206) → accepted_for_forge — accept must hand off
+    // to the content lane, never skip it (skipping left content_review
+    // permanently unreachable and CAP-206 dead code).
+    const status = args.accept ? "content_review" : "rejected";
     await writeAudited(ctx, async (actx) => {
       await actx.db.patch(args.referenceId, { status, rejectionReason: args.accept ? undefined : (args.reason ?? "rights_basis_insufficient") });
       return {
@@ -321,13 +325,13 @@ export const getReviewQueue = query({
   handler: async (ctx) => {
     const userId = (await getAuthUserId(ctx)) as Id<"users"> | null;
     if (!userId) return null;
-    let staff = false;
+    let roles: string[] = [];
     try {
-      staff = (await assertAdminPermission(ctx)).length > 0;
+      roles = await assertAdminPermission(ctx);
     } catch {
-      staff = false;
+      roles = [];
     }
-    if (!staff) return null;
+    if (roles.length === 0) return null;
     const lanes = ["rights_review", "content_review", "accepted_for_forge", "forge_consumed"] as const;
     const out: Record<string, any[]> = {};
     for (const lane of lanes) {
@@ -344,6 +348,17 @@ export const getReviewQueue = query({
       .query("resources")
       .withIndex("by_status", (q: any) => q.eq("status", "draft"))
       .take(20);
-    return { lanes: out, draftResources: resources.map((r: any) => ({ resourceId: r._id, title: r.title, slug: r.slug })) };
+    return {
+      // Contract §1 per-row actor sets are NOT uniform (CAP-209/210 exclude
+      // Editor; CAP-557 is Moderator-only) — client gates buttons on these.
+      canPublish: roles.some((r) => r === "publisher" || r === "store_operator" || r === "administrator"),
+      // CAP-557 legal-review lane is Moderator-only — resourcesLifecycle's
+      // `lifecycleWrite` allowlist for `under_legal_review` is exactly
+      // ["moderator"], administrator is NOT included there.
+      canLegalHold: roles.includes("moderator"),
+      isAdministrator: roles.includes("administrator"),
+      lanes: out,
+      draftResources: resources.map((r: any) => ({ resourceId: r._id, title: r.title, slug: r.slug })),
+    };
   },
 });

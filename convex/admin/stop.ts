@@ -14,6 +14,19 @@ import { assertAdminPermission } from "../lib/authz";
 import { writeAudited, newCorrelationId } from "../lib/audit";
 import { validateAgainstRegistry, _registryRow, _configRow } from "../lib/authz";
 
+/** CONTRACT-7-admin-config §1 (verbatim): "Actors: administrator, Founder"
+ *  for CAP-396/397/398/431/460 — screen audit 2026-09-18: every mutation
+ *  below previously only called the broad CAP-390 shell gate
+ *  (`assertAdminPermission`), so any staff role (editor/moderator/etc.)
+ *  could flip kill-switches, activate/resume platform-wide STOP, or
+ *  disable the PostHog mirror. */
+async function requireAdministrator(ctx: any) {
+  const roles = await assertAdminPermission(ctx);
+  if (!roles.includes("administrator")) {
+    throw new Error("admin.stop: administrator (Founder) role required");
+  }
+}
+
 /** CAP-396 — kill-switch flip. failDirection honored: closed=open_forbidden
  *  blocks ALL writes (including this flip back); degrade allows manual
  *  recovery only; n_a has no enforcement. */
@@ -25,7 +38,7 @@ export const killFlip = mutation({
     actorId: v.optional(v.id("users")),
   },
   handler: async (ctx, args) => {
-    await assertAdminPermission(ctx);
+    await requireAdministrator(ctx);
     const registry = await _registryRow(ctx, args.key);
     if (!registry) throw new Error(`killFlip: unregistered key "${args.key}"`);
     if (registry.sealed) throw new Error(`killFlip: "${args.key}" is sealed`);
@@ -50,7 +63,7 @@ export const stopActivate = mutation({
     actorId: v.optional(v.id("users")),
   },
   handler: async (ctx, args) => {
-    await assertAdminPermission(ctx);
+    await requireAdministrator(ctx);
     if (args.expectedDurationMin < 1) throw new Error("stopActivate: expectedDurationMin required");
     return await writeAudited(ctx, async (actx) => {
       // Set the stop flag
@@ -80,7 +93,7 @@ export const stopResume = mutation({
     actorId: v.optional(v.id("users")),
   },
   handler: async (ctx, args) => {
-    await assertAdminPermission(ctx);
+    await requireAdministrator(ctx);
     // CAP-431: recoveryCheckKey must pass before resume
     const checkResult = await _configRow(ctx, args.recoveryCheckKey);
     if (!checkResult || checkResult.value !== true) {
@@ -107,7 +120,7 @@ export const signupModeSet = mutation({
     reason: v.string(),
   },
   handler: async (ctx, args) => {
-    await assertAdminPermission(ctx);
+    await requireAdministrator(ctx);
     if (args.mode === "open") {
       // SLICE-P7A-10: CAP-510 invoked synchronously (the shared helper —
       // reads the LATEST evaluation, fail-closed)
@@ -128,7 +141,7 @@ export const signupModeSet = mutation({
 export const mirrorDisable = mutation({
   args: { actorId: v.optional(v.id("users")), reason: v.string() },
   handler: async (ctx, args) => {
-    await assertAdminPermission(ctx);
+    await requireAdministrator(ctx);
     return await writeAudited(ctx, async (actx) => {
       const live = await _configRow(actx, "analytics.posthog.mirror.enabled");
       if (live) {

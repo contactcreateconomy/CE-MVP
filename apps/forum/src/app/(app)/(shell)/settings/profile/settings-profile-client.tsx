@@ -17,6 +17,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { api } from "@/lib/convex";
 import { isConvexConfigured } from "@cemvp/convex-client";
 import { useAuth } from "@cemvp/auth-ui";
@@ -115,19 +122,27 @@ function AttributesCard({ state }: { state: any }) {
       <CardHeader><h2 className="text-lg font-semibold text-(--text-primary)">Optional profile fields</h2></CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-1">
-          <label htmlFor="role" className="text-sm font-medium text-(--text-primary)">Role archetype</label>
-          <select id="role" value={role} onChange={(e) => setRole(e.target.value)} className="w-full rounded-md border border-(--border-default) bg-(--bg-surface) px-2 py-1.5 text-sm">
-            <option value="">Not set</option>
-            {ROLE_ARCHETYPES.map((r) => <option key={r} value={r}>{r.replace(/_/g, " ")}</option>)}
-          </select>
+          <span id="role-label" className="text-sm font-medium text-(--text-primary)">Role archetype</span>
+          <Select value={role || undefined} onValueChange={setRole}>
+            <SelectTrigger aria-labelledby="role-label" className="w-full">
+              <SelectValue placeholder="Not set" />
+            </SelectTrigger>
+            <SelectContent>
+              {ROLE_ARCHETYPES.map((r) => <SelectItem key={r} value={r}>{r.replace(/_/g, " ")}</SelectItem>)}
+            </SelectContent>
+          </Select>
           <Button variant="secondary" size="sm" className="mt-1" onClick={() => void save("roleArchetype", role || undefined)}>Save role</Button>
         </div>
         <div className="space-y-1">
-          <label htmlFor="age" className="text-sm font-medium text-(--text-primary)">Age band (banded, optional)</label>
-          <select id="age" value={ageBand} onChange={(e) => setAgeBand(e.target.value)} className="w-full rounded-md border border-(--border-default) bg-(--bg-surface) px-2 py-1.5 text-sm">
-            <option value="">Not set</option>
-            {AGE_BANDS.map((a) => <option key={a} value={a}>{a.replace(/_/g, " ")}</option>)}
-          </select>
+          <span id="age-label" className="text-sm font-medium text-(--text-primary)">Age band (banded, optional)</span>
+          <Select value={ageBand || undefined} onValueChange={setAgeBand}>
+            <SelectTrigger aria-labelledby="age-label" className="w-full">
+              <SelectValue placeholder="Not set" />
+            </SelectTrigger>
+            <SelectContent>
+              {AGE_BANDS.map((a) => <SelectItem key={a} value={a}>{a.replace(/_/g, " ")}</SelectItem>)}
+            </SelectContent>
+          </Select>
           <Button variant="secondary" size="sm" className="mt-1" onClick={() => void save("ageBand", ageBand || undefined)}>Save age band</Button>
         </div>
         <div className="space-y-1">
@@ -136,7 +151,7 @@ function AttributesCard({ state }: { state: any }) {
             className="w-full rounded-md border border-(--border-default) bg-(--bg-surface) p-2 text-sm" />
           <Button variant="secondary" size="sm" className="mt-1" onClick={() => void save("bio", bio)}>Save bio</Button>
         </div>
-        {note ? <p className="text-xs text-(--feedback-warning, #b45309)">{note}</p> : null}
+        {note ? <p className="text-xs text-(--feedback-warning-text)">{note}</p> : null}
         <p className="text-xs text-(--text-muted)">&quot;Prefer not to say&quot; counts as a completed decision, equal credit.</p>
       </CardContent>
     </Card>
@@ -172,9 +187,14 @@ function SocialsCard({ socials }: { socials: any[] }) {
           </ul>
         )}
         <div className="flex flex-wrap items-center gap-2">
-          <select value={platform} onChange={(e) => setPlatform(e.target.value)} className="rounded-md border border-(--border-default) bg-(--bg-surface) px-2 py-1.5 text-sm">
-            {SOCIAL_PLATFORMS.map((p) => <option key={p} value={p}>{p}</option>)}
-          </select>
+          <Select value={platform} onValueChange={setPlatform}>
+            <SelectTrigger aria-label="Social platform" className="w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SOCIAL_PLATFORMS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+            </SelectContent>
+          </Select>
           <Input value={handle} onChange={(e) => setHandle(e.target.value)} placeholder="@handle" className="w-44" />
           <Button size="sm" disabled={handle.trim().length === 0} onClick={() => {
             setErr(null);
@@ -182,7 +202,7 @@ function SocialsCard({ socials }: { socials: any[] }) {
           }}>Add</Button>
         </div>
         <p className="text-xs text-(--text-muted)">We store the handle only — no OAuth or profile fetch in v1.</p>
-        {err ? <p className="text-xs text-(--feedback-error, #b91c1c)">{err}</p> : null}
+        {err ? <p className="text-xs text-(--feedback-error-text)">{err}</p> : null}
       </CardContent>
     </Card>
   );

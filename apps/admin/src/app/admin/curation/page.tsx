@@ -78,10 +78,14 @@ export default function AdminCurationPage() {
               {state.featured.map((f: any) => (
                 <li key={f.featuredId} className="flex items-center justify-between gap-2">
                   <span className="text-(--text-secondary)">{f.label}</span>
-                  <Button variant="destructive" size="sm" disabled={busy}
-                    onClick={() => run(() => pullFeatured({ featuredId: f.featuredId }), "Pulled (trendScore untouched).")}>
-                    Emergency pull
-                  </Button>
+                  {state.isAdministrator ? (
+                    <Button variant="destructive" size="sm" disabled={busy}
+                      onClick={() => run(() => pullFeatured({ featuredId: f.featuredId }), "Pulled (trendScore untouched).")}>
+                      Emergency pull
+                    </Button>
+                  ) : (
+                    <span className="text-xs text-(--text-muted)">Administrator-only (CAP-554)</span>
+                  )}
                 </li>
               ))}
             </ul>

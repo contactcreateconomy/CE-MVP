@@ -66,7 +66,16 @@ export default function AdminModerationPage() {
       <QueueBoard
         cases={boardCases}
         loading={queue === undefined}
-        groupBy={(c) => ORDER_LABELS[Math.min(5, Number((c as any).severity === "s0_critical" ? 0 : 5))]}
+        // CAP-330 order (screen audit 2026-09-18: this previously collapsed
+        // every non-s0 case into the "S3 · Low" bucket — `severity ===
+        // "s0_critical" ? 0 : 5` never checked legal/s1/appealed/s2 at
+        // all). `band` is the server's own `orderKey(c)` (caseType +
+        // status + severity) returned per-row by listQueue — reused
+        // verbatim instead of re-derived client-side.
+        groupBy={(c) => {
+          const row = cases.find((r) => r.id === c.id);
+          return ORDER_LABELS[row?.band ?? 5];
+        }}
         groupOrder={ORDER_LABELS}
         renderActions={(c) => {
           const row = cases.find((r) => r.id === c.id);
@@ -83,14 +92,22 @@ export default function AdminModerationPage() {
                 </Button>
               )}
               {row.severity === "s2_medium" || row.severity === "s3_low" ? (
-                <>
-                  <Button variant="ghost" size="sm" onClick={() => void act(resolve({ caseId: row.id, decision: "actioned", reason: "console" }), "Resolved (actioned).")}>
-                    Action
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => void act(resolve({ caseId: row.id, decision: "resolved_no_action", reason: "console" }), "Resolved (no action).")}>
-                    No action
-                  </Button>
-                </>
+                // CAP-328 gate (screen audit 2026-09-18): the backend now
+                // requires an active lease held by the caller before
+                // resolve — only surface these actions once the case is
+                // claimed, otherwise nudge to Claim first.
+                row.status === "claimed" ? (
+                  <>
+                    <Button variant="ghost" size="sm" onClick={() => void act(resolve({ caseId: row.id, decision: "actioned", reason: "console" }), "Resolved (actioned).")}>
+                      Action
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => void act(resolve({ caseId: row.id, decision: "resolved_no_action", reason: "console" }), "Resolved (no action).")}>
+                      No action
+                    </Button>
+                  </>
+                ) : (
+                  <span className="text-xs text-text-muted">Claim to act</span>
+                )
               ) : (
                 <Badge tone="warning">Full review flow</Badge>
               )}

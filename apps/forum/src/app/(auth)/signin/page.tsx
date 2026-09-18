@@ -1,256 +1,201 @@
 "use client";
 
 /**
- * Route: /signin — SLICE-P2-04
- * Contract: CONTRACT-1-signin-FINAL.md §3 States 1-9
+ * Route: /signin — forum auth entry.
  *
- * Nine states: open/new-identity · waitlist-mode · closed-mode ·
- * existing-user bypass · invited conversion · magic-link-requested ·
- * rate-limited IP (CAP-016 5/15m) · rate-limited email (CAP-017 3/1h) ·
- * rate-limited finalize (CAP-018 10/1h).
- *
- * Auth card 420px (§11.16). EmailCode provider added to convex/auth.ts
- * alongside existing Password/OAuth (P2-AUTH-CUTOVER gate — nothing
- * is removed). Post-finalize: pending_context → /welcome, complete → /feed.
+ * Founder override 2026-09-18: the dedicated magic-link/email-code card is
+ * retired. Forum uses the same `@cemvp/auth-ui` AuthModal as the admin
+ * app (email/password + Google/GitHub). Waitlist/closed admission modes
+ * still render here (CAP-001); existing members can always open the
+ * modal (existing-user bypass). Authenticated visitors go to `/feed`.
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
-import { useAuthActions } from "@convex-dev/auth/react";
+import { useMutation, useQuery } from "convex/react";
 import { useAuth } from "@cemvp/auth-ui";
-import { getRoutingRedirect } from "@/lib/routing";
-import { Mail, AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import { isConvexConfigured } from "@cemvp/convex-client";
+import { AlertCircle, Clock } from "lucide-react";
 
 import { api } from "../../../../../../convex/_generated/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Banner } from "@/components/ui/banner";
-import { CreateconomyLogoMark } from "@/components/ui/createconomy-logo-mark";
+import { CreateconomyLogoFull } from "@/components/ui/createconomy-logo-full";
 
-type SigninState =
-  | "checking-mode"      // querying effectiveSignupMode
-  | "open-email"         // State 1: open mode, email entry
-  | "open-code"          // State 6: magic-link requested, code entry
-  | "waitlist"           // State 2: waitlist mode, email capture only
-  | "closed"             // State 3: closed mode, reject
-  | "rate-limited-ip"    // State 7
-  | "rate-limited-email" // State 8
-  | "rate-limited-finalize" // State 9
-  | "error";             // generic error (link expired, etc.)
+type GateState =
+  | "checking"
+  | "open"
+  | "waitlist"
+  | "waitlist-joined"
+  | "waitlist-already"
+  | "waitlist-rate-ip"
+  | "waitlist-rate-email"
+  | "waitlist-error"
+  | "closed";
 
 export default function SigninPage() {
   const router = useRouter();
-  const { authStatus } = useAuth();
-  // Offline/no-env guard: without a configured Convex URL the root provider
-  // deliberately omits ConvexAuthProvider (@convex-dev/auth) — useAuthActions
-  // returns undefined during CI prerender, so the destructure must not throw
-  // (same guard class as the layout overlays). Offline the page stays in its
-  // checking state; the actions below can never fire without a provider.
-  const authActions = useAuthActions() as ReturnType<typeof useAuthActions> | undefined;
-  const signIn = authActions?.signIn;
+  const configured = isConvexConfigured();
+  const { authStatus, openAuthModal } = useAuth();
 
-  // CONTRACT-1-app-shell rule 3: already-complete users on /signin → /feed.
-  // Google sessions from the feed modal are the same Convex Auth session.
-  useEffect(() => {
-    if (authStatus !== "authenticated") return;
-    const dest = getRoutingRedirect("/signin", "authenticated", "complete");
-    if (dest) router.replace(dest);
-  }, [authStatus, router]);
+  const admissionMode = useQuery(
+    api.admission.getEffectiveMode,
+    configured ? {} : "skip",
+  );
+  const joinWaitlistMutation = useMutation(api.waitlist.join);
 
   const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
-  const [state, setState] = useState<SigninState>("checking-mode");
   const [submitting, setSubmitting] = useState(false);
+  const [gate, setGate] = useState<GateState>("checking");
 
-  // Query admission mode (FATAL-M1A-02 server-side)
-  const admissionMode = useQuery(api.admission.getEffectiveMode);
-
-  // If we have the mode, update state
-  if (admissionMode !== undefined && state === "checking-mode") {
-    if (admissionMode === "open") setState("open-email");
-    else if (admissionMode === "waitlist") setState("waitlist");
-    else setState("closed");
+  if (admissionMode !== undefined && gate === "checking") {
+    if (admissionMode === "open") setGate("open");
+    else if (admissionMode === "waitlist") setGate("waitlist");
+    else setGate("closed");
   }
 
-  const requestCode = useCallback(async () => {
-    if (!email.trim()) return;
-    if (!signIn) return; // no @convex-dev/auth provider mounted (offline)
-    setSubmitting(true);
-    try {
-      // Rate gates: CAP-016 (5/15m ip_hash) + CAP-017 (3/1h email_hash)
-      // are enforced by the Convex Auth rate limiter wiring (P1-09 literals).
-      // Client-side: the API returns 429 with a rate-limit identifier.
-      await signIn("email-code", { email: email.trim().toLowerCase() });
-      setState("open-code");
-    } catch (err) {
-      const msg = (err as Error).message;
-      if (msg.includes("rate") && msg.includes("ip")) setState("rate-limited-ip");
-      else if (msg.includes("rate") && msg.includes("email")) setState("rate-limited-email");
-      else setState("error");
-    } finally {
-      setSubmitting(false);
+  useEffect(() => {
+    if (authStatus === "authenticated") {
+      router.replace("/feed");
     }
-  }, [email, signIn]);
+  }, [authStatus, router]);
 
-  const verifyCode = useCallback(async () => {
-    if (!code.trim() || !email.trim()) return;
-    if (!signIn) return; // no @convex-dev/auth provider mounted (offline)
-    setSubmitting(true);
-    try {
-      await signIn("email-code", { email: email.trim().toLowerCase(), code: code.trim() });
-      // Post-finalize redirect: routing convention rule 3
-      // (pending_context → /welcome, complete → /feed)
-      // The auth callback already ran createOrUpdateUser + CAP-002 txn.
-      router.push("/feed");
-    } catch (err) {
-      const msg = (err as Error).message;
-      if (msg.includes("rate")) setState("rate-limited-finalize");
-      else setState("error");
-    } finally {
-      setSubmitting(false);
-    }
-  }, [email, code, signIn, router]);
+  useEffect(() => {
+    if (authStatus !== "anonymous") return;
+    if (gate !== "open") return;
+    openAuthModal("login");
+  }, [authStatus, gate, openAuthModal]);
 
   const joinWaitlist = useCallback(async () => {
     if (!email.trim()) return;
     setSubmitting(true);
     try {
-      // State 2: waitlist-mode — email capture only; writes waitlistEntries,
-      // no user/role (CAP-001; CAP-478 "no L08 signup_completed").
-      // Fenced (contract OQ3): submit mutation delegation awaits ruling —
-      // the form renders per state 2; its submit calls the public waitlist
-      // mutation when that one-line ruling lands.
-      console.log("waitlist join:", email);
-      setState("open-code"); // show confirmation state
+      const res = await joinWaitlistMutation({ email: email.trim().toLowerCase() });
+      setGate(res.alreadyJoined ? "waitlist-already" : "waitlist-joined");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("waitlist.join.ip")) setGate("waitlist-rate-ip");
+      else if (msg.includes("waitlist.join.email")) setGate("waitlist-rate-email");
+      else setGate("waitlist-error");
     } finally {
       setSubmitting(false);
     }
-  }, [email]);
+  }, [email, joinWaitlistMutation]);
+
+  if (authStatus === "authenticated" || authStatus === "loading") {
+    return (
+      <main className="relative flex min-h-screen items-center justify-center bg-bg-canvas p-6">
+        <div className="canvas-dot-grid pointer-events-none absolute inset-0" aria-hidden />
+        <p className="relative text-sm text-text-muted">Loading…</p>
+      </main>
+    );
+  }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-bg-canvas p-6">
-      <div className="w-full max-w-(--container-auth)">
+    <main className="relative flex min-h-screen items-center justify-center bg-bg-canvas p-6">
+      <div className="canvas-dot-grid pointer-events-none absolute inset-0" aria-hidden />
+      <div className="relative w-full max-w-(--container-auth)">
         <div className="mb-6 flex justify-center">
-          <CreateconomyLogoMark className="size-6" />
+          <CreateconomyLogoFull />
         </div>
 
-        <Card>
-          <CardHeader className="text-center">
-            <h1 className="text-lg font-semibold text-text-primary">
-              {state === "waitlist" ? "Join the waitlist" : "Sign in to Createconomy"}
-            </h1>
-            <p className="text-sm text-text-secondary">
-              {state === "waitlist"
-                ? "We'll notify you when a spot opens up."
-                : "Enter your email and we'll send you a sign-in code."}
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* State 3: closed */}
-            {state === "closed" && (
+        {gate === "closed" ? (
+          <Card>
+            <CardHeader className="text-center">
+              <h1 className="text-lg font-semibold text-text-primary">Sign in to Createconomy</h1>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <Banner variant="neutral">
                 New sign-ups are currently closed. Check back later.
               </Banner>
-            )}
+              <Button className="w-full" onClick={() => openAuthModal("login")}>
+                Already a member? Sign in
+              </Button>
+            </CardContent>
+          </Card>
+        ) : null}
 
-            {/* State 2: waitlist */}
-            {state === "waitlist" && (
-              <>
-                <Input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  aria-label="Email address"
-                />
-                <Button className="w-full" onClick={joinWaitlist} loading={submitting} disabled={!email.trim()}>
-                  Join waitlist
-                </Button>
-              </>
-            )}
+        {gate.startsWith("waitlist") ? (
+          <Card>
+            <CardHeader className="text-center">
+              <h1 className="text-lg font-semibold text-text-primary">Join the waitlist</h1>
+              <p className="text-sm text-text-secondary">
+                We&apos;ll notify you when a spot opens up.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {gate === "waitlist" ? (
+                <>
+                  <Input
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    aria-label="Email address"
+                  />
+                  <Button className="w-full" onClick={joinWaitlist} loading={submitting} disabled={!email.trim()}>
+                    Join waitlist
+                  </Button>
+                </>
+              ) : null}
+              {gate === "waitlist-joined" ? (
+                <Banner variant="success">
+                  You&apos;re on the list. We&apos;ll be in touch when a spot opens.
+                </Banner>
+              ) : null}
+              {gate === "waitlist-already" ? (
+                <Banner variant="info">This email is already on the waitlist.</Banner>
+              ) : null}
+              {gate === "waitlist-rate-ip" ? (
+                <Banner variant="warning" role="alert">
+                  <span className="inline-flex items-center gap-2">
+                    <Clock className="size-4" /> Too many sign-ups from this network. Try again later.
+                  </span>
+                </Banner>
+              ) : null}
+              {gate === "waitlist-rate-email" ? (
+                <Banner variant="warning" role="alert">
+                  <span className="inline-flex items-center gap-2">
+                    <Clock className="size-4" /> This email has already joined recently.
+                  </span>
+                </Banner>
+              ) : null}
+              {gate === "waitlist-error" ? (
+                <Banner variant="error" role="alert">
+                  <span className="inline-flex items-center gap-2">
+                    <AlertCircle className="size-4" /> Could not join the waitlist. Please try again.
+                  </span>
+                </Banner>
+              ) : null}
+              <Button variant="secondary" className="w-full" onClick={() => openAuthModal("login")}>
+                Already a member? Sign in
+              </Button>
+            </CardContent>
+          </Card>
+        ) : null}
 
-            {/* State 1: open — email entry */}
-            {(state === "open-email" || state === "checking-mode") && (
-              <>
-                <Input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  aria-label="Email address"
-                />
-                <Button className="w-full" onClick={requestCode} loading={submitting} disabled={!email.trim()}>
-                  <Mail className="size-4" />
-                  Send sign-in code
-                </Button>
-              </>
-            )}
-
-            {/* State 6: magic-link requested — code entry */}
-            {state === "open-code" && (
-              <>
-                <p className="text-sm text-text-secondary">
-                  Code sent to <strong>{email}</strong>. Enter the 6-digit code below.
-                </p>
-                <Input
-                  type="text"
-                  placeholder="000000"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  aria-label="Verification code"
-                  className="text-center font-mono text-lg tracking-widest"
-                />
-                <Button className="w-full" onClick={verifyCode} loading={submitting} disabled={code.length !== 6}>
-                  <CheckCircle2 className="size-4" />
-                  Verify & sign in
-                </Button>
-                <Button variant="ghost" className="w-full" onClick={() => { setState("open-email"); setCode(""); }}>
-                  Use a different email
-                </Button>
-              </>
-            )}
-
-            {/* States 7-9: rate limited */}
-            {state === "rate-limited-ip" && (
-              <Banner variant="warning" role="alert">
-                <span className="inline-flex items-center gap-2">
-                  <Clock className="size-4" /> Too many attempts from this network. Try again in 15 minutes.
-                </span>
-              </Banner>
-            )}
-            {state === "rate-limited-email" && (
-              <Banner variant="warning" role="alert">
-                <span className="inline-flex items-center gap-2">
-                  <Clock className="size-4" /> Too many codes sent to this email. Try again in 1 hour.
-                </span>
-              </Banner>
-            )}
-            {state === "rate-limited-finalize" && (
-              <Banner variant="warning" role="alert">
-                <span className="inline-flex items-center gap-2">
-                  <Clock className="size-4" /> Too many verification attempts. Try again in 1 hour.
-                </span>
-              </Banner>
-            )}
-
-            {/* Generic error */}
-            {state === "error" && (
-              <Banner variant="error" role="alert">
-                <span className="inline-flex items-center gap-2">
-                  <AlertCircle className="size-4" /> That code didn&apos;t work. It may have expired — request a new one.
-                </span>
-              </Banner>
-            )}
-
-            <p className="pt-4 text-center text-xs text-text-muted">
-              By continuing you agree to our{" "}
-              <a href="/terms" className="text-text-link underline">Terms</a> and{" "}
-              <a href="/privacy" className="text-text-link underline">Privacy Policy</a>.
-            </p>
-          </CardContent>
-        </Card>
+        {gate === "open" || gate === "checking" ? (
+          <Card>
+            <CardHeader className="text-center">
+              <h1 className="text-lg font-semibold text-text-primary">Sign in to Createconomy</h1>
+              <p className="text-sm text-text-secondary">
+                Use email and password, or continue with Google — same sign-in as the admin console.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full" onClick={() => openAuthModal("login")}>
+                Sign in
+              </Button>
+              <p className="pt-4 text-center text-xs text-text-muted">
+                By continuing you agree to our{" "}
+                <a href="/terms" className="text-text-link underline">Terms</a> and{" "}
+                <a href="/privacy" className="text-text-link underline">Privacy Policy</a>.
+              </p>
+            </CardContent>
+          </Card>
+        ) : null}
       </div>
     </main>
   );
