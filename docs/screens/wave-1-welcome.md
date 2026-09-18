@@ -1,6 +1,7 @@
 # Bootstrap Finalize (timezone chooser)
 
 **Route:** `/welcome`
+**Status (2026-09-18 founder override):** RETIRED. `/welcome` now server-redirects to `/feed`. Timezone is auto-detected silently in `RoutingGuard` (DECISIONS-LOCKED #2) via `finalizeWelcome`; `pending_context` is no longer a chooser trap. Do not rebuild this screen.
 **Status:** LIVE — `apps/forum/src/app/(auth)/welcome/page.tsx` (SLICE-P2-02). Per DECISIONS-LOCKED #2 the Skip path is removed; timezone is auto-detected (`Intl.DateTimeFormat`) and the user confirms/edits before submit.
 **Remediation (2026-09-18 screen audit):** `finalize()` never called any mutation — it only did `router.push("/feed")`, so `bootstrapState` never flipped from `pending_context` to `complete` and the timezone was never written; every real user would have been stuck failing CAP-005's write guard forever after their first visit to `/welcome`. Fixed by adding a public `finalizeWelcome` mutation (`convex/bootstrap.ts`, thin auth wrapper over the existing `finalizeBootstrapTx` — refactored out of the internal-only `finalizeBootstrap` per the function-organization rule) and wiring the screen to call it, with contract states 4-6 (invalid timezone / guard failure / write-once conflict) mapped to inline banners. Logo swapped to the Full logo component (§10.2).
 **Contract:** PRD/02-contracts/wave-1/CONTRACT-1-welcome-FINAL.md

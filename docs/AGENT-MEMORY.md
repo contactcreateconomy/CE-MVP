@@ -112,6 +112,10 @@ Vercel Preview → dev cloud URL. Vercel Production → prod cloud URL. OAuth ca
 
 ## Domain / Spec
 
+### 2026-09-18 — Forum has no `/welcome`; sign-in is the admin AuthModal
+
+Founder override: do not send forum users through `/welcome`. Timezone is silent (DECISIONS-LOCKED #2) via `RoutingGuard` → `finalizeWelcome`. `/signin` uses `@cemvp/auth-ui` AuthModal (password + Google), same as admin — not the magic-link/email-code card. `/welcome` redirects to `/feed`. Do not rebuild the chooser.
+
 ### 2026-09-16 — Forum vs admin roles (`roleAssignments.role`)
 
 Canonical enum (`schema.ts` / `_data-model.md`): `member`, `editor`, `publisher`, `moderator`, `store_operator`, `support_operator`, `administrator`. Scope v1 = `global` only.

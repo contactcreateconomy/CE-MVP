@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- schema/validator introspection + pure-fixture tests */
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 /* SLICE-P2-01/02/03 acceptance tests — admission gate + bootstrap txn +
  * finalizeBootstrap + assertCustomerCapability precedence chain.
@@ -111,6 +113,16 @@ describe("SLICE-P2-02 — finalizeBootstrap", () => {
     }
     const names = (t.indexes ?? []).map((i: any) => i.indexDescriptor);
     expect(names).toContain("by_anonymousSessionId");
+  });
+
+  it("looks up the active member role, not the first roleAssignments row", () => {
+    // Founder/staff have many roleAssignments; `.first()` on by_user is often
+    // administrator and used to throw "active member role required".
+    const src = readFileSync(join(__dirname, "../../../../../../convex/bootstrap.ts"), "utf8");
+    expect(src).toContain("by_user_role_status");
+    expect(src).toContain('eq("role", "member")');
+    expect(src).toContain('insert("privateUserData"');
+    expect(src).not.toMatch(/query\("roleAssignments"\)[\s\S]{0,180}\.first\(\)/);
   });
 
   it("CAP-004: signup eventCatalog row satisfies CAP-437 (has required fields)", () => {

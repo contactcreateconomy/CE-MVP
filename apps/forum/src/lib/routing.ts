@@ -8,6 +8,13 @@
  *   (4) server-side CAP-005 guard remains the security boundary — client
  *       routing is UX convenience
  *
+ * Founder override 2026-09-18: the forum app does not use `/welcome`.
+ * DECISIONS-LOCKED #2 already required silent timezone auto-detect (no
+ * chooser, `pending_context` no longer reachable via skip). Rule 2 is
+ * retired in the client: bootstrap is finalized silently by RoutingGuard
+ * and authenticated visitors are never sent to `/welcome`. Hitting
+ * `/welcome` (bookmark/old link) always goes to `/feed`.
+ *
  * Usage: wrap protected pages in `<ProtectedRoute>` or call
  * `getRoutingRedirect()` in a server component/middleware.
  */
@@ -53,20 +60,18 @@ const PROTECTED_ROUTE_PREFIXES = [
 export function getRoutingRedirect(
   pathname: string,
   auth: AuthState,
-  bootstrapState: BootstrapState,
+  _bootstrapState: BootstrapState,
 ): string | null {
   // Rule 1: anonymous on protected route → /signin
   if (auth === "anonymous" && isProtectedRoute(pathname)) {
     return "/signin";
   }
 
-  // Rule 2: pending_context on ≠ /welcome → /welcome
-  if (auth === "authenticated" && bootstrapState === "pending_context" && pathname !== "/welcome") {
-    return "/welcome";
-  }
-
-  // Rule 3: complete on /signin, /waitlist, /welcome → /feed
-  if (auth === "authenticated" && bootstrapState === "complete" && PREF_ROUTES.includes(pathname)) {
+  // Founder override 2026-09-18: /welcome is retired. Authenticated
+  // visitors (pending_context or complete) on pref routes go to /feed.
+  // pending_context is closed silently by RoutingGuard (DECISIONS-LOCKED #2),
+  // not by a chooser screen — so Rule 2 is a no-op here.
+  if (auth === "authenticated" && PREF_ROUTES.includes(pathname)) {
     return "/feed";
   }
 

@@ -7,6 +7,10 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Changed: forum sign-in matches admin AuthModal; `/welcome` retired (2026-09-18)
+
+Forum `/signin` no longer uses the magic-link/email-code card. It opens the same `@cemvp/auth-ui` AuthModal as the admin console (email/password + Google/GitHub). `/welcome` is retired: the route server-redirects to `/feed`, and `RoutingGuard` silently finalizes `pending_context` with the browser timezone (UTC fallback) per DECISIONS-LOCKED #2, so new members are not trapped on a timezone chooser.
+
 ### Fix: full-repo screen audit vs. contracts + STYLE-KIT — RBAC, correctness, and doc-drift remediation (2026-09-18)
 
 A wave-by-wave audit of all 54 screens in `apps/forum` and `apps/admin` against their `docs/02-contracts/wave-N/CONTRACT-*-FINAL.md` files and `docs/04-design-system/STYLE-KIT.md` (the authoritative sources — `docs/screens/*.md` was found to be a stale pre-Phase-2 snapshot and is now corrected per-file with a 2026-09-18 status banner). Explicitly out of scope and untouched: auth backend mechanics, the admin app's separate port/origin, and Twilio/mobile-OTP as a non-gating optional `/setup` step (confirmed still non-gating).

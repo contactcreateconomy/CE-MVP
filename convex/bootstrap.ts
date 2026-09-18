@@ -19,6 +19,7 @@ import type { Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
 import { captureEvent } from "./lib/events";
 import { ensureDistributionTx } from "./distributions";
+import { STAFF_ROLES, type StaffRole } from "./lib/authz";
 
 // CAP-004: eventName "signup" per the welcome contract §5 — this seed row
 // satisfies CAP-437's catalog gate so captureEvent doesn't reject.
@@ -57,21 +58,52 @@ export async function finalizeBootstrapTx(
   const user = await ctx.db.get(userId);
   if (!user) throw new Error("User not found.");
 
-  // CAP-003: verifies member/private — must have roleAssignments member row
-  const role = await ctx.db
+  // CAP-003: verifies member/private — must have an *active member* row.
+  // Do not use `.first()` on `by_user`: founder/staff accounts have several
+  // roleAssignments (administrator first after ensureFounderPrivileges), so
+  // the oldest/first row is often not `member` even when a member row exists.
+  const memberRole = await ctx.db
     .query("roleAssignments")
-    .withIndex("by_user", (q: any) => q.eq("userId", userId))
-    .first();
-  if (!role || role.role !== "member" || role.status !== "active") {
-    throw new Error("Guard failure: active member role required before finalize.");
+    .withIndex("by_user_role_status", (q) =>
+      q.eq("userId", userId).eq("role", "member").eq("status", "active"),
+    )
+    .unique();
+  if (!memberRole) {
+    // Existing founder/staff users (Google sign-in after CLI grantFounder)
+    // may have staff roles only and still be pending_context. Give them the
+    // same default member row new signups get, then continue finalize.
+    const assignments = await ctx.db
+      .query("roleAssignments")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+    const isStaff =
+      user.isStaff === true ||
+      assignments.some(
+        (a) => a.status === "active" && STAFF_ROLES.includes(a.role as StaffRole),
+      );
+    if (!isStaff) {
+      throw new Error("Guard failure: active member role required before finalize.");
+    }
+    await ctx.db.insert("roleAssignments", {
+      userId,
+      role: "member",
+      scopeType: "global",
+      status: "active",
+      grantedAt: Date.now(),
+    });
   }
 
-  // CAP-003: privateUserData must exist (from CAP-002 txn)
+  // CAP-003: privateUserData must exist (from CAP-002). Founder/staff
+  // accounts created outside admission (CLI grantFounder, pre-canonical
+  // OAuth) often never got the empty row — insert the same CAP-002 shape
+  // instead of trapping them in pending_context.
   const priv = await ctx.db
     .query("privateUserData")
-    .withIndex("by_user", (q: any) => q.eq("userId", userId))
-    .first();
-  if (!priv) throw new Error("Guard failure: privateUserData row missing.");
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .unique();
+  if (!priv) {
+    await ctx.db.insert("privateUserData", { userId });
+  }
 
   // CAP-003: write-once — bootstrapState must be pending_context
   if (user.bootstrapState !== "pending_context") {

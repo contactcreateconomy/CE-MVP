@@ -1,6 +1,7 @@
 # Sign In (magic link)
 
 **Route:** `/signin`
+**Status (2026-09-18 founder override):** LIVE — `apps/forum/src/app/(auth)/signin/page.tsx`. Magic-link/email-code card retired. Forum now uses the same `@cemvp/auth-ui` AuthModal as the admin app (email/password + Google/GitHub). Waitlist/closed admission modes still render on this route (CAP-001); existing members can always open the modal. Authenticated visitors go to `/feed`. No `/welcome` hop.
 **Status:** LIVE — `apps/forum/src/app/(auth)/signin/page.tsx` (SLICE-P2-04). All 9 contract states implemented (open-email, code-entry, waitlist, closed, existing-user bypass via routing convention, 3 rate-limit states, generic error). Full logo (§10.2) now used per remediation below.
 **Remediation (2026-09-18 screen audit):** The waitlist-mode branch (§3 State 2) was a stub — `joinWaitlist()` only did `console.log(email)` and moved to the magic-link code-entry copy ("Code sent to... enter the 6-digit code"), so an anonymous visitor in waitlist-mode never actually joined `waitlistEntries` and saw the wrong confirmation copy. Wired to the same `waitlist.join` publicMutation the dedicated `/waitlist` screen calls (CAP-014/015), with its own joined/already-joined/rate-limited/error states and copy. Logo swapped from the Mark to the Full logo component (§10.2 explicitly lists "auth" as a Full-logo usage; only the Mark existed before this audit).
 **Contract:** PRD/02-contracts/wave-1/CONTRACT-1-signin-FINAL.md

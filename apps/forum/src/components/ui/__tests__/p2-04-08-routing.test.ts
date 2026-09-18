@@ -19,19 +19,20 @@ describe("SLICE-P2-06 — Platform-Wide Routing Convention (F-15)", () => {
     expect(getRoutingRedirect("/privacy", "anonymous", undefined)).toBeNull();
   });
 
-  it("Rule 2: pending_context on ≠ /welcome → /welcome", () => {
-    expect(getRoutingRedirect("/feed", "authenticated", "pending_context")).toBe("/welcome");
-    expect(getRoutingRedirect("/profile", "authenticated", "pending_context")).toBe("/welcome");
+  it("Rule 2 retired: pending_context never redirects to /welcome", () => {
+    expect(getRoutingRedirect("/feed", "authenticated", "pending_context")).toBeNull();
+    expect(getRoutingRedirect("/profile", "authenticated", "pending_context")).toBeNull();
   });
 
-  it("Rule 2: pending_context on /welcome → stays", () => {
-    expect(getRoutingRedirect("/welcome", "authenticated", "pending_context")).toBeNull();
-  });
-
-  it("Rule 3: complete on /signin → /feed; on /waitlist → /feed; on /welcome → /feed", () => {
-    expect(getRoutingRedirect("/signin", "authenticated", "complete")).toBe("/feed");
-    expect(getRoutingRedirect("/waitlist", "authenticated", "complete")).toBe("/feed");
+  it("retired /welcome: authenticated visitors (any bootstrap) go to /feed", () => {
+    expect(getRoutingRedirect("/welcome", "authenticated", "pending_context")).toBe("/feed");
     expect(getRoutingRedirect("/welcome", "authenticated", "complete")).toBe("/feed");
+  });
+
+  it("Rule 3: authenticated on /signin → /feed; on /waitlist → /feed", () => {
+    expect(getRoutingRedirect("/signin", "authenticated", "complete")).toBe("/feed");
+    expect(getRoutingRedirect("/signin", "authenticated", "pending_context")).toBe("/feed");
+    expect(getRoutingRedirect("/waitlist", "authenticated", "complete")).toBe("/feed");
   });
 
   it("Rule 3: complete on non-pref route → stays", () => {
