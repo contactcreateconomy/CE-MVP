@@ -4960,5 +4960,203 @@
     "seen": 1790517075.6756408,
     "ast_hash": "a36bafa81ae72d1f374aea3b91bc8a2a",
     "semantic_hash": ""
+  },
+  "ak-redesign/00-control/RAW-INVENTORY.md": {
+    "mtime": 1790518530.6253684,
+    "seen": 1790518572.6529431,
+    "ast_hash": "e354323dfea17b1da0205ee0591adbca",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/SETUP-REPORT-R2.md": {
+    "mtime": 1790518552.2016313,
+    "seen": 1790518572.6529465,
+    "ast_hash": "a3367bbc2ab7e4945ca94c87f086e7de",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/README.md": {
+    "mtime": 1790518471.1831589,
+    "seen": 1790518572.6529512,
+    "ast_hash": "77bcd7a6073b4c90694c797b8f7d088c",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/category-debate-1440.png": {
+    "mtime": 1790518443.1938617,
+    "seen": 1790518572.6534019,
+    "ast_hash": "4f9bf3923b69d7ebf3f7062607583cbd",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/category-debate-390.png": {
+    "mtime": 1790518438.1514132,
+    "seen": 1790518572.653404,
+    "ast_hash": "eaeac76bf2ac11a92895122872cc9a2d",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/discover-1440.png": {
+    "mtime": 1790518344.7209117,
+    "seen": 1790518572.6534047,
+    "ast_hash": "f8b384fab9a7d7b450cd66bdcc94530e",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/discover-390.png": {
+    "mtime": 1790518262.5811899,
+    "seen": 1790518572.6534057,
+    "ast_hash": "56d0fea5da99798f97c25622d827c39d",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/discussions-demo-figma-1440.png": {
+    "mtime": 1790518312.471156,
+    "seen": 1790518572.6534073,
+    "ast_hash": "cd32b4c6da29ed044b0f5165440d4885",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/discussions-demo-figma-390.png": {
+    "mtime": 1790518229.439588,
+    "seen": 1790518572.6534085,
+    "ast_hash": "c3bebfb0fe7b2ebe4dbddefe54a527b2",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/drafts-1440.png": {
+    "mtime": 1790518360.8511693,
+    "seen": 1790518572.6534102,
+    "ast_hash": "83d9708fadfa03911eefe9c7caed87a5",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/drafts-390.png": {
+    "mtime": 1790518279.1990106,
+    "seen": 1790518572.6534116,
+    "ast_hash": "49543863cc57ce119497c18fd6330469",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/feed-1440.png": {
+    "mtime": 1790518306.895234,
+    "seen": 1790518572.653413,
+    "ast_hash": "e47d2261477439002edcf17b468e3086",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/feed-390.png": {
+    "mtime": 1790518223.8403165,
+    "seen": 1790518572.6534145,
+    "ast_hash": "7d3a2a52d938bb7d66102f874c3e0734",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/landing-1440.png": {
+    "mtime": 1790518290.3097913,
+    "seen": 1790518572.6534157,
+    "ast_hash": "2fefba34f77d7d5194367fa5f12076f1",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/landing-390.png": {
+    "mtime": 1790518207.2204764,
+    "seen": 1790518572.6534169,
+    "ast_hash": "4aa4079121d2a754ca6a58e678b432a4",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/leaderboard-1440.png": {
+    "mtime": 1790518355.4502513,
+    "seen": 1790518572.6534183,
+    "ast_hash": "d6e18001b861d2aefa781c72a846df65",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/leaderboard-390.png": {
+    "mtime": 1790518273.6351233,
+    "seen": 1790518572.6534197,
+    "ast_hash": "5bf8d0d417155f03bd1e037bd6a980fb",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/new-post-1440.png": {
+    "mtime": 1790518317.856608,
+    "seen": 1790518572.6534216,
+    "ast_hash": "558405add9e3357ed87bae203f937209",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/new-post-390.png": {
+    "mtime": 1790518234.904219,
+    "seen": 1790518572.6534228,
+    "ast_hash": "4fc160423916f9eff55323d882841b92",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/notifications-1440.png": {
+    "mtime": 1790518333.9640093,
+    "seen": 1790518572.653424,
+    "ast_hash": "2c5e9098a4a09349bb53f530f5a30bdc",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/notifications-390.png": {
+    "mtime": 1790518251.471191,
+    "seen": 1790518572.6534255,
+    "ast_hash": "11ca40ada7ec105c66b97f910bd42621",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/profile-1440.png": {
+    "mtime": 1790518328.6124904,
+    "seen": 1790518572.6534264,
+    "ast_hash": "2c5e9098a4a09349bb53f530f5a30bdc",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/profile-390.png": {
+    "mtime": 1790518245.9592316,
+    "seen": 1790518572.6534276,
+    "ast_hash": "232648f9be609fef325c88a0d38f420e",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/search-1440.png": {
+    "mtime": 1790518339.3579748,
+    "seen": 1790518572.6534293,
+    "ast_hash": "54d2746578e47233978b81ddb1394b0f",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/search-390.png": {
+    "mtime": 1790518257.0214612,
+    "seen": 1790518572.6534305,
+    "ast_hash": "c3ebc6c5adb1908801197fdf50d1e83b",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/settings-1440.png": {
+    "mtime": 1790518366.2711568,
+    "seen": 1790518572.6534321,
+    "ast_hash": "055d4548500aa9c62439eff64553a28e",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/settings-390.png": {
+    "mtime": 1790518284.7962098,
+    "seen": 1790518572.6534338,
+    "ast_hash": "ac732f33146ee656cfd15265df0203ce",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/setup-1440.png": {
+    "mtime": 1790518301.342988,
+    "seen": 1790518572.6534355,
+    "ast_hash": "d8673bd34667de154fedfadaba3c87a1",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/setup-390.png": {
+    "mtime": 1790518218.1912296,
+    "seen": 1790518572.6534371,
+    "ast_hash": "fc4c96b5aca70c89e212c4101c10e41d",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/signin-1440.png": {
+    "mtime": 1790518295.7878828,
+    "seen": 1790518572.6534386,
+    "ast_hash": "3e27374be6936b19bd831a3c522ba0e9",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/signin-390.png": {
+    "mtime": 1790518212.705193,
+    "seen": 1790518572.6534398,
+    "ast_hash": "77f01d138eb17196e40b465a26aae97a",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/users-amina-1440.png": {
+    "mtime": 1790518323.2731981,
+    "seen": 1790518572.653441,
+    "ast_hash": "6d40bf3f8230b2fe249d122d99bb2f44",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/baseline/users-amina-390.png": {
+    "mtime": 1790518240.454404,
+    "seen": 1790518572.6534424,
+    "ast_hash": "a00ad5239e1ee832a9b121ec26d192b3",
+    "semantic_hash": ""
   }
 }
