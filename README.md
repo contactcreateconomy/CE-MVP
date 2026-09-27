@@ -49,9 +49,11 @@ pnpm exec convex env set SITE_URL http://localhost:3000
 pnpm exec convex env set AUTH_REDIRECT_ORIGINS http://localhost:3000,http://localhost:3001
 pnpm exec convex env set FOUNDER_EMAILS contact.createconomy@gmail.com
 pnpm exec convex env set DEMO_SEED_ENABLED true
+pnpm exec convex run seed:bootstrap              # platform config (REQUIRED — categories, event catalog, jobs; without it signup finalization fails with an eventCatalog CAP-437 error)
 pnpm exec convex run legalContent:seedDefaults   # 4 legal docs (idempotent)
 pnpm exec convex run rulebook:deploySeed         # moderation rulebook (idempotent)
-pnpm exec convex run dev/demoSeed:seed           # 10 demo members, 12 tools, ~150 posts
+pnpm exec convex run admin/widgetsCatalog:deploySeed   # admin nav catalog (idempotent)
+pnpm exec convex run dev/demoSeed:seed           # OPTIONAL demo members/tools/posts (idempotent)
 pnpm exec convex env remove DEMO_SEED_ENABLED    # seeder gate is one-shot by policy
 
 # frontend — terminal 3:
