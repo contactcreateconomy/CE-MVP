@@ -4962,9 +4962,9 @@
     "semantic_hash": ""
   },
   "ak-redesign/00-control/RAW-INVENTORY.md": {
-    "mtime": 1790518584.3896132,
-    "seen": 1790518606.000432,
-    "ast_hash": "f4e434c27f7171f765ddbd875d6067c6",
+    "mtime": 1790533726.0431502,
+    "seen": 1790533767.2420914,
+    "ast_hash": "0ea4fffcf795d498196e0d9326dcd8c8",
     "semantic_hash": ""
   },
   "ak-redesign/00-control/SETUP-REPORT-R2.md": {
@@ -5199,6 +5199,12 @@
     "mtime": 1790533446.217532,
     "seen": 1790533661.1387162,
     "ast_hash": "00e03e2f69637ecdb992cbc2ca9052a4",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/SETUP-REPORT-R3.md": {
+    "mtime": 1790533750.8513658,
+    "seen": 1790533767.2420964,
+    "ast_hash": "6285176bbb19e2dad4228ff08344b90a",
     "semantic_hash": ""
   }
 }
