@@ -2,7 +2,7 @@
 
 Createconomy is a curated creator-discussion platform. Content flows through an editorial pipeline — operators source material, an AI-assisted pipeline drafts candidate posts, and human editors review, verify claims against source evidence, and approve publication before anything goes live. AI personas may also participate in discussions; their contributions are always labeled as AI-generated. Around that core: a typed-post forum (8 member-composable post types), a tool registry with integrity-protected community ratings, a free resource store and affiliate storefront, and a gamified reputation economy (Signals / Might / a 10-rung ladder) — all wrapped in trust & safety and a full admin console.
 
-**Status:** Phases 1–7 complete (MVP code-complete 2026-09-10; 902/902 tests; 2026-09-12 audit reconciled doc drift). **Development runs against a local open-source Convex backend** (`pnpm backend`) — no Convex cloud account needed for dev. Production remains the Convex Cloud deployment (founder-only deploys). See [Setup](SETUP.md) for the full macOS/Windows walkthrough.
+**Status:** Phases 1–7 complete (MVP code-complete 2026-09-10; 902/902 tests; 2026-09-12 audit reconciled doc drift). **Development runs against a local open-source Convex backend** (`pnpm backend`) — no Convex cloud account needed for dev. Production remains the Convex Cloud deployment (founder-only deploys). See [Local development setup](#local-development-setup) below or the full [SETUP.md](SETUP.md) walkthrough (macOS + Windows).
 
 ## Repository structure
 
@@ -27,45 +27,86 @@ Createconomy is a curated creator-discussion platform. Content flows through an 
 - **Tests:** Vitest 4 + Testing Library (jsdom), configured in `apps/forum`
 - **Toolchain:** Node ≥ 22, pnpm 10, ESLint 9 flat config
 
-## Quickstart
+## Local development setup
 
-Development uses a **local open-source Convex backend** (state in `.convex/`, gitignored). Every developer runs their own backend and database — no Convex account, no shared quota.
+Development uses the **open-source Convex backend running locally** — no Convex cloud account, no shared quota, one disposable database per machine (state lives in gitignored `.convex/`). Production stays on Convex Cloud (founder-only deploys, unchanged).
+
+### One-shot automated setup (recommended — agent-friendly)
+
+Prerequisites: **Node ≥ 24** and **pnpm 10** (`npm i -g pnpm@10`). On Windows, also run `git config --global core.longpaths true` if `pnpm install` hits path-length limits.
 
 ```bash
-# prerequisites: Node >= 24, pnpm 10 (corepack enable)
+git clone https://github.com/contactcreateconomy/CE-MVP.git && cd CE-MVP
+git checkout 012-local-convex        # or the current working branch
 pnpm install
-
-# environment (gitignored, never committed)
-cp apps/forum/.env.example apps/forum/.env.local   # points at the local backend
-cp apps/admin/.env.example apps/admin/.env.local
-
-# backend — terminal 1 (keep running; it IS the backend)
-pnpm backend
-#   first run only: confirm the project prompt (Y) and choose "start fresh".
-#   The local backend then hosts functions on http://127.0.0.1:3210.
-
-# backend env + seeds — terminal 2, one-time per machine:
-pnpm exec convex env set SITE_URL http://localhost:3000
-pnpm exec convex env set AUTH_REDIRECT_ORIGINS http://localhost:3000,http://localhost:3001
-pnpm exec convex env set FOUNDER_EMAILS contact.createconomy@gmail.com
-pnpm exec convex env set DEMO_SEED_ENABLED true
-pnpm exec convex run seed:bootstrap              # platform config (REQUIRED — categories, event catalog, jobs; without it signup finalization fails with an eventCatalog CAP-437 error)
-pnpm exec convex run legalContent:seedDefaults   # 4 legal docs (idempotent)
-pnpm exec convex run rulebook:deploySeed         # moderation rulebook (idempotent)
-pnpm exec convex run admin/widgetsCatalog:deploySeed   # admin nav catalog (idempotent)
-pnpm exec convex run dev/demoSeed:seed           # OPTIONAL demo members/tools/posts (idempotent)
-pnpm exec convex env remove DEMO_SEED_ENABLED    # seeder gate is one-shot by policy
-
-# frontend — terminal 3:
-pnpm dev                 # → http://localhost:3000  ("/" redirects to /feed)
-pnpm dev:admin           # → http://localhost:3001  (staff console)
+node scripts/local-setup.mjs         # does EVERYTHING below, idempotently
 ```
 
-**Founder sign-in (both founders):** use `contact.createconomy@gmail.com`. Each machine has its own local database — sign up once per machine with that email (any password ≥ 8 chars); the founder email bypasses the signup gate and automatically receives every staff role in the forum and the admin console. Full walkthrough (macOS + Windows): [SETUP.md](SETUP.md).
+The script verifies prerequisites, creates the app `.env.local` files, selects the local deployment, launches the backend, sets backend env vars (generating local JWT auth keys — the one manual step that is easy to get wrong by hand), and runs all required config seeders. Safe to re-run at any time; it skips whatever already exists.
+
+When it finishes, it prints the last mile (below). If you ever see a manual prompt from `pnpm backend` on the very first launch, answer **Y** and choose **"start fresh"**, then re-run the script.
+
+### Manual setup (what the script automates)
+
+<details>
+<summary>Step-by-step (click to expand)</summary>
+
+```bash
+# 0. env files (gitignored)
+cp apps/forum/.env.example apps/forum/.env.local
+cp apps/admin/.env.example apps/admin/.env.local
+
+# 1. backend — terminal 1 (keep running; first launch: confirm Y, choose "start fresh")
+pnpm backend
+
+# 2. backend env + seeds — terminal 2, one-time:
+pnpm exec convex env set SITE_URL http://localhost:3000
+pnpm exec convex env set AUTH_REDIRECT_ORIGINS http://localhost:3000,http://localhost:3001
+pnpm exec convex env set FOUNDER_EMAILS contact.createconomy@gmail.com,devtest@example.com
+pnpm exec convex run seed:bootstrap              # platform config (REQUIRED for signup)
+pnpm exec convex run legalContent:seedDefaults   # 4 legal docs
+pnpm exec convex run rulebook:deploySeed         # moderation rulebook
+pnpm exec convex run admin/widgetsCatalog:deploySeed   # admin nav
+# Local auth keys (JWT_PRIVATE_KEY + JWKS) are also REQUIRED for sign-in —
+# generate them with the jose package and set each as ONE value via
+# `pnpm exec convex env set VAR -- "<value>"`. Never use --from-file for the
+# PEM (the CLI splits multi-line files into junk variables). The setup script
+# does this for you.
+
+# 3. apps — terminals 3 & 4:
+pnpm dev              # forum → http://localhost:3000
+pnpm dev:admin        # admin → http://localhost:3001
+```
+
+</details>
+
+### Dev login (manual testing)
+
+| | |
+|---|---|
+| Forum | http://localhost:3000 |
+| Admin console | http://localhost:3001 |
+| Email | `devtest@example.com` |
+| Password | fixed team password — agreed in team chat, never committed |
+
+Sign up once per machine via **Login → Sign up** (the email is staff allow-listed, so it bypasses the signup gate and auto-receives **every staff role** in both apps). Social SSO buttons are intentionally disabled in local development — password sign-in only until real OAuth is wired.
+
+**Founders:** use your own Google identity on production. Do not create local password accounts for `contact.createconomy@gmail.com`.
 
 Until the legal docs are seeded, `/privacy`, `/terms`, `/dmca`, `/repeat-infringer` render the contract-sanctioned `unavailable_pending_legal` state — by design, not a bug.
 
-### Verification
+### Troubleshooting
+
+- **Sign-in error `InvalidAccountId`** → the account doesn't exist on this machine's database yet — complete **Sign up** first (each machine's local DB is separate).
+- **Signup error `event "signup" is not registered in eventCatalog (CAP-437)`** → the platform-config seed didn't run: `pnpm exec convex run seed:bootstrap`.
+- **Feed shows no posts / login hangs** → backend not running: start `pnpm backend` and keep it open.
+- **`--from-file` created junk env vars** → delete each with `pnpm exec convex env remove <NAME>`; always pass multi-line values as a single argument instead.
+- **Port in use** (3000/3001/3210) → kill the stale process (`lsof -nP -iTCP:3210 -sTCP:LISTEN` / `netstat -ano | findstr 3210`).
+- **Fresh database wanted** → stop the backend, delete `.convex/`, restart (`pnpm backend`), re-run `node scripts/local-setup.mjs`.
+
+Full walkthrough with Windows specifics: [SETUP.md](SETUP.md).
+
+## Verification
 
 | Command | What it checks |
 |---|---|
