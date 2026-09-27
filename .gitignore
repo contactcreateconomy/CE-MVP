@@ -31,6 +31,9 @@ tests/integration/components/
 .env.test
 *.tsbuildinfo
 
+# Convex local-deployment state (open-source backend run by `pnpm backend`)
+.convex/
+
 # graphify artifacts (keep the committed graph trio)
 graphify-out/*
 !graphify-out/graph.json

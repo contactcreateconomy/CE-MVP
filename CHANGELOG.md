@@ -7,6 +7,17 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Changed: dev backend moved from Convex Cloud to the local open-source backend (2026-09-27)
+
+Development no longer touches Convex Cloud at all (the shared cloud dev deployment is retired — its team hit free-plan limits and the deployment was disabled). Dev now runs the **open-source Convex backend locally** (`pnpm backend`, `http://127.0.0.1:3210`; state in gitignored `.convex/`). Production stays on Convex Cloud (`energetic-kangaroo-55`, founder-only deploys — untouched). Details:
+
+- **Per-machine databases, no account needed for dev.** Fresh-machine setup (env vars + seeds) is documented step-by-step in `SETUP.md` for macOS and Windows; no `convex login` required for local dev.
+- **Social SSO buttons disabled** in the shared AuthModal during local development (OAuth callbacks need a public backend URL + provider secrets). Password sign-in is the active dev path; re-enable by uncommenting the marked block in `packages/auth-ui/src/auth-modal.tsx` when wiring real SSO.
+- **Local auth keys:** the local backend needs `JWT_PRIVATE_KEY` + `JWKS` set via `pnpm exec convex env set` (they are cloud-managed on cloud deployments). One-line values only — `convex env set VAR --from-file` splits multi-line PEMs into junk variables (observed on CLI 1.34.1).
+- **Dev test account:** `devtest@example.com` (staff allow-listed via `FOUNDER_EMAILS`, so it auto-grants every role) with a fixed team password for manual forum + admin testing. The founders' `contact.createconomy@gmail.com` (Google identity) is untouched.
+- **Seeded content:** the demo-content seeder (`dev/demoSeed`) is no longer run by default — machines seed config only (admin widget catalog, moderation rulebook, 4 legal docs), all idempotent.
+- Docs updated for the new topology: `README.md`, `SETUP.md` (rewritten), `AGENTS.md`, `CLAUDE.md`, `docs/DEV-HANDOFF.md`, `docs/FOUNDER-BOOTSTRAP.md`, `docs/00-project-status/PROJECT-STATUS.md`, `convex/.env.example`, both apps' `.env.example`, `playwright.config.ts`. Repo `.gitignore` now excludes `.convex/`. New root script: `pnpm backend`.
+
 ### Changed: forum sign-in matches admin AuthModal; `/welcome` retired (2026-09-18)
 
 Forum `/signin` no longer uses the magic-link/email-code card. It opens the same `@cemvp/auth-ui` AuthModal as the admin console (email/password + Google/GitHub). `/welcome` is retired: the route server-redirects to `/feed`, and `RoutingGuard` silently finalizes `pending_context` with the browser timezone (UTC fallback) per DECISIONS-LOCKED #2, so new members are not trapped on a timezone chooser.

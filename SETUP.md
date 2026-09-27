@@ -1,114 +1,183 @@
 # SETUP — Createconomy PRD reference app
 
-Verified working from this exact copy on 2026-09-04 (updated 2026-09-12). This file replaces the
-historical root-README/docs references that were not carried into the PRD
-copy (FINAL-HOLISTIC-AUDIT HOL-P2-007). Paths below are relative to the
-repo root (updated 2026-09-05 from the earlier `PRD/app` wording).
+Development runs against a **local open-source Convex backend** — no Convex
+cloud account, no shared quota, and each developer gets their own database.
+Production remains the Convex Cloud production deployment (founder-only,
+unchanged). Paths below are relative to the repo root. Verified on macOS
+(2026-09-27); Windows steps are called out inline.
 
-## Prerequisites (Windows/macOS/Linux)
+## Prerequisites (macOS / Windows / Linux)
 
-1. **Node.js ≥ 24 (LTS "Krypton")** — CI and `.nvmrc` pin **Node 24** (latest
-   LTS as of 2026-09; Node 26 exists but is not LTS). On the reference dev
-   machine the project ran fnm-managed Node v24.15.0
-   (`~/AppData/Roaming/fnm/node-versions/v24.15.0/installation`).
-2. **pnpm 10.x** — bundled with Node via corepack (`corepack enable`) or
-   `npm i -g pnpm@10`. Note: on the reference dev shell, pnpm is NOT on the
-   plain PATH — the fnm installation dir must be prepended first.
-   Windows notes: Node 25+ no longer bundles corepack — use `npm i -g pnpm@10`
-   there. If `pnpm install` fails with path-length errors, enable long-path
-   support (`git config --global core.longpaths true` plus the Windows
-   long-paths group-policy flag) — pnpm's `.pnpm` store is deep.
+1. **Node.js ≥ 24 (LTS)** — CI and `.nvmrc` pin Node 24 (Node 26 exists but is
+   not LTS). Check: `node -v`.
+   - macOS: `brew install node@24`, or use fnm/nvm.
+   - Windows: installer from nodejs.org, or `fnm install 24`.
+2. **pnpm 10.x** — `corepack enable` (bundled with Node ≤ 25), or
+   `npm i -g pnpm@10`. Note: Node 25+ no longer bundles corepack — use the
+   npm install form there. Windows path-length fix if `pnpm install` fails:
+   `git config --global core.longpaths true` (plus the Windows long-paths
+   group-policy flag if needed — pnpm's `.pnpm` store is deep).
+3. **That's it for the backend** — the open-source Convex backend binary is
+   downloaded automatically by the CLI on first `pnpm backend` (native builds
+   exist for macOS Apple Silicon/Intel, Linux x64/arm64, and Windows x64).
 
-## Install & run (fresh clone, macOS / Windows / Linux)
+## One-time setup (fresh clone)
 
 ```bash
-# from the repo root
 pnpm install          # ~621 packages; uses pnpm-lock.yaml
 
-# frontend env — REQUIRED on every fresh clone (gitignored, never committed):
+# frontend env (gitignored, never committed):
 cp apps/forum/.env.example apps/forum/.env.local      # macOS/Linux
+cp apps/admin/.env.example apps/admin/.env.local      # macOS/Linux
 copy apps\forum\.env.example apps\forum\.env.local    # Windows (cmd)
-# then set the one value it needs:
-#   NEXT_PUBLIC_CONVEX_URL=https://watchful-chameleon-570.convex.cloud
-#   (the example file documents this URL — it's the shared dev deployment)
-
-# optional — only if this machine will push backend changes or run seeds
-# (once per machine; opens a browser auth flow):
-npx convex login
-
-pnpm dev              # Next.js dev server → http://localhost:3000
+copy apps\admin\.env.example apps\admin\.env.local    # Windows (cmd)
+# both files already point at the local backend (http://127.0.0.1:3210)
 ```
 
-`/` redirects to `/feed`. Verify with: `curl -s -o /dev/null -w "%{http_code}"
-http://localhost:3000/feed` → `200`.
+## Daily run (from the repo root)
+
+```bash
+# Terminal 1 — the backend (keep it running; it IS the backend):
+pnpm backend
+#   First run only: it asks to configure the project → confirm (Y), and
+#   offers to transfer data from an existing deployment → choose
+#   "start fresh" (local databases are disposable dev data).
+#   It then pushes functions/schema and stays alive on
+#   http://127.0.0.1:3210. Stop with Ctrl+C when done for the day.
+#   Windows: run it in Windows Terminal or a plain cmd window — the first-run
+#   prompts are interactive keypress menus.
+
+# Terminal 2 — frontend (one shell each, or run them one at a time):
+pnpm dev              # forum  → http://localhost:3000 ("/" → /feed)
+pnpm dev:admin        # admin  → http://localhost:3001 (staff console)
+```
+
+Verify: `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/feed`
+→ `200`.
+
+## One-time per machine: backend env + seed data
+
+With `pnpm backend` running in another terminal:
+
+```bash
+pnpm exec convex env set SITE_URL http://localhost:3000
+pnpm exec convex env set AUTH_REDIRECT_ORIGINS http://localhost:3000,http://localhost:3001
+pnpm exec convex env set FOUNDER_EMAILS contact.createconomy@gmail.com
+
+# demo content (10 members, 12 tools, ~150 posts across all 7 post types):
+pnpm exec convex env set DEMO_SEED_ENABLED true
+pnpm exec convex run legalContent:seedDefaults   # 4 legal docs (idempotent)
+pnpm exec convex run rulebook:deploySeed         # moderation rulebook (idempotent)
+pnpm exec convex run dev/demoSeed:seed           # demo members/tools/posts (idempotent)
+pnpm exec convex env remove DEMO_SEED_ENABLED    # seeder gate is one-shot by policy
+```
+
+Until the legal docs are seeded, `/privacy`, `/terms`, `/dmca`,
+`/repeat-infringer` render the contract-sanctioned `unavailable_pending_legal`
+state — by design, not a bug.
+
+Optional disposable test login (in addition to the founder account):
+
+```bash
+pnpm exec convex env set ALLOW_DEV_TEST_USER true
+pnpm exec convex env set DEV_TEST_USER_PASSWORD 'some-password-8plus-chars'
+pnpm exec convex run dev/ensureTestUser:ensure     # → devtest@example.com
+pnpm exec convex env remove ALLOW_DEV_TEST_USER    # remove the gate after
+```
+
+(Password sign-up is dev-mode: no email verification, no email provider.)
+
+## Dev test account (shared by the team for manual testing)
+
+- **Email:** `devtest@example.com`
+- **Password:** fixed team password, agreed in team chat (not committed to the repo — hardcoded dev credentials were removed by security scan 2026-09-13, finding 21).
+- **Setup (once per machine):** the account is on the backend staff allow-list, which is what grants every staff role:
+
+```bash
+pnpm exec convex env set FOUNDER_EMAILS "contact.createconomy@gmail.com,devtest@example.com"
+```
+
+Then sign up once through the UI (Login → Sign up, use the team password) — the
+allow-listed email bypasses the signup gate and auto-grants **every staff
+role**, so the same login works in the forum **and** the admin console on
+:3001. The real founder account (`contact.createconomy@gmail.com`) is reserved
+for the founders' Google identity and is untouched by this.
+
+## Founder sign-in (both founders)
+
+Both founders use **`contact.createconomy@gmail.com`**. Each machine runs its
+own local database, so do this once per machine:
+
+1. Open http://localhost:3000 → **Login** → **Sign up** tab.
+2. Enter the founder email, any name, and a password (≥ 8 chars — it does not
+   need to match any Google password; it exists only in your local database).
+3. Accept the terms → **Create account**. You are signed in.
+
+The founder email bypasses the signup admission gate and automatically grants
+**every staff role** (`convex/lib/founder.ts`), so the same identity has full
+access in the forum **and** the admin console on :3001. If the users row
+already exists and roles ever need re-granting:
+`pnpm exec convex run admin/roles:grantFounderByEmail` (see
+`docs/FOUNDER-BOOTSTRAP.md`).
+
+## What runs where
+
+| Thing | Dev (this setup) | Production (unchanged) |
+|---|---|---|
+| Convex backend | Local open-source binary via `pnpm backend` → `http://127.0.0.1:3210` | Convex Cloud production deployment (founder-only `pnpm convex:deploy:prod`) |
+| Data | Your machine only (`.convex/`, gitignored; disposable) | Convex Cloud |
+| Accounts | Password sign-up, no email verification | OAuth (Google/GitHub) once configured |
+| Convex account | **Not required** | Required (founder) |
+
+## Environment files
+
+- `.env.local` (repo root) — Convex CLI config, written automatically by
+  `convex dev --configure` on your first `pnpm backend`. `CONVEX_DEPLOYMENT=local:…`
+  is what selects the local backend — don't hand-edit.
+- `apps/forum/.env.local` — `NEXT_PUBLIC_CONVEX_URL=http://127.0.0.1:3210`
+  (the only Convex var the app source reads) + `NEXT_PUBLIC_ADMIN_ORIGIN`.
+- `apps/admin/.env.local` — same `NEXT_PUBLIC_CONVEX_URL` +
+  `NEXT_PUBLIC_FORUM_ORIGIN`.
+- Backend env vars (SITE_URL, seeds, OAuth secrets) live **on the backend**,
+  set via `pnpm exec convex env set …` — key names in `convex/.env.example`.
 
 ## Verification commands (run from the repo root)
 
 | Command | What it checks |
 |---|---|
 | `pnpm typecheck` | `tsc --noEmit` across the forum app |
-| `pnpm test:run` | vitest suite (902 tests across 59 phase-mapped suite files) |
-| `pnpm build` | production build (Turbopack), 19+1 routes |
+| `pnpm test:run` | vitest suite (forum app) |
+| `pnpm build` | production build (Turbopack) |
+| `node scripts/cap-coverage.mjs` | CAP→slice coverage gate (expect 572/572) |
 
-## Environment
+## Troubleshooting
 
-`.env.local` files live at the repo root (Convex CLI config, created
-automatically by `npx convex dev` when you first push) and at `apps/forum/`
-(**created by you on every fresh clone** — it is gitignored; see the
-quickstart above). Key names only:
-
-- `NEXT_PUBLIC_CONVEX_URL` — client URL (the only var the app source reads,
-  via `@cemvp/convex-client`)
-- `CONVEX_URL`, `CONVEX_SITE_URL`, `CONVEX_DEPLOYMENT` — Convex CLI config
-
-**Both copies point at the SAME shared cloud deployment** — the PRD copy and
-the original workspace talk to identical data.
-
-## Convex backend
-
-Function code lives in `convex/` (registered by `convex.json`).
-Deploy/push function changes from the monorepo root: `pnpm convex:dev`.
-Backend auth env (JWT_PRIVATE_KEY, JWKS, AUTH_GOOGLE_*, etc.) is documented
-by key name in `convex/.env.example`; provider secrets are NOT part of this
-copy (the auth UI is a reference implementation; wiring real OAuth providers
-is future work per AGENT-START-HERE §1b).
-
-## Legal content (DECISIONS-LOCKED #9)
-
-The four legal documents (Terms/Privacy/DMCA/Repeat-Infringer) are served from
-the versioned `contentVersions` table via `/privacy`, `/terms`, `/dmca`,
-`/repeat-infringer`. **Seeding requires a one-time authenticated CLI run:**
-
-```bash
-npx convex login        # once (this machine is already authenticated, 2026-09-05)
-pnpm convex:seed-legal  # inserts v1 published rows (idempotent)
-```
-
-Until seeded, those routes render the contract-sanctioned
-`unavailable_pending_legal` state (banner + empty state) — by design, not a bug.
-Note: `convex/_generated/api.d.ts` was hand-extended with the `legalContent`
-modules (codegen needs the same CLI auth); the next authenticated
-`npx convex dev` regenerates identical entries.
+- **Feed shows no posts / login hangs** → the backend isn't running. Start
+  `pnpm backend` (terminal 1) and keep it open; both apps connect to it.
+- **"Cannot prompt for input in non-interactive terminals"** during first
+  `pnpm backend` → run it in a real interactive terminal (not a piped script
+  or CI shell).
+- **Wrong/old data after switching branches or experiments** → local state is
+  `.convex/`; stop the backend, delete that folder, restart `pnpm backend`
+  (choose "start fresh"), re-run the seed block above. Idempotent seeds make
+  this cheap.
+- **Port already in use** (3000/3001/3210) → a previous session's process is
+  still alive: `lsof -nP -iTCP:3210 -sTCP:LISTEN` (macOS/Linux) or
+  `netstat -ano | findstr 3210` (Windows), then kill it.
+- **Module-not-found after adding files** → restart the Next dev server
+  (stale Turbopack graph), not a code bug.
 
 ## Admin-access rollback (P2-AUTH-CUTOVER gate condition 4)
 
-If the founder loses admin access, restore the allow-list and re-grant:
+If the founder loses admin access on any deployment:
 
 ```bash
-npx convex env set ADMIN_EMAILS contact.createconomy@gmail.com
-npx convex env set ADMIN_EMAILS contact.createconomy@gmail.com --prod
-# Sign in with that Google account on forum and admin (origin-scoped sessions).
+pnpm exec convex env set FOUNDER_EMAILS contact.createconomy@gmail.com
+# Then sign up / sign in with that email — roles re-grant automatically.
 # Or, if the users row already exists:
 pnpm exec convex run admin/roles:grantFounderByEmail
-pnpm exec convex run --prod admin/roles:grantFounderByEmail
 ```
 
 Canonical authority is `roleAssignments` for every staff role (not an
 `assertAdminPermission` email check). See `docs/FOUNDER-BOOTSTRAP.md`.
-
-## Coverage gate
-
-`node scripts/cap-coverage.mjs` — range-expanded CAP→slice coverage check
-(572/572 as of 2026-09-12; 570 slice-owned + CAP-009/CAP-156 explicitly
-deferred in the Phase-4 disposition table). Run after any slice-catalog edit.
-
+Production equivalents take `--prod` (founder-only).

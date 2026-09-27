@@ -24,6 +24,7 @@
     "typecheck:seller": "pnpm --filter @cemvp/seller typecheck",
     "typecheck:admin": "pnpm --filter @cemvp/admin typecheck",
     "typecheck:marketplace": "pnpm --filter @cemvp/marketplace typecheck",
+    "backend": "convex dev",
     "convex:dev": "convex dev",
     "convex:codegen": "convex codegen",
     "convex:deploy:prod": "convex deploy",

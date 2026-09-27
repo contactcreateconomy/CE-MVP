@@ -5,7 +5,9 @@ import { X } from "lucide-react";
 
 import { LoginForm } from "./login-form";
 import { SignupForm } from "./signup-form";
-import { SocialLoginButtons } from "./social-login-buttons";
+// Social SSO disabled during local development — uncomment together with the
+// JSX block in AuthModal below when wiring real OAuth providers.
+// import { SocialLoginButtons } from "./social-login-buttons";
 import { cn } from "./utils/cn";
 import { useAppAuth } from "./app-auth-provider";
 
@@ -160,13 +162,17 @@ export function AuthModal() {
                 )}
               </div>
 
-              <div className="mx-auto my-4 flex w-3/4 items-center gap-3 text-[11px] uppercase tracking-[0.12em] text-text-muted">
+              {/* Social SSO intentionally disabled during local development:
+                  OAuth callbacks require a public backend URL + provider
+                  secrets (Google Cloud Console etc.). Password sign-in is the
+                  active local-dev path. Re-enable when wiring real SSO. */}
+              {/* <div className="mx-auto my-4 flex w-3/4 items-center gap-3 text-[11px] uppercase tracking-[0.12em] text-text-muted">
                 <span className="h-px flex-1 bg-border-subtle" />
                 <span>or continue with</span>
                 <span className="h-px flex-1 bg-border-subtle" />
               </div>
 
-              <SocialLoginButtons isSubmitting={isSubmitting} onSocialLogin={socialLogin} />
+              <SocialLoginButtons isSubmitting={isSubmitting} onSocialLogin={socialLogin} /> */}
 
               <div className="sr-only" aria-live="polite">
                 {isSubmitting ? "Processing authentication request" : authError ? authError : "Authentication form ready"}

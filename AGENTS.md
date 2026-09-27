@@ -2,7 +2,7 @@
 
 Createconomy is a creator-economy discussion platform (typed-post forum + labeled AI-persona discussions + claims-first editorial pipeline + tool registry + reputation economy). This repo is a pnpm monorepo containing the **PRD reference app**: the `apps/forum` Next.js frontend, a shared `convex/` backend, and the complete build specification under `docs/`.
 
-**Status snapshot (2026-09-12, post-audit):** Phases 1–7 code-complete (P7-CLEANUP closed 00-TRANSITION 2026-09-10; 58/58 Phase-7 slices). 902/902 tests, typecheck/lint clean, coverage 572/572 (now CI-enforcing). Live Convex dev deployment (`watchful-chameleon-570`) active — schema pushed, seeds + G1 founder bootstrap executed 2026-09-05. A 2026-09-12 docs-vs-code audit reconciled remaining drift (see CHANGELOG 'DOCS-VS-CODE AUDIT' entry): the /sell dashboard + tool rating form were built, CAP-244 wired, role literals moved to snake_case, several bible enums tightened. Remaining work is founder-owned: G3 GLM + G4 classifier keys (P4 exit-gate E2E waits), G6 Twilio (optional `/setup` mobile step only — not a signup/signin/comment gate; env may land later), PostHog/email, OAuth secrets, legal publish + lawyer review, Readiness Cat-8, A8 Figma, A2 charts, prod push.
+**Status snapshot (2026-09-12, post-audit):** Phases 1–7 code-complete (P7-CLEANUP closed 00-TRANSITION 2026-09-10; 58/58 Phase-7 slices). 902/902 tests, typecheck/lint clean, coverage 572/572 (now CI-enforcing). **Dev backend: LOCAL open-source Convex backend** (`pnpm backend`; state in `.convex/`, gitignored) — each machine has its own database, seeded per SETUP.md; founder login is password sign-up with `contact.createconomy@gmail.com` (auto-grants all staff roles). Production remains Convex Cloud (`energetic-kangaroo-55`, founder-only deploys). A 2026-09-12 docs-vs-code audit reconciled remaining drift (see CHANGELOG 'DOCS-VS-CODE AUDIT' entry): the /sell dashboard + tool rating form were built, CAP-244 wired, role literals moved to snake_case, several bible enums tightened. Remaining work is founder-owned: G3 GLM + G4 classifier keys (P4 exit-gate E2E waits), G6 Twilio (optional `/setup` mobile step only — not a signup/signin/comment gate; env may land later), PostHog/email, OAuth secrets, legal publish + lawyer review, Readiness Cat-8, A8 Figma, A2 charts, prod push.
 
 ---
 
@@ -77,16 +77,16 @@ From `docs/00-project-status/` (founder-approved 2026-09-04 — read before any 
 | `pnpm typecheck` / `pnpm lint` | tsc --noEmit / ESLint 9 (forum app) |
 | `pnpm test:run` | Vitest suite (forum app) |
 | `pnpm build` | Production build (Turbopack) |
-| `pnpm convex:dev` | Push Convex function changes / run dev sync |
+| `pnpm backend` | Run the LOCAL Convex backend (dev default) — hosts http://127.0.0.1:3210, pushes function/schema changes on file save; keep it running while developing |
+| `pnpm convex:seed-legal` | Seed the 4 legal docs into the selected (local dev) backend |
 | `pnpm convex:codegen` | Regenerate `convex/_generated/` |
-| `pnpm convex:seed-legal` | Seed the 4 legal docs (requires one-time `npx convex login`) |
 | `pnpm dev:seller` / `dev:marketplace` | Run parked placeholder apps |
 | `pnpm convex:deploy:prod` | Prod push (Bucket-1 — flag before running) |
 | `node scripts/cap-coverage.mjs` | Capability coverage gate (572/572 expected) |
 
 Toolchain: Node ≥ 22, pnpm 10 (`packageManager` pins pnpm@10.28.2), Convex pinned to 1.34.1 via pnpm override, forum runs `next dev` on Turbopack.
 
-Git: work on numbered topic branches (`NNN-name`). **`main` is the default/production branch** — PRs and pushes to `main` run the full CI gate. `001-default` is an ordinary feature branch, not a merge target. NEVER push to `main` without explicit founder permission in-session. Convex function deploys stay manual (`pnpm convex:dev` for `watchful-chameleon-570`, `pnpm convex:deploy:prod` for `energetic-kangaroo-55`).
+Git: work on numbered topic branches (`NNN-name`). **`main` is the default/production branch** — PRs and pushes to `main` run the full CI gate. `001-default` is an ordinary feature branch, not a merge target. NEVER push to `main` without explicit founder permission in-session. Dev function sync is the local backend (`pnpm backend`); production deploys stay founder-only (`pnpm convex:deploy:prod` → `energetic-kangaroo-55`).
 
 Gotchas: a long-running dev server accumulates a stale Turbopack graph — after several slices of new files, module-not-found errors mean **restart `pnpm dev`**, not a code bug. `npx convex run` needs the colon form for nested function names (`rulebook:deploySeed`) on convex 1.34.
 

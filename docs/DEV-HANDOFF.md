@@ -5,9 +5,9 @@
 > command-line execution goes HERE — not worked around. The agent stops,
 > flags it, and moves to the next Bucket-2 item.
 >
-> **Audience:** the developer with terminal + Convex CLI access on the
-> **dev** deployment (`watchful-chameleon-570`). Production is
-> `energetic-kangaroo-55` — founder-only (`pnpm convex:deploy:prod`).
+> **Audience:** the developer with terminal access running the LOCAL
+> Convex dev backend (`pnpm backend` — see SETUP.md). Production is
+> Convex Cloud `energetic-kangaroo-55` — founder-only (`pnpm convex:deploy:prod`).
 
 ---
 

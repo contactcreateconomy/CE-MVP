@@ -3,8 +3,9 @@ import { defineConfig, devices } from "@playwright/test";
 /**
  * CE-MVP E2E config. Runs against the forum dev server (Turbopack) which it
  * starts itself via `webServer`. Locally it picks up NEXT_PUBLIC_CONVEX_URL
- * from apps/forum/.env.local (live dev deployment). In CI without a Convex
- * URL the app's isConvexConfigured() guards keep pages renderable.
+ * from apps/forum/.env.local (the local Convex backend — `pnpm backend`). In
+ * CI without a Convex URL the app's isConvexConfigured() guards keep pages
+ * renderable.
  *
  * Pipeline E2Es (submit → H-SAFE → qualify) are quarantined behind
  * E2E_PIPELINE_ENABLED until the founder-owned GLM/classifier keys land.

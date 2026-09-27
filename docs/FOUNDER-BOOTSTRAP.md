@@ -85,7 +85,10 @@ Do **not** restore a second magic-link/staff-gate page. The shared
 
 ## Historical note
 
-The 2026-09-05 procedure against `watchful-chameleon-570` (manual
-`roleAssignments` insert, then Method A `ADMIN_EMAILS` removal test) is
-superseded. Cutover condition “staff roles come from Founder bootstrap”
+The 2026-09-05 procedure against the then-shared cloud dev deployment
+`watchful-chameleon-570` (manual `roleAssignments` insert, then Method A
+`ADMIN_EMAILS` removal test) is superseded — that deployment is retired; dev
+now runs on the local open-source backend (SETUP.md), where the founder email
+self-grants on first sign-up. The `roleAssignments`-as-authority principle
+below is unchanged. Cutover condition “staff roles come from Founder bootstrap”
 is this grant, not an email-allowlist check inside `assertAdminPermission`.
