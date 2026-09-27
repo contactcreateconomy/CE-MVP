@@ -1,0 +1,13 @@
+node_modules/
+.next/
+dist/
+build/
+out/
+coverage/
+test-results/
+playwright-report/
+.turbo/
+convex/_generated/
+pnpm-lock.yaml
+.kilo/
+graphify-out/
