@@ -30,9 +30,8 @@ import { canonicalSignupFields } from "../lib/founder";
 import { normalizeHandle } from "../lib/handle";
 import { ensurePostSeoMetaTx } from "../lib/distributionScores";
 import { ensureDistributionTx } from "../distributions";
+import { assertLocalDeployment as assertLocalDeploymentTx } from "./devGuard";
 
-const PROD_DEPLOYMENT_SLUG = "energetic-kangaroo-55";
-const PROD_FORUM_HOST = "discuss.createconomy.com";
 const EMAIL_DOMAIN = "demo.createconomy.invalid";
 const RUN_KEY = "demo-seed-r3";
 
@@ -202,11 +201,10 @@ function mustLevelIndex(m: Member): number {
 }
 
 // ── gates ──────────────────────────────────────────────────────────────
+/** Every seed mutation calls this first — the server-side allowlist in
+ *  seed/devGuard (loopback CONVEX_CLOUD_URL only, any cloud = refuse). */
 function assertNotProd(): void {
-  const haystack = `${process.env.CONVEX_CLOUD_URL ?? ""} ${process.env.CONVEX_SITE_URL ?? ""} ${process.env.SITE_URL ?? ""}`;
-  if (haystack.includes(PROD_DEPLOYMENT_SLUG) || haystack.includes(PROD_FORUM_HOST)) {
-    throw new Error("seed/demo: refused on production");
-  }
+  assertLocalDeploymentTx();
 }
 
 function demoEmail(handle: string): string {

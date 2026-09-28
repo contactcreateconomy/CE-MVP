@@ -1,13 +1,18 @@
 /**
- * Shared helpers for the local dev seed/reset scripts (R3).
+ * Shared helpers for the local dev seed/reset scripts (R3 + review fix).
  *
- * - hard-refuses anything but a local:/anonymous: deployment selector
- * - resolves the convex CLI the same way scripts/local-setup.mjs does
- *   (pnpm layout, no require.resolve-through-exports)
- * - tolerates the Windows libuv UV_HANDLE_CLOSING teardown assertion
- *   that poisons child exit codes AFTER a successful result
+ * Defense layers, in order:
+ *   1. selector gate — CONVEX_DEPLOYMENT must be exactly anonymous:anonymous-<name>
+ *      or local:local-<name> (the CLI treats only anonymous-…/local-… names as
+ *      the local backend; any other name resolves inside a cloud project).
+ *   2. sanitized child env — CONVEX_DEPLOY_KEY (which the CLI applies FIRST,
+ *      ignoring the selector) and the self-hosted/CONVEX_URL overrides are
+ *      removed from every spawned convex child, with a warning naming them.
+ *   3. server-side allowlist — seed/devGuard:assertLocal (loopback
+ *      CONVEX_CLOUD_URL only) runs as a preflight before destructive steps
+ *      and again inside every seed mutation.
  */
-import { spawnSync, execFileSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -23,8 +28,44 @@ export const CONVEX_BIN = path.join(
   "bin", "main.js",
 );
 
-/** Read CONVEX_DEPLOYMENT the same way the convex CLI does (.env.local wins
- *  only if the process env doesn't already set it). */
+/** Env overrides that retarget the CLI at a non-local deployment. The CLI
+ *  applies CONVEX_DEPLOY_KEY before any selector, so a leftover key in the
+ *  parent shell would silently change the target of every command below. */
+const SANITIZED_VARS = [
+  "CONVEX_DEPLOY_KEY",
+  "CONVEX_SELF_HOSTED_URL",
+  "CONVEX_SELF_HOSTED_ADMIN_KEY",
+  "CONVEX_URL",
+];
+
+/** Copy of process.env with retargeting overrides removed (and named).
+ *  Memoized: the warning prints once per process, not per spawned child. */
+let cachedEnv = null;
+export function sanitizedEnv() {
+  if (cachedEnv) return cachedEnv;
+  const env = { ...process.env };
+  const removed = SANITIZED_VARS.filter((name) => {
+    const value = env[name];
+    if (value !== undefined && value !== "") {
+      delete env[name];
+      return true;
+    }
+    return false;
+  });
+  if (removed.length > 0) {
+    console.warn(
+      `\n  [!] WARNING: removed from child env (these would retarget the CLI at a\n` +
+        `      cloud deployment regardless of the selector): ${removed.join(", ")}\n`,
+    );
+  }
+  cachedEnv = env;
+  return env;
+}
+
+/** Read CONVEX_DEPLOYMENT from the process env, falling back to the root
+ *  .env.local the CLI would load. NOTE: this is NOT the CLI's full
+ *  precedence — a CONVEX_DEPLOY_KEY would win over it — which is exactly
+ *  why the child env is sanitized before any spawn. */
 export function selectedDeployment() {
   const envFile = path.join(ROOT, ".env.local");
   let fromFile = "";
@@ -37,27 +78,30 @@ export function selectedDeployment() {
   return process.env.CONVEX_DEPLOYMENT || fromFile;
 }
 
-/** R3 hard gate: only ever touch local:/anonymous: deployments. */
+/** R3 hard gate: only the CLI's true local-backend names pass. Anything
+ *  else — including anonymous:<cloud-name> — resolves inside a cloud
+ *  project and is refused. */
 export function assertLocalDeployment(label) {
   const deployment = selectedDeployment();
-  if (!/^(local|anonymous):/.test(deployment)) {
+  if (!/^(anonymous:anonymous-|local:local-)/.test(deployment)) {
     console.error(
       `\n  [✗] ${label}: refusing to run.\n` +
-        `      CONVEX_DEPLOYMENT is ${deployment || "not set"} — expected local:* or anonymous:*\n` +
-        `      (root .env.local selects the deployment; the selector is written by\n` +
-        `       the CLI on first \`pnpm backend\`). Production is founder-only.\n`,
+        `      CONVEX_DEPLOYMENT is ${deployment || "not set"} — expected anonymous:anonymous-* or local:local-*\n` +
+        `      (the CLI treats only those names as the local backend; anything else\n` +
+        `       targets a cloud project). The selector is written by the CLI on\n` +
+        `       first \`pnpm backend\`. Production is founder-only.\n`,
     );
     process.exit(1);
   }
   return deployment;
 }
 
-/** Run a convex CLI command through node. Returns {status, stdout, stderr}. */
+/** Run a convex CLI command through node with a sanitized env. */
 export function convex(args, opts = {}) {
   const res = spawnSync(process.execPath, [CONVEX_BIN, ...args], {
     cwd: ROOT,
     encoding: "utf8",
-    env: process.env,
+    env: sanitizedEnv(),
     shell: false,
     ...opts,
   });
@@ -76,6 +120,35 @@ export function convexRun(fn, args = "{}") {
     process.exit(1);
   }
   return (res.stdout ?? "").trim();
+}
+
+/** Preflight: prove the CLI is talking to the local backend before any
+ *  destructive step. Runs seed/devGuard:assertLocal — throws on cloud.
+ *
+ *  Exit-code note: on Windows/Node 24 the convex CLI child often dies in
+ *  libuv teardown (UV_HANDLE_CLOSING / 0xC0000409) AFTER the function
+ *  result, sometimes eating the small "null" stdout. The decision is
+ *  therefore refusal-text-driven: any guard error text aborts; a bare
+ *  teardown crash with no error text counts as pass. */
+export function preflightDevGuard(label) {
+  const res = convex(["run", "seed/devGuard:assertLocal"]);
+  const output = `${res.stdout ?? ""}${res.stderr ?? ""}`;
+  if (res.stdout) process.stdout.write(res.stdout);
+  const refused = /dev guard: refusing|Uncaught Error|Server Error|Request ID/i.test(output);
+  if (refused) {
+    if (res.stderr) process.stderr.write(res.stderr);
+    console.error(`\n  [✗] ${label}: preflight seed/devGuard:assertLocal REFUSED — not the local backend:\n${output.slice(0, 400)}\n`);
+    process.exit(1);
+  }
+  const teardownCrash =
+    res.status !== 0 &&
+    (/UV_HANDLE_CLOSING|Assertion failed/i.test(res.stderr ?? "") ||
+      res.status === 3221226505);
+  if (res.status !== 0 && !teardownCrash) {
+    if (res.stderr) process.stderr.write(res.stderr);
+    console.error(`\n  [✗] ${label}: preflight seed/devGuard:assertLocal failed (exit ${res.status}):\n${output.slice(0, 400)}\n`);
+    process.exit(1);
+  }
 }
 
 export function convexEnvSet(name, value) {

@@ -5,10 +5,14 @@
  * Gate: HARD-REFUSE unless the selected deployment is local:<name>/anonymous:<name>.
  * Idempotent: safe to re-run; skips whatever already exists.
  */
-import { assertLocalDeployment, convexRun, step, ok } from "./lib/local-gate.mjs";
+import { assertLocalDeployment, convexRun, preflightDevGuard, step, ok } from "./lib/local-gate.mjs";
 
 const deployment = assertLocalDeployment("seed:demo");
 console.log(`seed:demo — targeting ${deployment} (local only)`);
+
+step("preflight: seed/devGuard:assertLocal …");
+preflightDevGuard("seed:demo");
+ok("server-side guard passed — CLI is talking to the local backend");
 
 step("seeding demo identities, posts, engagement, notifications…");
 const out = convexRun("seed/demo:seed");

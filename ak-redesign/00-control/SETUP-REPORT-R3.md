@@ -11,17 +11,17 @@ date: 2026-09-28
 # SETUP-REPORT R3 — anti-drift local dev + demo seed + baselines
 
 Branch `012-local-convex` (on top of `8a1279c`, the Windows local-setup fixes).
-Goal: any machine reaches an identical, realistic local state with one command. Achieved: `DEV_TEST_USER_PASSWORD='<pw>' pnpm reset:local` → fingerprint `9b9edfdf12c0`.
+Goal: any machine reaches an identical, realistic local state with one command. Achieved: `DEV_TEST_USER_PASSWORD='<pw>' pnpm reset:local` → fingerprint `c410ddce4f57` (v2 hash — see §4).
 
 ## 1. Demo seed — what shipped (`convex/seed/demo.ts`, `pnpm seed:demo`)
 
-Hard-refuses anything but a `local:`/`anonymous:` deployment selector (scripts/lib/local-gate.mjs reads the selector the same way the CLI does); the module additionally refuses on any production URL in backend env. Deterministic — no `Math.random`, every timestamp is `now − fixedOffset` (−10min … −60d), so ages always look fresh. Idempotent — every insert is keyed on a natural key (email, slug, exact title, dedupeKey, composite index) and skipped when present; a second run reports `created: 0`.
+Gated three ways (review-fix, see §9): the script selector must be exactly `anonymous:anonymous-*`/`local:local-*`; every spawned convex child runs with retargeting env overrides (`CONVEX_DEPLOY_KEY` + self-hosted vars) stripped; and each seed mutation calls the server-side allowlist `seed/devGuard` first — a loopback `CONVEX_CLOUD_URL` is the only accepted shape, so any cloud deployment is refused regardless of name. Deterministic — no `Math.random`, every timestamp is `now − fixedOffset` (−10min … −60d), so ages always look fresh. Idempotent — every insert is keyed on a natural key (email, slug, exact title, dedupeKey, composite index) and skipped when present; a second run reports `created: 0`.
 
 | Content | Count | Notes |
 |---|---|---|
 | Members | 15 | signal levels 1–8 (orbit…galaxy: 2/2/2/2/3/2/1/1), realistic creator bios, `@demo.createconomy.invalid` emails |
 | Per-member distributions | 15 | `ensureDistributionTx` + patched might/level/reach; level assignments against the founding season |
-| Distribution memberships | 26 | everyone joins the two flagship distributions (Reach) |
+| Distribution memberships | 28 | everyone joins the two flagship distributions (Reach) — (15 − 1) × 2 |
 | Tools | 8 | `demo-*` slugs, referenced by review/compare posts |
 | Posts | 60 | all 5 categories × all 7 member post types; ages −10min…−60d |
 | Edge cases | 3 | two-line-overflow title, ~4k-char body (full-year audit), empty body |
@@ -55,7 +55,9 @@ Data-only wipe via **`convex import --replace-all --yes` with an empty table fil
 
 Row counts for **all 175 tables** + stable identity keys (emails, post titles, tool slugs, notification dedupeKeys, badge labels resolved to emails — never timestamps or generated ids), folded into a sha256 short hash. Runtime-volatile tables (auth sessions, jobRuns, rawEvents, reading progress, etc. — 21 tables listed in `scripts/seed-check.mjs`) are printed but excluded from the hash: their counts depend on wall-clock activity and would break parity without saying anything about seed parity.
 
-**Fingerprint after `reset:local`: `9b9edfdf12c0`** — reproduced identical across two consecutive full resets on this machine. Two machines running `reset:local` should match this value (deviation = drifted code or seeds, investigate before comparing screenshots).
+**Fingerprint after `reset:local`: `c410ddce4f57`** — reproduced identical across consecutive full resets on this machine. Two machines running `reset:local` should match this value (deviation = drifted code or seeds, investigate before comparing screenshots).
+
+*v2 note (review fix):* the earlier value `9b9edfdf12c0` hashed `feedExplorationState`, which logged-in browsing writes (one row per post viewed — the R3 baseline captures wrote 60). It is now hash-excluded like the other runtime tables, so the fingerprint survives browsing; the exclusion itself changed the hash, hence the new canonical value.
 
 ## 5. Rendering verification (390px, live demo data)
 
@@ -109,3 +111,57 @@ The local backend enforces index-prefix order strictly; these scheduled jobs thr
 2. `h.startsWith is not a function` — the Convex 1.34 filter builder has no `startsWith`; replaced with a collect+JS match.
 3. Fingerprint initially unstable across resets — two causes fixed: badge keys embedded generated user ids (now resolved to emails), and volatile runtime tables excluded from the hash.
 4. Playwright CDN download failed → captured via system Edge channel (`channel: "msedge"`).
+
+## 9. Guard tests (review fix — each attack re-run against the shipped code)
+
+Layers after the fix: (1) script selector must be exactly `anonymous:anonymous-<name>`/`local:local-<name>`; (2) every spawned convex child runs with `CONVEX_DEPLOY_KEY`, `CONVEX_SELF_HOSTED_URL`, `CONVEX_SELF_HOSTED_ADMIN_KEY`, `CONVEX_URL` stripped from its env (named in a warning); (3) `seed/devGuard:assertLocal` — a server-side allowlist accepting only a loopback `CONVEX_CLOUD_URL` — runs as a preflight before anything destructive and again inside every seed mutation. All test values below are FAKE.
+
+**Attack 1 — fake `CONVEX_DEPLOY_KEY` (+ fake prod `CONVEX_URL`) exported in the shell, then `reset:local`:**
+```
+→ preflight: seed/devGuard:assertLocal …
+  [!] WARNING: removed from child env (these would retarget the CLI at a
+      cloud deployment regardless of the selector): CONVEX_DEPLOY_KEY, CONVEX_URL
+  [✓] server-side guard passed — CLI is talking to the local backend
+  [✓] all tables cleared (functions/schema/env untouched)
+  … reset completes against the LOCAL backend; fingerprint unchanged — the attack is neutralized
+```
+(The review's scenario — key retargets `import --replace-all` at a cloud deployment — cannot occur: the key never reaches the child.)
+
+**Attack 2 — `CONVEX_DEPLOYMENT=anonymous:energetic-kangaroo-55`:**
+```
+  [✗] seed:demo: refusing to run.
+      CONVEX_DEPLOYMENT is anonymous:energetic-kangaroo-55 — expected anonymous:anonymous-* or local:local-*
+      (the CLI treats only those names as the local backend; anything else
+       targets a cloud project). …
+  EXIT: 1
+```
+
+**Attack 3 — direct `convex run seed/demo:seed` (bypassing the scripts):** the seed mutations call the server-side guard first, so the direct path is guarded by deployment *type*, not name. On this machine the deployment is genuinely loopback, so the direct run passes — refusal is proven by the automated suite (`tests/convex/dev-guard.test.ts`, 6 cases, in `pnpm test:convex`):
+```
+✓ tests/convex/dev-guard.test.ts (6 tests) 11ms
+  · accepts http://127.0.0.1:3210 and http://localhost[:port]
+  · refuses https://energetic-kangaroo-55.convex.cloud
+  · refuses ANY cloud URL (unnamed deployments too) and non-convex hosts
+  · refuses loopback-lookalikes (127.0.0.1.evil.example, localhost.evil.example, …/127.0.0.1)
+  · refuses when CONVEX_CLOUD_URL is unset
+```
+Defense-in-depth discovered while testing: the platform itself rejects shadowing the built-in — `convex env set CONVEX_CLOUD_URL …` → `EnvVarNameForbidden: Environment variable with name "CONVEX_CLOUD_URL" is built-in and cannot be overridden`. The guard cannot be lied to via deployment env.
+
+**Attack 4 — missing dev password:** exits non-zero BEFORE any wipe; data verified intact after the refusal:
+```
+  [✗] reset:local: DEV_TEST_USER_PASSWORD missing or shorter than 8 chars.
+      … Nothing was wiped — the check runs before the data reset …
+  EXIT: 1
+  $ pnpm seed:check → users: 17  posts: 60  tools: 8  notifications: 6  badges: 26   (untouched)
+```
+
+**Check 5 — does a real `CONVEX_DEPLOY_KEY` exist on this machine** (shell profiles, `.env*` files, user/machine env vars): **NO**.
+
+**Test 6 — normal run still works:**
+```
+→ preflight: seed/devGuard:assertLocal …
+  [✓] server-side guard passed — CLI is talking to the local backend
+  fingerprint: c410ddce4f57  (anonymous:anonymous-agent)
+  [✓] reset:local complete — feed/profile/leaderboard/notifications are demo-populated
+```
+(Fingerprint value moved from `9b9edfdf12c0` to `c410ddce4f57` with this fix — `feedExplorationState`, written by logged-in browsing, joined the hash-excluded volatile set; see §4's v2 note.)

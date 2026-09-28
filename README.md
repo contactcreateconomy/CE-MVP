@@ -48,7 +48,7 @@ When it finishes, it prints the last mile (below). If you ever see a manual prom
 
 ### Local dev: one command (setup → reset → verify)
 
-Three commands cover the whole local lifecycle. `reset:local` and `seed:demo` **hard-refuse** on anything but a `local:`/`anonymous:` deployment selector, so production can never be touched by accident.
+Three commands cover the whole local lifecycle. Three independent gates keep them local-only: the deployment selector must be exactly `anonymous:anonymous-*`/`local:local-*`, child processes run with retargeting env overrides (`CONVEX_DEPLOY_KEY`, self-hosted vars) stripped, and a server-side allowlist (`seed/devGuard:assertLocal`) refuses to run on any non-loopback deployment before anything destructive executes.
 
 | Command | What it does |
 |---|---|

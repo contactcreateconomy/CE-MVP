@@ -27,19 +27,38 @@ import {
   convexRun,
   convexEnvSet,
   convexEnvRemove,
+  preflightDevGuard,
   step,
   ok,
 } from "./lib/local-gate.mjs";
 
-const deployment = assertLocalDeployment("reset:local");
-console.log(`reset:local — targeting ${deployment}`);
-
-// ── password (never hardcoded; see convex/dev/ensureTestUser.ts) ───────
+// ── PREFLIGHT a) — inputs, BEFORE anything destructive ─────────────────
+// Password first: a reset without it silently skips the devtest account
+// and the two machines' fingerprints diverge. Abort instead.
 const argvPassword = (() => {
   const i = process.argv.indexOf("--password");
   return i > 0 && process.argv[i + 1] ? process.argv[i + 1] : null;
 })();
 const password = argvPassword || process.env.DEV_TEST_USER_PASSWORD || "";
+if (password.length < 8) {
+  console.error(
+    "  [✗] reset:local: DEV_TEST_USER_PASSWORD missing or shorter than 8 chars.\n" +
+      "      Re-run with: DEV_TEST_USER_PASSWORD=<password> pnpm reset:local\n" +
+      "      (or --password <password>). Nothing was wiped — the check runs before\n" +
+      "      the data reset so the account is never silently skipped.\n",
+  );
+  process.exit(1);
+}
+
+const deployment = assertLocalDeployment("reset:local");
+console.log(`reset:local — targeting ${deployment}`);
+
+// ── PREFLIGHT b) — server-side guard: prove the CLI sees the local backend
+// (a leftover CONVEX_DEPLOY_KEY would retarget every child at a cloud
+// deployment; children run sanitized and this proves the live target).
+step("preflight: seed/devGuard:assertLocal …");
+preflightDevGuard("reset:local");
+ok("server-side guard passed — CLI is talking to the local backend");
 
 // ── 1. wipe data (official --replace-all import path) ─────────────────
 step("wiping all table data (convex import --replace-all, empty table)…");
@@ -74,21 +93,13 @@ ok("admin/widgetsCatalog:deploySeed — admin nav");
 
 // ── 3. dev test account ────────────────────────────────────────────────
 step("dev test account (devtest@example.com)…");
-if (password.length >= 8) {
-  convexEnvSet("ALLOW_DEV_TEST_USER", "true");
-  convexEnvSet("DEV_TEST_USER_PASSWORD", password);
-  const out = convexRun("dev/ensureTestUser:ensure");
-  convexEnvRemove("DEV_TEST_USER_PASSWORD");
-  convexEnvRemove("ALLOW_DEV_TEST_USER");
-  const existed = out.includes("alreadyExisted\":true");
-  ok(existed ? "account already existed" : "account created — staff roles auto-granted (FOUNDER_EMAILS)");
-} else {
-  console.error(
-    "  [!] DEV_TEST_USER_PASSWORD missing or shorter than 8 chars — devtest@example.com NOT recreated.\n" +
-      "      Re-run with: DEV_TEST_USER_PASSWORD=<password> pnpm reset:local\n" +
-      "      (or --password <password>). Demo data is seeded below regardless.\n",
-  );
-}
+convexEnvSet("ALLOW_DEV_TEST_USER", "true");
+convexEnvSet("DEV_TEST_USER_PASSWORD", password);
+const out = convexRun("dev/ensureTestUser:ensure");
+convexEnvRemove("DEV_TEST_USER_PASSWORD");
+convexEnvRemove("ALLOW_DEV_TEST_USER");
+const existed = out.includes("alreadyExisted\":true");
+ok(existed ? "account already existed" : "account created — staff roles auto-granted (FOUNDER_EMAILS)");
 
 // ── 4. demo seed ────────────────────────────────────────────────────────
 step("demo seed…");

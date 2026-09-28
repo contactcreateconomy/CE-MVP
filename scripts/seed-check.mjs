@@ -32,9 +32,10 @@ const VOLATILE = new Set([
   "authAccounts", "authRateLimits", "authRefreshTokens", "authSessions",
   "authVerificationCodes", "authVerifiers",
   "auditLog", "adminCounters", "analyticsProjections", "deployLog",
-  "feedSessions", "instrumentationIncidents", "jobDeadLetters", "jobRuns",
-  "legitimacyScores", "operationalIncidents", "platformHealth", "rawEvents",
-  "signalSummary", "threadReadStates", "userReadingProgress",
+  "feedExplorationState", "feedSessions", "instrumentationIncidents",
+  "jobDeadLetters", "jobRuns", "legitimacyScores", "operationalIncidents",
+  "platformHealth", "rawEvents", "signalSummary", "threadReadStates",
+  "userReadingProgress",
 ]);
 
 const hashableCounts = Object.fromEntries(
