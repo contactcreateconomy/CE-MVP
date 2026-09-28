@@ -46,6 +46,19 @@ The script verifies prerequisites, creates the app `.env.local` files, selects t
 
 When it finishes, it prints the last mile (below). If you ever see a manual prompt from `pnpm backend` on the very first launch, answer **Y** and choose **"start fresh"**, then re-run the script.
 
+### Local dev: one command (setup → reset → verify)
+
+Three commands cover the whole local lifecycle. `reset:local` and `seed:demo` **hard-refuse** on anything but a `local:`/`anonymous:` deployment selector, so production can never be touched by accident.
+
+| Command | What it does |
+|---|---|
+| `node scripts/local-setup.mjs` | First-time setup (env files, backend, auth keys, config seeds) |
+| `DEV_TEST_USER_PASSWORD='<pw>' pnpm reset:local` | Rebuild a **known-good state**: wipes ALL table data (official `convex import --replace-all` path — functions/schema/env untouched) → config seeds → recreates `devtest@example.com` with staff roles → demo seed |
+| `pnpm seed:check` | Prints the data **fingerprint** (row counts per table + short hash over counts and stable keys). Identical fingerprint = identical logical data across machines |
+| `pnpm seed:demo` | Demo content only (idempotent, deterministic — same logical state on every machine) |
+
+The demo seed ships **15 members across signal levels 1–8, 60 posts across every category and member post type** (incl. a 21-reply thread, a two-line-overflow title, a very long body, an empty body, zero-comment posts), comments/upvotes/bookmarks/debate votes, badges, leaderboard + feed chrome, and read+unread notifications for `devtest@example.com`. The shared dev password is supplied at run time (`DEV_TEST_USER_PASSWORD` or `--password`), never committed.
+
 ### Manual setup (what the script automates)
 
 <details>
