@@ -56,9 +56,9 @@ console.log(`reset:local — targeting ${deployment}`);
 // ── PREFLIGHT b) — server-side guard: prove the CLI sees the local backend
 // (a leftover CONVEX_DEPLOY_KEY would retarget every child at a cloud
 // deployment; children run sanitized and this proves the live target).
-step("preflight: seed/devGuard:assertLocal …");
-preflightDevGuard("reset:local");
-ok("server-side guard passed — CLI is talking to the local backend");
+step("preflight: seed/devGuard:assertLocal (positive confirmation) …");
+const confirmation = await preflightDevGuard("reset:local");
+ok(`server-side guard confirmed local backend (${confirmation.url})`);
 
 // ── 1. wipe data (official --replace-all import path) ─────────────────
 step("wiping all table data (convex import --replace-all, empty table)…");

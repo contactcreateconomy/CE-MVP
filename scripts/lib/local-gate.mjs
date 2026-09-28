@@ -12,7 +12,7 @@
  *      CONVEX_CLOUD_URL only) runs as a preflight before destructive steps
  *      and again inside every seed mutation.
  */
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -78,18 +78,20 @@ export function selectedDeployment() {
   return process.env.CONVEX_DEPLOYMENT || fromFile;
 }
 
-/** R3 hard gate: only the CLI's true local-backend names pass. Anything
- *  else — including anonymous:<cloud-name> — resolves inside a cloud
- *  project and is refused. */
+/** R3 hard gate: FULL-STRING match — only the CLI's true local-backend
+ *  names pass. The CLI keeps only the LAST colon segment of a selector,
+ *  so `anonymous:anonymous-x:<cloud>` resolves in a cloud project; a
+ *  prefix match would wave it through. No extra colons/segments allowed. */
 export function assertLocalDeployment(label) {
   const deployment = selectedDeployment();
-  if (!/^(anonymous:anonymous-|local:local-)/.test(deployment)) {
+  if (!/^(anonymous:anonymous-[a-z0-9-]+|local:local-[a-z0-9_-]+)$/.test(deployment)) {
     console.error(
       `\n  [✗] ${label}: refusing to run.\n` +
-        `      CONVEX_DEPLOYMENT is ${deployment || "not set"} — expected anonymous:anonymous-* or local:local-*\n` +
-        `      (the CLI treats only those names as the local backend; anything else\n` +
-        `       targets a cloud project). The selector is written by the CLI on\n` +
-        `       first \`pnpm backend\`. Production is founder-only.\n`,
+        `      CONVEX_DEPLOYMENT is ${deployment || "not set"} — expected exactly\n` +
+        `      anonymous:anonymous-<name> or local:local-<name> (full string, no extra segments).\n` +
+        `      The CLI keeps only the last colon segment, so anything else targets a\n` +
+        `      cloud project. The selector is written by the CLI on first \`pnpm backend\`.\n` +
+        `      Production is founder-only.\n`,
     );
     process.exit(1);
   }
@@ -122,33 +124,105 @@ export function convexRun(fn, args = "{}") {
   return (res.stdout ?? "").trim();
 }
 
-/** Preflight: prove the CLI is talking to the local backend before any
- *  destructive step. Runs seed/devGuard:assertLocal — throws on cloud.
+/** Preflight: positive confirmation that the CLI is talking to the local
+ *  backend, required before anything destructive. FAIL CLOSED — the script
+ *  proceeds ONLY when ALL of this holds:
+ *    1. the watch banner's resolved URL matches the loopback regex
+ *       (independent CLI-side confirmation), and
+ *    2. the guard query's stdout parses to exactly { ok, url }
+ *       with ok === true and a loopback url (server-side confirmation).
+ *  Anything else aborts: crash, teardown assertion, non-zero exit, empty
+ *  or unparseable output. No exit-status tolerance applies here (the
+ *  UV_HANDLE_CLOSING tolerance is only for seed steps AFTER preflight).
  *
- *  Exit-code note: on Windows/Node 24 the convex CLI child often dies in
- *  libuv teardown (UV_HANDLE_CLOSING / 0xC0000409) AFTER the function
- *  result, sometimes eating the small "null" stdout. The decision is
- *  therefore refusal-text-driven: any guard error text aborts; a bare
- *  teardown crash with no error text counts as pass. */
-export function preflightDevGuard(label) {
-  const res = convex(["run", "seed/devGuard:assertLocal"]);
-  const output = `${res.stdout ?? ""}${res.stderr ?? ""}`;
-  if (res.stdout) process.stdout.write(res.stdout);
-  const refused = /dev guard: refusing|Uncaught Error|Server Error|Request ID/i.test(output);
-  if (refused) {
-    if (res.stderr) process.stderr.write(res.stderr);
-    console.error(`\n  [✗] ${label}: preflight seed/devGuard:assertLocal REFUSED — not the local backend:\n${output.slice(0, 400)}\n`);
+ *  Why --watch: plain `convex run` on Windows/Node 24 dies in a libuv
+ *  teardown abort that eats small stdout payloads entirely (0 of 6 runs
+ *  produced any output). Watch mode keeps the process alive, so both the
+ *  banner and the result are written before we kill the child. */
+const LOOPBACK = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/;
+
+export async function preflightDevGuard(label) {
+  const child = spawn(process.execPath, [CONVEX_BIN, "run", "seed/devGuard:assertLocal", "--watch"], {
+    cwd: ROOT,
+    stdio: ["ignore", "pipe", "pipe"],
+    env: sanitizedEnv(),
+    shell: false,
+  });
+  let stdout = "";
+  let stderr = "";
+  child.stdout.on("data", (d) => { stdout += d; });
+  child.stderr.on("data", (d) => { stderr += d; });
+
+  const killChild = () => {
+    child.kill();
+    setTimeout(() => {
+      if (child.exitCode === null && child.signalCode === null) {
+        spawnSync("taskkill", ["/PID", String(child.pid), "/T", "/F"], { shell: false });
+      }
+    }, 1500);
+  };
+
+  /** Extract the result object once stdout holds a complete one. */
+  const extract = () => {
+    const start = stdout.indexOf("{");
+    const end = stdout.lastIndexOf("}");
+    if (start < 0 || end <= start) return undefined;
+    try {
+      return JSON.parse(stdout.slice(start, end + 1));
+    } catch {
+      return undefined;
+    }
+  };
+
+  const outcome = await new Promise((resolve) => {
+    const deadline = setTimeout(() => resolve("timeout"), 30_000);
+    const poll = setInterval(() => {
+      const parsed = extract();
+      if (parsed && typeof parsed === "object" && "ok" in parsed) {
+        clearInterval(poll);
+        clearTimeout(deadline);
+        resolve("result");
+      } else if (/refusing|Failed to run function|Uncaught Error/.test(stderr)) {
+        clearInterval(poll);
+        clearTimeout(deadline);
+        resolve("error");
+      }
+    }, 200);
+  });
+  killChild();
+
+  const fail = (why) => {
+    console.error(
+      `\n  [✗] ${label}: preflight REFUSED — no positive confirmation (${why}).\n` +
+        `      stdout: ${JSON.stringify(stdout.slice(0, 200))}\n` +
+        `      stderr: ${JSON.stringify(stderr.slice(0, 200))}\n` +
+        `      Fail-closed: nothing runs without the guard's explicit { ok: true, url }.\n`,
+    );
     process.exit(1);
+  };
+
+  if (outcome === "error") fail("guard errored or refused (non-loopback deployment)");
+  if (outcome === "timeout") fail("watch produced no result within 30s");
+
+  // Best-effort CLI-side confirmation: the "Watching query … on <url>" banner
+  // is not guaranteed in stdout (depends on CLI codegen/push state), but IF
+  // it appears anywhere it must name a loopback URL.
+  const bannerMatch = `${stdout}${stderr}`.match(/on (https?:\/\/\S+?)(?:\.{3}|…|$)/);
+  if (bannerMatch && !LOOPBACK.test(bannerMatch[1])) {
+    fail(`CLI resolved a non-loopback URL: ${bannerMatch[1]}`);
   }
-  const teardownCrash =
-    res.status !== 0 &&
-    (/UV_HANDLE_CLOSING|Assertion failed/i.test(res.stderr ?? "") ||
-      res.status === 3221226505);
-  if (res.status !== 0 && !teardownCrash) {
-    if (res.stderr) process.stderr.write(res.stderr);
-    console.error(`\n  [✗] ${label}: preflight seed/devGuard:assertLocal failed (exit ${res.status}):\n${output.slice(0, 400)}\n`);
-    process.exit(1);
+
+  const parsed = extract();
+  if (
+    !parsed ||
+    Object.keys(parsed).sort().join(",") !== "ok,url" ||
+    parsed.ok !== true ||
+    typeof parsed.url !== "string" ||
+    !LOOPBACK.test(parsed.url)
+  ) {
+    fail(`result was not exactly { ok: true, url: <loopback> }: ${JSON.stringify(parsed).slice(0, 120)}`);
   }
+  return parsed;
 }
 
 export function convexEnvSet(name, value) {

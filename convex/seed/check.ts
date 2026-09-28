@@ -48,6 +48,16 @@ const TABLES = [
   "vibingFeatured", "vibingHooks", "vibingTrends", "vouches", "waitlistEntries", "wishlists",
 ] as const;
 
+/** systemConfig keys a scheduled runtime job writes AFTER a reset
+ *  (timing-dependent watermarks, not seed content) — excluded from the
+ *  fingerprint count so the 45 seeded config rows keep their drift
+ *  signal while the hash stays stable across the job's hourly fire. */
+export const RUNTIME_CONFIG_PREFIXES = ["tools.ratings.driftCheck."];
+
+export function isRuntimeConfigKey(key: unknown): boolean {
+  return RUNTIME_CONFIG_PREFIXES.some((p) => String(key ?? "").startsWith(p));
+}
+
 export const fingerprint = internalQuery({
   args: {},
   returns: v.object({
@@ -64,7 +74,7 @@ export const fingerprint = internalQuery({
     const counts: Record<string, number> = {};
     for (const table of TABLES) {
       const rows = await (ctx.db as any).query(table).collect();
-      counts[table] = rows.length;
+      counts[table] = table === "systemConfig" ? rows.filter((r: any) => !isRuntimeConfigKey(r?.key)).length : rows.length;
     }
     const userEmails = (await ctx.db.query("users").collect()).map((u: any) => u.email).sort();
     const postTitles = (await ctx.db.query("posts").collect()).map((p: any) => p.title).sort();

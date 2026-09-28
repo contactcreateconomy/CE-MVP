@@ -20,13 +20,14 @@ export function assertLocalDeployment(): void {
   }
 }
 
-/** CLI preflight target: `convex run seed/devGuard:assertLocal` fails
- * loudly on anything but the local backend, before any destructive step. */
+/** CLI preflight target: `convex run seed/devGuard:assertLocal --watch`
+ * returns a positive confirmation the scripts parse strictly —
+ * `{ ok: true, url }` with a loopback url. Refusal still throws. */
 export const assertLocal = internalQuery({
   args: {},
-  returns: v.null(),
+  returns: v.object({ ok: v.boolean(), url: v.string() }),
   handler: async () => {
     assertLocalDeployment();
-    return null;
+    return { ok: true, url: process.env.CONVEX_CLOUD_URL ?? "" };
   },
 });

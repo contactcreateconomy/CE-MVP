@@ -10,9 +10,9 @@ import { assertLocalDeployment, convexRun, preflightDevGuard, step, ok } from ".
 const deployment = assertLocalDeployment("seed:demo");
 console.log(`seed:demo — targeting ${deployment} (local only)`);
 
-step("preflight: seed/devGuard:assertLocal …");
-preflightDevGuard("seed:demo");
-ok("server-side guard passed — CLI is talking to the local backend");
+step("preflight: seed/devGuard:assertLocal (positive confirmation) …");
+const confirmation = await preflightDevGuard("seed:demo");
+ok(`server-side guard confirmed local backend (${confirmation.url})`);
 
 step("seeding demo identities, posts, engagement, notifications…");
 const out = convexRun("seed/demo:seed");

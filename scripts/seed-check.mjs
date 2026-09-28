@@ -6,9 +6,13 @@
  * = identical logical data across machines.
  */
 import { createHash } from "node:crypto";
-import { assertLocalDeployment, convexRun, step, ok } from "./lib/local-gate.mjs";
+import { assertLocalDeployment, convexRun, preflightDevGuard, step, ok } from "./lib/local-gate.mjs";
 
 const deployment = assertLocalDeployment("seed:check");
+
+step("preflight: seed/devGuard:assertLocal (positive confirmation) …");
+const confirmation = await preflightDevGuard("seed:check");
+ok(`server-side guard confirmed local backend (${confirmation.url})`);
 
 step("collecting table counts + stable keys…");
 const raw = convexRun("seed/check:fingerprint");

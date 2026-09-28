@@ -53,11 +53,11 @@ Data-only wipe via **`convex import --replace-all --yes` with an empty table fil
 
 ## 4. `pnpm seed:check` — fingerprint
 
-Row counts for **all 175 tables** + stable identity keys (emails, post titles, tool slugs, notification dedupeKeys, badge labels resolved to emails — never timestamps or generated ids), folded into a sha256 short hash. Runtime-volatile tables (auth sessions, jobRuns, rawEvents, reading progress, etc. — 21 tables listed in `scripts/seed-check.mjs`) are printed but excluded from the hash: their counts depend on wall-clock activity and would break parity without saying anything about seed parity.
+Row counts for **all 175 tables** + stable identity keys (emails, post titles, tool slugs, notification dedupeKeys, badge labels resolved to emails — never timestamps or generated ids), folded into a sha256 short hash. Runtime-volatile tables (auth sessions, jobRuns, rawEvents, reading progress, feed exploration state, etc. — 22 tables listed in `scripts/seed-check.mjs`) are printed but excluded from the hash: their counts depend on wall-clock activity and would break parity without saying anything about seed parity. `systemConfig` is counted **excluding** the two `tools.ratings.driftCheck.*` watermark keys the hourly drift-check cron registers after a reset (key-level exclusion via `isRuntimeConfigKey`, unit-tested in `tests/convex/dev-guard.test.ts`) — the 45 seeded config rows keep their drift signal while the hash stays stable across the cron's fire.
 
 **Fingerprint after `reset:local`: `c410ddce4f57`** — reproduced identical across consecutive full resets on this machine. Two machines running `reset:local` should match this value (deviation = drifted code or seeds, investigate before comparing screenshots).
 
-*v2 note (review fix):* the earlier value `9b9edfdf12c0` hashed `feedExplorationState`, which logged-in browsing writes (one row per post viewed — the R3 baseline captures wrote 60). It is now hash-excluded like the other runtime tables, so the fingerprint survives browsing; the exclusion itself changed the hash, hence the new canonical value.
+*v2 note (review fix):* the earlier value `9b9edfdf12c0` hashed `feedExplorationState`, which logged-in browsing writes (one row per post viewed — the R3 baseline captures wrote 60). It is now hash-excluded like the other runtime tables, so the fingerprint survives browsing; the exclusion itself changed the hash, hence the new canonical value. *v3 note (R2 review fix):* the `systemConfig` watermark exclusion above is count-neutral right after a reset (45 with or without watermarks), so the canonical value is unchanged — it only becomes robust once the hourly cron fires.
 
 ## 5. Rendering verification (390px, live demo data)
 
@@ -125,7 +125,7 @@ Layers after the fix: (1) script selector must be exactly `anonymous:anonymous-<
   [✓] all tables cleared (functions/schema/env untouched)
   … reset completes against the LOCAL backend; fingerprint unchanged — the attack is neutralized
 ```
-(The review's scenario — key retargets `import --replace-all` at a cloud deployment — cannot occur: the key never reaches the child.)
+(The review's scenario — key retargets `import --replace-all` at a cloud deployment — cannot occur from the shell: the key never reaches the child. Caveat: a key stored in `.env.local` IS reloaded by the CLI after spawn — the preflight's positive confirmation is the layer that catches that case, since a cloud-resolving CLI cannot produce `{ ok: true, url: <loopback> }`.)
 
 **Attack 2 — `CONVEX_DEPLOYMENT=anonymous:energetic-kangaroo-55`:**
 ```
@@ -165,3 +165,38 @@ Defense-in-depth discovered while testing: the platform itself rejects shadowing
   [✓] reset:local complete — feed/profile/leaderboard/notifications are demo-populated
 ```
 (Fingerprint value moved from `9b9edfdf12c0` to `c410ddce4f57` with this fix — `feedExplorationState`, written by logged-in browsing, joined the hash-excluded volatile set; see §4's v2 note.)
+
+### 9.1 R2 review fixes (S00-PREP-REVIEW-R2) — guard tests, actual output
+
+Both SHOULD-FIXes closed: (1) the selector is now a FULL-STRING match — `^(anonymous:anonymous-[a-z0-9-]+|local:local-[a-z0-9_-]+)$` on all three scripts (`seed:check` included; the CLI keeps only the last colon segment, so the previous prefix match waved `anonymous:anonymous-x:<cloud>` through); (2) the preflight is a POSITIVE confirmation with zero exit-status tolerance — `seed/devGuard:assertLocal` now returns `{ ok: true, url }`, read via `convex run --watch` (watch keeps the child alive so the small result payload is actually written — plain `run` on Windows/Node 24 dies in the libuv teardown abort and eats it entirely, 0 of 6 sampled runs produced any stdout). The script proceeds ONLY when stdout parses to exactly `{ ok, url }` with `ok === true` and a loopback url; crash, teardown assertion, non-zero exit, empty or unparseable output all abort. The UV_HANDLE_CLOSING tolerance survives only in the seed steps AFTER preflight.
+
+**Attack — `CONVEX_DEPLOYMENT=anonymous:anonymous-x:energetic-kangaroo-55` (multi-colon; last segment is a cloud name). All three scripts, exit 1 before any CLI call:**
+```
+$ CONVEX_DEPLOYMENT=anonymous:anonymous-x:energetic-kangaroo-55 node scripts/seed-demo.mjs
+  [✗] seed:demo: refusing to run.
+      CONVEX_DEPLOYMENT is anonymous:anonymous-x:energetic-kangaroo-55 — expected exactly
+      anonymous:anonymous-<name> or local:local-<name> (full string, no extra segments).
+  EXIT: 1
+$ … seed-check.mjs   → identical refusal, EXIT: 1
+$ … reset-local.mjs --password …
+  [✗] reset:local: refusing to run.  …same message…   EXIT: 1
+  (without a password it exits on the input gate first — both gates precede any CLI call)
+```
+
+**Attack — preflight with no positive confirmation (simulated crash/empty stdout).** A non-Convex listener was bound to the backend port so the watch child could produce no result:
+```
+→ preflight: seed/devGuard:assertLocal (positive confirmation) …
+  [✗] reset:local: preflight REFUSED — no positive confirmation (watch produced no result within 30s).
+      stdout: ""
+      stderr: "✖ A different local backend not convex is running on selected port 3210"
+      Fail-closed: nothing runs without the guard's explicit { ok: true, url }.
+  EXIT: 1        → data verified intact afterwards (no wipe ran)
+```
+Related discovery: with the local backend STOPPED, a `convex run` child auto-starts it (the confirmation is then honestly loopback — it talks to the local backend it just started); killing the watch child stops that auto-started backend, so a broken environment still cannot reach the wipe (observed: the subsequent import aborted with "Local backend isn't running", data intact).
+
+**Normal run still passes** (all three scripts; `seed:check` output):
+```
+  [✓] server-side guard confirmed local backend (http://127.0.0.1:3210)
+  fingerprint: c410ddce4f57  (anonymous:anonymous-agent)
+```
+Note: the task brief expected `9b9edfdf12c0`; that value predates the v2 hash (`feedExplorationState` exclusion, confirmed correct by the R2 review) — the canonical value is `c410ddce4f57`, reproduced across resets and now stable across the hourly drift-check cron (v3 key-level `systemConfig` watermark exclusion, unit-tested).

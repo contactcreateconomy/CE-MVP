@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { assertLocalDeployment } from "../../convex/seed/devGuard";
+import { isRuntimeConfigKey } from "../../convex/seed/check";
 
 /* Server-side allowlist for the dev seed surface (S00-PREP review fix).
  * The guard reads the deployment's own client URL (CONVEX_CLOUD_URL built-in)
@@ -76,5 +77,23 @@ describe("seed/devGuard assertLocalDeployment (server-side allowlist)", () => {
     withUrl(undefined, () => {
       expect(() => assertLocalDeployment()).toThrow(/dev guard: refusing/);
     });
+  });
+});
+
+describe("seed/check runtime-config exclusion (fingerprint stability)", () => {
+  it("excludes the hourly drift-check watermark keys", () => {
+    expect(isRuntimeConfigKey("tools.ratings.driftCheck.auditSeenAt")).toBe(true);
+    expect(isRuntimeConfigKey("tools.ratings.driftCheck.lastFullPassAt")).toBe(true);
+  });
+
+  it("keeps every seeded config key in the count", () => {
+    for (const key of ["signup.mode", "categories.content", "tools.ratings.autoflag.velocityPerHour"]) {
+      expect(isRuntimeConfigKey(key)).toBe(false);
+    }
+  });
+
+  it("tolerates missing keys (unset/undefined documents)", () => {
+    expect(isRuntimeConfigKey(undefined)).toBe(false);
+    expect(isRuntimeConfigKey(null)).toBe(false);
   });
 });
