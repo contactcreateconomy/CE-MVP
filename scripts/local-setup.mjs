@@ -22,7 +22,7 @@
  * running in its own terminal while developing (the script tells you).
  */
 
-import { spawn, execFileSync } from "node:child_process";
+import { spawn, spawnSync, execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync, copyFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { generateKeyPairSync } from "node:crypto";
@@ -74,16 +74,24 @@ async function main() {
   if (major < 22) die(`Node >= 22 required (found ${process.versions.node}). Install Node 24 LTS and re-run.`);
   ok(`Node ${process.versions.node}`);
 
-  try {
-    const v = run("pnpm", ["--version"], { capture: true }).trim();
-    ok(`pnpm ${v}`);
-  } catch {
+  // `pnpm` may not be spawnable on Windows: npm installs only ship sh/.cmd
+  // shims (no .exe), which child_process refuses to run without a shell.
+  // Fall back to the global pnpm.cjs run through the current node binary
+  // (same realpath trick used below for the convex CLI bin).
+  const pnpm = (() => {
+    try {
+      const v = run("pnpm", ["--version"], { capture: true }).trim();
+      if (v) return { bin: "pnpm", args: [] };
+    } catch {}
+    const cjs = path.join(path.dirname(process.execPath), "node_modules", "pnpm", "bin", "pnpm.cjs");
+    if (existsSync(cjs)) return { bin: process.execPath, args: [cjs] };
     die("pnpm not found on PATH. Install with `npm i -g pnpm@10` and re-run.");
-  }
+  })();
+  ok(`pnpm ${run(pnpm.bin, [...pnpm.args, "--version"], { capture: true }).trim()}`);
 
   if (!existsSync(path.join(ROOT, "node_modules"))) {
     info("node_modules missing — running pnpm install (a few minutes)…");
-    run("pnpm", ["install"]);
+    run(pnpm.bin, [...pnpm.args, "install"]);
   }
   ok("dependencies installed");
 
@@ -102,28 +110,18 @@ async function main() {
   }
 
   // ── 3. Deployment selector ──────────────────────────────────────────
-  section("Local deployment selector (root .env.local)");
+  section("Deployment selector (root .env.local)");
   const rootEnv = path.join(ROOT, ".env.local");
   let envText = existsSync(rootEnv) ? readFileSync(rootEnv, "utf8") : "";
-  if (envText.includes("CONVEX_DEPLOYMENT=local:")) {
-    ok("already configured for the local deployment");
+  if (/^CONVEX_DEPLOYMENT=/m.test(envText)) {
+    ok("already configured (leave the selector to the CLI — never hand-edit)");
   } else {
-    // Writing CONVEX_DEPLOYMENT directly is the documented non-interactive
-    // equivalent of `convex dev --configure --dev-deployment local`; the CLI
-    // accepts it on the next `convex dev` and creates the local instance.
-    const header = envText.includes("CONVEX_DEPLOYMENT")
-      ? ""
-      : "# Deployment selector for the local open-source Convex backend (gitignored).\n";
-    const filtered = envText
-      .split("\n")
-      .filter((l) => !l.startsWith("CONVEX_DEPLOYMENT"))
-      .join("\n");
-    envText =
-      header +
-      filtered.replace(/^\s*# Deployment used by.*\n?/m, "") +
-      "\nCONVEX_DEPLOYMENT=local:local-cemvp\n";
-    writeFileSync(rootEnv, envText.trimEnd() + "\n");
-    ok("wrote CONVEX_DEPLOYMENT=local:local-cemvp to root .env.local");
+    // No selector: on the first `convex dev` the CLI auto-provisions an
+    // ANONYMOUS local deployment (no Convex account, no login — the
+    // `local:<name>` form requires a CLI-registered deployment and would
+    // push the run into the cloud login flow) and writes the selector
+    // itself. Writing nothing here is what keeps that flow non-interactive.
+    ok("no selector present — the CLI will auto-provision an anonymous local deployment on first run");
   }
 
   // ── 4. Start backend (its watcher pushes functions/schema) ─────────
@@ -140,11 +138,14 @@ async function main() {
     ok(`backend already running at ${BACKEND_URL} (owned by an existing \`convex dev\` watcher)`);
   } else {
     info("backend not running — launching `pnpm backend` in a detached process…");
+    // CONVEX_AGENT_MODE=anonymous is the CLI's documented non-interactive path:
+    // it skips the "Would you like to login?" prompt and auto-provisions an
+    // anonymous local deployment (no Convex account needed).
     const child = spawn(process.execPath, [CONVEX_BIN, "dev"], {
       cwd: ROOT,
       detached: true,
       stdio: "ignore",
-      env: process.env,
+      env: { ...process.env, CONVEX_AGENT_MODE: "anonymous" },
     });
     child.unref();
     info(`launched (pid ${child.pid}). Waiting for ${BACKEND_URL}…`);
@@ -194,8 +195,9 @@ async function main() {
   } else {
     info("generating RS256 keypair for local auth…");
     const { publicKey, privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
-    const jwk = (await import("jose")).exportJWK(publicKey);
-    jwk.kty = "RSA";
+    // Node's native JWK export — jose's exportJWK returns {} for KeyObjects
+    // on some Node builds, which silently strips n/e and breaks verification.
+    const jwk = publicKey.export({ format: "jwk" });
     jwk.use = "sig";
     jwk.alg = "RS256";
     jwk.kid = "local-dev-1";
@@ -215,7 +217,24 @@ async function main() {
   ];
   for (const [fn, what] of seedFns) {
     info(`${fn} — ${what}…`);
-    nodeArgs([CONVEX_BIN, "run", fn, "{}"], { stdio: "inherit" });
+    // Windows + Node 24: the CLI child can hit a libuv teardown assertion
+    // (UV_HANDLE_CLOSING) AFTER it already printed a successful result —
+    // the mutation ran fine, only the exit code is poisoned. Treat that
+    // one case as success; anything else with a nonzero exit is real.
+    const res = spawnSync(process.execPath, [CONVEX_BIN, "run", fn, "{}"], {
+      cwd: ROOT,
+      encoding: "utf8",
+      env: process.env,
+      shell: false,
+    });
+    if (res.stdout) process.stdout.write(res.stdout);
+    if (res.stderr) process.stderr.write(res.stderr);
+    const teardownBug =
+      /UV_HANDLE_CLOSING/.test(res.stderr ?? "") && (res.stdout ?? "").trim().length > 0;
+    if (res.status !== 0 && !teardownBug) {
+      die(`seed ${fn} failed (exit ${res.status})`);
+    }
+    ok(`${fn} done`);
   }
 
   // ── 7. Done — manual last mile ──────────────────────────────────────
