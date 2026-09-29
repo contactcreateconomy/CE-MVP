@@ -6,10 +6,21 @@ Createconomy is a creator-economy discussion platform (typed-post forum + labele
 
 ---
 
+## 0. Redesign precedence (2026-09-29 — read before any UI/UX work)
+
+A UI/UX redesign of every member-facing screen is under way in **`ak-redesign/`** (entry: `ak-redesign/README.md`; vision: `ak-redesign/01-vision/CEY-VISION.md`; live state: `ak-redesign/00-control/STATUS.md`).
+
+- **`ak-redesign/` wins on UI/UX** (layout, copy, states, motion, components, visual tokens). An approved `ak-redesign/specs/S##-SPEC.md` overrides the matching screen contract in `docs/02-contracts/` and the "never build outside the register" / "never invent a token" rules *for that spec's scope only*.
+- **`docs/` (the PRD) is reference** — and stays **authoritative for backend contracts** (schema, enums, Convex function behaviour, security, legal) unless a record in `ak-redesign/00-control/DECISIONS.md` overrides it.
+- **Conflicts** → logged in DECISIONS.md as "needs founder". Never silently pick a side.
+- **Backend changes** (anything under `convex/`) → a change request in `ak-redesign/00-control/crs/`, founder-approved before any spec depends on it.
+- **Naming:** users see **Createconomy**. "CEY" is an internal short name only (docs, comments, team talk) — never product UI (DECISIONS D-008).
+
 ## 1. Read this before anything else
 
 1. **`docs/AGENT-START-HERE.md`** — the spec's declared entry point. Read it fully before touching code.
 2. **`docs/00-project-status/PROJECT-STATUS.md`** — read when arriving cold; explains what is built, what is verified, and what isn't.
+3. **UI/UX work:** `ak-redesign/README.md` → `ak-redesign/00-control/STATUS.md` → `CURRENT-STATE.md` (the ground truth of what users see today). §0 precedence applies.
 
 ## 2. Spec path mapping (critical)
 
@@ -50,8 +61,8 @@ Per-task lookup: slice in `docs/03-slices/SLICE-CATALOG-PHASE*.md` (scope/depend
 From `docs/00-project-status/` (founder-approved 2026-09-04 — read before any architecture-adjacent work):
 
 - **00-TOPOLOGY:** `apps/forum` owns member routes (`/feed`, `/sell`, `/s/*`, …). `apps/admin` owns `/admin/*` on port 3001 (forum `/admin` redirects there). `apps/seller` and `apps/marketplace` remain parked placeholders. Slice paths like `app/admin/...` mean `apps/admin/src/app/admin/...`.
-- **00-ROUTES:** live route names are canonical: `/discussions/[slug]`, `/new-post`, `/users/[handle]`, `/profile` + `/settings` (they supersede older route fields in contracts/sheets — e.g. `/p/[slug]`, `/compose`). Do not rename routes to match contracts.
-- **00-TRANSITION:** RESET + strangler pattern — canonical tables are built alongside legacy `forum*` tables; live-app data is disposable demo data; no migration, no dual-write. **NEVER write a legacy `forum*` table.** SLICE-P7-CLEANUP drops the legacy tables at the end.
+- **00-ROUTES:** (still binding under the redesign — a spec that wants a route change must record a DECISION first) live route names are canonical: `/discussions/[slug]`, `/new-post`, `/users/[handle]`, `/profile` + `/settings` (they supersede older route fields in contracts/sheets — e.g. `/p/[slug]`, `/compose`). Do not rename routes to match contracts.
+- **00-TRANSITION:** (still binding; the P7-CLEANUP port is done, the `forum*` never-write rule stands) RESET + strangler pattern — canonical tables are built alongside legacy `forum*` tables; live-app data is disposable demo data; no migration, no dual-write. **NEVER write a legacy `forum*` table.** SLICE-P7-CLEANUP drops the legacy tables at the end.
 - **Shared-file serialization:** `convex/schema.ts`, `convex/crons.ts`, and shared registries merge through one integration pass per phase.
 
 ## 6. Repo layout
@@ -120,26 +131,12 @@ Anything requiring the Convex CLI, package installs, deployment pushes, or exter
 
 Pre-launch-only gates (do NOT block build): lawyer review of the four legal docs, and Readiness Category 8 (ranking calibration reviewed) — both gate `signup.mode=open` only.
 
-## 11. Progress tracking — GitHub wiki (MANDATORY per slice + per phase)
+## 11. Progress tracking and definition of done (D-006, LOCKED 2026-09-29)
 
-The step-by-step build tracker lives on the repo wiki: **https://github.com/contactcreateconomy/CE-MVP/wiki** (pages: Development Roadmap · Working Agreements · Progress Tracker · Founder Review Queue · one per phase). It is the single source of truth for what's done — the repo docs deliberately do not duplicate it.
-
-**Every completed slice MUST update the wiki in the same session that ships it** (this is part of the definition of done, alongside the CHANGELOG entry):
-
-1. `Progress-Tracker.md` — add a log row (date, slice, commit hash, one-line note); adjust the "Next up" queue and the remaining-slices count.
-2. The phase page (e.g. `Phase-4-Content-Core.md`) — flip the slice row's status (✅ + date + commit, or 🔜 for the new next-up).
-3. `Home.md` current-status snapshot — update when a phase completes (not per slice).
-4. `Founder-Review-Queue.md` — **at every phase boundary (and whenever a slice creates or resolves a founder-facing item)**: add new entries under the matching section (A founder actions · B product decisions · C flagged defaults/deviations · D pre-launch gates), and strike resolved items with a one-line resolution note + date. This page is the founder's consolidated checklist for the final validation pass — never let a fence, flagged default, or blocked key live only in a commit message.
-
-Mechanics: the wiki is its own git repo —
-
-```bash
-git clone https://github.com/contactcreateconomy/CE-MVP.wiki.git   # needs gh auth (gh auth login)
-# edit pages, then:
-git add -A && git commit -m "Tracker: <slice> done (<hash>)" && git push
-```
-
-Wiki clone lives locally at `/tmp/CE-MVP-wiki` on the founder Mac (re-clone if missing). If wiki push is impossible (no auth), STOP and report — do not let code and tracker drift apart.
+- **Redesign work** (`ak-redesign/` specs and their builds): done = the spec's row in `ak-redesign/00-control/STATUS.md` updated by Opus at VERDICT/GATE **+ one CHANGELOG.md line per accepted spec** (not per task). Founder-facing items live in `ak-redesign/00-control/DECISIONS.md` as "needs founder" records — never only in a commit message.
+- **Backend work** (dev, `convex/`, scripts): a CHANGELOG.md entry per change, in the same PR. CRs are answered in `ak-redesign/00-control/crs/CR-NNN-RESPONSE.md`.
+- **The GitHub wiki** (https://github.com/contactcreateconomy/CE-MVP/wiki) is a **read-only archive** of the PRD build (Phases 1–7). No wiki update is required or expected; never block on wiki auth.
+- `wiki-tracker-sync.yml` only reminds on a merged PR without a CHANGELOG change (label `no-changelog` to skip).
 
 <!-- convex-ai-start -->
 This project uses [Convex](https://convex.dev) as its backend.

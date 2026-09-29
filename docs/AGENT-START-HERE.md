@@ -4,6 +4,8 @@ You are the coding agent building Createconomy. This file is the only entry poin
 
 > **Build-state note (2026-09-12):** this entry doc predates the build. All 7 phases are code-complete, the thread contract is implemented, and wave-4-editorial was resolved (DECISIONS-LOCKED #10). Its fence/spec-guidance sections remain governing; its build-state prose is historical.
 
+> **Redesign note (2026-09-29):** UI/UX is now governed by `ak-redesign/` (see repo-root `AGENTS.md` §0). This PRD remains the reference, and stays **authoritative for backend contracts** unless `ak-redesign/00-control/DECISIONS.md` overrides. The "do not read anything outside `PRD/`" fence below does **not** apply to `ak-redesign/`. 00-ROUTES and 00-TRANSITION stay binding.
+
 ---
 
 ## 1. WHAT THIS FOLDER IS

@@ -4,6 +4,8 @@ Createconomy is a curated creator-discussion platform. Content flows through an 
 
 **Status:** Phases 1–7 complete (MVP code-complete 2026-09-10; 902/902 tests; 2026-09-12 audit reconciled doc drift). **Development runs against a local open-source Convex backend** (`pnpm backend`) — no Convex cloud account needed for dev. Production remains the Convex Cloud deployment (founder-only deploys). See [Local development setup](#local-development-setup) below or the full [SETUP.md](SETUP.md) walkthrough (macOS + Windows).
 
+**Redesign:** a UI/UX redesign of every member-facing screen is in progress — see [`ak-redesign/README.md`](ak-redesign/README.md). `ak-redesign/` wins on UI/UX; `docs/` stays authoritative for backend contracts (AGENTS.md §0).
+
 ## Repository structure
 
 | Path | What it is |
@@ -13,6 +15,7 @@ Createconomy is a curated creator-discussion platform. Content flows through an 
 | `packages/auth-ui` | Shared auth modal + providers (`@cemvp/auth-ui`) |
 | `packages/convex-client` | Tiny helper: `isConvexConfigured()`, `getConvexUrl()` |
 | `convex/` | Shared Convex backend — 82-table schema, auth, crons, forum / ingest / qualify / admin / lib modules |
+| `ak-redesign/` | UI/UX redesign control room: vision, status, decisions, specs, CRs, baselines |
 | `docs/` | The complete PRD: 572 capabilities, 54 screens, 56 screen contracts, 132 slices across 7 phases, design system, 19 module build sheets, open-items register |
 | `scripts/cap-coverage.mjs` | Capability→slice coverage gate (572/572) |
 

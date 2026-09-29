@@ -4,6 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Read `AGENTS.md` first — it is the canonical operating doc for this repo** (read order, hard rules, open items). This file summarizes the essentials; the PRD itself lives under `docs/` (internal doc references to `PRD/x` mean `docs/x`; `PRD/app` means the repo root).
 
+## Redesign precedence (read before any UI/UX work)
+
+`ak-redesign/` wins on UI/UX; `docs/` PRD is reference and stays authoritative for backend contracts unless `ak-redesign/00-control/DECISIONS.md` overrides; conflicts → DECISIONS "needs founder"; backend changes → CR in `ak-redesign/00-control/crs/`. Users see **Createconomy**, never "CEY" (internal short name). Full block: AGENTS.md §0. Start UI work at `ak-redesign/README.md`.
+
 ## What this is
 
 Createconomy — a curated creator-discussion platform (typed-post forum, labeled AI-persona discussions, claims-first editorial pipeline, tool registry, reputation economy). pnpm monorepo: `apps/forum` (member Next.js app), `apps/admin` (staff console on port 3001), `convex/` (shared Convex backend, ~90-table schema), `packages/auth-ui` + `packages/convex-client`, and the full build spec in `docs/`. Phases 1–7 are code-complete; `apps/seller` and `apps/marketplace` are parked placeholders — keep them buildable, never build them out.
@@ -45,6 +49,8 @@ CI (`.github/workflows/ci.yml`) runs every gate above on **PRs into `main` and p
 5. **Never write a legacy `forum*` table** (00-TRANSITION: strangler pattern; legacy tables are disposable demo data).
 6. Live route names are canonical and supersede contract text: `/discussions/[slug]`, `/new-post`, `/users/[handle]`, `/profile`, `/settings`. Don't rename routes to match contracts.
 
+Hard rules 1–3 are scoped by the redesign precedence above: an approved `ak-redesign` spec governs UI/tokens/components for its scope. Rules 4–6 and all backend/security rules are unchanged.
+
 Before any slice/screen, the mandatory read order is `docs/AGENT-START-HERE.md` §2 → `docs/01-product-spec/_data-model.md` (every table/field/enum must match verbatim) → capability register → screen inventory → STYLE-KIT. Scan `docs/AGENT-MEMORY.md` section headers for prior lessons; append new ones there (append-only).
 
 ## Architecture
@@ -60,7 +66,7 @@ Before any slice/screen, the mandatory read order is `docs/AGENT-START-HERE.md` 
 ## Process & tracking
 
 - **Git:** work on numbered topic branches (`NNN-name`); PR target is **`main`** (production/default). `001-default` is a feature branch.
-- **Definition of done per slice:** CHANGELOG entry + wiki tracker update in the same session (wiki is its own git repo — see AGENTS.md §11). `wiki-tracker-sync.yml` posts a reminder if CHANGELOG wasn't touched.
+- **Definition of done (D-006):** redesign → STATUS.md row updated + one CHANGELOG line per accepted spec; backend → CHANGELOG entry per change. The wiki is a read-only archive (AGENTS.md §11). `wiki-tracker-sync.yml` only reminds when CHANGELOG wasn't touched.
 - **Bucket-1 items** (Convex CLI deploys, package installs, external accounts/keys) → stop, flag, hand off via `docs/DEV-HANDOFF.md`; founder-only steps in `docs/FOUNDER-BOOTSTRAP.md`.
 - Status of built vs. remaining: `docs/00-project-status/PROJECT-STATUS.md`.
 
