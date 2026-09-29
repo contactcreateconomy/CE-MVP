@@ -1,0 +1,571 @@
+/*
+ * shared base + component + utility rules (S00-T01).
+ * Moved verbatim from apps/forum/src/app/globals.css lines 510-1073.
+ * The one app difference (main min-height, forum L522) ships here as
+ * min-h-0 (admin value); forum overrides it in its globals.css.
+ */
+
+html,
+body {
+  @apply min-h-full;
+}
+
+body {
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+main {
+  @apply min-h-0;
+}
+
+@layer base {
+  a {
+    color: var(--brand-primary);
+  }
+}
+
+:focus-visible {
+  outline: none;
+}
+
+.card-surface {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+/* Feed post cards: soft outer glow on hover / keyboard focus within */
+.feed-post-card {
+  transition:
+    transform 200ms ease-out,
+    box-shadow 200ms ease-out;
+}
+
+.feed-post-card:hover,
+.feed-post-card:focus-within {
+  transform: translateY(-2px);
+  box-shadow:
+    var(--shadow-xs),
+    0 0 22px hsl(199 89% 48% / 0.09),
+    0 0 40px hsl(199 89% 48% / 0.04),
+    0 10px 28px hsl(199 89% 48% / 0.035);
+}
+
+.electric-glow {
+  box-shadow: var(--glow-primary-sm);
+}
+
+.canvas-dot-grid {
+  background-image: radial-gradient(circle at center, var(--dot-color) 1px, transparent 1px);
+  background-size: 18px 18px;
+  background-position: 0 0;
+}
+
+@keyframes soft-float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: var(--glow-primary-sm);
+  }
+  50% {
+    box-shadow: var(--glow-primary-md);
+  }
+}
+
+@keyframes route-emerge {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.animate-soft-float {
+  animation: soft-float-up 220ms cubic-bezier(0.215, 0.61, 0.355, 1) both;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2000ms cubic-bezier(0.645, 0.045, 0.355, 1) infinite;
+}
+
+.animate-route-emerge {
+  animation: route-emerge 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+/* Layer 2: component-scope animations as @utility so variants compose.
+   Durations/easings reference the §7 tokens defined in :root. */
+@utility animate-modal-pop-in {
+  animation: modal-pop-in var(--duration-modal-in) var(--ease-pop-in) both;
+}
+
+@utility animate-modal-pop-out {
+  animation: modal-pop-out var(--duration-modal-out) var(--ease-pop-out) both;
+}
+
+@utility animate-overlay-fade-in {
+  animation: overlay-fade-in var(--duration-overlay-in) ease-out both;
+}
+
+@utility animate-overlay-fade-out {
+  animation: overlay-fade-out var(--duration-overlay-out) ease-in both;
+}
+
+/* Layer 3 (§11.9 skeleton): token-backed shimmer sweep — mirrors the kit's
+   --animate-progress-shimmer; keyframe + --duration-shimmer already exist.
+   Gradient = §11.9 "bg/surface → bg/overlay → bg/surface"; the registered
+   --progress-shimmer-offset drives the left→right sweep. */
+@utility animate-progress-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--bg-surface) 0%,
+    var(--bg-overlay) 50%,
+    var(--bg-surface) 100%
+  );
+  background-size: 200% 100%;
+  background-position: var(--progress-shimmer-offset) 0;
+  animation: progress-shimmer var(--duration-shimmer) linear infinite;
+}
+
+/* A8 ladder (§7.3 FADE IN — opacity 0→1, duration/normal, ease/out):
+   browsing the ladder fades in; no movement (§11.26 "browsing = fade"). */
+@utility animate-fade-in {
+  animation: fade-in var(--duration-normal) var(--ease-out-cubic) both;
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* A8 ladder (§7.3 SCALE REVEAL — scale(0.95)→1 + fade, duration/slow,
+   ease/spring): level-up only. duration/slower never shipped; the
+   reconciled scale's emerge step (420ms, RECONCILIATION-NOTE #9) rides. */
+@utility animate-scale-reveal {
+  animation: scale-reveal var(--duration-emerge) var(--ease-spring-soft) both;
+}
+
+@keyframes scale-reveal {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Layer 2: z-ladder utilities (z-index is not a @theme namespace in v4). */
+@utility z-behind { z-index: var(--z-behind); }
+@utility z-base { z-index: var(--z-base); }
+@utility z-sticky-local { z-index: var(--z-sticky-local); }
+@utility z-raised { z-index: var(--z-raised); }
+@utility z-progress { z-index: var(--z-progress); }
+@utility z-layer { z-index: var(--z-layer); }
+@utility z-sticky { z-index: var(--z-sticky); }
+@utility z-dropdown { z-index: var(--z-dropdown); }
+@utility z-toast { z-index: var(--z-toast); }
+@utility z-modal-auth { z-index: var(--z-modal-auth); }
+@utility z-tooltip { z-index: var(--z-tooltip); }
+@utility z-max { z-index: var(--z-max); }
+
+/* Layer 2: named duration utilities on the §7.1 scale. */
+@utility duration-instant { transition-duration: var(--duration-instant); }
+@utility duration-stagger-step { transition-duration: var(--duration-stagger-step); }
+@utility duration-fast { transition-duration: var(--duration-fast); }
+@utility duration-normal { transition-duration: var(--duration-normal); }
+@utility duration-slow { transition-duration: var(--duration-slow); }
+@utility duration-float { transition-duration: var(--duration-float); }
+@utility duration-emerge { transition-duration: var(--duration-emerge); }
+
+/* Layer 2: §7.2 easing utilities. */
+@utility ease-out-cubic { transition-timing-function: var(--ease-out-cubic); }
+@utility ease-loop { transition-timing-function: var(--ease-loop); }
+@utility ease-emerge { transition-timing-function: var(--ease-emerge); }
+@utility ease-pop-in { transition-timing-function: var(--ease-pop-in); }
+@utility ease-pop-out { transition-timing-function: var(--ease-pop-out); }
+@utility ease-toggle { transition-timing-function: var(--ease-toggle); }
+@utility ease-spring-soft { transition-timing-function: var(--ease-spring-soft); }
+
+@keyframes modal-pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modal-pop-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+}
+
+@keyframes overlay-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes overlay-fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes auth-otp-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+@keyframes search-focus-spin {
+  to { --search-focus-angle: 360deg; }
+}
+
+@property --search-focus-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.search-input:focus {
+  border-color: transparent;
+  background: var(--bg-surface) padding-box,
+    conic-gradient(
+      from var(--search-focus-angle),
+      rgba(14, 165, 233, 0.55),
+      rgba(14, 165, 233, 0.12),
+      rgba(14, 165, 233, 0.0),
+      rgba(14, 165, 233, 0.12),
+      rgba(14, 165, 233, 0.55)
+    ) border-box;
+  animation: search-focus-spin 2.5s linear infinite;
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.15);
+}
+
+/* Navigation progress bar — metallic gradient shimmer */
+@property --progress-shimmer-offset {
+  syntax: "<percentage>";
+  initial-value: -100%;
+  inherits: false;
+}
+
+@keyframes progress-shimmer {
+  to { --progress-shimmer-offset: 200%; }
+}
+
+.navigation-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.navigation-progress-bar__track {
+  height: 100%;
+  border-radius: 0 1px 1px 0;
+  background: linear-gradient(
+    90deg,
+    hsl(199 89% 48%) 0%,
+    hsl(199 94% 60%) 20%,
+    hsl(200 98% 39%) 40%,
+    hsl(199 89% 60%) 60%,
+    hsl(200 98% 39%) 80%,
+    hsl(199 89% 48%) 100%
+  );
+  background-size: 200% 100%;
+  animation: progress-shimmer 1.2s linear infinite;
+  box-shadow:
+    0 0 6px hsl(199 89% 48% / 0.5),
+    0 0 14px hsl(199 89% 48% / 0.2);
+}
+
+.auth-modal-content[data-state="open"] {
+  animation: modal-pop-in 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.auth-modal-content[data-state="closed"] {
+  animation: modal-pop-out 320ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+.auth-modal-overlay[data-state="open"] {
+  animation: overlay-fade-in 320ms ease-out both;
+}
+
+.auth-modal-overlay[data-state="closed"] {
+  animation: overlay-fade-out 300ms ease-in both;
+}
+
+/* TipTap /new-post: paragraph rhythm + placeholder (Medium-style canvas) */
+.new-post-prose.tiptap p {
+  margin: 0.65em 0;
+}
+
+.new-post-prose.tiptap h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1.25em 0 0.5em;
+  letter-spacing: -0.02em;
+}
+
+.new-post-prose.tiptap h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1em 0 0.4em;
+}
+
+.new-post-prose.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--text-muted);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   MODE TOGGLE  (ModeToggle component — src/components/ui/toggle-switch.tsx)
+   ─────────────────────────────────────────────────────────────────────────
+   Animation is driven purely by CSS using data-state on the root element.
+   JS only toggles data-state and ARIA attributes — no style mutations.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Container */
+.toggle-root {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  width: 72px;
+  height: 24px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Sliding active indicator pill */
+.toggle-indicator {
+  position: absolute;
+  top: 1.5px;
+  bottom: 1.5px;
+  left: 1.5px;
+  width: calc(50% - 1.5px);
+  border-radius: 9px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-prominent);
+  box-shadow: var(--shadow-xs);
+  will-change: transform;
+  transition: transform var(--toggle-enter-duration) var(--toggle-ease-spring);
+  pointer-events: none;
+}
+
+[data-state="min"] .toggle-indicator {
+  transform: translateX(0);
+}
+
+[data-state="max"] .toggle-indicator {
+  transform: translateX(calc(100% + 1.5px));
+}
+
+/* Half buttons — grid for pixel-perfect centering */
+.toggle-half {
+  position: relative;
+  flex: 1 1 0;
+  width: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+.toggle-half:focus-visible {
+  outline: 2px solid var(--border-active);
+  outline-offset: -2px;
+  border-radius: 12px;
+  z-index: 1;
+}
+
+/* ── Icon circle (− / +) — visible when side is INACTIVE ── */
+.toggle-letter {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  opacity: 1;
+  transform: scale(1);
+  will-change: transform, opacity;
+  transition:
+    opacity    160ms ease-out,
+    transform  160ms ease-out,
+    box-shadow 200ms ease-out,
+    border-color 200ms ease-out;
+}
+
+.toggle-lucide {
+  width: 10px;
+  height: 10px;
+  transition: color 200ms ease-out, filter 200ms ease-out;
+}
+
+/* Hover glow on inactive icon */
+[data-state="max"] .left-half:hover .toggle-lucide,
+[data-state="min"] .right-half:hover .toggle-lucide {
+  color: var(--brand-primary);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--brand-primary) 50%, transparent));
+}
+
+/* ── Word (MIN / MAX) — visible when side is ACTIVE ── */
+.toggle-word {
+  grid-area: 1 / 1;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  color: var(--text-primary);
+  opacity: 0;
+  transform: translateY(3px);
+  pointer-events: none;
+  will-change: transform, opacity;
+  transition:
+    opacity  240ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 240ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ────────────────────────────────────────────────────────────
+   STATE: MIN active  →  left shows "MIN", right shows "+"
+   ──────────────────────────────────────────────────────────── */
+
+/* Left: letter exits */
+[data-state="min"] .left-half .toggle-letter {
+  opacity: 0;
+  transform: scale(0.78);
+}
+
+/* Left: word enters (staggered 50ms after letter starts exiting) */
+[data-state="min"] .left-half .toggle-word {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 50ms, 50ms;
+}
+
+/* ────────────────────────────────────────────────────────────
+   STATE: MAX active  →  right shows "MAX", left shows "−"
+   ──────────────────────────────────────────────────────────── */
+
+/* Right: letter exits */
+[data-state="max"] .right-half .toggle-letter {
+  opacity: 0;
+  transform: scale(0.78);
+}
+
+/* Right: word enters (staggered 50ms) */
+[data-state="max"] .right-half .toggle-word {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 50ms, 50ms;
+}
+
+/* ── Initial / unset state ── */
+:not([data-state]) .toggle-letter { opacity: 1; transform: scale(1); }
+:not([data-state]) .toggle-word   { opacity: 0; transform: translateY(3px); }
+
+
+@media (prefers-reduced-motion: reduce) {
+  .feed-post-card:hover,
+  .feed-post-card:focus-within {
+    transform: none;
+  }
+
+  .electric-glow,
+  .animate-pulse-glow {
+    box-shadow: none;
+    animation: none !important;
+  }
+
+  /* Keep reduced-motion respect limited to our modal + pulse effects. */
+  .animate-modal-pop-in,
+  .animate-modal-pop-out,
+  .animate-overlay-fade-in,
+  .animate-overlay-fade-out,
+  /* §11.9 skeleton shimmer — decorative sweep (Layer 3 component-scoped). */
+  .animate-progress-shimmer,
+  /* §7.3 ladder motion — fade/scale-reveal are decorative (§11.26). */
+  .animate-fade-in,
+  .animate-scale-reveal {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  .auth-modal-content[data-state],
+  .auth-modal-overlay[data-state] {
+    animation: none !important;
+    filter: none;
+  }
+
+  .auth-modal-content[data-state] {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .auth-modal-overlay[data-state] {
+    opacity: 1;
+  }
+
+  .navigation-progress-bar__track {
+    animation: none !important;
+  }
+
+  /* Mode toggle — instant state switch, no motion */
+  .toggle-indicator,
+  .toggle-icon,
+  .toggle-label {
+    transition-duration: 0ms !important;
+    transition-delay: 0ms !important;
+  }
+}
