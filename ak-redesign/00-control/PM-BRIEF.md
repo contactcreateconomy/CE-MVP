@@ -10,6 +10,8 @@ date: 2026-09-29
 
 # PM-BRIEF — ground truth in one page
 
+> **Update 2026-09-29:** the founder has answered — see DECISIONS D-005..D-014 (beta line = S00–S13 + security gate; D-009 open sign-up; glow/glass kept with guardrails). The recommendations below are the pre-decision record.
+
 **What I found.** The engine is solid and the stack needs no rewrite. What users see is the PRD talking to itself: ~45 internal strings (CAP-IDs, "Phase 7", "honest empty", `rules.v1`, "Connect Convex") plus raw enum keys (`email_verified`, `community_top`, `roleArchetype`, "post comment"). There are no faces (avatars hardcoded null), notifications say "Someone", and the public profile shows no posts and no awards. The creator is never made to feel valued. The app also doesn't feel like an app yet: no manifest or icons, blank screens while loading, and the Create label in the tab bar is invisible. Forum and admin CSS are the same 1,073 lines copied, differing on one line. Your observations: all 12 numbered items confirmed. Of the 4 "keep" items, 3 are confirmed and 1 is partial (the tab bar). Nothing refuted (CURRENT-STATE §8).
 
 **What surprised me.**

@@ -2,7 +2,7 @@
 id: CR-007
 type: CR-REQUEST
 author-model: Opus
-status: OPEN
+status: REJECTED
 date: 2026-09-29
 ---
 
@@ -13,3 +13,5 @@ Why: SETUP-REPORT-R3 §2: no follow table and no streak field exist (only the `f
 Ask: **No build requested.** Founder decides: (a) out of MVP 1 — close as WITHDRAWN, specs must not show follow/streak UI; or (b) in MVP 1 — then dev scopes the schema (follow edges, streak computation) and replies with an estimate before any spec uses them.
 
 Reply in `CR-007-RESPONSE.md` (TEAM-WORKFLOW format). Status in this header is updated by Opus only.
+
+**Resolution (Opus, 2026-09-29):** REJECTED for MVP 1 by founder decision. No spec may show follow or streak UI. Revisit only via a new CR after beta.

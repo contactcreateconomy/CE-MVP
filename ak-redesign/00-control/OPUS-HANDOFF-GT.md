@@ -3,8 +3,8 @@ id: OPUS-HANDOFF-GT
 type: HANDOFF
 author-model: Opus
 tool: Claude Code (cloud)
-round: 1
-status: DONE
+round: 2
+status: IN-PROGRESS (R2)
 date: 2026-09-29
 ---
 
@@ -58,3 +58,13 @@ The full task prompt is id GROUND-TRUTH-PROMPT (PM, 2026-09-28): Steps 0 → 1 �
 
 ## Next session (Opus in Cursor) starts with
 `ak-redesign/README.md` → `00-control/STATUS.md` → the founder's S00-NOTES → write `specs/S00-SPEC.md` from `templates/SPEC.md`.
+
+---
+
+## R2 — founder decisions + S00 spec (prompt GROUND-TRUTH-R2 + S00, 2026-09-29)
+
+| Part | Status |
+|---|---|
+| A — record founder decisions (DECISIONS D-005..D-014, SPEC-INDEX, STATUS, CR-007 rejected, CR-009 new, templates, CURRENT-STATE §7; D-006 executed: AGENTS.md §11, CLAUDE.md DoD, wiki-tracker-sync.yml) | DONE — part-A commit |
+| B1 — S00-NOTES verbatim | TODO |
+| B2 — S00-SPEC + task split | TODO |

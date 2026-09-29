@@ -33,49 +33,62 @@ the answer is recorded here with a date. Newest records at the bottom; never ren
 - Founder NOTES → Opus SPEC → PM review → founder approves → GLM builds → Grok reviews → Opus VERDICT (fix itself if < ~20 lines, return if large; max 2 loops, then escalate) → Astra GATE per screen → founder inspects.
 - Two lanes: **full** (visual, new components, data) and **fast** (copy/spacing/one file; skips Grok).
 - **Stay 2 specs ahead** of the build. **No NOTES → no spec.**
+- **Amended by D-014 (2026-09-29):** visual specs (S01–S13) add an EXPLORE stage before the SPEC.
 
 ## D-004 — Spec quality bar, admin, budget · LOCKED (PM-HANDOFF-S1 §4)
 - Every spec states a **benchmark** ("beats X at Y") and answers the **6 questions** in VISION §6 (trust, feel special, purposeful motion, one thumb, benchmark, scope).
 - **Admin is deferred** until member-facing screens are done (it only inherits S00's shared tokens meanwhile).
 - Cache/budget rules: AGENTS.md and CLAUDE.md stay stable; batch Opus sessions; no model/MCP switching mid-session; graph-first reads (`graphify explain "<Symbol>"`); commit a fresh graph before every cloud session.
 
-## D-005 — Ship line · PROPOSED — needs founder
-**Proposal:** when **S00–S05 are DONE** (see SPEC-INDEX), open a **private beta with 20 real creators**. Nothing after S05 blocks the beta; later specs are built with beta feedback.
-**Why:** first-time founders die polishing. S00–S05 cover the whole core loop (arrive → join → read → comment → post → be recognised). Everything else is better designed with 20 real users' evidence.
-**Needs:** founder yes/no + who the 20 are. Depends on D-009 (the gate must let them in).
+## D-005 — Beta line · DECIDED by founder (revised, 2026-09-29)
+- **No beta before the experience is complete.** Beta line = **S00–S13 (every member-facing spec) DONE + the security gate passed.** No prototype ever goes to users.
+- **S14 admin restyle** is built during beta.
+- **Scope is frozen:** SPEC-INDEX may gain a spec only by dropping another of similar size (founder call, recorded here).
+- Beta evidence is replaced by a **mandatory gate item in every spec: a side-by-side at 390 against the spec's benchmark app** (GATE template).
+- "Ship line" is renamed **"beta line"** everywhere.
+- Supersedes the 2026-09-29 proposal "S00–S05 → private beta with 20 creators".
 
-## D-006 — Replace AGENTS.md §11 (wiki + CHANGELOG per slice) · PROPOSED — needs founder
-**Today:** §11 makes a GitHub-wiki update (4 pages) + CHANGELOG entry part of done for every PRD slice; `wiki-tracker-sync.yml` nags when CHANGELOG isn't touched.
-**Problem:** the redesign's tracker is `ak-redesign/00-control/STATUS.md` (in-repo, one writer). The wiki is a second repo needing separate auth that cloud/agent sessions often lack — §11 says "STOP" then, which would block every redesign task.
-**Proposal:**
-1. For redesign work (`ak-redesign/` specs and their builds), **definition of done = STATUS.md row updated by Opus at VERDICT + one CHANGELOG line per accepted spec** (not per task). No wiki update required.
-2. The wiki becomes a **read-only archive** of the PRD build (Phases 1–7); the Founder Review Queue moves to DECISIONS.md ("needs founder" records).
-3. Backend work by the dev keeps CHANGELOG-per-change; wiki optional.
-4. When approved: Opus edits AGENTS.md §11 and CLAUDE.md "Definition of done" in one commit, and `wiki-tracker-sync.yml` is relaxed to CHANGELOG only.
-**Until approved:** §11 is unchanged; redesign sessions note in their handoff when the wiki was not updated.
+## D-006 — Replace AGENTS.md §11 (wiki + CHANGELOG per slice) · LOCKED (2026-09-29)
+- Redesign work: done = STATUS.md row updated by Opus at VERDICT/GATE + **one CHANGELOG line per accepted spec**. Backend work: CHANGELOG per change. Founder-facing items → DECISIONS "needs founder".
+- The GitHub wiki is a **read-only archive** of the PRD build.
+- **Executed 2026-09-29:** AGENTS.md §11 rewritten, CLAUDE.md "Definition of done" updated, `.github/workflows/wiki-tracker-sync.yml` reduced to the CHANGELOG reminder only (wiki-append job removed).
 
-## D-007 — Style source of truth · PROPOSED — needs founder
-- **`docs/04-design-system/STYLE-KIT.md` is the canonical token/style source**, and in S00 its tokens become a **single shared stylesheet** consumed by both `apps/forum` and `apps/admin` (today two 1,073-line copies differing by one line).
-- **VISION wins on aesthetic direction where they conflict.** First application: the "Electric glow" system is demoted to **focus ring + progress track only**; all other glow uses are removed (per-token table in CURRENT-STATE §7). S00 edits STYLE-KIT to say so.
-- New tokens the redesign needs (sheet, safe-area, theme-color, state kit) are added **by S00, in STYLE-KIT**, never minted in a component.
-- The original design system v2 (`CREATECONOMY_DESIGN_SYSTEM.md`) is **historical, not a source**. "RECONCILIATION-NOTE" does not exist in this repo; STYLE-KIT's §2 header is the record.
+## D-007 — Style source and the glow/glass rule · DECIDED by founder (revised, 2026-09-29)
+- **`docs/04-design-system/STYLE-KIT.md` is the canonical token/style source**; S00 turns it into **one shared stylesheet** for `apps/forum` and `apps/admin`. New tokens are added in STYLE-KIT by a spec, never minted in a component. The original DS v2 is historical, not a source.
+- **Glow AND glass stay.** Founder's rule: **"a blink with a reason."** Guardrails (PM, binding):
+  1. **Glow** only on brand and interactive moments: primary CTA, Create, focus, active states, celebrations.
+  2. **Pulse** only for live states (something is happening *now*).
+  3. **Glass** subtle (Threads-level) on **chrome only**: top bar, tab bar, sheets, modals. Heavy frosted only by explicit spec exception. **Max 2 stacked glass layers.** **Solid fallback** when `backdrop-filter` is unsupported or `prefers-reduced-transparency: reduce`.
+  4. **`prefers-reduced-motion` removes all glow motion** (static glow may remain; pulses/animations stop).
+  5. Guardrails ship as **tokens + utilities** (S00), not ad-hoc CSS.
+- Per-token ruling: CURRENT-STATE §7 (rewritten to "keep with guardrail / remove").
 
 ## D-008 — Product name users see · DECIDED by founder (2026-09-28)
 - Users see **Createconomy** — the domain — in all UI and marketing.
-- **CEY** is the internal short name only (like "FB" for Facebook): docs, code comments, team talk. Never shown as the product name in UI. (Current UI complies — no "CEY" string found.)
+- **CEY** is the internal short name only (docs, code comments, team talk). Never shown as the product name in UI. (Current UI complies.)
 
-## D-009 — The "sign-ups closed" state · PROPOSED — needs founder
-**Fact:** `convex/admission.ts` `effectiveSignupMode` is fail-closed — with no `launchReadinessResults` row marked `ready`, sign-up mode is `"closed"` whatever `signup.mode` says. The PRD gates `signup.mode=open` on lawyer review + Readiness Cat-8. So "closed" is a **readiness default**, visible today as the first message on `/signin` and every auth-gated page, next to a landing page that says "PUBLIC BETA".
-**Founder must choose:**
-- **A. Invite-only beta (recommended with D-005):** mode `waitlist`; logged-out visitors see "Createconomy is in private beta — join the waitlist" with an email field; invited creators get in. Copy and placement designed in S01.
-- **B. Open:** complete the readiness predicates (admin `/admin/readiness`) and set `signup.mode=open`. Needs the legal pre-launch gates first.
-- **C. Keep closed:** then remove "PUBLIC BETA" from landing and design an honest "coming soon" front door.
-Either way the notice must not be the first thing on every gated page — gated pages show *what's behind the door* and one clear action.
+## D-009 — Sign-up: open, no gates at launch · DECIDED by founder: option B (2026-09-29)
+- Sign-up is **open**. The **"closed" state is never the front door** — it may exist as an ops fallback, never as the first thing a visitor sees.
+- Legal review and readiness predicates (`launchReadinessResults`, Readiness Cat-8) are a **launch checklist**, not UI.
+- **CR-009:** the local seed marks readiness `ready` (and `signup.mode=open`) so dev machines and baselines show the open flow.
+- S01 = an open, frictionless front door positioned as an **AI-influenced discussion platform, with AI personas visible as the hook**.
 
-## D-010 — Profile tab goes to the creator's own profile · PROPOSED — needs founder
-**Today:** tab "Profile" → `/profile` → 307 → `/settings/profile` (a form). 00-ROUTES made that redirect canonical.
-**Proposal:** tab "Profile" → `/users/[own handle]` (the public profile, with "Edit profile" and a settings entry); `/profile` redirects there; `/settings` keeps redirecting to `/settings/profile`. No route is added or renamed — only `/profile`'s redirect target changes — but it amends 00-ROUTES, so it needs a record.
-**Why:** VISION "feel special" — the creator's home should be their body of work, not a settings form.
+## D-010 — Profile tab goes to the creator's own profile · LOCKED (2026-09-29)
+Tab "Profile" → `/users/[own handle]` (public profile with "Edit profile" + settings entry); `/profile` redirects there; `/settings` keeps redirecting to `/settings/profile`. Amends 00-ROUTES (only `/profile`'s redirect target changes). Built in S00 (shell).
 
-## D-011 — Copy rule COPY-1 · PROPOSED (Opus; confirm in S00 approval)
-No user-visible string contains a capability/decision/phase/wave/module ID, a version tag (`v1`, `rules.v1`), a table/field/enum name, an infra/vendor name (Convex, OAuth), or an explanation of what isn't built. Enum and field values render only through label maps. Unbuilt things are hidden, never described. Enforced by a source-scan test in `apps/forum`. Legal/founder-owned copy keeps its words but not IDs. (Audit: CURRENT-STATE §6.)
+## D-011 — Copy rule COPY-1 · LOCKED (2026-09-29)
+No user-visible string contains a capability/decision/phase/wave/module ID, a version tag (`v1`, `rules.v1`), a table/field/enum name, an infra/vendor name (Convex, OAuth), or an explanation of what isn't built. Enum and field values render only through label maps. Unbuilt things are hidden, never described. Enforced by a source-scan test in `apps/forum` (S00). Legal/founder-owned copy keeps its words but not IDs.
+
+## D-012 — No fabricated data on any user-visible surface · LOCKED (2026-09-29)
+- Every number, name, badge, rank and post a user sees comes from real data. No static seeds, no client-invented scores, no placeholder people. If the data doesn't exist, the surface shows an honest designed state (never a spec note — D-011).
+- Moved into **S00**: `/category/[slug]` becomes a filtered live feed (`feed.list` `typeFilter`); the leaderboard's invented per-category scores are removed. S06 and S09 build on that.
+
+## D-013 — Both themes ship · LOCKED (2026-09-29)
+Dark (default) and light both ship, polished. Every spec's acceptance and gate checks **both themes at 390**. Tokens are defined for both; no component may be dark-only.
+
+## D-014 — The taste loop for visual specs · LOCKED (2026-09-29; amends D-003)
+The founder decides taste live in the browser, screen by screen. For **visual specs (S01–S13)**:
+1. **EXPLORE:** founder live session on a `lab/<spec>` branch, app running (phone over LAN + desktop at 390), GLM iterating blocks with hot reload; optional A/B/C variants on a dev-only `/lab` route; optional Mobbin / Claude Design references. GLM writes `<ID>-NOTES.md` from the session; the founder approves it. Explore code is throwaway unless the spec says "reuse".
+2. **LOCK:** Opus writes the SPEC from the NOTES + the explored result.
+3. **BUILD → REVIEW → VERDICT → GATE** as in D-003.
+**S00 is foundation** (mostly architecture): it skips EXPLORE and goes NOTES → SPEC. The `/lab` route must be dev-only (never reachable in production builds) — S00 provides it.

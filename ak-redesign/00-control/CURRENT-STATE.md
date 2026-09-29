@@ -4,7 +4,7 @@ type: GROUND-TRUTH
 author-model: Opus
 tool: Claude Code (cloud)
 round: 1
-status: DRAFT (awaiting PM review)
+status: LIVE (R2 2026-09-29: founder decisions applied)
 date: 2026-09-29
 ---
 
@@ -71,7 +71,7 @@ Order = the member journey. "out" = logged-out, "in" = logged-in (devtest, staff
 ### 2.2 `/signin` — auth gate
 - **Sees (out):** logo, card "Sign in to Createconomy", grey notice **"New sign-ups are currently closed. Check back later."**, button "Already a member? Sign in". (in): redirects into the app (baseline shows feed).
 - **Why "closed":** `convex/admission.ts` `effectiveSignupMode` is fail-closed — no `launchReadinessResults` row (or not `ready`) ⇒ `"closed"` regardless of `signup.mode`. So it's a **readiness/config default**, not a UI bug. The same notice heads every auth-gated page for logged-out visitors (new-post, notifications, drafts, profile, settings).
-- **Trust:** low — the first thing a visitor is told is "closed". → **D-009 (needs founder)**.
+- **Trust:** low — the first thing a visitor is told is "closed". → **D-009 decided 2026-09-29: open sign-up, "closed" never the front door.**
 - **Top issues:** gate copy and placement; no waitlist capture on this surface when closed (the `/waitlist` route exists separately); auth modal is the shared `packages/auth-ui` (reference impl — extend, don't fork).
 
 ### 2.3 `/welcome` — retired
@@ -196,11 +196,11 @@ Redirect. **Problem:** the Profile tab lands here (see §1 Navigation). Proposed
 | Route | One line |
 |---|---|
 | `/` | Redirects to `/feed`. Keep. |
-| `/waitlist` | Waitlist form (123 LOC). Becomes the "closed" state's destination if D-009 keeps a gate. |
+| `/waitlist` | Waitlist form (123 LOC). D-009 = open sign-up, so it is an ops fallback only; not linked from the front door. |
 | `/kit` | Internal component showcase (268 LOC) with `§11.14 … CAP-175` headings. **Must not be reachable in prod** — hide behind staff/dev flag (S00). |
 | `/content`, `/content/spark` | Thin content wrappers. Out of first-wave scope. |
 | `/contribute` | Rights-basis upload flow ("Acknowledge contract"). Later spec. |
-| `/go/[linkId]` | Affiliate interstitial (founder/legal-owned copy). MVP-1 affiliate suite — own spec after ship line. |
+| `/go/[linkId]` | Affiliate interstitial (founder/legal-owned copy). MVP-1 affiliate suite — own spec after beta line. |
 | `/personas`, `/personas/[id]` | AI persona directory. Later spec; labels must stay (AI disclosure). |
 | `/resources`, `/resources/[slug]/view` | Free resource library ("Explore free resources" CTA target). Needs a spec — it's landing's primary CTA. |
 | `/s/[handle]`, `/s/[handle]/[product]` | Creator storefront (affiliate). MVP-1 affiliate suite spec. |
@@ -213,7 +213,7 @@ Redirect. **Problem:** the Profile tab lands here (see §1 Navigation). Proposed
 
 ## 4. Admin (`apps/admin`, deferred until member screens ship)
 
-All restyle-only via the shared token source from S00; no redesign specs before the ship line.
+All restyle-only via the shared token source from S00; no redesign specs before the beta line.
 
 | Route | Row |
 |---|---|
@@ -243,7 +243,7 @@ All restyle-only via the shared token source from S00; no redesign specs before 
 | `ui/dropdown-menu.tsx`, `ui/tabs.tsx`, `ui/switch.tsx` | — | **Keep (adopt)** | Unused Radix wrappers S00/S-feed will need (overflow menu, profile tabs, settings toggles). |
 | `ui/interactive-hover-button.tsx` | 40 | **Delete** | Hover-only effect; meaningless on touch. |
 | `ui/pdf-viewer.tsx` | 145 | **Keep (parked)** | Needed by resources viewer later; zero cost idle. |
-| `ui/glowing-effect.tsx` | 196 | **Remove its uses** (top-nav, left-sidebar); delete file | A conic-gradient animated border — literally the "RGB light". Also carries raw hex (DS open item). |
+| `ui/glowing-effect.tsx` | 196 | **Remove its uses** (top-nav, left-sidebar); delete file | A continuously animated conic border on chrome — no reason for the blink (D-007). Also carries raw hex (DS open item). |
 | `new-post/new-post-composer.tsx` + `typed-fields-panel.tsx` | 774 + 375 | **Rebuild on TipTap** | See §2.7. Keep dimension keys/list modes (backend contract). |
 | `feed/top-post-hero-carousel.tsx` | 779 | **Replace** with a small "Top this week" rail (≤150 LOC) | At 390 it degrades into 3 stacked cards that duplicate the feed; at 1440 it's a first fold of empty grey. 779 LOC of touch/motion code for a banner. Keep `heroSlots` data (editorial hero is a valid lever). |
 | `layout/top-nav.tsx` | 482 | **Rebuild in S00 shell** | Carries theme toggle, duplicate +, command palette, glow. |
@@ -278,28 +278,30 @@ Enforce with a Vitest source-scan test (pattern above) in `apps/forum` so it can
 
 ## 7. STYLE-KIT vs VISION
 
-STYLE-KIT (`docs/04-design-system/STYLE-KIT.md`) is reconciled to the app (its §2 header, 2026-08-31). Its identity is "Electric Blue" with a
-"signature" glow system. VISION: iOS minimal, "motion must serve a purpose — not an RGB light". Ruling per glow token (10 live vars in globals.css; disabled in light mode already):
+STYLE-KIT (`docs/04-design-system/STYLE-KIT.md`) is reconciled to the app (its §2 header, 2026-08-31); identity "Electric Blue" with a glow system.
+**Ruling (D-007, founder 2026-09-29): glow and glass stay — "a blink with a reason."** Glow only on brand/interactive moments;
+pulse only for live states; glass subtle and on chrome only; reduced-motion stops all glow motion. Per use (10 live glow vars; already `none` in light mode):
 
-| Token / effect | Kit usage | Ruling | Reason |
+| Token / effect | Kit usage today | Ruling | Guardrail it must satisfy |
 |---|---|---|---|
-| `glow-primary-sm` | card hover, active nav | **Remove** | Hover is meaningless on touch; active nav = colour + weight, like iOS. |
-| `glow-primary-md` | primary buttons, CTAs, focus | **Remove from rest state**; focus handled by `-border` | A glowing button at rest is decoration. |
-| `glow-primary-lg` | hero, featured | **Remove** | Hero is being replaced (§5). |
-| `glow-primary-text` | landing hero headings | **Remove** | Pure decoration. |
-| `glow-primary-border` | focused inputs, active cards | **Keep, tone down** (1px ring + ≤8px halo) as the focus-visible ring | Purpose: shows focus (a11y). |
-| `glow-primary-pulse` (2s infinite) | live indicators | **Remove by default**; allowed only for a genuinely live state, never infinite on idle UI | Infinite loops are the literal RGB light. |
-| `glow-primary-pill` / `-pill-hover` | desktop sidebar pill | **Remove** | Decoration. |
-| `glow-primary-card-hover` | feed card hover | **Remove** | Decoration; touch-irrelevant. |
-| `glow-primary-track` | navigation progress bar | **Keep, tone down** | Purpose: shows the app is working. |
-| `glow-primary-halo` | carousel radial background | **Remove** (and note: **not in STYLE-KIT** — drift) | Goes with the carousel. |
-| `ui/glowing-effect.tsx` conic border | top-nav, left-sidebar | **Remove** | RGB light; raw hex (open item). |
-| Search focus "2500ms spin" ring | search input | **Remove** | Spinning border = decoration. |
-| Sky-500 brand colour itself | everywhere | **Keep** | Distinct, legible on dark; not the problem. |
+| `glow-primary-sm` | card hover, active nav items | **Keep with guardrail** — active tab/nav item only | Active state = interactive moment. Not on card hover. |
+| `glow-primary-md` | primary buttons, CTAs, focus | **Keep with guardrail** — primary CTA + Create button only (one per screen) | Brand/interactive moment; never on secondary buttons. |
+| `glow-primary-lg` | hero, featured content | **Keep with guardrail** — celebrations only (publish success, level-up, award) | "Blink with a reason": the moment is the reason; transient, not resting. |
+| `glow-primary-text` | landing hero headings | **Remove** | Static text glow has no interaction and no reason. |
+| `glow-primary-border` | focused inputs, active cards | **Keep** as the focus-visible ring (both themes: solid ring in light) | Focus = purpose (a11y). |
+| `glow-primary-pulse` (2 s infinite) | "live indicators, active states" | **Keep with guardrail** — live states only (e.g. someone typing, live thread, unread arriving); stops under reduced-motion | Pulse = something is happening now. Never on idle UI. |
+| `glow-primary-pill` / `-pill-hover` | desktop sidebar primary pill | **Remove** (merged into `-md` for the Create/primary CTA) | Duplicate of the CTA glow. |
+| `glow-primary-card-hover` | feed card hover | **Remove** | Hover on content isn't a brand moment; touch-irrelevant; feed noise (founder: "nothing disturbing"). |
+| `glow-primary-track` | navigation progress bar | **Keep** | Shows the app is working. |
+| `glow-primary-halo` | carousel radial background | **Remove** (not in STYLE-KIT — drift; goes with the carousel) | Decoration. |
+| `ui/glowing-effect.tsx` conic animated border | top-nav, left-sidebar | **Remove** | Continuous animated border on chrome = "RGB light"; raw hex (DS open item). |
+| Search focus 2.5 s spin ring | search input | **Remove** (focus uses `-border`) | Spinning border has no reason beyond focus, already covered. |
+| Glass (backdrop-blur) on top bar / tab bar | present, ad-hoc | **Keep with guardrail** — tokenised `glass/subtle` on chrome; `glass/strong` only by spec exception; ≤2 stacked; solid fallback | Threads-level subtle chrome. |
+| Sky-500 brand colour | everywhere | **Keep** | Distinct, legible on both themes. |
 
-**App-vs-kit drift since 2026-08-31:** `--glow-primary-halo` exists in the app, not the kit; `glowing-effect.tsx` raw hex stops (DS open item, still open); 3 catalogued arbitrary-px offsets (DS open item); forum/admin CSS split on one line (L522). No other drift found in the token namespace (same var names both apps).
+**App-vs-kit drift since 2026-08-31:** `--glow-primary-halo` exists in the app, not the kit; `glowing-effect.tsx` raw hex stops (DS open item, still open); 3 catalogued arbitrary-px offsets (DS open item); forum/admin CSS differ on one line (L522). No other token drift (same var names in both apps).
 
-Net: **STYLE-KIT stays the token source (D-007); S00 edits it** to demote the glow system from "signature trait" to "focus + progress only", and adds the tokens the redesign needs (sheet, safe-area, theme-color) — recorded in S00, never minted silently.
+**Net:** STYLE-KIT stays the source (D-007). S00 edits it to state the guardrails, adds `glass/*`, sheet, safe-area, theme-color and state-kit tokens, and ships glow/glass as utilities so components can't hand-roll them.
 
 ## 8. PM-OBSERVATIONS-S1 — verified
 
@@ -321,7 +323,7 @@ Net: **STYLE-KIT stays the token source (D-007); S00 edits it** to demote the gl
 | P1-10 | Duplicate landing CTA; logged-in no path to feed | **CONFIRMED** | landing-390-out / -in identical |
 | P1-11 | Desktop hero empty grey first fold; sidebar empty; narrow feed | **CONFIRMED** | feed-1440-in; also hero items duplicated as cards below |
 | P1-12 | Mixed loading states | **CONFIRMED** | RAW-INVENTORY §E |
-| Struct | STYLE-KIT reconciled; live tension is aesthetic (glow) | **CONFIRMED** (RECONCILIATION-NOTE does not exist; STYLE-KIT's own §2 header records it) | §7 |
+| Struct | STYLE-KIT reconciled; live tension is aesthetic (glow) | **CONFIRMED** (RECONCILIATION-NOTE does not exist; STYLE-KIT's own §2 header records it). Resolved by D-007 (glow stays with guardrails). | §7 |
 | CR-1 | Six crons fail on `.withIndex` | **CONFIRMED in code** (e.g. `jobs/legitimacy.ts:103` `by_user_time` queried by `occurredAt` only) | → CR-002 |
 | CR-2..5 | avatars / follows+streaks / notif context / drafts + podium | **CONFIRMED as CR candidates** | CR-003..CR-007 |
 | — | **Missed by PM:** `/category/[slug]` is fabricated static content; leaderboard fabricates per-category scores; `/kit` is publicly routable | **NEW** | §2.13, §2.14, §3 |
@@ -333,7 +335,7 @@ Net: **STYLE-KIT stays the token source (D-007); S00 edits it** to demote the gl
 3. **No identity: no avatars, "Someone" notifications** — community without faces. *(CR-003, CR-004.)*
 4. **The creator has no home** — Profile tab → settings; profile shows no work, no awards. *(CR-008 + S-profile + nav DECISION.)*
 5. **Zero feel-special moments** — publish, first comment, recognition have no response. *(S-composer, S-discussion, S-notifications; motion principles in S00.)*
-6. **Front door says "closed"** — sign-in gate copy/logic. *(D-009, then S-first-visit.)*
+6. **Front door says "closed"** — sign-in gate. *(D-009 decided: open; CR-009 for local seed; S01.)*
 7. **Website-feel** — no manifest/icons/theme-color/viewport/SW, invisible Create label, theme toggle in the header. *(S00 app-feel.)*
 8. **No state system** — blank screens while loading, 8 core routes with no error state, dev-facing "Connect Convex". *(S00 state kit.)*
 9. **Noisy chrome on content** — per-card moderation text, six-button comment rows, broken title clamp, absolute dates. *(S-feed, S-discussion.)*
@@ -349,7 +351,8 @@ Net: **STYLE-KIT stays the token source (D-007); S00 edits it** to demote the gl
 | CR-004 | Notification context: return actor (name, handle, avatar) + object title/snippet in `notifications.reads.list` | S-notifications |
 | CR-005 | Server drafts (CAP-531) | S-composer (can ship on localStorage first) |
 | CR-006 | Podium: real projection and/or beta floor below 25 | S-leaderboard |
-| CR-007 | Follows / streaks — **scope question**: not in MVP 1 per vision scope rule unless founder says otherwise | nothing in ship line |
+| CR-007 | Follows / streaks — **REJECTED for MVP 1** (2026-09-29) | — |
+| CR-009 | Local seed marks readiness `ready` + `signup.mode=open` (D-009) | S01 baselines |
 | CR-008 | Profile body of work: author's posts (paginated) + awards shelf from `badges` | S-profile |
 
 Details in `00-control/crs/CR-NNN-REQUEST.md`.

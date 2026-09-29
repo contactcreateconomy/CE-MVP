@@ -7,7 +7,7 @@
 1. `01-vision/CEY-VISION.md` — the north star (founder-owned). Wins over everything on experience.
 2. `00-control/STATUS.md` — where we are, next 2 specs, what's waiting on whom.
 3. `00-control/CURRENT-STATE.md` — ground truth of the shipped app (390px baselines + rulings). Don't re-read the codebase to learn "today".
-4. `00-control/SPEC-INDEX.md` — every spec in build order, ship line marked.
+4. `00-control/SPEC-INDEX.md` — every spec in build order, beta line marked.
 5. `00-control/DECISIONS.md` — locked, decided and pending decisions.
 
 ## Layout
@@ -25,7 +25,7 @@ ak-redesign/
 **Live vs history vs archive:** `00-control/` top level is current and maintained. `history/` is finished work kept for evidence (cite it, don't update it). `_archive/` was replaced by something newer — ignore it.
 
 ## The loop (D-003)
-Founder NOTES → Opus SPEC → PM review → founder approves → GLM BUILD → Grok REVIEW → Opus VERDICT → Astra GATE → founder inspects. Copy the matching file from `templates/`. Conventions (IDs, headers, single writer, commits): `00-control/CONVENTIONS.md`.
+Founder NOTES → Opus SPEC → PM review → founder approves → GLM BUILD → Grok REVIEW → Opus VERDICT → Astra GATE → founder inspects. Visual specs (S01–S13) start with a founder EXPLORE session on `lab/<spec>` (D-014). Copy the matching file from `templates/`. Conventions (IDs, headers, single writer, commits): `00-control/CONVENTIONS.md`.
 
 ## Graph first
 Find code with `uvx --from graphifyy graphify explain "<SymbolName>"` (precise) before opening files; natural-language `graphify query` is noisy.

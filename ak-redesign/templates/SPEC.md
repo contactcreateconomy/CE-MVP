@@ -10,7 +10,7 @@ date: YYYY-MM-DD
 
 # S## — <name> — spec
 
-**Built from:** `S##-NOTES.md` (founder) · `00-control/CURRENT-STATE.md` §… · VISION.
+**Built from:** `S##-NOTES.md` (founder, or GLM-written from the EXPLORE session and founder-approved — D-014) · explored result on `lab/s##` (commit …; reuse: yes/no) · `00-control/CURRENT-STATE.md` §… · VISION.
 **Lane:** full | fast. **Routes/components touched:** …
 
 ## 0. Benchmark
@@ -29,7 +29,7 @@ date: YYYY-MM-DD
 ## 2. Today (from CURRENT-STATE — cite, don't re-derive)
 
 ## 3. Target experience (390px first; desktop follows)
-Walk the user through it in order. Every state: default · loading · empty · error · (offline).
+Walk the user through it in order. Every state: default · loading · empty · error · (offline). **Both themes** (D-013). Glow/glass uses listed with their reason (D-007). No fabricated data (D-012).
 
 ## 4. Components
 | Component | New / extend / delete | File | Tokens used (STYLE-KIT §) |
@@ -49,6 +49,9 @@ Report-card signals this screen produces (list only).
 
 ## 8. Acceptance (Astra/founder check at 390 + 1440, logged in/out)
 - [ ] …
-- [ ] typecheck · lint · `pnpm test:run` green; no new copy-leak hits.
+- [ ] Benchmark side-by-side at 390 (dark + light) — beats the benchmark app on the §0 claim.
+- [ ] Both themes polished at 390.
+- [ ] No fabricated data; COPY-1 source-scan green.
+- [ ] typecheck · lint · `pnpm test:run` green; performance budget holds.
 
 ## 9. Out of scope

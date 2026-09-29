@@ -12,6 +12,7 @@ date: YYYY-MM-DD
 
 > Founder writes; no format police. The prompts below make the spec better — skip any that don't apply.
 > File name: `ak-redesign/specs/S##-NOTES.md`. No NOTES → no spec (D-003).
+> Visual specs (S01–S13): GLM writes this from the founder's live EXPLORE session on `lab/s##` (D-014); the founder approves it. Record what was tried, what was chosen, and link the lab commit / `/lab` variants.
 
 ## What I want people to feel here
 (one or two sentences — trust? pride? speed?)

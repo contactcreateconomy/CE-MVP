@@ -131,26 +131,12 @@ Anything requiring the Convex CLI, package installs, deployment pushes, or exter
 
 Pre-launch-only gates (do NOT block build): lawyer review of the four legal docs, and Readiness Category 8 (ranking calibration reviewed) — both gate `signup.mode=open` only.
 
-## 11. Progress tracking — GitHub wiki (MANDATORY per slice + per phase)
+## 11. Progress tracking and definition of done (D-006, LOCKED 2026-09-29)
 
-The step-by-step build tracker lives on the repo wiki: **https://github.com/contactcreateconomy/CE-MVP/wiki** (pages: Development Roadmap · Working Agreements · Progress Tracker · Founder Review Queue · one per phase). It is the single source of truth for what's done — the repo docs deliberately do not duplicate it.
-
-**Every completed slice MUST update the wiki in the same session that ships it** (this is part of the definition of done, alongside the CHANGELOG entry):
-
-1. `Progress-Tracker.md` — add a log row (date, slice, commit hash, one-line note); adjust the "Next up" queue and the remaining-slices count.
-2. The phase page (e.g. `Phase-4-Content-Core.md`) — flip the slice row's status (✅ + date + commit, or 🔜 for the new next-up).
-3. `Home.md` current-status snapshot — update when a phase completes (not per slice).
-4. `Founder-Review-Queue.md` — **at every phase boundary (and whenever a slice creates or resolves a founder-facing item)**: add new entries under the matching section (A founder actions · B product decisions · C flagged defaults/deviations · D pre-launch gates), and strike resolved items with a one-line resolution note + date. This page is the founder's consolidated checklist for the final validation pass — never let a fence, flagged default, or blocked key live only in a commit message.
-
-Mechanics: the wiki is its own git repo —
-
-```bash
-git clone https://github.com/contactcreateconomy/CE-MVP.wiki.git   # needs gh auth (gh auth login)
-# edit pages, then:
-git add -A && git commit -m "Tracker: <slice> done (<hash>)" && git push
-```
-
-Wiki clone lives locally at `/tmp/CE-MVP-wiki` on the founder Mac (re-clone if missing). If wiki push is impossible (no auth), STOP and report — do not let code and tracker drift apart.
+- **Redesign work** (`ak-redesign/` specs and their builds): done = the spec's row in `ak-redesign/00-control/STATUS.md` updated by Opus at VERDICT/GATE **+ one CHANGELOG.md line per accepted spec** (not per task). Founder-facing items live in `ak-redesign/00-control/DECISIONS.md` as "needs founder" records — never only in a commit message.
+- **Backend work** (dev, `convex/`, scripts): a CHANGELOG.md entry per change, in the same PR. CRs are answered in `ak-redesign/00-control/crs/CR-NNN-RESPONSE.md`.
+- **The GitHub wiki** (https://github.com/contactcreateconomy/CE-MVP/wiki) is a **read-only archive** of the PRD build (Phases 1–7). No wiki update is required or expected; never block on wiki auth.
+- `wiki-tracker-sync.yml` only reminds on a merged PR without a CHANGELOG change (label `no-changelog` to skip).
 
 <!-- convex-ai-start -->
 This project uses [Convex](https://convex.dev) as its backend.

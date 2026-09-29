@@ -66,7 +66,7 @@ Before any slice/screen, the mandatory read order is `docs/AGENT-START-HERE.md` 
 ## Process & tracking
 
 - **Git:** work on numbered topic branches (`NNN-name`); PR target is **`main`** (production/default). `001-default` is a feature branch.
-- **Definition of done per slice:** CHANGELOG entry + wiki tracker update in the same session (wiki is its own git repo — see AGENTS.md §11). `wiki-tracker-sync.yml` posts a reminder if CHANGELOG wasn't touched.
+- **Definition of done (D-006):** redesign → STATUS.md row updated + one CHANGELOG line per accepted spec; backend → CHANGELOG entry per change. The wiki is a read-only archive (AGENTS.md §11). `wiki-tracker-sync.yml` only reminds when CHANGELOG wasn't touched.
 - **Bucket-1 items** (Convex CLI deploys, package installs, external accounts/keys) → stop, flag, hand off via `docs/DEV-HANDOFF.md`; founder-only steps in `docs/FOUNDER-BOOTSTRAP.md`.
 - Status of built vs. remaining: `docs/00-project-status/PROJECT-STATUS.md`.
 

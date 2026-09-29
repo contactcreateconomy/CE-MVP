@@ -3,7 +3,7 @@ id: STATUS
 type: CONTROL
 author-model: Opus
 tool: Claude Code (cloud)
-round: 1
+round: 2
 status: LIVE (Opus-only writer)
 date: 2026-09-29
 ---
@@ -11,39 +11,41 @@ date: 2026-09-29
 # STATUS — where the redesign stands
 
 ## Now
-- **Phase:** ground truth done (branch `013-opus-ground-truth`, PR → `011-Akilesh-Redesign`). **No spec written yet.**
-- **Ground truth:** `CURRENT-STATE.md` · plan: `SPEC-INDEX.md` · decisions: `DECISIONS.md` · CRs: `crs/`.
-- **Product code changed by the redesign so far:** none.
+- Ground truth done and founder decisions recorded (D-005..D-014, 2026-09-29) on `013-opus-ground-truth` (PR #13 → `011-Akilesh-Redesign`, unmerged).
+- **S00 Foundation:** NOTES final (`specs/S00-NOTES.md`); SPEC being written (`specs/S00-SPEC.md`).
+- Product code changed by the redesign so far: none. (Repo-process files changed for D-006: AGENTS.md §11, CLAUDE.md, `wiki-tracker-sync.yml`.)
 
 ## Next 2 specs (stay-2-ahead)
-1. **S00 — Foundation** (tokens single-source, state kit, app-feel, sheet primitive, copy rules + leak cleanup, motion principles, shell/tab bar). Needs: founder **S00-NOTES** (vision covers most of it) + answers to D-007, D-010, D-011.
-2. **S01 — First visit & join** (landing, sign-in gate, setup). Needs: founder **S01-NOTES** + **D-009** answer.
+1. **S00 — Foundation** → PM review → founder approval → build (tasks S00-T01…).
+2. **S01 — First visit & join** → needs an **EXPLORE** session first (D-014; `lab/s01` branch, founder live) → S01-NOTES → SPEC.
 
-Note: PM-HANDOFF §6 planned "S01 Composer". SPEC-INDEX puts the composer at **S04** (journey order) — the front door must be fixed before beta; if the founder prefers the composer second, swap S01↔S04 (no dependency blocks it besides S00).
+## Beta line (D-005)
+S00–S13 DONE + security gate (SEC) PASS → users. S14 admin during beta. Scope frozen.
 
 ## Waiting on the founder
 | Item | Blocks |
 |---|---|
-| D-005 ship line (S00–S05 → 20-creator private beta) | planning horizon |
-| D-006 replace AGENTS.md §11 | definition of done for redesign tasks |
-| D-007 STYLE-KIT canonical + glow demotion | S00 |
-| D-009 sign-ups closed: A / B / C | S01 |
-| D-010 Profile tab → own profile | S00 shell, S05 |
-| CR-007 follows/streaks: MVP 1 or not | nothing in the ship line |
-| S00-NOTES, S01-NOTES | S00, S01 |
+| Approve S00-SPEC (after PM review) | S00 build |
+| S01 EXPLORE session (book time; app running, phone on LAN) | S01 |
 
-## Waiting on the dev (CRs, all OPEN)
-CR-001 demoSeed guard · CR-002 cron `.withIndex` · CR-003 avatars · CR-004 notification context · CR-005 server drafts · CR-006 podium · CR-007 follows/streaks (scope) · CR-008 profile body of work.
-Ship-line critical: **CR-003, CR-004, CR-008** (S03/S05 need them).
+## Waiting on the dev (CRs)
+| CR | Status | Blocks |
+|---|---|---|
+| CR-001 demoSeed guard | OPEN | SEC gate |
+| CR-002 cron `.withIndex` | OPEN | report-card signals |
+| CR-003 avatars | OPEN | S01 (optional), S02–S05, S08 |
+| CR-004 notification context | OPEN | S05 |
+| CR-005 server drafts | OPEN | S04 (can start on localStorage) |
+| CR-006 podium | OPEN | S09 |
+| CR-007 follows/streaks | **REJECTED** for MVP 1 | — |
+| CR-008 profile body of work | OPEN | S05 |
+| CR-009 local seed: readiness ready + open sign-up | OPEN | S01 baselines, S00 baseline recapture |
 
 ## Spec board
 | Spec | Status |
 |---|---|
-| S00 Foundation | not started (needs NOTES) |
-| S01 First visit & join | not started |
-| S02 Feed | not started |
-| S03 Discussion (read + comment) | not started |
-| S04 Composer | not started |
-| S05 Profile & notifications | not started |
-| — **ship line (D-005)** — | |
-| S06+ | see SPEC-INDEX |
+| S00 Foundation | SPEC in progress |
+| S01–S13 | not started (each needs EXPLORE) |
+| SEC security gate | not started |
+| — **beta line** — | |
+| S14 Admin restyle | during beta |
