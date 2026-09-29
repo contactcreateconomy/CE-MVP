@@ -33,7 +33,7 @@ Lines 15–30 of `convex/lib/events.ts`: line 21 is `userId?: import("../_genera
 
 ## Step 4 — RAW-INVENTORY.md
 
-Written to `ak-redesign/00-control/RAW-INVENTORY.md` (sections A–F). Headlines:
+Written to `ak-redesign/00-control/history/RAW-INVENTORY.md` (sections A–F). Headlines:
 - **A:** Next 16.3.3 + React 19.2.4; Tailwind v4 CSS-first (no config file); 6 Radix primitives; motion 12; lucide; **no form lib, no PWA lib, no drawer lib (vaul)**; zustand + react-virtual + Convex; TipTap 3.
 - **B:** exactly 2 token files — forum + admin `globals.css`, 394 `--*` declarations each, namespace families (text 72, color 63, z 26, shadow 24, feedback 24, type 22, glow 20, container 18, space 16, ease/duration 14, radius 13, bg 12, brand 9, cat 8).
 - **C:** mobile-feel gaps — **no viewport export, no web manifest, no service worker, no icons (public/ empty), no theme-color, no standalone mode**; present: mobile tab bar, 2 safe-area uses, Radix dialog as sheet stand-in, 1 touch-handling file.

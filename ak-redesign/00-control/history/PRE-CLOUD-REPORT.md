@@ -21,13 +21,13 @@ file), merged into `013` at **`c4a11f6`**.
 | Input | Exact path | Status |
 |---|---|---|
 | Vision | `ak-redesign/01-vision/CEY-VISION.md` | ✅ (frontmatter id: VISION; brief's "VISION.md") |
-| PM handoff | `ak-redesign/00-control/PM-HANDOFF-S1.md` | ✅ |
-| PM observations | `ak-redesign/00-control/PM-OBSERVATIONS-S1.md` | ✅ |
+| PM handoff | `ak-redesign/00-control/history/PM-HANDOFF-S1.md` | ✅ |
+| PM observations | `ak-redesign/00-control/history/PM-OBSERVATIONS-S1.md` | ✅ |
 | Conventions | `ak-redesign/00-control/CONVENTIONS.md` | ✅ |
-| Raw inventory | `ak-redesign/00-control/RAW-INVENTORY.md` | ✅ (incl. the 011 inventory delta) |
-| Setup report R1 | `ak-redesign/00-control/SETUP-REPORT.md` | ✅ |
-| Setup report R2 | `ak-redesign/00-control/SETUP-REPORT-R2.md` | ✅ |
-| Setup report R3 | `ak-redesign/00-control/SETUP-REPORT-R3.md` | ✅ canonical (office-laptop R3; R1/R2 reviews' subject) |
+| Raw inventory | `ak-redesign/00-control/history/RAW-INVENTORY.md` | ✅ (incl. the 011 inventory delta) |
+| Setup report R1 | `ak-redesign/00-control/history/SETUP-REPORT.md` | ✅ |
+| Setup report R2 | `ak-redesign/00-control/history/SETUP-REPORT-R2.md` | ✅ |
+| Setup report R3 | `ak-redesign/00-control/history/SETUP-REPORT-R3.md` | ✅ canonical (office-laptop R3; R1/R2 reviews' subject) |
 | Style kit | `docs/04-design-system/STYLE-KIT.md` | ✅ |
 | Reconciliation note | `docs/04-design-system/RECONCILIATION-NOTE.md` | ❌ **MISSING** — not in the tree or any commit history; only referenced by PM-OBSERVATIONS-S1.md §"STYLE-KIT is already extracted … (see RECONCILIATION-NOTE)". Not recreated per instructions. |
 | Design open items | `docs/04-design-system/DESIGN-SYSTEM-OPEN-ITEMS.md` | ✅ |

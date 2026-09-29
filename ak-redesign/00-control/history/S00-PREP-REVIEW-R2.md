@@ -23,5 +23,5 @@ Round-1 wipe paths are closed. Shell `CONVEX_DEPLOY_KEY` + `CONVEX_URL` are stri
 
 ## NIT
 
-- `ak-redesign/00-control/SETUP-REPORT-R3.md:119-128` — "the key never reaches the child" is true for the shell. It is not true for a key stored in `.env.local`: the CLI reloads that file with `dotenv.config` after spawn (`deploymentSelection.ts:115-117`). Preflight still refuses a cloud URL, so this does not by itself wipe.
-- `ak-redesign/00-control/SETUP-REPORT-R3.md:56` — still says 21 volatile tables. `feedExplorationState` made it 22 (`seed-check.mjs:31-38`). The v2 fingerprint note itself matches the code.
+- `ak-redesign/00-control/history/SETUP-REPORT-R3.md:119-128` — "the key never reaches the child" is true for the shell. It is not true for a key stored in `.env.local`: the CLI reloads that file with `dotenv.config` after spawn (`deploymentSelection.ts:115-117`). Preflight still refuses a cloud URL, so this does not by itself wipe.
+- `ak-redesign/00-control/history/SETUP-REPORT-R3.md:56` — still says 21 volatile tables. `feedExplorationState` made it 22 (`seed-check.mjs:31-38`). The v2 fingerprint note itself matches the code.

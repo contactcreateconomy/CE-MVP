@@ -34,7 +34,7 @@ The full task prompt is id GROUND-TRUTH-PROMPT (PM, 2026-09-28): Steps 0 → 1 �
 | 1 agent files | DONE — precedence block = AGENTS.md §0 (others point to it); §11 untouched; AGENT-MEMORY entry appended; notes atop 00-ROUTES / 00-TRANSITION | step-1 commit |
 | 2 CURRENT-STATE | DONE — ak-redesign/00-control/CURRENT-STATE.md | step-2 commit |
 | 3 control docs, CRs, templates, PM-BRIEF | DONE — DECISIONS, STATUS, SPEC-INDEX, crs/CR-001..008, templates/ (6), README, PM-BRIEF | |
-| 3.5 tidy (git mv) | TODO | |
+| 3.5 tidy (git mv) | DONE — 10 completed records → `00-control/history/`; paths inside history files fixed. **Not fixed (dev territory):** `convex/seed/demo.ts:22` comment still points at `00-control/SETUP-REPORT-R3.md` → now `history/`; dev may update on next seed commit. | step-3.5 commit |
 | 4 PR into 011 | TODO | |
 
 ## Evidence gathered (so a resumed session need not redo it)

@@ -27,7 +27,7 @@ Tried and closed: unset `CONVEX_DEPLOYMENT` exits 1; a `prod:` selector is refus
 ## SHOULD-FIX
 
 - `scripts/reset-local.mjs:85-90` — missing/short `DEV_TEST_USER_PASSWORD` still wipes and seeds. Notifications are skipped when `devtest@example.com` is absent (`demo.ts:1174-1176`), and `roleAssignments` never get the staff rows. Why it matters: two machines do not share fingerprint `9b9edfdf12c0` unless both passed a password. Abort instead of continuing.
-- `ak-redesign/00-control/SETUP-REPORT-R3.md:24` — memberships listed as 26. The loop is `(15 − 1) × 2` flagship joins (`demo.ts:404-432`) = 28. Why it matters: the inventory is the baseline the other machines will check. 60 posts, 20 replies + 1 root, 26 badges, 8 tools, and 6 notification specs do match the code.
+- `ak-redesign/00-control/history/SETUP-REPORT-R3.md:24` — memberships listed as 26. The loop is `(15 − 1) × 2` flagship joins (`demo.ts:404-432`) = 28. Why it matters: the inventory is the baseline the other machines will check. 60 posts, 20 replies + 1 root, 26 badges, 8 tools, and 6 notification specs do match the code.
 
 ## NIT
 
