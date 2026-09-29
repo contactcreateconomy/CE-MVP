@@ -13,7 +13,7 @@ import { mkdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const MODE = process.argv[2];
-const OUT = path.resolve("ak-redesign/specs/S00-evidence/T01");
+const OUT = path.resolve(process.argv[3] ?? "ak-redesign/specs/S00-evidence/T01");
 mkdirSync(OUT, { recursive: true });
 
 const VIEWS = [

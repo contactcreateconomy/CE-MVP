@@ -438,6 +438,46 @@
   --glow-primary-halo: none;
   --dot-color: hsl(240 10% 4% / 0.08);
 
+  /* ── S00-T02 additions (spec §5.2–§5.6, D-007) — nothing consumes these
+     before T03/T05; legacy names above stay as aliases until T05. ── */
+
+  /* Glow renames (§5.2) — light keeps glow OFF; "blink" meaning in light
+     comes from colour + weight. Focus is the one exception: a solid ring. */
+  --glow-cta: none;
+  --glow-active: none;
+  --glow-focus: 0 0 0 2px hsl(199 89% 48%);
+  --glow-celebrate: none;
+  --glow-live: none;
+  --glow-track: none;
+
+  /* Glass (§5.3) — light: 78% surface */
+  --glass-subtle-bg: color-mix(in srgb, var(--bg-surface) 78%, transparent);
+  --glass-subtle-blur: 12px saturate(150%);
+  --glass-strong-bg: color-mix(in srgb, var(--bg-surface) 55%, transparent);
+  --glass-strong-blur: 24px;
+  --glass-border: color-mix(in srgb, var(--border-subtle) 60%, transparent);
+
+  /* Sheet (§5.4) */
+  --sheet-radius: var(--radius-xl);
+  --sheet-max-h: 90dvh;
+  --sheet-handle-w: 36px;
+  --sheet-handle-h: 4px;
+  --scrim: hsl(0 0% 0% / 0.25);
+
+  /* Safe areas & app chrome (§5.5) */
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+  --safe-left: env(safe-area-inset-left);
+  --safe-right: env(safe-area-inset-right);
+  --tabbar-h: 56px;
+  --topbar-h: 48px;
+  --theme-color-light: hsl(0 0% 100%);
+  --theme-color-dark: hsl(0 0% 2%);
+
+  /* State kit (§5.6) — no new colours: resolve the existing surfaces */
+  --skeleton-base: var(--bg-surface);
+  --skeleton-shine: var(--bg-overlay);
+
   /* ── Mode toggle animation tokens ── */
   --toggle-ease-spring:    cubic-bezier(0.22, 1, 0.36, 1);
   --toggle-enter-duration: 320ms;
@@ -504,6 +544,22 @@
   /* Halo: single-color stop for radial gradient washes (hero carousel scrim) */
   --glow-primary-halo: hsl(199 89% 48% / 0.08);
   --dot-color: hsl(0 0% 100% / 0.08);
+
+  /* ── S00-T02 additions (spec §5.2–§5.4, D-007) — dark values. Legacy
+     glow names above remain as aliases until T05 removes their uses. ── */
+
+  /* Glow renames (§5.2) — identical values to their legacy names, so the
+     T03 utilities can adopt the new names with zero visual change. */
+  --glow-cta: 0 0 20px hsl(199 89% 48% / 0.35), 0 0 60px hsl(199 89% 48% / 0.15);
+  --glow-active: 0 0 10px hsl(199 89% 48% / 0.2);
+  --glow-focus: 0 0 0 1px hsl(199 89% 48%), 0 0 15px hsl(199 89% 48% / 0.25);
+  --glow-celebrate: 0 0 30px hsl(199 89% 48% / 0.4), 0 0 80px hsl(199 89% 48% / 0.2);
+  --glow-live: 0 0 10px hsl(199 89% 48% / 0.2); /* pulse base; keyframe swaps ↔ --glow-cta (T03) */
+  --glow-track: 0 0 6px hsl(199 89% 48% / 0.5), 0 0 14px hsl(199 89% 48% / 0.2);
+
+  /* Glass (§5.3) — dark: 72% surface */
+  --glass-subtle-bg: color-mix(in srgb, var(--bg-surface) 72%, transparent);
+  --scrim: hsl(0 0% 0% / 0.4);
 }
 
 * {

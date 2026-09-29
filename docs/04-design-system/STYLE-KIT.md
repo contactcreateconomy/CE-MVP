@@ -48,34 +48,66 @@ brand/primary-abyss     #0C4A6E     sky-900       Deepest accent layer
 
 ### 2.2 Electric Glow System
 
-The signature visual trait. Glows only appear in dark mode — light mode substitutes solid color treatments.
+> **REWRITTEN 2026-09-29 (S00-T02, D-007 "a blink with a reason"):** glow is a
+> purpose signal, not decoration. Every glow is one of: CTA, active, focus,
+> celebrate, live, track. The names below are the new tokens; the legacy
+> `glow/primary-*` names remain as aliases **until S00-T05** removes their uses.
+
+Glow appears in dark mode only — light mode keeps "blink" meaning through colour + weight (glow tokens are `none` in light), with one exception: focus is a **solid ring** in both themes. `prefers-reduced-motion: reduce` turns all glow *motion* off (static glow may stay).
 
 ```
-GLOW TOKEN                CSS VALUE (hsl, real-app notation)            USAGE
-──────────────────────────────────────────────────────────────────────────────────
-glow/primary-sm           0 0 10px hsl(199 89% 48% / 0.20)              Cards on hover, active nav items
-glow/primary-md           0 0 20px hsl(199 89% 48% / 0.35),             Primary buttons, CTAs, focus states
-                          0 0 60px hsl(199 89% 48% / 0.15)
-glow/primary-lg           0 0 30px hsl(199 89% 48% / 0.40),             Hero elements, featured content
-                          0 0 80px hsl(199 89% 48% / 0.20)
-glow/primary-text         0 0 40px hsl(199 89% 48% / 0.50)              Landing page hero headings only
-glow/primary-border       0 0 0 1px hsl(199 89% 48%),                   Focused inputs, active cards
-                          0 0 15px hsl(199 89% 48% / 0.25)
-glow/primary-pulse        Animated: glow-sm → glow-md → glow-sm        Live indicators, active states
-                          Duration: 2000ms, infinite loop
+GLOW TOKEN (new)         LEGACY NAME           CSS VALUE (dark)                             LIGHT                          USED ONLY BY
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+glow/cta                 glow/primary-md       0 0 20px /0.35, 0 0 60px /0.15               none                           .glow-cta — primary CTA + Create (max ONE per screen)
+glow/active              glow/primary-sm       0 0 10px hsl(199 89% 48% / 0.20)             none                           .glow-active — active tab/nav item
+glow/focus               glow/primary-border   0 0 0 1px solid + 0 0 15px /0.25             0 0 0 2px hsl(199 89% 48%)     .focus-ring on :focus-visible
+glow/celebrate           glow/primary-lg       0 0 30px /0.40, 0 0 80px /0.20               none                           .glow-celebrate — one-shot keyframe, 600 ms, runs once
+glow/live                (was primary-pulse)   base 0 0 10px /0.2, pulses to glow/cta       none                           .pulse-live — live states ONLY, 2000 ms
+glow/track               glow/primary-track    0 0 6px /0.5, 0 0 14px /0.2                  none                           navigation progress bar
 ```
 
-**Plus four app-supplied glows that previously lived as raw box-shadows in components (now named — RECONCILIATION-NOTE #6):**
+**REMOVED (S00-T02, D-007 — struck; values linger as unused aliases until S00-T05 deletes them with their last uses):**
+
+- ~~glow/primary-text~~ — landing hero text glow (decoration)
+- ~~glow/primary-pill~~ / ~~glow/primary-pill-hover~~ — sidebar pill
+- ~~glow/primary-card-hover~~ — feed-card hover glow
+- ~~glow/primary-halo~~ — hero carousel scrim wash
+
+**Utility rule**: from S00-T03, glow `box-shadow` may be written ONLY in `packages/design-tokens/utilities.css` (`.glow-cta`, `.glow-active`, `.focus-ring`, `.glow-celebrate`, `.pulse-live`) — never ad-hoc in components. In the app this is implemented by setting the glow tokens to `none` in `:root` (light) and real values only in `.dark`.
+
+### 2.2a Glass (NEW — S00-T02, D-007)
+
+Glass (translucent surface + blur) is chrome-only: top bar, tab bar, sheets, modals. Max **2 stacked glass layers**; a sheet opened over glass chrome sets the chrome behind it to solid.
 
 ```
-glow/primary-pill           0 8px 24px hsl(199 89% 48% / 0.28)          Sidebar primary pill
-glow/primary-pill-hover     0 10px 28px hsl(199 89% 48% / 0.35)         Sidebar primary pill hover
-glow/primary-card-hover     0 0 22px /0.09, 0 0 40px /0.04,             Feed post-card hover glow
-                            0 10px 28px hsl(199 89% 48% / 0.035)
-glow/primary-track          0 0 6px /0.5, 0 0 14px hsl(199 89% 48% / 0.2)  Navigation progress bar
+TOKEN                    DARK                             LIGHT
+──────────────────────────────────────────────────────────────────────
+glass/subtle-bg          bg/surface at 72%                bg/surface at 78%
+glass/subtle-blur        12px saturate(150%)              12px saturate(150%)
+glass/strong-bg          bg/surface at 55%                bg/surface at 55%
+glass/strong-blur        24px                             24px
+glass/border             border/subtle at 60%             border/subtle at 60%
 ```
 
-**Rule**: Glow effects are DISABLED in light mode and when `prefers-reduced-motion` is active. In the app this is implemented by setting the glow tokens to `none` in `:root` (light) and real values only in `.dark`.
+Fallbacks (S00-T03 utilities): `@supports not (backdrop-filter: blur(1px))` → solid `bg/surface`; `prefers-reduced-transparency: reduce` → solid.
+
+### 2.2b Sheet, safe area, app chrome, state (NEW — S00-T02)
+
+```
+TOKEN                    VALUE                             NOTES
+──────────────────────────────────────────────────────────────────────
+sheet/radius             radius/xl (16px)                  top corners of bottom sheets
+sheet/max-h              90dvh                             sheet content cap
+sheet/handle             36 x 4px, border/default colour   drag handle
+scrim                    black 40% (dark) / 25% (light)    sheet/dialog overlay
+safe/top|bottom|left|right  env(safe-area-inset-*)         notched-phone insets
+tabbar/h                 56px (+ safe/bottom at usage)    mobile tab bar
+topbar/h                 48px (+ safe/top at usage)       mobile top bar
+theme/color-dark         hsl(0 0% 2%)                      = dark bg/canvas; mirrored in viewport.themeColor (S00-T06, match-test enforced)
+theme/color-light        hsl(0 0% 100%)                    = light bg/canvas; same mirroring
+skeleton/base            bg/surface (both themes)          no new colours — resolves per theme
+skeleton/shine           bg/overlay (both themes)          shimmer sweep pair
+```
 
 ### 2.3 Dark Mode Surfaces
 
