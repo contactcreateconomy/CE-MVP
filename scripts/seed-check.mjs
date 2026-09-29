@@ -6,6 +6,8 @@
  * = identical logical data across machines.
  */
 import { createHash } from "node:crypto";
+import { readFileSync, existsSync } from "node:fs";
+import path from "node:path";
 import { assertLocalDeployment, convexRun, preflightDevGuard, step, ok } from "./lib/local-gate.mjs";
 
 const deployment = assertLocalDeployment("seed:check");
@@ -36,10 +38,11 @@ const VOLATILE = new Set([
   "authAccounts", "authRateLimits", "authRefreshTokens", "authSessions",
   "authVerificationCodes", "authVerifiers",
   "auditLog", "adminCounters", "analyticsProjections", "deployLog",
+  "distributionLevelAssignments", // monthly level-commit cron appends history rows (catch-up fires them after downtime)
   "feedExplorationState", "feedSessions", "instrumentationIncidents",
   "jobDeadLetters", "jobRuns", "legitimacyScores", "operationalIncidents",
-  "platformHealth", "rawEvents", "signalSummary", "threadReadStates",
-  "userReadingProgress",
+  "pilotKillGateEvaluations", "platformHealth", "rawEvents", "signalSummary",
+  "threadReadStates", "userReadingProgress",
 ]);
 
 const hashableCounts = Object.fromEntries(
@@ -55,4 +58,25 @@ for (const [table, n] of Object.entries(nonZero)) {
   console.log(`  ${table.padEnd(32)} ${n}`);
 }
 console.log(`\nusers: ${keys.userEmails.length}  posts: ${keys.postTitles.length}  tools: ${keys.toolSlugs.length}  notifications: ${keys.notificationDedupeKeys.length}  badges: ${keys.badgeLabels.length}`);
-ok(`two machines matching "fingerprint: ${hash}" have identical logical data`);
+
+// canonical fingerprint source — the ONLY place a value is stored
+const fingerprintFile = path.resolve(import.meta.dirname, "seed-fingerprint.txt");
+const canonical = existsSync(fingerprintFile)
+  ? readFileSync(fingerprintFile, "utf8").split(/\r?\n/).map((l) => l.trim()).filter(Boolean)[0] ?? ""
+  : "";
+
+if (!canonical) {
+  console.error(`\n  [✗] scripts/seed-fingerprint.txt is missing or empty — no canonical value to compare.`);
+  process.exit(1);
+}
+if (hash === canonical) {
+  ok(`matches canonical fingerprint ${canonical} (scripts/seed-fingerprint.txt) — identical logical data`);
+} else {
+  console.error(
+    `\n  [✗] FINGERPRINT MISMATCH: computed ${hash}, canonical ${canonical}.\n` +
+      `      Either this machine's data is stale (run: DEV_TEST_USER_PASSWORD=<pw> pnpm reset:local)\n` +
+      `      or the seeds legitimately changed — then update scripts/seed-fingerprint.txt in the\n` +
+      `      SAME commit as the seed change (see ak-redesign/TEAM-WORKFLOW.md).\n`,
+  );
+  process.exit(1);
+}

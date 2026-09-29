@@ -58,6 +58,15 @@ export function isRuntimeConfigKey(key: unknown): boolean {
   return RUNTIME_CONFIG_PREFIXES.some((p) => String(key ?? "").startsWith(p));
 }
 
+/** Badge types the demo seed writes. Every OTHER badge type (discoverer,
+ *  recognition_role, rocketeer, …) is minted by scheduled award jobs from
+ *  seeded inputs — derived runtime state, excluded like the watermarks. */
+const SEEDED_BADGE_TYPES = new Set(["level_milestone", "profile_completion"]);
+
+export function isSeededBadge(type: unknown): boolean {
+  return SEEDED_BADGE_TYPES.has(String(type ?? ""));
+}
+
 export const fingerprint = internalQuery({
   args: {},
   returns: v.object({
@@ -74,16 +83,24 @@ export const fingerprint = internalQuery({
     const counts: Record<string, number> = {};
     for (const table of TABLES) {
       const rows = await (ctx.db as any).query(table).collect();
-      counts[table] = table === "systemConfig" ? rows.filter((r: any) => !isRuntimeConfigKey(r?.key)).length : rows.length;
+      counts[table] =
+        table === "systemConfig"
+          ? rows.filter((r: any) => !isRuntimeConfigKey(r?.key)).length
+          : table === "badges"
+            ? rows.filter((r: any) => isSeededBadge(r?.type)).length
+            : rows.length;
     }
     const userEmails = (await ctx.db.query("users").collect()).map((u: any) => u.email).sort();
     const postTitles = (await ctx.db.query("posts").collect()).map((p: any) => p.title).sort();
     const toolSlugs = (await ctx.db.query("tools").collect()).map((t: any) => t.slug).sort();
     const notificationDedupeKeys = (await ctx.db.query("notifications").collect()).map((n: any) => n.dedupeKey).sort();
-    // badge subjects resolved to emails — generated ids differ between wipes
+    // badge subjects resolved to emails — generated ids differ between wipes.
+    // Only SEEDED badge types count: award crons mint discoverer/role badges
+    // from seeded inputs over time (derived state, like the watermarks).
     const badgeEmail = new Map<string, string>();
     const badgeLabels: string[] = [];
     for (const b of await ctx.db.query("badges").collect()) {
+      if (!isSeededBadge(b.type)) continue;
       let email = badgeEmail.get(b.subjectId);
       if (email === undefined) {
         const subject: any = b.subjectType === "user" ? await (ctx.db as any).get(b.subjectId) : null;

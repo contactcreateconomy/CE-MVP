@@ -48,6 +48,10 @@ When it finishes, it prints the last mile (below). If you ever see a manual prom
 
 ### Local dev: one command (setup → reset → verify)
 
+Team workflow: see **[ak-redesign/TEAM-WORKFLOW.md](ak-redesign/TEAM-WORKFLOW.md)** — territories, CR flow, and the seed-fingerprint rule.
+Daily ritual: `pnpm session:start` before you work, `pnpm session:end` when you stop (it refuses to leave anything unpushed).
+Data parity across machines is `scripts/seed-fingerprint.txt` — `seed:check` compares against it and fails on drift.
+
 Three commands cover the whole local lifecycle. Three independent gates keep them local-only: the deployment selector must be exactly `anonymous:anonymous-*`/`local:local-*`, child processes run with retargeting env overrides (`CONVEX_DEPLOY_KEY`, self-hosted vars) stripped, and a server-side allowlist (`seed/devGuard:assertLocal`) refuses to run on any non-loopback deployment before anything destructive executes.
 
 | Command | What it does |

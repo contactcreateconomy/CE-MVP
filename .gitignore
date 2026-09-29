@@ -39,3 +39,7 @@ graphify-out/*
 !graphify-out/graph.json
 !graphify-out/GRAPH_REPORT.md
 !graphify-out/manifest.json
+
+# machine-local agent/CLI artifacts (never shareable state)
+convex/tsconfig.json
+.zcodeignore
