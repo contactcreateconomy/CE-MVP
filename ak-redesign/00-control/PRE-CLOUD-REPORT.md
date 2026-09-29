@@ -13,6 +13,8 @@ date: 2026-09-28
 Branch `013-opus-ground-truth`, created from `011-Akilesh-Redesign` at `9bacc42`.
 Merge: `012-local-convex` → `011-Akilesh-Redesign` at **`a370500`** (founder-resolved add/add on
 SETUP-REPORT-R3.md; see below). Home-PC baseline/ archived at **`9bacc42`**.
+Team-workflow round: `011` head **`814939e`** (session scripts + TEAM-WORKFLOW.md + fingerprint
+file), merged into `013` at **`c4a11f6`**.
 
 ## Opus inputs — every path verified committed (`git ls-files --error-unmatch`), none gitignored
 
@@ -30,6 +32,8 @@ SETUP-REPORT-R3.md; see below). Home-PC baseline/ archived at **`9bacc42`**.
 | Reconciliation note | `docs/04-design-system/RECONCILIATION-NOTE.md` | ❌ **MISSING** — not in the tree or any commit history; only referenced by PM-OBSERVATIONS-S1.md §"STYLE-KIT is already extracted … (see RECONCILIATION-NOTE)". Not recreated per instructions. |
 | Design open items | `docs/04-design-system/DESIGN-SYSTEM-OPEN-ITEMS.md` | ✅ |
 | Baselines | `ak-redesign/00-control/baselines/` | ✅ 66 files: 64 route PNGs + `CONTACT-390.png` + `CONTACT-1440.png` |
+| Team workflow | `ak-redesign/TEAM-WORKFLOW.md` | ✅ (territories, CR flow, session ritual, fingerprint rule) |
+| Fingerprint source | `scripts/seed-fingerprint.txt` | ✅ (v4: `63fe5110e230`; `seed:check` fails closed on mismatch) |
 
 ## EXCLUDED from Opus inputs
 
@@ -59,7 +63,7 @@ cap-coverage **572/572** ✅
 
 ## Graph (post-refresh; see graphify-out/)
 
-Nodes **4932** · links (edges) **11806** · communities **334** — `graphify-out/graph.json`,
+Nodes **4973** · links (edges) **11876** · communities **334** — `graphify-out/graph.json`,
 regenerated on this branch by `graphify update .` (graphify 0.9.71 via uv, AST-only pass;
 known parser warning on `convex/lib/events.ts:21` — the tree-sitter limitation documented
 in SETUP-REPORT R2, not a real TS error).
@@ -67,5 +71,6 @@ in SETUP-REPORT R2, not a real TS error).
 ## Branch lineage
 
 `012-local-convex` `0d1222f` (founder files committed + pushed) → merged into
-`011-Akilesh-Redesign` `a370500` → archive commit `9bacc42` (011 head, pushed) →
-`013-opus-ground-truth` branched from `9bacc42`.
+`011-Akilesh-Redesign` `a370500` → archive commit `9bacc42` → team-workflow commit
+`814939e` + session-log commit `bee9565` (011 head, pushed) → `013-opus-ground-truth`
+branched from `9bacc42`, team-workflow merge `c4a11f6`, manifest/graph commit below.

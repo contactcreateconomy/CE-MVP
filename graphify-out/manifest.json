@@ -3390,9 +3390,9 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1790671912.436015,
-    "seen": 1790672618.4748933,
-    "ast_hash": "95dddbb4acd97c8a41e14b62fcf3ce40",
+    "mtime": 1790675162.2649262,
+    "seen": 1790675218.5169852,
+    "ast_hash": "a8ce90df6d2f63f3976ce2cd5de1cc32",
     "semantic_hash": ""
   },
   "packages/auth-ui/package.json": {
@@ -3828,9 +3828,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1790671912.1456213,
-    "seen": 1790672618.474967,
-    "ast_hash": "68212caafb613396dde5db36073c96d5",
+    "mtime": 1790675162.2434406,
+    "seen": 1790675218.5170877,
+    "ast_hash": "93faa744933445215f8d6b414eb6f615",
     "semantic_hash": ""
   },
   "SETUP.md": {
@@ -4980,15 +4980,15 @@
     "semantic_hash": ""
   },
   "ak-redesign/00-control/SETUP-REPORT-R3.md": {
-    "mtime": 1790671926.4744613,
-    "seen": 1790672618.4749756,
-    "ast_hash": "c36e2f31a5e35a4f15f04566f5f64886",
+    "mtime": 1790675162.2490292,
+    "seen": 1790675218.5170996,
+    "ast_hash": "523bfd7c9bc602db7bb9bd25c8568b51",
     "semantic_hash": ""
   },
   "convex/seed/check.ts": {
-    "mtime": 1790671912.419104,
-    "seen": 1790672618.4748764,
-    "ast_hash": "8166af144304f7d7bf31ad45beedb17e",
+    "mtime": 1790675162.2608955,
+    "seen": 1790675218.5169635,
+    "ast_hash": "0fbbc3edf969d50dff39b3c652e7cce0",
     "semantic_hash": ""
   },
   "convex/seed/demo.ts": {
@@ -5001,12 +5001,6 @@
     "mtime": 1790671912.436015,
     "seen": 1790672618.4748788,
     "ast_hash": "5d44dd0704a106a1266af0c9ec1ab4f2",
-    "semantic_hash": ""
-  },
-  "convex/tsconfig.json": {
-    "mtime": 1790587791.9396205,
-    "seen": 1790672618.4748902,
-    "ast_hash": "b4aff9f76abb56464900e5b3ab6b4c87",
     "semantic_hash": ""
   },
   "scripts/capture-baselines.mjs": {
@@ -5028,9 +5022,9 @@
     "semantic_hash": ""
   },
   "scripts/seed-check.mjs": {
-    "mtime": 1790671912.436015,
-    "seen": 1790672618.4749131,
-    "ast_hash": "688004cf7fa5e6a36ae6338e1797ad2d",
+    "mtime": 1790675162.271195,
+    "seen": 1790675218.5170121,
+    "ast_hash": "0486fb495706d0d9d7e651efb8eb761c",
     "semantic_hash": ""
   },
   "scripts/seed-demo.mjs": {
@@ -5040,9 +5034,9 @@
     "semantic_hash": ""
   },
   "tests/convex/dev-guard.test.ts": {
-    "mtime": 1790671912.436015,
-    "seen": 1790672618.474917,
-    "ast_hash": "82c4a67a35388132e701a81e804bb58a",
+    "mtime": 1790675162.2838597,
+    "seen": 1790675218.5170197,
+    "ast_hash": "ff70191e57f3b876a15deaccd26d5be2",
     "semantic_hash": ""
   },
   "ak-redesign/00-control/PM-HANDOFF-S1.md": {
@@ -5058,9 +5052,9 @@
     "semantic_hash": ""
   },
   "ak-redesign/00-control/PRE-CLOUD-REPORT.md": {
-    "mtime": 1790672301.581063,
-    "seen": 1790672618.4749708,
-    "ast_hash": "adc39f851ee285758f9b36ea4b4bf3b6",
+    "mtime": 1790675194.3653767,
+    "seen": 1790675218.5170932,
+    "ast_hash": "6c4093a6a68c24853b2713d533cd7e46",
     "semantic_hash": ""
   },
   "ak-redesign/00-control/S00-PREP-REVIEW-R2.md": {
@@ -5715,6 +5709,42 @@
     "mtime": 1790671912.419104,
     "seen": 1790672618.4751675,
     "ast_hash": "232b04f309ba189852e811919b6a1dab",
+    "semantic_hash": ""
+  },
+  "scripts/lib/session.mjs": {
+    "mtime": 1790675162.267825,
+    "seen": 1790675218.5170083,
+    "ast_hash": "431bea7feed1b3adbfcf66479ed3fde2",
+    "semantic_hash": ""
+  },
+  "scripts/session-end.mjs": {
+    "mtime": 1790675162.2768059,
+    "seen": 1790675218.5170145,
+    "ast_hash": "89df8a2c3043559bc0712ee75b7044c2",
+    "semantic_hash": ""
+  },
+  "scripts/session-start.mjs": {
+    "mtime": 1790675162.2797048,
+    "seen": 1790675218.5170155,
+    "ast_hash": "b4b0da49784f4e2eb9570f53ec85e3e6",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/session-log/apac-3sprs54.md": {
+    "mtime": 1790675162.2535553,
+    "seen": 1790675218.5171044,
+    "ast_hash": "c9b9ec6e292053024c391f4558fadaa4",
+    "semantic_hash": ""
+  },
+  "ak-redesign/TEAM-WORKFLOW.md": {
+    "mtime": 1790675162.2560222,
+    "seen": 1790675218.5171068,
+    "ast_hash": "68d4d39ba23ab46f1771ee6337150eba",
+    "semantic_hash": ""
+  },
+  "scripts/seed-fingerprint.txt": {
+    "mtime": 1790675162.2736719,
+    "seen": 1790675218.5172942,
+    "ast_hash": "18458e4726527ec3d46f4006375108db",
     "semantic_hash": ""
   }
 }
