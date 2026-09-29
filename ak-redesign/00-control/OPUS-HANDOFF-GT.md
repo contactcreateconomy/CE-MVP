@@ -33,7 +33,7 @@ The full task prompt is id GROUND-TRUTH-PROMPT (PM, 2026-09-28): Steps 0 → 1 �
 | 0 env + handoff | DONE | this commit |
 | 1 agent files | DONE — precedence block = AGENTS.md §0 (others point to it); §11 untouched; AGENT-MEMORY entry appended; notes atop 00-ROUTES / 00-TRANSITION | step-1 commit |
 | 2 CURRENT-STATE | DONE — ak-redesign/00-control/CURRENT-STATE.md | step-2 commit |
-| 3 control docs, CRs, templates, PM-BRIEF | IN PROGRESS — DECISIONS + STATUS done; next SPEC-INDEX, crs/CR-001..008, templates, README, PM-BRIEF | |
+| 3 control docs, CRs, templates, PM-BRIEF | IN PROGRESS — DECISIONS, STATUS, SPEC-INDEX, crs/CR-001..008 done; next templates, README, PM-BRIEF | |
 | 3.5 tidy (git mv) | TODO | |
 | 4 PR into 011 | TODO | |
 
