@@ -74,7 +74,7 @@ Foldable phones existed for a decade, but when Apple does it, they do it perfect
 
 ### Design rules
 1. **iOS philosophy:** clean, minimal, simple, and still attractive.
-2. **Motion must serve a purpose.** Animation guides, confirms, or delights at a meaningful moment. Never decoration ("not an RGB light").
+2. **Motion must serve a purpose.** Animation guides, confirms, or delights at a meaningful moment. Never decoration. Glow and glass are our brand materials, but every glow is "a blink with a reason."
 3. **Mobile-first, app-in-the-browser.** Most users are on phones and there is no native app, so the web must feel like one: one-thumb navigation that feels like iOS, with no website-feel.
 4. **Benchmark:** Threads today. The target is Reddit + X + Threads, the one above all of them.
 
