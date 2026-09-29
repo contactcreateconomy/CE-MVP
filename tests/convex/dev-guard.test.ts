@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { assertLocalDeployment } from "../../convex/seed/devGuard";
-import { isRuntimeConfigKey } from "../../convex/seed/check";
+import { isRuntimeConfigKey, isSeededBadge } from "../../convex/seed/check";
 
 /* Server-side allowlist for the dev seed surface (S00-PREP review fix).
  * The guard reads the deployment's own client URL (CONVEX_CLOUD_URL built-in)
@@ -95,5 +95,18 @@ describe("seed/check runtime-config exclusion (fingerprint stability)", () => {
   it("tolerates missing keys (unset/undefined documents)", () => {
     expect(isRuntimeConfigKey(undefined)).toBe(false);
     expect(isRuntimeConfigKey(null)).toBe(false);
+  });
+});
+
+describe("seed/check seeded-badge exclusion (award crons mint derived badges)", () => {
+  it("counts the two seeded badge types", () => {
+    expect(isSeededBadge("level_milestone")).toBe(true);
+    expect(isSeededBadge("profile_completion")).toBe(true);
+  });
+
+  it("excludes cron-minted award types (discoverer etc.)", () => {
+    for (const type of ["discoverer", "recognition_role", "rocketeer", undefined]) {
+      expect(isSeededBadge(type)).toBe(false);
+    }
   });
 });
