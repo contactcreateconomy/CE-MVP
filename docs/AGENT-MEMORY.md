@@ -112,6 +112,10 @@ Vercel Preview → dev cloud URL. Vercel Production → prod cloud URL. OAuth ca
 
 ## Domain / Spec
 
+### 2026-09-29 — Redesign: `ak-redesign/` wins on UI/UX; read CURRENT-STATE before touching a screen
+
+A UI/UX redesign runs from `ak-redesign/` (AGENTS.md §0). Before any screen work read `ak-redesign/00-control/CURRENT-STATE.md` — it records what users actually see (390px baselines), which components are dead (e.g. `feed/post-card.tsx` has 0 imports; the live card is `FeedCard` in `canonical-feed-client.tsx`), and the copy-leak rule (no CAP-/Phase/Wave/table names in UI). Graph lookups: `graphify explain "<Symbol>"` is precise; natural-language `graphify query` is noisy.
+
 ### 2026-09-18 — Forum has no `/welcome`; sign-in is the admin AuthModal
 
 Founder override: do not send forum users through `/welcome`. Timezone is silent (DECISIONS-LOCKED #2) via `RoutingGuard` → `finalizeWelcome`. `/signin` uses `@cemvp/auth-ui` AuthModal (password + Google), same as admin — not the magic-link/email-code card. `/welcome` redirects to `/feed`. Do not rebuild the chooser.

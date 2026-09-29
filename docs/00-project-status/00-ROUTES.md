@@ -1,5 +1,7 @@
 # 00-ROUTES — Canonical route names (live names adopted)
 
+> **Redesign note (2026-09-29):** still binding under `ak-redesign/`. A redesign spec that wants to add, rename or retire a route must first record a DECISION in `ak-redesign/00-control/DECISIONS.md` (founder-approved). `/profile` → `/settings/profile` redirect is under review (CURRENT-STATE: the creator has no "my profile" home).
+
 **Decision (founder-approved 2026-09-04):** where live code exists, **its route
 name becomes canonical** — working routes are not churned. Spec documents
 (contracts, screen sheets, slice catalogs, `_data-model` route mentions) are the

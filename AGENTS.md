@@ -6,10 +6,21 @@ Createconomy is a creator-economy discussion platform (typed-post forum + labele
 
 ---
 
+## 0. Redesign precedence (2026-09-29 — read before any UI/UX work)
+
+A UI/UX redesign of every member-facing screen is under way in **`ak-redesign/`** (entry: `ak-redesign/README.md`; vision: `ak-redesign/01-vision/CEY-VISION.md`; live state: `ak-redesign/00-control/STATUS.md`).
+
+- **`ak-redesign/` wins on UI/UX** (layout, copy, states, motion, components, visual tokens). An approved `ak-redesign/specs/S##-SPEC.md` overrides the matching screen contract in `docs/02-contracts/` and the "never build outside the register" / "never invent a token" rules *for that spec's scope only*.
+- **`docs/` (the PRD) is reference** — and stays **authoritative for backend contracts** (schema, enums, Convex function behaviour, security, legal) unless a record in `ak-redesign/00-control/DECISIONS.md` overrides it.
+- **Conflicts** → logged in DECISIONS.md as "needs founder". Never silently pick a side.
+- **Backend changes** (anything under `convex/`) → a change request in `ak-redesign/00-control/crs/`, founder-approved before any spec depends on it.
+- **Naming:** users see **Createconomy**. "CEY" is an internal short name only (docs, comments, team talk) — never product UI (DECISIONS D-008).
+
 ## 1. Read this before anything else
 
 1. **`docs/AGENT-START-HERE.md`** — the spec's declared entry point. Read it fully before touching code.
 2. **`docs/00-project-status/PROJECT-STATUS.md`** — read when arriving cold; explains what is built, what is verified, and what isn't.
+3. **UI/UX work:** `ak-redesign/README.md` → `ak-redesign/00-control/STATUS.md` → `CURRENT-STATE.md` (the ground truth of what users see today). §0 precedence applies.
 
 ## 2. Spec path mapping (critical)
 
@@ -50,8 +61,8 @@ Per-task lookup: slice in `docs/03-slices/SLICE-CATALOG-PHASE*.md` (scope/depend
 From `docs/00-project-status/` (founder-approved 2026-09-04 — read before any architecture-adjacent work):
 
 - **00-TOPOLOGY:** `apps/forum` owns member routes (`/feed`, `/sell`, `/s/*`, …). `apps/admin` owns `/admin/*` on port 3001 (forum `/admin` redirects there). `apps/seller` and `apps/marketplace` remain parked placeholders. Slice paths like `app/admin/...` mean `apps/admin/src/app/admin/...`.
-- **00-ROUTES:** live route names are canonical: `/discussions/[slug]`, `/new-post`, `/users/[handle]`, `/profile` + `/settings` (they supersede older route fields in contracts/sheets — e.g. `/p/[slug]`, `/compose`). Do not rename routes to match contracts.
-- **00-TRANSITION:** RESET + strangler pattern — canonical tables are built alongside legacy `forum*` tables; live-app data is disposable demo data; no migration, no dual-write. **NEVER write a legacy `forum*` table.** SLICE-P7-CLEANUP drops the legacy tables at the end.
+- **00-ROUTES:** (still binding under the redesign — a spec that wants a route change must record a DECISION first) live route names are canonical: `/discussions/[slug]`, `/new-post`, `/users/[handle]`, `/profile` + `/settings` (they supersede older route fields in contracts/sheets — e.g. `/p/[slug]`, `/compose`). Do not rename routes to match contracts.
+- **00-TRANSITION:** (still binding; the P7-CLEANUP port is done, the `forum*` never-write rule stands) RESET + strangler pattern — canonical tables are built alongside legacy `forum*` tables; live-app data is disposable demo data; no migration, no dual-write. **NEVER write a legacy `forum*` table.** SLICE-P7-CLEANUP drops the legacy tables at the end.
 - **Shared-file serialization:** `convex/schema.ts`, `convex/crons.ts`, and shared registries merge through one integration pass per phase.
 
 ## 6. Repo layout

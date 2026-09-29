@@ -1,5 +1,7 @@
 # PROJECT-STATUS — Createconomy MVP build state, for the incoming dev team
 
+> **2026-09-29 — redesign phase:** MVP 1 code is complete; the current work is a UI/UX redesign of member-facing screens, tracked in `ak-redesign/00-control/STATUS.md` (live) with the ground truth in `ak-redesign/00-control/CURRENT-STATE.md`. This file stays the backend/build record.
+
 > **SUPERSEDED SNAPSHOT (2026-09-12):** this file was written at the 2026-09-05 scope-stop. Phases 1–7 are now code-complete (2026-09-10), 902/902 tests, and the dev backend is the LOCAL open-source Convex backend (`pnpm backend`; the former shared cloud dev deployment is retired). Production remains Convex Cloud (`energetic-kangaroo-55`). A 2026-09-12 docs-vs-code audit reconciled remaining drift — see CHANGELOG.md [Unreleased] for the authoritative record. **2026-09-16:** Twilio Verify is optional `/setup` (not a signup/signin/comment gate). The tables below are historical.
 
 **Written 2026-09-05.** Read this cold before touching anything. It is the

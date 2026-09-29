@@ -1,5 +1,7 @@
 # 00-TRANSITION — Live reference app → canonical architecture (RESET, strangler pattern)
 
+> **Redesign note (2026-09-29):** the port is complete (P7-CLEANUP). The rule that survives: **never write a legacy `forum*` table**. The redesign is UI-only; it does not reopen this decision.
+
 **Decision (founder-approved 2026-09-04):** the live app's data is **disposable demo
 data** (M4: "no production data yet"; users are test accounts). There is **no data
 migration and no dual-write machinery**. Canonical tables are built alongside the
