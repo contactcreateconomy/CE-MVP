@@ -56,14 +56,14 @@ brand/primary-abyss     #0C4A6E     sky-900       Deepest accent layer
 Glow appears in dark mode only — light mode keeps "blink" meaning through colour + weight (glow tokens are `none` in light), with one exception: focus is a **solid ring** in both themes. `prefers-reduced-motion: reduce` turns all glow *motion* off (static glow may stay).
 
 ```
-GLOW TOKEN (new)         LEGACY NAME           CSS VALUE (dark)                             LIGHT                          USED ONLY BY
-──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-glow/cta                 glow/primary-md       0 0 20px /0.35, 0 0 60px /0.15               none                           .glow-cta — primary CTA + Create (max ONE per screen)
-glow/active              glow/primary-sm       0 0 10px hsl(199 89% 48% / 0.20)             none                           .glow-active — active tab/nav item
-glow/focus               glow/primary-border   0 0 0 1px solid + 0 0 15px /0.25             0 0 0 2px hsl(199 89% 48%)     .focus-ring on :focus-visible
-glow/celebrate           glow/primary-lg       0 0 30px /0.40, 0 0 80px /0.20               none                           .glow-celebrate — one-shot keyframe, 600 ms, runs once
-glow/live                (was primary-pulse)   base 0 0 10px /0.2, pulses to glow/cta       none                           .pulse-live — live states ONLY, 2000 ms
-glow/track               glow/primary-track    0 0 6px /0.5, 0 0 14px /0.2                  none                           navigation progress bar
+GLOW TOKEN (new)         LEGACY NAME           CSS VALUE (dark)                                                                 LIGHT                          USED ONLY BY
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+glow/cta                 glow/primary-md       0 0 20px hsl(199 89% 48% / 0.35), 0 0 60px hsl(199 89% 48% / 0.15)               none                           .glow-cta — primary CTA + Create (max ONE per screen)
+glow/active              glow/primary-sm       0 0 10px hsl(199 89% 48% / 0.2)                                                  none                           .glow-active — active tab/nav item
+glow/focus               glow/primary-border   0 0 0 1px hsl(199 89% 48%), 0 0 15px hsl(199 89% 48% / 0.25)                     0 0 0 2px hsl(199 89% 48%)     .focus-ring on :focus-visible
+glow/celebrate           glow/primary-lg       0 0 30px hsl(199 89% 48% / 0.4), 0 0 80px hsl(199 89% 48% / 0.2)                 none                           .glow-celebrate — one-shot keyframe, 600 ms, runs once
+glow/live                (was primary-pulse)   0 0 10px hsl(199 89% 48% / 0.2)                                                  none                           .pulse-live — live states ONLY, 2000 ms, pulses to glow/cta
+glow/track               glow/primary-track    0 0 6px hsl(199 89% 48% / 0.5), 0 0 14px hsl(199 89% 48% / 0.2)                  none                           navigation progress bar
 ```
 
 **REMOVED (S00-T02, D-007 — struck; values linger as unused aliases until S00-T05 deletes them with their last uses):**

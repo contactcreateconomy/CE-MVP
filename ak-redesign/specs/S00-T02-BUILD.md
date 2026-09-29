@@ -77,3 +77,34 @@ node scripts/t01-visual-diff.mjs before  ak-redesign/specs/S00-evidence/T02
 node scripts/t01-visual-diff.mjs after   ak-redesign/specs/S00-evidence/T02
 node scripts/t01-visual-diff.mjs compare ak-redesign/specs/S00-evidence/T02
 ```
+
+## Fix round (S00-T02-REVIEW 77f7aa2, PASS WITH FIXES — applied same session)
+
+**Finding:** §2.2's dark column abbreviated the `.dark` values and `--glow-focus` said "solid".
+**Fix:** the dark column now carries the exact `tokens.css` `.dark` strings, full-length, no
+abbreviations, no invented words; `--glow-active`'s `0.20` normalized to the CSS `0.2`;
+`--glow-live`'s value column is the exact base string (the pulse description lives in the usage
+column). Nothing else in the file changed.
+
+**Self-verification** — `scripts/t02-glow-values-check.mjs` diffs every §2.2 glow value against
+`tokens.css` for both themes (dark from `.dark`, light from `:root`, exact strings, exit 1 on any
+mismatch):
+
+```
+STYLE-KIT §2.2 vs tokens.css (exact strings, both themes)
+
+  [✓] glow/cta dark: "0 0 20px hsl(199 89% 48% / 0.35), 0 0 60px hsl(199 89% 48% / 0.15)"
+  [✓] glow/cta light: "none"
+  [✓] glow/active dark: "0 0 10px hsl(199 89% 48% / 0.2)"
+  [✓] glow/active light: "none"
+  [✓] glow/focus dark: "0 0 0 1px hsl(199 89% 48%), 0 0 15px hsl(199 89% 48% / 0.25)"
+  [✓] glow/focus light: "0 0 0 2px hsl(199 89% 48%)"
+  [✓] glow/celebrate dark: "0 0 30px hsl(199 89% 48% / 0.4), 0 0 80px hsl(199 89% 48% / 0.2)"
+  [✓] glow/celebrate light: "none"
+  [✓] glow/live dark: "0 0 10px hsl(199 89% 48% / 0.2)"
+  [✓] glow/live light: "none"
+  [✓] glow/track dark: "0 0 6px hsl(199 89% 48% / 0.5), 0 0 14px hsl(199 89% 48% / 0.2)"
+  [✓] glow/track light: "none"
+
+0 mismatches — every §2.2 glow value is the exact tokens.css string, both themes.
+```
