@@ -4,7 +4,7 @@ type: SPEC
 author-model: Opus
 tool: Claude Code (cloud)
 round: 1
-status: DRAFT (awaiting PM review → founder approval)
+status: APPROVED (founder, 2026-09-29; Q1–Q4 = yes)
 date: 2026-09-29
 ---
 
@@ -134,7 +134,7 @@ Every new token has dark + light values. Theme stays `defaultTheme="dark" enable
 - When the user picks a theme manually, update `<meta name="theme-color">` client-side to match (next-themes `resolvedTheme` effect).
 - **Apple:** `metadata.appleWebApp = { capable: true, title: "Createconomy", statusBarStyle: "black-translucent" }`.
 - **Standalone polish:** `-webkit-tap-highlight-color: transparent`, `touch-action: manipulation` on interactive elements, `overscroll-behavior-y: none` on the app root (keep inner scroll), `100dvh` not `100vh`, no hover-only affordances below `lg`.
-- **Service worker: not in S00** (deliberate). Offline is handled by the state kit's offline notice. Revisit after beta. *(Founder confirm — §13 Q3.)*
+- **Service worker: not in S00** (deliberate). Offline is handled by the state kit's offline notice. Revisit after beta. *(Q3 = yes, D-015.)*
 
 ## 7. Motion principles — "a blink with a reason"
 
@@ -158,7 +158,7 @@ Rule: an animation exists only if it **guides** (where did this come from / go),
 
 - **Top bar (390):** `.glass-chrome`, height `--topbar-h` + `--safe-top`. Left: logomark + "Createconomy". Right: bell (unread badge) and avatar (menu: My profile, Settings, **Appearance: System / Dark / Light**, Sign out — as a **sheet** at < `lg`). **No theme toggle, no "+" below `lg`.** Logged out: "Sign in" button instead of bell + avatar.
 - **Tab bar (founder: unchanged set):** Home · Search · Create · Alerts · Profile. `.glass-chrome`, padding-bottom `--safe-bottom`, hit targets ≥ 44×44. Labels always visible; **Create label uses `--text-primary`** (readable in both themes); only the Create circle carries `.glow-cta`. Active tab: `--brand-primary` icon + label + `.glow-active` (dark only); active matches the tab's **section** by path prefix: Home = `/feed`, `/discussions`, `/category`; Search = `/search`, `/discover`; Create = `/new-post`, `/drafts`; Alerts = `/notifications`; Profile = `/users/{own handle}`, `/settings`. Another member's `/users/…` activates no tab.
-- **Search tab target:** today `/discover`. S00 points it to **`/search`**, whose empty state (S07) links to Discover. *(Founder confirm — §13 Q1.)*
+- **Search tab target:** today `/discover`. S00 points it to **`/search`**, whose empty state (S07) links to Discover. *(Q1 = yes, D-015.)*
 - **Profile tab (D-010):** href = `/users/{handle}` when signed in; signed out → opens the auth modal. `/profile` redirects to own profile.
 - **Content padding:** main content gets bottom padding `--tabbar-h` so nothing hides behind the bar; the composer's fixed bottom bar (CS §2.7) uses `--safe-bottom`.
 
@@ -202,6 +202,7 @@ Every task's acceptance includes: **visible at 390 in dark AND light**, logged-i
 
 | Task | Scope | Main files | Done when (acceptance) |
 |---|---|---|---|
+| — | **Verdict cadence (D-003 amendment):** Grok REVIEW after every task; Opus VERDICT batched at checkpoints **after T03, T12, T18**. | | |
 | **S00-T01** Token single source | Move shared tokens to `packages/design-tokens/tokens.css`; both apps import it; app files keep only local rules; add the "no tokens in app globals" test. | `packages/design-tokens/*`, both `globals.css` | Forum + admin render **pixel-identical** to before at 390 + 1440, both themes (screenshot diff); admin `globals.css` < 100 lines; test green. |
 | **S00-T02** New tokens + STYLE-KIT | Add glass, sheet, safe-area, theme-color, skeleton tokens (both themes); rename glow tokens per §5.2 (aliases kept until T05); update STYLE-KIT §2.2 + new sections with date. | `tokens.css`, `STYLE-KIT.md` | STYLE-KIT documents every new token with dark/light values; no visual change yet. |
 | **S00-T03** Utilities | `.glow-cta`, `.glow-active`, `.focus-ring`, `.glow-celebrate`, `.pulse-live`, `.glass-chrome`, `.glass-strong`, safe-area helpers; reduced-motion + reduced-transparency + `@supports` fallbacks. `/lab/utilities` demo page (dev-only guard from T15 can land here first). | `utilities.css`, `app/(app)/lab/*` | Demo shows each utility in both themes; toggling OS reduced-motion stops pulse/celebrate; reduced-transparency makes glass solid. |
@@ -213,7 +214,7 @@ Every task's acceptance includes: **visible at 390 in dark AND light**, logged-i
 | **S00-T09** State kit components | Skeleton compositions, Empty (extend), ErrorState, OfflineState; route-group `error.tsx` ×3; `/lab/states` demo. | `ui/skeleton.tsx`, `ui/empty-state.tsx`, `ui/error-state.tsx`, `ui/offline-state.tsx`, `error.tsx` ×3 | Each state renders in both themes; ErrorState "Try again" re-renders the segment; OfflineState appears when DevTools goes offline and clears when back. |
 | **S00-T10** Wire states — core A | `/feed`, `/discussions/[slug]`, `/new-post`, `/users/[handle]`, `/notifications`: skeleton loading (replace `return null`, `Suspense fallback={null}`, spinners, "Loading…"), Empty, Error, Offline (replace "Connect Convex"). | loaders/page clients of those routes, their `loading.tsx` | Throttled "Slow 4G": each route shows its skeleton from first paint (never blank); forced query error shows ErrorState; offline shows OfflineState; CLS ≤ 0.1 on swap. |
 | **S00-T11** Wire states — core B | Same for `/landing`, `/signin`, `/setup`, `/search`, `/discover`, `/category/[slug]`, `/leaderboard`, `/drafts`, `/settings/profile`. Redirect routes unchanged. | same pattern | Same acceptance; scorecard CS §2.17 has no ✗ left in Loading/Error columns. |
-| **S00-T12** Shell | §8: top bar (no theme toggle / "+" below `lg`, avatar-menu sheet with Appearance), tab bar (visible Create label, glow on Create only, prefix active state, Search → `/search`*, safe area, glass), Profile → own profile, `/profile` redirect (D-010); lazy-load command palette (desktop). | `top-nav.tsx`, `mobile-tab-bar.tsx`, `profile/page.tsx` | At 390 both themes: Create label readable; Profile tab opens `/users/{me}`; theme switch works from the avatar sheet and updates theme-color; logged-out Profile opens sign-in. *Search target per founder Q1. |
+| **S00-T12** Shell | §8: top bar (no theme toggle / "+" below `lg`, avatar-menu sheet with Appearance), tab bar (visible Create label, glow on Create only, prefix active state, Search → `/search`*, safe area, glass), Profile → own profile, `/profile` redirect (D-010); lazy-load command palette (desktop). | `top-nav.tsx`, `mobile-tab-bar.tsx`, `profile/page.tsx` | At 390 both themes: Create label readable; Profile tab opens `/users/{me}`; theme switch works from the avatar sheet and updates theme-color; logged-out Profile opens sign-in. *Search → `/search` (Q1 = yes, D-015). |
 | **S00-T13** Labels, dates, leak cleanup | §10 label maps + relative time + fix every CS §6 literal and data-driven class; `specs/S00-copy.md` old→new table. | `lib/labels.ts`, `lib/time.ts`, CS §6 files | Baselines show no raw keys (`email_verified`, `community_top`, `roleArchetype`, "post comment"), no CAP/Phase/Wave/M-numbers, no "Connect Convex"; feed dates relative. |
 | **S00-T14** COPY-1 test | §10 source-scan test + allowlist. | `lib/__tests__/copy-leak.test.ts` | Test green on the T13 tree; re-adding any CS §6 string makes it fail (prove with a temporary revert in the BUILD report). |
 | **S00-T15** Hide `/kit`, `/lab` guard, dead code | `/kit` + `/lab` → `notFound()` in production; delete CS §5 dead components (+ tests that only cover them). | `kit/page.tsx`, `lab/*`, deleted files | `pnpm build && pnpm start`: `/kit` and `/lab` 404; dev: both work; no remaining imports of deleted files; test count change explained. |
@@ -233,7 +234,7 @@ Every task's acceptance includes: **visible at 390 in dark AND light**, logged-i
 - [ ] `pnpm perf:budget` green; Lighthouse mobile ≥ 90 with LCP/TBT/CLS in §9 on the 4 routes.
 - [ ] typecheck · lint · forum tests · cap-coverage 572/572 · admin typecheck/lint.
 
-**Founder questions (answer at approval; defaults in brackets):**
+**Founder questions — ANSWERED 2026-09-29: all four = yes (D-015). Build to the defaults below.**
 - **Q1** Search tab → `/search` (Discover reachable from it) [**yes**] — today it opens `/discover`.
 - **Q2** Theme switch at 390 lives in the avatar menu (sheet) [**yes**]; full appearance settings arrive in S08.
 - **Q3** No service worker before beta [**yes**]; offline handled by the state kit.

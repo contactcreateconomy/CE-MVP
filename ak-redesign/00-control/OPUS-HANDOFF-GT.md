@@ -4,7 +4,7 @@ type: HANDOFF
 author-model: Opus
 tool: Claude Code (cloud)
 round: 2
-status: DONE (R2) — S00 awaiting PM review
+status: DONE (R2) — S00 APPROVED, PR #13 ready to merge
 date: 2026-09-29
 ---
 
@@ -73,3 +73,6 @@ The full task prompt is id GROUND-TRUTH-PROMPT (PM, 2026-09-28): Steps 0 → 1 �
 - S00-SPEC §13 Q1–Q4 (Search tab → /search; theme switch in avatar sheet; no service worker pre-beta; generated icon OK).
 - CR-009 needed before S00-T18 baselines (open-signup flow).
 - New facts found in R2: Search tab opens `/discover`; tab bar has no safe-area inset; no `error.tsx` exists anywhere; `useAuth().user.handle` exists (D-010 is UI-only).
+
+### R2 close (2026-09-29)
+- S00-SPEC APPROVED; Q1–Q4 = yes → D-015. D-003 amended: Grok per task, Opus VERDICT batched after T03/T12/T18. STATUS updated. PR #13 ready to merge.

@@ -34,6 +34,7 @@ the answer is recorded here with a date. Newest records at the bottom; never ren
 - Two lanes: **full** (visual, new components, data) and **fast** (copy/spacing/one file; skips Grok).
 - **Stay 2 specs ahead** of the build. **No NOTES → no spec.**
 - **Amended by D-014 (2026-09-29):** visual specs (S01–S13) add an EXPLORE stage before the SPEC.
+- **Amendment 2026-09-29 (PM, budget):** **Grok REVIEWs every full-lane task.** **Opus VERDICT is batched at checkpoints** named in each spec's task table (S00: after T03, T12, T18) instead of per task; the batched VERDICT covers every task since the last checkpoint. Tasks between checkpoints proceed on a Grok PASS. A Grok CHANGES-REQUESTED still blocks the next task. Fast-lane tasks are unchanged (skip Grok).
 
 ## D-004 — Spec quality bar, admin, budget · LOCKED (PM-HANDOFF-S1 §4)
 - Every spec states a **benchmark** ("beats X at Y") and answers the **6 questions** in VISION §6 (trust, feel special, purposeful motion, one thumb, benchmark, scope).
@@ -92,3 +93,10 @@ The founder decides taste live in the browser, screen by screen. For **visual sp
 2. **LOCK:** Opus writes the SPEC from the NOTES + the explored result.
 3. **BUILD → REVIEW → VERDICT → GATE** as in D-003.
 **S00 is foundation** (mostly architecture): it skips EXPLORE and goes NOTES → SPEC. The `/lab` route must be dev-only (never reachable in production builds) — S00 provides it.
+
+## D-015 — S00 approved; founder answers to S00-SPEC §13 · DECIDED by founder (2026-09-29)
+- **S00-SPEC APPROVED.**
+- **Q1** Search tab → `/search`; Discover reachable from it. **Yes.**
+- **Q2** Theme switch at 390 lives in the avatar menu (sheet); full appearance settings in S08. **Yes.**
+- **Q3** No service worker before beta; offline handled by the state kit. **Yes.**
+- **Q4** Generated logomark app icon until a designed icon is supplied. **Yes.**
