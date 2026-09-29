@@ -4,7 +4,7 @@ type: HANDOFF
 author-model: Opus
 tool: Claude Code (cloud)
 round: 1
-status: IN-PROGRESS
+status: DONE
 date: 2026-09-29
 ---
 
@@ -35,7 +35,7 @@ The full task prompt is id GROUND-TRUTH-PROMPT (PM, 2026-09-28): Steps 0 → 1 �
 | 2 CURRENT-STATE | DONE — ak-redesign/00-control/CURRENT-STATE.md | step-2 commit |
 | 3 control docs, CRs, templates, PM-BRIEF | DONE — DECISIONS, STATUS, SPEC-INDEX, crs/CR-001..008, templates/ (6), README, PM-BRIEF | |
 | 3.5 tidy (git mv) | DONE — 10 completed records → `00-control/history/`; paths inside history files fixed. **Not fixed (dev territory):** `convex/seed/demo.ts:22` comment still points at `00-control/SETUP-REPORT-R3.md` → now `history/`; dev may update on next seed commit. | step-3.5 commit |
-| 4 PR into 011 | TODO | |
+| 4 PR into 011 | DONE — PR opened into `011-Akilesh-Redesign`, not merged | final commit |
 
 ## Evidence gathered (so a resumed session need not redo it)
 
@@ -51,4 +51,10 @@ The full task prompt is id GROUND-TRUTH-PROMPT (PM, 2026-09-28): Steps 0 → 1 �
 
 ## Open questions / half-decided
 
-(none yet)
+- Founder: D-005 ship line, D-006 §11 replacement, D-007 style source + glow, D-009 sign-up gate (A/B/C), D-010 Profile tab, D-011 COPY-1, CR-007 follows/streaks scope.
+- Half-decided: spec order S01 (first visit) vs composer — SPEC-INDEX puts composer at S04; swap allowed (STATUS note).
+- CR-001: loopback allowlist may break demoSeed's intended cloud-"dest" use — dev must choose (allowlist of named deployments vs loopback).
+- Commit hooks: no graphify hook complaints occurred (hooks not installed in the VM). Graph NOT refreshed — GLM refreshes after merge.
+
+## Next session (Opus in Cursor) starts with
+`ak-redesign/README.md` → `00-control/STATUS.md` → the founder's S00-NOTES → write `specs/S00-SPEC.md` from `templates/SPEC.md`.
