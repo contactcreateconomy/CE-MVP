@@ -66,5 +66,5 @@ The full task prompt is id GROUND-TRUTH-PROMPT (PM, 2026-09-28): Steps 0 → 1 �
 | Part | Status |
 |---|---|
 | A — record founder decisions (DECISIONS D-005..D-014, SPEC-INDEX, STATUS, CR-007 rejected, CR-009 new, templates, CURRENT-STATE §7; D-006 executed: AGENTS.md §11, CLAUDE.md DoD, wiki-tracker-sync.yml) | DONE — part-A commit |
-| B1 — S00-NOTES verbatim | TODO |
+| B1 — S00-NOTES verbatim | DONE |
 | B2 — S00-SPEC + task split | TODO |
