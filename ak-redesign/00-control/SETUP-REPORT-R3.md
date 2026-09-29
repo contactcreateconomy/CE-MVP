@@ -5,78 +5,198 @@ author-model: GLM 5.3
 tool: zcode
 round: 3
 status: DONE
-date: 2026-09-27
+date: 2026-09-28
 ---
 
-# SETUP-REPORT R3 — local environment + real baselines
+# SETUP-REPORT R3 — anti-drift local dev + demo seed + baselines
 
-Branch flow: work on `012-local-convex` (synced to teammate's `d2d9984`), merged into `011-Akilesh-Redesign` (fast-forward, no conflicts), pushed.
+Branch `012-local-convex` (on top of `8a1279c`, the Windows local-setup fixes).
+Goal: any machine reaches an identical, realistic local state with one command. Achieved: `DEV_TEST_USER_PASSWORD='<pw>' pnpm reset:local` → fingerprint `c410ddce4f57` (v2 hash — see §4).
 
-## Step 1 — Prerequisites
+## 1. Demo seed — what shipped (`convex/seed/demo.ts`, `pnpm seed:demo`)
 
-node v24.12.0 ✓, pnpm 10.28.2 ✓, `pnpm install` already complete ✓, branch `012-local-convex` ✓. Backend initially NOT on :3210 — see below.
+Gated three ways (review-fix, see §9): the script selector must be exactly `anonymous:anonymous-*`/`local:local-*`; every spawned convex child runs with retargeting env overrides (`CONVEX_DEPLOY_KEY` + self-hosted vars) stripped; and each seed mutation calls the server-side allowlist `seed/devGuard` first — a loopback `CONVEX_CLOUD_URL` is the only accepted shape, so any cloud deployment is refused regardless of name. Deterministic — no `Math.random`, every timestamp is `now − fixedOffset` (−10min … −60d), so ages always look fresh. Idempotent — every insert is keyed on a natural key (email, slug, exact title, dedupeKey, composite index) and skipped when present; a second run reports `created: 0`.
 
-## The blocker and its resolution (root cause)
+| Content | Count | Notes |
+|---|---|---|
+| Members | 15 | signal levels 1–8 (orbit…galaxy: 2/2/2/2/3/2/1/1), realistic creator bios, `@demo.createconomy.invalid` emails |
+| Per-member distributions | 15 | `ensureDistributionTx` + patched might/level/reach; level assignments against the founding season |
+| Distribution memberships | 28 | everyone joins the two flagship distributions (Reach) — (15 − 1) × 2 |
+| Tools | 8 | `demo-*` slugs, referenced by review/compare posts |
+| Posts | 60 | all 5 categories × all 7 member post types; ages −10min…−60d |
+| Edge cases | 3 | two-line-overflow title, ~4k-char body (full-year audit), empty body |
+| The thread | 21 comments | root + 20 depth-1 replies, 11 participants, chained replies every 4th |
+| Scattered comments | 8 | on non-thread posts; several posts guaranteed zero comments |
+| Comment upvotes / saves | 7 / 1 | `commentReactions` valuable + `commentSaves` |
+| Post bookmarks | 10 | `saves` |
+| Debate / list votes | 7 / 1 | agree/disagree mix + top list-item vote |
+| Badges | 26 | level milestones (level ≥ moon) + profile completion, `badges` table + `users.completionBadges` |
+| Journal (activityLedger) | 15 | one `tier_unlocked` row per member |
+| Leaderboard | d7 + h24 | 10 ranked entries, points derived from might (deterministic) |
+| Feed chrome | 6 vibing / 3 hero / 1 featured | trends+hooks, hero slots, editor's pick |
+| Notifications (devtest) | 6 | 3 unread + 3 read across 6 types, real post/comment ids, ages 8min…3d |
 
-The founder's `pnpm backend` (= `convex dev`) kept attaching to the disabled cloud deployment because the **root `.env.local` carried `CONVEX_DEPLOYMENT=dev:watchful-chameleon-570`**. Additionally, `--configure new --dev-deployment local` failed with `InvalidProjectCreation: Project cannot be created or modified while your team is Disabled` — that attempt targeted the founder's **personal** team, not `harinie`. Resolution: `pnpm exec convex dev --configure existing --dev-deployment local --team harinie --project cemvp` → **succeeded**: created local deployment **`local-harinie-cemvp-2`**, downloaded the Windows backend binary, saved the selector to `.env.local`, serving `http://127.0.0.1:3210`. Relaunched as a **detached** watcher (pid 20504, log `%TEMP%\convex-local-backend.log`) so it survives this session. The teammate's `scripts/local-setup.mjs` could not run as-is on Windows (`execFileSync("pnpm", …, {shell:false})` fails — only .cmd shims exist, no pnpm.exe); its steps were executed manually and exactly.
+## 2. What could NOT be seeded (would need backend changes — not hacked around)
 
-## Step 2 — Env files
-
-`apps/forum/.env.local` + `apps/admin/.env.local` created from `.env.example` (both `http://127.0.0.1:3210`), both gitignored (forum `.gitignore:29`, root `.gitignore:12`). Root `.env.local` now carries `CONVEX_DEPLOYMENT=local:local-harinie-cemvp-2` (gitignored).
-
-## Step 3 — One-time backend config
-
-- `SITE_URL`, `AUTH_REDIRECT_ORIGINS`, `FOUNDER_EMAILS` (incl. devtest@example.com) — set via `pnpm exec convex env set`.
-- RS256 keys: throwaway scripts in `%TEMP%` (deleted after). **JWKS required two attempts** — the direct node-spawn path crashed on a Windows libuv assertion (`UV_HANDLE_CLOSING`) before persisting; resolved by routing the single-line JSON through bash argv. `JWT_PRIVATE_KEY` stored as one multi-line value (no `--from-file` used). `env list` verified: exactly the 5 expected vars, **zero junk vars**.
-- Seeds: `seed:bootstrap` (platform config — REQUIRED for signup), `legalContent:seedDefaults` (4 legal docs), `rulebook:deploySeed`, `admin/widgetsCatalog:deploySeed` — all returned seeded-confirmations, exit 0.
-
-## Step 4 — Demo seed
-
-`DEMO_SEED_ENABLED` gated run of `dev/demoSeed:seed` (gate removed after). Result: 10 members, 12 tools, **15 posts × 10 members = 150 posts** across all 7 types, 6 hero slots, chrome queues (vibing 6, waitlist 8, cases 4, candidates 3, alerts 2, featured 2). **Slugs/handles deterministic**: handles fixed (maya…samir); tool slugs `demo-*`; discussion slugs human-readable `demo-{type}-from-{handle}-{n}-{suffix}` (discovered live: `/discussions/demo-compare-from-maya-2-8f6ar5`).
-
-## Step 5 — Apps
-
-`pnpm dev` (:3000) + `pnpm dev:admin` (:3001) running in background. `/feed` → 200, `/admin` → 200.
-
-## Step 6 — Test account
-
-Playwright automation (creds via env vars only — never written to any file). Needed 3 attempts: (1) generic selectors filled the wrong (login) form — submit disabled; (2) tabs are plain buttons, not `role=tab`; (3) exact IDs from auth-ui source (`#auth-signup-{name,email,password,confirm-password}` + native terms checkbox + "Create account") → **signup succeeded**. Admin sign-in with the same credentials: **header shows the "administrator" badge** (proof: `%TEMP%\ce-debug-v3-admin.png`, not committed). storageStates saved to `%TEMP%\ce-forum-state.json` + `ce-admin-state.json` (outside repo, never committed).
-
-## Step 7 — Real baselines
-
-34 captures + 2 labelled contact sheets (`CONTACT-390.png`, `CONTACT-1440.png` via Playwright-rendered HTML grid, no new deps) in `ak-redesign/00-control/baseline/`:
-- Forum logged-in ×390/×1440: feed, discussions (real slug), new-post, users (/users/maya), notifications, search, discover, category-debate, leaderboard, drafts, settings-profile, setup
-- Forum logged-out ×2: landing, signin
-- Admin logged-in 1440: admin-home, admin-moderation, admin-editorial, admin-readiness
-- Full-page 390: feed, discussions
-The CMP consent overlay ("Your privacy choices") was dismissed before capture. Verified visually: real post cards (e.g. "Demo: Review — Claude Code for AI workflows" by Maya), logged-in chrome, no error overlays. `/leaderboard` correctly shows "Podium is forming" (needs 25 contributors; seed has 10).
-
-## Step 8 — Gate (on merged tree)
-
-| Command | Result |
+| Spec item | Blocker |
 |---|---|
-| `pnpm typecheck` | **PASS** |
-| `pnpm lint` | **PASS** |
-| `pnpm test:run` | **FAIL — 2 of 972** (pre-existing, unchanged from first run): `p5-02-comments-eligibility.test.ts > CAP-140: preserve-draft outcome…`; `p7e-moderation.test.ts > CURRENT season is derived — never hardcoded season 1` |
-| `pnpm test:convex` | **PASS** |
-| `node scripts/cap-coverage.mjs` | **PASS — 572/572** |
+| **Follows** | No follow table exists in the schema — only the `firstFollowMade` activation bit. Follow edges are a backend change (change request per CONVENTIONS). |
+| **Streaks** | No streak field/table anywhere in the schema. Same as above. |
+| **Post-level upvote rows** | Posts have no vote table; engagement lives as counters in `postDistributionScores` (seeded). Comment-level upvotes exist and are seeded. |
+| **Avatars** | `profile/page.tsx` hardcodes `avatarUrl: null` in both projections (renders initials by design at this stage) — no seed-side path can light an avatar up. |
+| **Leaderboard podium page** | `MIN_CONTRIBUTORS = 25` (CAP-294 "never fabricates rankings") — with 15 members the page correctly renders "Podium is forming". The feed sidebar Podium DOES render the seeded top-5. Reaching the page floor needs ≥25 real members, not seed trickery. |
+| **9 categories** | The platform has 5 categories (seed:bootstrap's canonical set). "9" in the brief matches the 9 visible feed nav entries = 5 categories + post-type facets. All 5 × all 7 member post types are covered. |
 
-Not fixed, per instructions (source-assertion tests, unrelated to setup work).
+## 3. `pnpm reset:local` — the officially supported wipe
 
-## Step 9 — Merge
+Data-only wipe via **`convex import --replace-all --yes` with an empty table file** — the CLI's documented semantics: *"clearing tables that appear in the schema but not in the import file"*. Functions, schema, backend env (auth keys, FOUNDER_EMAILS), and storage survive (unlike deleting `.convex/` state, which resets the deployment). Then: `seed:bootstrap` → `legalContent:seedDefaults` → `rulebook:deploySeed` → `admin/widgetsCatalog:deploySeed` → `dev/ensureTestUser:ensure` (password via `DEV_TEST_USER_PASSWORD`/`--password`, set-and-removed around the call, never committed; FOUNDER_EMAILS allow-list auto-grants every staff role — verified `roleAssignments = 7`) → `seed/demo:seed` → `seed:check`.
 
-`012-local-convex` merged into `011-Akilesh-Redesign` as a **fast-forward** (merge-base = 011 HEAD `612cc3c` → no conflicts; nothing to reconcile). Commits on 011: `[SETUP][BASELINE][GLM] real baselines on local convex`, `[GRAPH][REFRESH][GLM] refresh graph`, `[SETUP][INVENTORY][GLM] inventory delta after local convex`, `[SETUP][REPORT][GLM] report R3` (this file). Pushed.
+## 4. `pnpm seed:check` — fingerprint
 
-## Errors & founder actions
+Row counts for **all 175 tables** + stable identity keys (emails, post titles, tool slugs, notification dedupeKeys, badge labels resolved to emails — never timestamps or generated ids), folded into a sha256 short hash. Runtime-volatile tables (auth sessions, jobRuns, rawEvents, reading progress, feed exploration state, etc. — 22 tables listed in `scripts/seed-check.mjs`) are printed but excluded from the hash: their counts depend on wall-clock activity and would break parity without saying anything about seed parity. `systemConfig` is counted **excluding** the two `tools.ratings.driftCheck.*` watermark keys the hourly drift-check cron registers after a reset (key-level exclusion via `isRuntimeConfigKey`, unit-tested in `tests/convex/dev-guard.test.ts`) — the 45 seeded config rows keep their drift signal while the hash stays stable across the cron's fire.
 
-1. **`scripts/local-setup.mjs` Windows incompatibility** — `execFileSync("pnpm", {shell:false})` fails (no `pnpm.exe`; only `.cmd` shims). Suggest the teammate resolves `pnpm.cmd` explicitly or wraps with `shell:true`. Not fixed (repo script, setup-engineer scope).
-2. **5 scheduled jobs crash at backend start** — `analytics/projections:l08Core`, `jobs/legitimacy:recompute`, `jobs/maxRefresh:sweep`, `admin/homeAlertWriters:rankIntegritySweep`, `jobs/repeatInfringer:evaluate` all throw "Tried to query index … didn't use the index fields in order" (they query with only the second index field). App works; jobs fail. Logged, not fixed.
-3. **2 failing gate tests** (above) — pre-existing on the branch.
-4. `convex/_generated/*` is dirty in the working tree (regenerated by the local watcher) — deliberately **not committed**; expect this drift whenever the local backend runs.
-5. Windows `convex` CLI noise: libuv `UV_HANDLE_CLOSING` assertion prints on many CLI exits — usually harmless; if a value didn't persist (happened once with JWKS), re-run via bash argv.
-6. **Team `harinie` cloud status**: the disabled-projects banner still prints (free-plan limits on CLOUD projects). Local development no longer depends on it; production (`energetic-kangaroo-55`) untouched. Founder may still want to resolve the cloud team state for dashboard/prod work.
+**Fingerprint after `reset:local`: `c410ddce4f57`** — reproduced identical across consecutive full resets on this machine. Two machines running `reset:local` should match this value (deviation = drifted code or seeds, investigate before comparing screenshots).
 
-## Still running (left up per instructions)
+*v2 note (review fix):* the earlier value `9b9edfdf12c0` hashed `feedExplorationState`, which logged-in browsing writes (one row per post viewed — the R3 baseline captures wrote 60). It is now hash-excluded like the other runtime tables, so the fingerprint survives browsing; the exclusion itself changed the hash, hence the new canonical value. *v3 note (R2 review fix):* the `systemConfig` watermark exclusion above is count-neutral right after a reset (45 with or without watermarks), so the canonical value is unchanged — it only becomes robust once the hourly cron fires.
 
-- Local Convex backend: detached `convex dev` (pid 20504) on `http://127.0.0.1:3210`, log `%TEMP%\convex-local-backend.log`
-- Forum `:3000`, admin `:3001` dev servers
+## 5. Rendering verification (390px, live demo data)
+
+| Surface | Result |
+|---|---|
+| `/feed` | hero slots (Community Top + 2 Featured), Hot/Top/New tabs, cards with type badge, author, date, one-liner, ▲/💬/🔖 counts. Long-title fixture renders. |
+| `/discussions/<thread>` | review layout, body, the 21-reply thread incl. chained replies. |
+| `/users/maya` | name, handle, bio, profile-completion badges. |
+| `/notifications` | 6 seeded rows, correct types + relative ages, Mark-read actions, header unread badge = 3. |
+| `/leaderboard` | contract-correct "Podium is forming" (25-contributor floor; see §2). |
+| Sign-in | devtest works end-to-end (RS256 local keys; staff roles). |
+
+## 6. Baselines — `ak-redesign/00-control/baselines/`
+
+16 core routes (RAW-INVENTORY §E list) × {390, 1440} × {logged-out, logged-in} = 64 captures + `CONTACT-390.png` / `CONTACT-1440.png` labelled contact sheets (4-column grid, top-900px preview per page; full-length pages live in the individual PNGs). Logged-in = devtest@example.com via the real auth modal. The thread slug is discovered live (post ids regenerate per reset). Captured with the system Edge channel (Playwright CDN download failed on this network); Next dev-tools badge hidden. The CMP consent banner is dismissed per-tab via a context init script (`sessionStorage cmp.dismissed=1`) — it never appears in any capture. R2's blocker (disabled cloud deployment covering every page with the dev error overlay) is gone.
+
+**Visual acceptance: both contact sheets PASS** (independent visual review): all 16 routes present in both states at both widths; every cell a real render with seeded content; logged-out shows `Login` + auth gates on protected routes, logged-in shows unread badge 3 + avatar D + per-card `Why this?/Hide/Mute/Report` actions.
+
+Render observations (non-blocking):
+1. The sticky mobile bottom tab bar appears mid-page in some fullPage captures — a fullPage-screenshot artifact of sticky elements, not a page defect.
+2. Redirect routes are captured at their target (`/welcome`, `/profile`, `/settings` → `/settings/profile`); by design.
+3. `/landing` shows no auth indicator in either state — logged-in and logged-out cells are visually identical there.
+4. First-paint loading inconsistency (spinner / null-blank / skeleton mix) remains as catalogued in RAW-INVENTORY §E.
+
+Capture-tooling lessons (round 1 of the sheets failed review, fixed before commit): `object-fit: cover` height-caps center-crop short pages horizontally and reads as page overflow — use width-fit `img { width:100%; height:auto }` inside a fixed-height `overflow:hidden` figure; and per-tab sessionStorage consent needs a context-level `addInitScript`, not per-page clicks.
+
+## 7. Cron `.withIndex` failures (for the dev team)
+
+The local backend enforces index-prefix order strictly; these scheduled jobs throw `Uncaught Error: Tried to query index … didn't use the index fields in order` on every fire. Fix = add the leading field's equality filter or use a suitable index. **No code was changed** (backend change = change request per CONVENTIONS).
+
+| Function | Index (ordered fields) | Query used | Missing leading field |
+|---|---|---|---|
+| `admin/homeAlertWriters:rankIntegritySweep` | `integrityFlags.by_actor_disposition` ["actorUserId","disposition","_creationTime"] | ["disposition"] | `actorUserId` |
+| `analytics/projections:l08Core` | `rawEvents.by_eventType_time` ["eventType","occurredAt","_creationTime"] | ["occurredAt"] | `eventType` |
+| `analytics/projections:orphanSweep` | `rawEvents.by_eventType_time` ["eventType","occurredAt","_creationTime"] | ["occurredAt"] | `eventType` |
+| `jobs/legitimacy:recompute` | `rawEvents.by_user_time` ["userId","occurredAt","_creationTime"] | ["occurredAt"] | `userId` |
+| `jobs/maxRefresh:sweep` | `comments.by_post_depth_created` ["postId","depth","createdAt","_creationTime"] | ["depth"] | `postId` |
+| `jobs/repeatInfringer:evaluate` | `strikes.by_user_active` ["userId","active","_creationTime"] | ["active"] | `userId` |
+
+`jobs/maxRefresh:sweep` fires every 15 min and `analytics/projections:*` hourly — they dominate backend log noise.
+
+## 8. Machine notes (Windows/office laptop)
+
+- Node 24.15.0 via fnm; pnpm 10.28.2. In Git Bash the pnpm sh shim is broken — use PowerShell/cmd for `pnpm` or invoke `pnpm.cjs` via node (setup scripts do the latter automatically).
+- `.gitattributes` now pins `* text=auto eol=lf` (commit `cbf2b2b`) — CRLF checkouts failed 2 source-assertion tests.
+- Convex CLI children on Node 24/Windows hit a libuv `UV_HANDLE_CLOSING` assertion **after** printing successful results; all seed wrappers tolerate it (result JSON is the source of truth, exit code is not).
+
+## Errors hit and resolved during the build
+
+1. `esbuild: Unexpected "*"` — a `local:*/anonymous:*` inside a block comment closed it early (the `*/`). Reworded.
+2. `h.startsWith is not a function` — the Convex 1.34 filter builder has no `startsWith`; replaced with a collect+JS match.
+3. Fingerprint initially unstable across resets — two causes fixed: badge keys embedded generated user ids (now resolved to emails), and volatile runtime tables excluded from the hash.
+4. Playwright CDN download failed → captured via system Edge channel (`channel: "msedge"`).
+
+## 9. Guard tests (review fix — each attack re-run against the shipped code)
+
+Layers after the fix: (1) script selector must be exactly `anonymous:anonymous-<name>`/`local:local-<name>`; (2) every spawned convex child runs with `CONVEX_DEPLOY_KEY`, `CONVEX_SELF_HOSTED_URL`, `CONVEX_SELF_HOSTED_ADMIN_KEY`, `CONVEX_URL` stripped from its env (named in a warning); (3) `seed/devGuard:assertLocal` — a server-side allowlist accepting only a loopback `CONVEX_CLOUD_URL` — runs as a preflight before anything destructive and again inside every seed mutation. All test values below are FAKE.
+
+**Attack 1 — fake `CONVEX_DEPLOY_KEY` (+ fake prod `CONVEX_URL`) exported in the shell, then `reset:local`:**
+```
+→ preflight: seed/devGuard:assertLocal …
+  [!] WARNING: removed from child env (these would retarget the CLI at a
+      cloud deployment regardless of the selector): CONVEX_DEPLOY_KEY, CONVEX_URL
+  [✓] server-side guard passed — CLI is talking to the local backend
+  [✓] all tables cleared (functions/schema/env untouched)
+  … reset completes against the LOCAL backend; fingerprint unchanged — the attack is neutralized
+```
+(The review's scenario — key retargets `import --replace-all` at a cloud deployment — cannot occur from the shell: the key never reaches the child. Caveat: a key stored in `.env.local` IS reloaded by the CLI after spawn — the preflight's positive confirmation is the layer that catches that case, since a cloud-resolving CLI cannot produce `{ ok: true, url: <loopback> }`.)
+
+**Attack 2 — `CONVEX_DEPLOYMENT=anonymous:energetic-kangaroo-55`:**
+```
+  [✗] seed:demo: refusing to run.
+      CONVEX_DEPLOYMENT is anonymous:energetic-kangaroo-55 — expected anonymous:anonymous-* or local:local-*
+      (the CLI treats only those names as the local backend; anything else
+       targets a cloud project). …
+  EXIT: 1
+```
+
+**Attack 3 — direct `convex run seed/demo:seed` (bypassing the scripts):** the seed mutations call the server-side guard first, so the direct path is guarded by deployment *type*, not name. On this machine the deployment is genuinely loopback, so the direct run passes — refusal is proven by the automated suite (`tests/convex/dev-guard.test.ts`, 6 cases, in `pnpm test:convex`):
+```
+✓ tests/convex/dev-guard.test.ts (6 tests) 11ms
+  · accepts http://127.0.0.1:3210 and http://localhost[:port]
+  · refuses https://energetic-kangaroo-55.convex.cloud
+  · refuses ANY cloud URL (unnamed deployments too) and non-convex hosts
+  · refuses loopback-lookalikes (127.0.0.1.evil.example, localhost.evil.example, …/127.0.0.1)
+  · refuses when CONVEX_CLOUD_URL is unset
+```
+Defense-in-depth discovered while testing: the platform itself rejects shadowing the built-in — `convex env set CONVEX_CLOUD_URL …` → `EnvVarNameForbidden: Environment variable with name "CONVEX_CLOUD_URL" is built-in and cannot be overridden`. The guard cannot be lied to via deployment env.
+
+**Attack 4 — missing dev password:** exits non-zero BEFORE any wipe; data verified intact after the refusal:
+```
+  [✗] reset:local: DEV_TEST_USER_PASSWORD missing or shorter than 8 chars.
+      … Nothing was wiped — the check runs before the data reset …
+  EXIT: 1
+  $ pnpm seed:check → users: 17  posts: 60  tools: 8  notifications: 6  badges: 26   (untouched)
+```
+
+**Check 5 — does a real `CONVEX_DEPLOY_KEY` exist on this machine** (shell profiles, `.env*` files, user/machine env vars): **NO**.
+
+**Test 6 — normal run still works:**
+```
+→ preflight: seed/devGuard:assertLocal …
+  [✓] server-side guard passed — CLI is talking to the local backend
+  fingerprint: c410ddce4f57  (anonymous:anonymous-agent)
+  [✓] reset:local complete — feed/profile/leaderboard/notifications are demo-populated
+```
+(Fingerprint value moved from `9b9edfdf12c0` to `c410ddce4f57` with this fix — `feedExplorationState`, written by logged-in browsing, joined the hash-excluded volatile set; see §4's v2 note.)
+
+### 9.1 R2 review fixes (S00-PREP-REVIEW-R2) — guard tests, actual output
+
+Both SHOULD-FIXes closed: (1) the selector is now a FULL-STRING match — `^(anonymous:anonymous-[a-z0-9-]+|local:local-[a-z0-9_-]+)$` on all three scripts (`seed:check` included; the CLI keeps only the last colon segment, so the previous prefix match waved `anonymous:anonymous-x:<cloud>` through); (2) the preflight is a POSITIVE confirmation with zero exit-status tolerance — `seed/devGuard:assertLocal` now returns `{ ok: true, url }`, read via `convex run --watch` (watch keeps the child alive so the small result payload is actually written — plain `run` on Windows/Node 24 dies in the libuv teardown abort and eats it entirely, 0 of 6 sampled runs produced any stdout). The script proceeds ONLY when stdout parses to exactly `{ ok, url }` with `ok === true` and a loopback url; crash, teardown assertion, non-zero exit, empty or unparseable output all abort. The UV_HANDLE_CLOSING tolerance survives only in the seed steps AFTER preflight.
+
+**Attack — `CONVEX_DEPLOYMENT=anonymous:anonymous-x:energetic-kangaroo-55` (multi-colon; last segment is a cloud name). All three scripts, exit 1 before any CLI call:**
+```
+$ CONVEX_DEPLOYMENT=anonymous:anonymous-x:energetic-kangaroo-55 node scripts/seed-demo.mjs
+  [✗] seed:demo: refusing to run.
+      CONVEX_DEPLOYMENT is anonymous:anonymous-x:energetic-kangaroo-55 — expected exactly
+      anonymous:anonymous-<name> or local:local-<name> (full string, no extra segments).
+  EXIT: 1
+$ … seed-check.mjs   → identical refusal, EXIT: 1
+$ … reset-local.mjs --password …
+  [✗] reset:local: refusing to run.  …same message…   EXIT: 1
+  (without a password it exits on the input gate first — both gates precede any CLI call)
+```
+
+**Attack — preflight with no positive confirmation (simulated crash/empty stdout).** A non-Convex listener was bound to the backend port so the watch child could produce no result:
+```
+→ preflight: seed/devGuard:assertLocal (positive confirmation) …
+  [✗] reset:local: preflight REFUSED — no positive confirmation (watch produced no result within 30s).
+      stdout: ""
+      stderr: "✖ A different local backend not convex is running on selected port 3210"
+      Fail-closed: nothing runs without the guard's explicit { ok: true, url }.
+  EXIT: 1        → data verified intact afterwards (no wipe ran)
+```
+Related discovery: with the local backend STOPPED, a `convex run` child auto-starts it (the confirmation is then honestly loopback — it talks to the local backend it just started); killing the watch child stops that auto-started backend, so a broken environment still cannot reach the wipe (observed: the subsequent import aborted with "Local backend isn't running", data intact).
+
+**Normal run still passes** (all three scripts; `seed:check` output):
+```
+  [✓] server-side guard confirmed local backend (http://127.0.0.1:3210)
+  fingerprint: c410ddce4f57  (anonymous:anonymous-agent)
+```
+Note: the task brief expected `9b9edfdf12c0`; that value predates the v2 hash (`feedExplorationState` exclusion, confirmed correct by the R2 review) — the canonical value is `c410ddce4f57`, reproduced across resets and now stable across the hourly drift-check cron (v3 key-level `systemConfig` watermark exclusion, unit-tested).
