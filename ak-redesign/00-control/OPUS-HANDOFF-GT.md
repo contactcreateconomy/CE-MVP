@@ -4,7 +4,7 @@ type: HANDOFF
 author-model: Opus
 tool: Claude Code (cloud)
 round: 2
-status: IN-PROGRESS (R2)
+status: DONE (R2) — S00 awaiting PM review
 date: 2026-09-29
 ---
 
@@ -67,4 +67,9 @@ The full task prompt is id GROUND-TRUTH-PROMPT (PM, 2026-09-28): Steps 0 → 1 �
 |---|---|
 | A — record founder decisions (DECISIONS D-005..D-014, SPEC-INDEX, STATUS, CR-007 rejected, CR-009 new, templates, CURRENT-STATE §7; D-006 executed: AGENTS.md §11, CLAUDE.md DoD, wiki-tracker-sync.yml) | DONE — part-A commit |
 | B1 — S00-NOTES verbatim | DONE |
-| B2 — S00-SPEC + task split | TODO |
+| B2 — S00-SPEC + task split (18 tasks) | DONE — `specs/S00-SPEC.md`. Bundle measured via one-off `pnpm install --frozen-lockfile --ignore-scripts` + `pnpm build` (Node 22 in VM; build OK) — numbers in spec §2/§9; method = `scripts/route-budgets.mjs` recipe in §9. |
+
+### R2 open items for founder / PM
+- S00-SPEC §13 Q1–Q4 (Search tab → /search; theme switch in avatar sheet; no service worker pre-beta; generated icon OK).
+- CR-009 needed before S00-T18 baselines (open-signup flow).
+- New facts found in R2: Search tab opens `/discover`; tab bar has no safe-area inset; no `error.tsx` exists anywhere; `useAuth().user.handle` exists (D-010 is UI-only).

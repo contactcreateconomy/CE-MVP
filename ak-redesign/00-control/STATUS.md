@@ -12,7 +12,7 @@ date: 2026-09-29
 
 ## Now
 - Ground truth done and founder decisions recorded (D-005..D-014, 2026-09-29) on `013-opus-ground-truth` (PR #13 → `011-Akilesh-Redesign`, unmerged).
-- **S00 Foundation:** NOTES final (`specs/S00-NOTES.md`); SPEC being written (`specs/S00-SPEC.md`).
+- **S00 Foundation:** NOTES final; **SPEC DRAFT** (`specs/S00-SPEC.md`, 18 tasks) → PM review → founder approval (answer §13 Q1–Q4).
 - Product code changed by the redesign so far: none. (Repo-process files changed for D-006: AGENTS.md §11, CLAUDE.md, `wiki-tracker-sync.yml`.)
 
 ## Next 2 specs (stay-2-ahead)
@@ -44,7 +44,7 @@ S00–S13 DONE + security gate (SEC) PASS → users. S14 admin during beta. Scop
 ## Spec board
 | Spec | Status |
 |---|---|
-| S00 Foundation | SPEC in progress |
+| S00 Foundation | SPEC DRAFT — awaiting PM review |
 | S01–S13 | not started (each needs EXPLORE) |
 | SEC security gate | not started |
 | — **beta line** — | |
