@@ -83,9 +83,9 @@ Glass (translucent surface + blur) is chrome-only: top bar, tab bar, sheets, mod
 TOKEN                    DARK                             LIGHT
 ──────────────────────────────────────────────────────────────────────
 glass/subtle-bg          bg/surface at 72%                bg/surface at 78%
-glass/subtle-blur        12px saturate(150%)              12px saturate(150%)
+glass/subtle-blur        blur(12px) saturate(150%)         blur(12px) saturate(150%)
 glass/strong-bg          bg/surface at 55%                bg/surface at 55%
-glass/strong-blur        24px                             24px
+glass/strong-blur        blur(24px)                        blur(24px)
 glass/border             border/subtle at 60%             border/subtle at 60%
 ```
 
