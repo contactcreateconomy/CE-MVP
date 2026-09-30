@@ -569,3 +569,141 @@ main {
     transition-delay: 0ms !important;
   }
 }
+
+/* ═════════════════════════════════════════════════════════════════════════
+   S00-T03 utilities (spec §5.2–§5.5, D-007) — appended per the T01 review
+   note; the moved block above is untouched.
+
+   The ONLY place glow box-shadow and glass backdrop-filter may be written.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ── Glow (§5.2) ────────────────────────────────────────────────────── */
+
+@utility glow-cta {
+  box-shadow: var(--glow-cta);
+}
+
+@utility glow-active {
+  box-shadow: var(--glow-active);
+}
+
+/* Keyboard focus only — the solid-in-light, ring-in-dark focus treatment. */
+@utility focus-ring {
+  &:focus-visible {
+    box-shadow: var(--glow-focus);
+    outline: none;
+  }
+}
+
+/* Celebrate — a creator moment: one-shot, 600 ms, runs once. */
+@keyframes glow-celebrate-once {
+  0% {
+    box-shadow: var(--glow-celebrate);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+@utility glow-celebrate {
+  animation: glow-celebrate-once 600ms ease-out 1 both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* Live — signals a live state ONLY (never idle): 2000 ms pulse,
+   base glow stays when motion is reduced. */
+@keyframes glow-live-pulse {
+  0%,
+  100% {
+    box-shadow: var(--glow-live);
+  }
+  50% {
+    box-shadow: var(--glow-cta);
+  }
+}
+@utility pulse-live {
+  box-shadow: var(--glow-live);
+  animation: glow-live-pulse 2000ms ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* ── Glass (§5.3) ────────────────────────────────────────────────────── */
+/* Fallbacks are NESTED inside each utility so they live in the same rule
+   and can never lose the cascade to the utility's own declarations
+   (standalone override blocks compile into an earlier layer and lose). */
+
+@utility glass-chrome {
+  background: var(--glass-subtle-bg);
+  backdrop-filter: var(--glass-subtle-blur);
+  -webkit-backdrop-filter: var(--glass-subtle-blur);
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: var(--bg-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--bg-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@utility glass-strong {
+  background: var(--glass-strong-bg);
+  backdrop-filter: var(--glass-strong-blur);
+  -webkit-backdrop-filter: var(--glass-strong-blur);
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: var(--bg-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--bg-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* ── Safe areas (§5.5) ───────────────────────────────────────────────── */
+
+@utility pt-safe {
+  padding-top: var(--safe-top);
+}
+@utility pb-safe {
+  padding-bottom: var(--safe-bottom);
+}
+@utility pl-safe {
+  padding-left: var(--safe-left);
+}
+@utility pr-safe {
+  padding-right: var(--safe-right);
+}
+
+/* ── /lab demo scaffolding (dev-only page; not a product utility) ─────── */
+
+/* Vivid backdrop under the /lab/utilities glass demos so blur reads. */
+.lab-glass-backdrop {
+  background:
+    radial-gradient(circle at 20% 20%, hsl(280 80% 55% / 0.55), transparent 45%),
+    radial-gradient(circle at 80% 30%, hsl(199 89% 48% / 0.5), transparent 40%),
+    radial-gradient(circle at 55% 85%, hsl(140 70% 45% / 0.5), transparent 45%),
+    var(--bg-canvas);
+}
+.lab-glass-underlay {
+  background:
+    repeating-linear-gradient(
+      45deg,
+      hsl(0 0% 100% / 0.16) 0 10px,
+      transparent 10px 20px
+    ),
+    linear-gradient(120deg, hsl(280 80% 55%), hsl(199 89% 48%), hsl(140 70% 45%));
+}
