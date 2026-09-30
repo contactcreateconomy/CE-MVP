@@ -23,13 +23,13 @@ if (!section) {
 }
 const table = section[0];
 
-/** value of --<name> inside a given block (:root or .dark) */
+/** value of --<name> inside a given block (:root or .dark);
+ *  returns null when the block doesn't declare it (inheritance) */
 function tokenValue(blockRe, name) {
   const block = css.match(blockRe);
   if (!block) throw new Error(`block ${blockRe} not found`);
   const m = block[0].match(new RegExp(`--${name}:\\s*([^;]+);`));
-  if (!m) throw new Error(`--${name} not found in ${blockRe}`);
-  return m[1].trim();
+  return m ? m[1].trim() : null;
 }
 
 const TOKENS = ["cta", "active", "focus", "celebrate", "live", "track"];
@@ -57,8 +57,35 @@ for (const t of TOKENS) {
     }
   }
 }
+
+/** §2.2a glass rows — the blur tokens are theme-invariant (declared on
+ *  :root, inherited by .dark), verified as full filter strings. */
+const glassSection = kit.match(/### 2\.2a Glass[\s\S]*?(?=\n### )/);
+if (!glassSection) {
+  console.error("could not locate STYLE-KIT §2.2a");
+  process.exit(1);
+}
+for (const [kitName, cssName] of [
+  ["glass/subtle-blur", "glass-subtle-blur"],
+  ["glass/strong-blur", "glass-strong-blur"],
+]) {
+  const row = glassSection[0].match(new RegExp(`^${kitName.replace("/", "\\/")}\\s+.*$`, "m"));
+  if (!row) {
+    console.error(`  [✗] ${kitName}: no §2.2a row`);
+    mismatches += 1;
+    continue;
+  }
+  const root = tokenValue(/:root\s*\{[\s\S]*?\n\}/, cssName);
+  const dark = tokenValue(/\.dark\s*\{[\s\S]*?\n\}/, cssName) ?? root; // inherited when undeclared
+  if (row[0].includes(root) && row[0].includes(dark)) {
+    console.log(`  [✓] ${kitName} (both themes): "${root}"${dark === root ? " (declared :root, inherited by .dark)" : ""}`);
+  } else {
+    console.error(`  [✗] ${kitName}: §2.2a row does not carry the exact tokens.css value "${root}" (dark: "${dark}")`);
+    mismatches += 1;
+  }
+}
 if (mismatches > 0) {
   console.error(`\n${mismatches} mismatch(es).`);
   process.exit(1);
 }
-console.log("\n0 mismatches — every §2.2 glow value is the exact tokens.css string, both themes.");
+console.log("\n0 mismatches — every §2.2 glow value and §2.2a glass blur value is the exact tokens.css string.");

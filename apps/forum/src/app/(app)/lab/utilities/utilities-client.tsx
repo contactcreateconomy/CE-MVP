@@ -37,10 +37,18 @@ export function LabUtilitiesClient() {
 
       <div className="mt-6 space-y-8">
         <Row title=".glow-cta — primary CTA (max one per screen)">
+          {/* Neutral element: the kit Button carries its own dark:shadow-glow-primary-sm
+              which wins the cascade over .glow-cta (Button itself is T05's to change). */}
           {(cls) => (
-            <Button data-testid="glow-cta-demo" className={cn("glow-cta", cls)}>
+            <span
+              data-testid="glow-cta-demo"
+              className={cn(
+                "glow-cta inline-flex h-9 cursor-pointer items-center rounded-md bg-(--brand-primary) px-4 text-sm font-medium text-(--text-inverse)",
+                cls,
+              )}
+            >
               Primary CTA
-            </Button>
+            </span>
           )}
         </Row>
 
@@ -58,11 +66,20 @@ export function LabUtilitiesClient() {
           )}
         </Row>
 
-        <Row title=".focus-ring — keyboard focus only (Tab into the button)">
+        <Row title=".focus-ring — keyboard focus only (Tab into the element)">
+          {/* Neutral element: the kit Button's focus-visible:ring-2 overrides .focus-ring. */}
           {(cls) => (
-            <Button data-testid="focus-ring-demo" variant="secondary" className={cn("focus-ring", cls)}>
+            <span
+              data-testid="focus-ring-demo"
+              tabIndex={0}
+              role="button"
+              className={cn(
+                "focus-ring inline-flex h-9 cursor-pointer items-center rounded-md border border-(--border-default) px-4 text-sm font-medium text-(--text-primary)",
+                cls,
+              )}
+            >
               Tab to me
-            </Button>
+            </span>
           )}
         </Row>
 
@@ -150,19 +167,32 @@ function Row({
   );
 }
 
-/** Glass bar laid over a vivid gradient so the blur reads on screen. */
+/** Glass bar laid over busy, content-like rows so the blur is clearly
+ *  visible (review fix R1: gradient-only underlays don't read as "content"). */
 function GlassDemo({ cls, testId, utility, label }: { cls: string; testId: string; utility: string; label: string }) {
   return (
-    <div className={cn("relative overflow-hidden rounded-md", cls)}>
-      <div
-        aria-hidden
-        className="lab-glass-underlay absolute inset-0"
-      />
+    <div className={cn("relative h-64 overflow-y-auto rounded-md", cls)}>
+      <div className="lab-glass-content">
+        {[
+          "The weekly audit habit is the product — the service is what the audit lets me promise.",
+          "Cursor wins on instant onboarding; Claude Code wins on long multi-file changes.",
+          "Taste filtration is trained by consumption, not by tools.",
+          "Every pricing thread re-litigates a problem that isn't solvable, only priceable.",
+          "The calendar is the only honest strategy document.",
+          "Refund notes taught us more about positioning than every analytics dashboard.",
+          "A good changelog is a retention document.",
+          "The 4-day week's failure mode was sneaking light admin back in until the day wasn't real.",
+          "Most AI workflows are checklists people were too lazy to write down.",
+          "The audience can tell within two posts when a creator stopped being interested.",
+        ].map((line, i) => (
+          <p key={i}>{line}</p>
+        ))}
+      </div>
       <div
         data-testid={testId}
         className={cn(
           utility,
-          "relative m-6 flex h-16 items-center justify-center rounded-lg border border-(--glass-border) text-sm font-medium text-(--text-primary)",
+          "sticky top-4 z-10 mx-4 flex h-14 items-center justify-center rounded-lg border border-(--glass-border) text-sm font-medium text-(--text-primary)",
         )}
       >
         {label}

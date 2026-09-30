@@ -77,3 +77,59 @@ no `convex/` files touched ✅
 cd apps/forum && node node_modules/next/dist/bin/next dev -H 0.0.0.0   # LAN bind
 node scripts/t03-evidence.mjs                                            # evidence + assertions
 ```
+
+## Fix round 1 (S00-T03-REVIEW 16db502, BLOCK — applied same session)
+
+**Blocker — glass does not blur.** Root cause per the review: the blur tokens were not filter
+functions. THREE coordinated fixes:
+
+1. **Tokens** (`tokens.css`): `--glass-subtle-blur: 12px saturate(150%)` → **`blur(12px) saturate(150%)`**;
+   `--glass-strong-blur: 24px` → **`blur(24px)`** (names unchanged, both themes — declared on
+   `:root`, inherited by `.dark`). STYLE-KIT §2.2a updated to the exact strings; the kit-vs-tokens
+   diff script now covers the glass blur rows too:
+   ```
+     [✓] glow/cta dark: "0 0 20px hsl(199 89% 48% / 0.35), 0 0 60px hsl(199 89% 48% / 0.15)"
+     … (all 6 glow tokens, both themes) …
+     [✓] glass/subtle-blur (both themes): "blur(12px) saturate(150%)" (declared :root, inherited by .dark)
+     [✓] glass/strong-blur (both themes): "blur(24px)" (declared :root, inherited by .dark)
+   0 mismatches — every §2.2 glow value and §2.2a glass blur value is the exact tokens.css string.
+   ```
+2. **Second, subtler cause found while fixing:** Turbopack's CSS transform (lightningcss)
+   **dropped the standard `backdrop-filter` declaration** when it preceded its `-webkit-` twin —
+   the served sheet held only `-webkit-backdrop-filter`, so `getComputedStyle().backdropFilter`
+   read `none` even with valid tokens. Declaration order in `utilities.css` is now
+   `-webkit-backdrop-filter` first, `backdrop-filter` second (the same order Tailwind's own
+   `backdrop-blur-*` utilities use, verified in the served CSS). Live computed values after both
+   fixes: `.glass-chrome` → `blur(12px) saturate(1.5)`, `.glass-strong` → `blur(24px)`.
+3. **Tests that can fail** (`e2e/glass-utilities.spec.ts`, real Chromium against `/lab/utilities`):
+   normal → backdrop-filter **not** `none` **and** contains `blur(`; reduced-transparency (raw CDP
+   emulation, `matchMedia` asserted true) → backdrop-filter **is** `none` **and** the fill is fully
+   opaque. Proven to fail on the old token values (temporarily reverted, run, restored):
+
+   *Old values (reverted) — the normal-state tests catch the bug:*
+   ```
+   Error: .glass-chrome backdrop-filter must not compute none
+   > 44 |       expect(backdrop, `${name} backdrop-filter must not compute none`).not.toBe("none");
+   Error: .glass-strong backdrop-filter must not compute none
+   2 failed (the two reduced-transparency tests pass either way — exactly the review's point)
+   ```
+   *Fixed values (restored):*
+   ```
+   ok  normal: .glass-chrome blurs (backdrop-filter is a real filter)
+   ok  normal: .glass-strong blurs (backdrop-filter is a real filter)
+   ok  reduced-transparency: .glass-chrome falls back to solid (no blur, opaque fill)
+   ok  reduced-transparency: .glass-strong falls back to solid (no blur, opaque fill)
+   4 passed (24.2s)
+   ```
+
+**Should-fix — demos on neutral elements.** `.glow-cta` and `.focus-ring` demos no longer use the
+kit `Button` (its `dark:shadow-glow-primary-sm` / `focus-visible:ring-2` win the cascade); they
+are plain styled `span`s. Button itself untouched (T05).
+
+**Visual proof over busy content.** The glass demos now render a sticky glass bar over a
+scrollable column of content-like text rows (`.lab-glass-content`), in both theme panels — the
+blur is clearly visible at 390 in `utilities-dark-390.png` and `utilities-light-390.png`
+(evidence refreshed after all fixes; reduced-motion/reduced-transparency assertions re-verified).
+
+**Phone / LAN:** unchanged — dev server bound `-H 0.0.0.0`, **http://10.6.20.174:3000/lab/utilities**
+(verified 200 over the LAN interface).

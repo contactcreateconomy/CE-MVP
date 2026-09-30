@@ -452,9 +452,9 @@
 
   /* Glass (§5.3) — light: 78% surface */
   --glass-subtle-bg: color-mix(in srgb, var(--bg-surface) 78%, transparent);
-  --glass-subtle-blur: 12px saturate(150%);
+  --glass-subtle-blur: blur(12px) saturate(150%);
   --glass-strong-bg: color-mix(in srgb, var(--bg-surface) 55%, transparent);
-  --glass-strong-blur: 24px;
+  --glass-strong-blur: blur(24px);
   --glass-border: color-mix(in srgb, var(--border-subtle) 60%, transparent);
 
   /* Sheet (§5.4) */
