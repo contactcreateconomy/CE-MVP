@@ -86,7 +86,7 @@ Desktop (≥1024) keeps the current three-column shell, restyled by the same tok
 ## 5. Tokens (STYLE-KIT is the source; `packages/design-tokens` is its code)
 
 ### 5.1 Single source
-Both apps `@import` `packages/design-tokens/tokens.css` then `utilities.css`. No token may be declared in an app `globals.css` after S00-T01 (enforced by a test that fails if `apps/*/src/app/globals.css` declares `--color-*`, `--bg-*`, `--text-*`, `--glow-*`, `--glass-*`, `--shadow-*`, `--space-*`, `--radius-*`, `--duration-*`, `--ease-*`).
+Both apps `@import` `packages/design-tokens/tokens.css` then `utilities.css`. No token may be declared in an app `globals.css` after S00-T01 (enforced by a test that fails if `apps/*/src/app/globals.css` declares **any** `--*` custom property — corrected at S00-CP1; the original 10-prefix list missed `--brand-*`, `--feedback-*`, `--border-*`, `--z-*` …).
 
 ### 5.2 Glow (D-007 — "a blink with a reason")
 Keep/remove per CS §7. Final set:
@@ -108,8 +108,8 @@ Light theme keeps "blink" meaning through **colour + weight**, not glow (glow to
 | Token | Value | Use |
 |---|---|---|
 | `--glass-subtle-bg` | `--bg-surface` at 72% (dark) / 78% (light) | top bar, tab bar, sheets, modals |
-| `--glass-subtle-blur` | `12px` + `saturate(150%)` | same |
-| `--glass-strong-bg` / `-blur` | 55% / `24px` | **only** by explicit spec exception |
+| `--glass-subtle-blur` | `blur(12px) saturate(150%)` (a full filter value — corrected at T03) | same |
+| `--glass-strong-bg` / `-blur` | 55% / `blur(24px)` | **only** by explicit spec exception |
 | `--glass-border` | `--border-subtle` at 60% | hairline under/over chrome |
 
 Utilities `.glass-chrome`, `.glass-strong`: `@supports not (backdrop-filter: blur(1px))` → solid `--bg-surface`; `@media (prefers-reduced-transparency: reduce)` → solid. **Max 2 stacked glass layers** (e.g. sheet over tab bar): a sheet opened over glass chrome sets the chrome behind it to solid.
@@ -118,7 +118,7 @@ Utilities `.glass-chrome`, `.glass-strong`: `@supports not (backdrop-filter: blu
 `--sheet-radius` (= `radius/xl` top corners), `--sheet-max-h: 90dvh`, `--sheet-handle` (36×4, `--border-default`), `--scrim` (black 40% dark / 25% light), z from the existing z-ladder (`--z-modal`). Motion: slide-up §7.
 
 ### 5.5 Safe area & app chrome
-`--safe-top: env(safe-area-inset-top)`, `--safe-bottom: env(safe-area-inset-bottom)`, `--safe-left/right`. `--tabbar-h: 56px` (+ `--safe-bottom`), `--topbar-h: 48px` (+ `--safe-top`). `--theme-color-dark` = dark `--bg-base` value, `--theme-color-light` = light `--bg-base` value (mirrored as literals in `viewport.themeColor`, with a test asserting they match the CSS).
+`--safe-top: env(safe-area-inset-top)`, `--safe-bottom: env(safe-area-inset-bottom)`, `--safe-left/right`. `--tabbar-h: 56px` (+ `--safe-bottom`), `--topbar-h: 48px` (+ `--safe-top`). `--theme-color-dark` = dark `--bg-canvas` value, `--theme-color-light` = light `--bg-canvas` value (there is no `--bg-base`; corrected at S00-CP1) (mirrored as literals in `viewport.themeColor`, with a test asserting they match the CSS).
 
 ### 5.6 State kit
 `--skeleton-base`, `--skeleton-shine` (both themes), shimmer `duration/shimmer` (1200 ms, existing). No new colours: error uses `--feedback-error-*`, offline uses `--feedback-warning-*`.
@@ -128,7 +128,7 @@ Every new token has dark + light values. Theme stays `defaultTheme="dark" enable
 
 ## 6. App-feel
 
-- **Manifest** (`app/manifest.ts`): `name: "Createconomy"`, `short_name: "Createconomy"`, `description` = current metadata description (founder-owned copy; unchanged), `start_url: "/feed?source=pwa"`, `scope: "/"`, `display: "standalone"`, `orientation: "portrait"`, `background_color` = dark `--bg-base`, `theme_color` = dark `--bg-base`, icons 192/512/512-maskable.
+- **Manifest** (`app/manifest.ts`): `name: "Createconomy"`, `short_name: "Createconomy"`, `description` = current metadata description (founder-owned copy; unchanged), `start_url: "/feed?source=pwa"`, `scope: "/"`, `display: "standalone"`, `orientation: "portrait"`, `background_color` = dark `--bg-canvas`, `theme_color` = dark `--bg-canvas`, icons 192/512/512-maskable.
 - **Icons:** logomark on brand-contrast background, generated (§4 #6). **Founder may supply a designed app icon later — it replaces the generated one, no code change beyond the image.**
 - **Viewport** (`layout.tsx`): `width: "device-width"`, `initialScale: 1`, `viewportFit: "cover"`, `themeColor: [{ media: "(prefers-color-scheme: dark)", color: <dark> }, { media: "(prefers-color-scheme: light)", color: <light> }]`, `colorScheme: "dark light"`. Do **not** set `maximumScale`/`userScalable: false` (a11y).
 - When the user picks a theme manually, update `<meta name="theme-color">` client-side to match (next-themes `resolvedTheme` effect).

@@ -48,6 +48,7 @@ Report-card signals this screen produces (list only).
 | S##-T01 | | | |
 
 ## 8. Acceptance (Astra/founder check at 390 + 1440, logged in/out)
+Every automated check named here must be shown **RED on a broken version and GREEN on the real one** in the BUILD report (S00-CP1 rule). Write each check so it has an obvious failing case.
 - [ ] …
 - [ ] Benchmark side-by-side at 390 (dark + light) — beats the benchmark app on the §0 claim.
 - [ ] Both themes polished at 390.

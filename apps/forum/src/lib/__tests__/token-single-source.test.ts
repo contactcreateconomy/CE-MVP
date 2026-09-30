@@ -4,16 +4,16 @@ import path from "node:path";
 
 /* S00-T01 / spec §5.1 — the single-source rule: after the shared tokens moved
  * to packages/design-tokens/tokens.css, NO app globals.css may declare a
- * token. Fails on any --color-*, --bg-*, --text-*, --glow-*, --glass-*,
- * --shadow-*, --space-*, --radius-*, --duration-*, --ease-* declaration. */
+ * token. Fails on any `--*:` custom-property declaration in an app file. */
 
 const APP_GLOBALS = [
   path.resolve(__dirname, "../../../src/app/globals.css"), // apps/forum
   path.resolve(__dirname, "../../../../../apps/admin/src/app/globals.css"), // apps/admin
 ];
 
-const TOKEN_DECLARATION =
-  /^\s*--(color|bg|text|glow|glass|shadow|space|radius|duration|ease)-[\w-]+\s*:/m;
+// ANY custom-property declaration (S00-CP1 fix): the original 10-prefix list let
+// --brand-*, --feedback-*, --border-*, --z-*, --cat-*, --type-* … slip through.
+const TOKEN_DECLARATION = /(^|[{;])\s*--[\w-]+\s*:/m;
 
 describe("S00-T01 token single source (spec §5.1)", () => {
   it("both apps import the shared token package", () => {

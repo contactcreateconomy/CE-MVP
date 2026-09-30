@@ -25,3 +25,5 @@ date: YYYY-MM-DD
 - [ ] a11y: focus-visible, labels, reduced motion respected
 - [ ] no backend (`convex/`) edits without an ACCEPTED CR
 - [ ] tests added/updated where behaviour changed
+- [ ] **every acceptance check has a RED run** in the BUILD report (fails on a broken version) and a GREEN run; if missing or unconvincing, break it yourself once (revert/inject) and record the result here. A check that cannot fail = BLOCK.
+- [ ] pattern/regex guards probed for evasion (other prefixes, same-line forms, nested blocks)
