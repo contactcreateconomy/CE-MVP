@@ -1,0 +1,146 @@
+import type { ThreadComment, ThreadData } from "@/types";
+import { buildHeader, buildSidebar } from "./shared";
+
+const baseThread: ThreadData = {
+  id: "debate-001",
+  category: "debate",
+  header: buildHeader({
+    category: "debate",
+    title: "Debate: Will agent-native products replace SaaS UI within 3 years?",
+    authorId: "u4",
+    tags: ["Debate", "Agent UX", "Future of SaaS"],
+    views: 24110,
+    upvotes: 1204,
+    bookmarks: 358,
+  }),
+  bodyMarkdown:
+    "The proposition is intentionally sharp: if autonomous agents become primary interfaces, traditional SaaS dashboards may become orchestration layers instead of user-facing products. Argue from evidence, not vibes.",
+  sidebar: { aboutAuthor: { authorId: "u4", bio: "Moderator focused on structured, evidence-first discourse design.", followers: 8022 }, relatedThreads: [], trendingThreads: [] },
+  insights: {
+    summary: "Debate is polarized, but both sides acknowledge governance and trust constraints as non-negotiable.",
+    keyAgreements: ["Trust and auditability are mandatory.", "Hybrid interfaces will dominate near-term.", "Domain specificity matters."],
+    openQuestions: [
+      { id: "oq-debate-1", question: "What minimum audit surface is required for agent-first workflows?", commentId: "tcom-debate-4" },
+      { id: "oq-debate-2", question: "Which vertical will flip first to agent-native UX?" },
+    ],
+    topContributor: { userId: "u2", topCommentId: "tcom-debate-3", excerpt: "Agent-native wins only where reversibility and traceability are built in by default." },
+    genealogy: {
+      buildsOn: [{ id: "compare-001", title: "Claude vs GPT for creator operations in 2026", authorName: "Sophia Patel", engagementCount: 1260, category: "compare" }],
+      contradicts: [{ id: "launchpad-001", title: "Launchpad: PromptForge beta launch for creator onboarding", authorName: "Rachel Moore", engagementCount: 664, category: "launch-pad" }],
+      canonical: { id: "news-001", title: "Open model safety benchmark update: what changed this week", authorName: "Emily Zhang", engagementCount: 892, category: "news" },
+    },
+  },
+  categoryData: {
+    proposition: "Agent-native products will make 80% of dashboard-first SaaS tools obsolete within 3 years.",
+    status: "open",
+    voteDistribution: { agree: 42, disagree: 46, abstain: 12, total: 1892 },
+    arguments: [
+      { id: "arg-for-1", side: "for", claim: "Users optimize for outcomes, not interfaces.", strength: "strong", upvotes: 408 },
+      { id: "arg-for-2", side: "for", claim: "Agent workflows compress task completion loops.", strength: "medium", upvotes: 241 },
+      { id: "arg-against-1", side: "against", claim: "Auditability and control still require visible state.", strength: "strong", upvotes: 462 },
+      { id: "arg-against-2", side: "against", claim: "Regulated domains resist opaque automation.", strength: "medium", upvotes: 305 },
+    ],
+    argumentTree: [
+      { id: "node-1", claim: "Outcome-first interfaces will dominate", relation: "supports" },
+      { id: "node-2", claim: "Trust requires reversible actions", relation: "counters", parentId: "node-1", linkedCommentId: "tcom-debate-3" },
+      { id: "node-3", claim: "Hybrid UX resolves this tension", relation: "supports", parentId: "node-2" },
+      { id: "node-4", claim: "Hybrid still means UI remains central", relation: "counters", parentId: "node-3" },
+    ],
+    commonGround: [
+      "Agent systems need transparent action logs.",
+      "High-risk operations need explicit confirmation.",
+      "Domain context determines adoption speed.",
+    ],
+    mindsChangedCount: 93,
+  },
+  qualityDimensions: { novelty: 81, verifiability: 74, actionability: 70, synthesis: 85 },
+  alien: {
+    updates: [],
+    coAuthors: ["u4"],
+    freshnessWarning: { lastUpdatedDaysAgo: 2, updateRequests: 3 },
+    serendipity: [{ id: "showcase-001", title: "Showcase: conversion-focused onboarding redesign", authorName: "Sophia Patel", engagementCount: 719, category: "showcase" }],
+  },
+};
+
+export const debateThread: ThreadData = {
+  ...baseThread,
+  sidebar: buildSidebar(baseThread),
+};
+
+export const debateComments: ThreadComment[] = [
+  {
+    id: "tcom-debate-1",
+    threadId: "debate-001",
+    authorId: "u1",
+    body: "Agree with the direction, but 3 years feels too aggressive outside high-velocity creator tooling.",
+    createdAt: "2026-03-20T18:10:00.000Z",
+    upvotes: 58,
+    downvotes: 9,
+    intentTag: "counterpoint",
+  },
+  {
+    id: "tcom-debate-2",
+    threadId: "debate-001",
+    authorId: "u5",
+    body: "In practice, users keep asking for 'one click fix' interfaces. That pushes us toward agent-mediated outcomes already.",
+    createdAt: "2026-03-20T18:22:00.000Z",
+    upvotes: 63,
+    downvotes: 6,
+    intentTag: "evidence",
+  },
+  {
+    id: "tcom-debate-3",
+    threadId: "debate-001",
+    authorId: "u2",
+    body: "Agent-native wins only where reversibility and traceability are built in by default.",
+    createdAt: "2026-03-20T18:40:00.000Z",
+    upvotes: 88,
+    downvotes: 4,
+    intentTag: "implementation-note",
+    fallacyTags: ["False Dichotomy"],
+    fallacyCount: 4,
+  },
+  {
+    id: "tcom-debate-4",
+    threadId: "debate-001",
+    authorId: "u3",
+    body: "Minimum audit surface should include: intent, tool calls, outputs, and rollback state.",
+    createdAt: "2026-03-20T19:02:00.000Z",
+    upvotes: 72,
+    downvotes: 2,
+    parentId: "tcom-debate-3",
+    intentTag: "resource",
+  },
+  {
+    id: "tcom-debate-5",
+    threadId: "debate-001",
+    authorId: "u1",
+    body: "Counterpoint: this still describes a UI contract, so it’s not really 'UI replaced', it’s UI re-scoped.",
+    createdAt: "2026-03-20T19:18:00.000Z",
+    upvotes: 51,
+    downvotes: 5,
+    parentId: "tcom-debate-4",
+    intentTag: "counterpoint",
+  },
+  {
+    id: "tcom-debate-6",
+    threadId: "debate-001",
+    authorId: "u5",
+    body: "I changed my vote from Agree to Abstain after reading this chain — timeline assumptions are doing a lot of work.",
+    createdAt: "2026-03-20T19:40:00.000Z",
+    upvotes: 37,
+    downvotes: 1,
+    intentTag: "question",
+  },
+  {
+    id: "tcom-debate-7",
+    threadId: "debate-001",
+    authorId: "u4",
+    body: "Moderator note: keep claims tied to examples from deployed products, not purely speculative framing.",
+    createdAt: "2026-03-20T20:00:00.000Z",
+    upvotes: 45,
+    downvotes: 0,
+    isOpReply: true,
+    intentTag: "decision-proposal",
+  },
+];

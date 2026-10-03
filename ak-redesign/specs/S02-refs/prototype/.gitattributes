@@ -1,0 +1,5 @@
+# Frozen reference copy — bytes must survive checkouts unchanged.
+# (Replaces the source project's own .gitattributes, which was removed
+# from this copy along with its .gitignore — repo plumbing, not reference
+# material; see REFERENCE.md.)
+* -text
