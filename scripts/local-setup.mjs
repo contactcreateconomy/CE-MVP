@@ -76,15 +76,22 @@ async function main() {
 
   // `pnpm` may not be spawnable on Windows: npm installs only ship sh/.cmd
   // shims (no .exe), which child_process refuses to run without a shell.
-  // Fall back to the global pnpm.cjs run through the current node binary
-  // (same realpath trick used below for the convex CLI bin).
+  // Fall back to the global pnpm.cjs run through the current node binary —
+  // either next to the node binary (node-managed install) or in the npm
+  // global prefix (~/AppData/Roaming/npm on Windows).
   const pnpm = (() => {
     try {
       const v = run("pnpm", ["--version"], { capture: true }).trim();
       if (v) return { bin: "pnpm", args: [] };
     } catch {}
-    const cjs = path.join(path.dirname(process.execPath), "node_modules", "pnpm", "bin", "pnpm.cjs");
-    if (existsSync(cjs)) return { bin: process.execPath, args: [cjs] };
+    const candidates = [];
+    if (process.env.APPDATA) {
+      candidates.push(path.join(process.env.APPDATA, "npm", "node_modules", "pnpm", "bin", "pnpm.cjs"));
+    }
+    candidates.push(path.join(path.dirname(process.execPath), "node_modules", "pnpm", "bin", "pnpm.cjs"));
+    for (const cjs of candidates) {
+      if (existsSync(cjs)) return { bin: process.execPath, args: [cjs] };
+    }
     die("pnpm not found on PATH. Install with `npm i -g pnpm@10` and re-run.");
   })();
   ok(`pnpm ${run(pnpm.bin, [...pnpm.args, "--version"], { capture: true }).trim()}`);

@@ -40,15 +40,20 @@ export function gitText(args) {
 
 /** pnpm runner with the local-setup fallback: plain `pnpm` where it is
  *  spawnable (macOS/Linux, or a pnpm.exe install), else the global pnpm.cjs
- *  next to the current node binary (npm-style Windows installs). */
+ *  (npm-prefix install first, then next to the current node binary). */
 export function runPnpm(args) {
   const tryPlain = spawnSync("pnpm", ["--version"], { encoding: "utf8", shell: false });
   if (tryPlain.status === 0) {
     return spawnSync("pnpm", args, { cwd: ROOT, encoding: "utf8", stdio: "inherit", shell: false });
   }
-  const cjs = path.join(path.dirname(process.execPath), "node_modules", "pnpm", "bin", "pnpm.cjs");
-  if (!existsSync(cjs)) {
-    throw new Error("pnpm not spawnable and no global pnpm.cjs found next to node — see scripts/local-setup.mjs prerequisites");
+  const candidates = [];
+  if (process.env.APPDATA) {
+    candidates.push(path.join(process.env.APPDATA, "npm", "node_modules", "pnpm", "bin", "pnpm.cjs"));
+  }
+  candidates.push(path.join(path.dirname(process.execPath), "node_modules", "pnpm", "bin", "pnpm.cjs"));
+  const cjs = candidates.find((c) => existsSync(c));
+  if (!cjs) {
+    throw new Error("pnpm not spawnable and no global pnpm.cjs found (npm prefix or next to node) — see scripts/local-setup.mjs prerequisites");
   }
   return spawnSync(process.execPath, [cjs, ...args], { cwd: ROOT, encoding: "utf8", stdio: "inherit", shell: false });
 }

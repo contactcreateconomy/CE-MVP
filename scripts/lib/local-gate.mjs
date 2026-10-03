@@ -81,10 +81,13 @@ export function selectedDeployment() {
 /** R3 hard gate: FULL-STRING match — only the CLI's true local-backend
  *  names pass. The CLI keeps only the LAST colon segment of a selector,
  *  so `anonymous:anonymous-x:<cloud>` resolves in a cloud project; a
- *  prefix match would wave it through. No extra colons/segments allowed. */
+ *  prefix match would wave it through. No extra colons/segments allowed.
+ *  Name segment is case-tolerant: the CLI derives the anonymous name from
+ *  the project folder, which can be uppercase (Windows: "CE-MVP" →
+ *  anonymous-CE-MVP). Case adds nothing the gate protects against. */
 export function assertLocalDeployment(label) {
   const deployment = selectedDeployment();
-  if (!/^(anonymous:anonymous-[a-z0-9-]+|local:local-[a-z0-9_-]+)$/.test(deployment)) {
+  if (!/^(anonymous:anonymous-[A-Za-z0-9-]+|local:local-[A-Za-z0-9_-]+)$/.test(deployment)) {
     console.error(
       `\n  [✗] ${label}: refusing to run.\n` +
         `      CONVEX_DEPLOYMENT is ${deployment || "not set"} — expected exactly\n` +
