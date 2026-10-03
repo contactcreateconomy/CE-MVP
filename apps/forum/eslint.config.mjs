@@ -27,6 +27,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Convex codegen output — regenerated on every `convex codegen`/`dev`.
     "convex/_generated/**",
+    // Founder feed prototype — frozen reference copy, never linted.
+    "../ak-redesign/specs/S02-refs/prototype/**",
   ]),
 ]);
 
