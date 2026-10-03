@@ -7,6 +7,10 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Added: S02 feed display components + /lab/feed (2026-10-03)
+
+Founder prototype feed ported as props-only display components in `apps/forum/src/components/feed/feed-*.tsx` (card, tabs, hero carousel lg+, left nav, Vibing + Podium rail, page view) on S00 tokens; dev-only `/lab/feed` from fixtures; spec `ak-redesign/specs/S02-SPEC.md`, CR-010, decisions D-016/D-017. `/feed` not wired yet (GLM).
+
 ### Changed: dev backend moved from Convex Cloud to the local open-source backend (2026-09-27)
 
 Development no longer touches Convex Cloud at all (the shared cloud dev deployment is retired — its team hit free-plan limits and the deployment was disabled). Dev now runs the **open-source Convex backend locally** (`pnpm backend`, `http://127.0.0.1:3210`; state in gitignored `.convex/`). Production stays on Convex Cloud (`energetic-kangaroo-55`, founder-only deploys — untouched). Details:

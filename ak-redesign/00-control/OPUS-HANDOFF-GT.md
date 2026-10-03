@@ -76,3 +76,19 @@ The full task prompt is id GROUND-TRUTH-PROMPT (PM, 2026-09-28): Steps 0 → 1 �
 
 ### R2 close (2026-09-29)
 - S00-SPEC APPROVED; Q1–Q4 = yes → D-015. D-003 amended: Grok per task, Opus VERDICT batched after T03/T12/T18. STATUS updated. PR #13 ready to merge.
+
+## S02-UI-PORT — feed display components (prompt [S02][UI-PORT][OPUS], 2026-10-03)
+
+Branch `s02-feed-ui` (from `011-Akilesh-Redesign`). Founder decisions → D-016, D-017 (+ SPEC-INDEX order, STATUS rows).
+
+| Step | Status |
+|---|---|
+| Read prototype (REFERENCE.md, feed + shell files), S00 §5/§7, tokens | DONE |
+| `specs/S02-SPEC.md` (components, 390/1440, themes, data map, not-faithful list, later-spec references) | DONE |
+| Display components `components/feed/feed-*.tsx` (props only, no Convex) | DONE — typecheck, lint, forum unit suite (975) green |
+| `/lab/feed` dev-only from fixtures | DONE |
+| CR-010 (card + chrome payloads) | DONE (OPEN) |
+| Screenshots 390 + 1440 × dark/light → `specs/S02-evidence/` | DONE (dev server ran without a backend) |
+
+Lesson: `cn()` is plain `twMerge` and treats token type sizes (`text-micro`, `text-body-sm`…) as colours, so it drops them next to a `text-<color>` class. Keep the size class outside `cn()` (or extend tailwind-merge app-wide; flagged, not changed).
+Handoff: founder owns `s02-feed-ui` from here; Opus pushes only when asked, after pulling.

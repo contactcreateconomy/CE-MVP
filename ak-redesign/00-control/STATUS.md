@@ -41,12 +41,14 @@ S00–S13 DONE + security gate (SEC) PASS → users. S14 admin during beta. Scop
 | CR-007 follows/streaks | **REJECTED** for MVP 1 | — |
 | CR-008 profile body of work | OPEN | S05 |
 | CR-009 local seed: readiness ready + open sign-up | OPEN | S01 baselines, S00 baseline recapture |
+| CR-010 feed card + chrome payloads | OPEN | S02 wiring (fallbacks render until then) |
 
 ## Spec board
 | Spec | Status |
 |---|---|
 | S00 Foundation | APPROVED — building (T01 next) |
-| S01–S13 | not started (each needs EXPLORE) |
+| S02 Feed | SPEC DRAFT + display components built on `s02-feed-ui` (D-016); next: founder tweak → GLM wiring → Grok review |
+| S01, S03–S13 | not started (order per D-017) |
 | SEC security gate | not started |
 | — **beta line** — | |
 | S14 Admin restyle | during beta |
