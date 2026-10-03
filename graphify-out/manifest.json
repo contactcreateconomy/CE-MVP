@@ -3576,9 +3576,9 @@
     "semantic_hash": ""
   },
   "vitest.config.ts": {
-    "mtime": 1789734033.6192646,
-    "seen": 1791009536.541647,
-    "ast_hash": "3e213e33925c20cf728127f621241c14",
+    "mtime": 1791012485.4384046,
+    "seen": 1791012763.3817117,
+    "ast_hash": "d21d75d7a31a56225eaf70e19bfc4b8e",
     "semantic_hash": ""
   },
   ".agents/skills/convex-add/SKILL.md": {
@@ -4986,8 +4986,8 @@
     "semantic_hash": ""
   },
   "scripts/lib/local-gate.mjs": {
-    "mtime": 1791009201.7672105,
-    "seen": 1791009536.541621,
+    "mtime": 1791012571.087119,
+    "seen": 1791012763.381604,
     "ast_hash": "42a9b1193a24e1af1416837ba5334886",
     "semantic_hash": ""
   },
@@ -5652,8 +5652,8 @@
     "semantic_hash": ""
   },
   "scripts/lib/session.mjs": {
-    "mtime": 1791009115.0554707,
-    "seen": 1791009536.541622,
+    "mtime": 1791012589.472425,
+    "seen": 1791012763.381609,
     "ast_hash": "386a5c8dd74cf434f7e389478c8daed5",
     "semantic_hash": ""
   },
@@ -6237,6 +6237,30 @@
     "mtime": 1791008868.9126992,
     "seen": 1791009536.5420809,
     "ast_hash": "14b2295822cec71b22ee9d5c733f6714",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/history/HOME-SYNC-REVIEW.md": {
+    "mtime": 1791012659.1883514,
+    "seen": 1791012763.3819954,
+    "ast_hash": "e7ea90d97edfaa41ecc830ca1198976e",
+    "semantic_hash": ""
+  },
+  "tests/scripts/local-gate.test.ts": {
+    "mtime": 1791012542.9047017,
+    "seen": 1791012763.3817053,
+    "ast_hash": "8759ed801f7a6a7218fa98debcac5a71",
+    "semantic_hash": ""
+  },
+  "tests/scripts/pnpm-spawn.test.ts": {
+    "mtime": 1791012470.13842,
+    "seen": 1791012763.3817084,
+    "ast_hash": "3386fa4d2ced335ede588a38387065bc",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/history/HOME-SYNC-FIX-R1.md": {
+    "mtime": 1791012643.5568194,
+    "seen": 1791012763.3819919,
+    "ast_hash": "919cdc04f615c880ace5f18e5bb6bc5c",
     "semantic_hash": ""
   }
 }
