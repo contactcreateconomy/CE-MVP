@@ -1,5 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto eol=lf
 graphify-out/graph.json merge=graphify
-# Founder feed prototype — frozen verbatim reference; never normalize
+# Founder design references — frozen verbatim copies; never normalize
 ak-redesign/specs/S02-refs/prototype/** -text
+ak-redesign/specs/S02-refs/prototype-v2/** -text

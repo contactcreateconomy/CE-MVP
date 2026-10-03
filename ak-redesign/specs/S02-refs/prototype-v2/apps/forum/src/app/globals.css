@@ -1,0 +1,628 @@
+@import 'tailwindcss';
+
+@source "../../../../packages/auth-ui/src/**/*.{ts,tsx}";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-border: var(--border-default);
+  --color-input: var(--border-default);
+  --color-ring: var(--border-active);
+  --color-muted-foreground: var(--text-muted);
+
+  /* Background colors */
+  --color-bg-canvas: var(--bg-canvas);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-surface-elevated: var(--bg-surface-elevated);
+  --color-bg-overlay: var(--bg-overlay);
+  --color-bg-inset: var(--bg-inset);
+  --color-bg-wash: var(--bg-wash);
+
+  /* Text colors */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-disabled: var(--text-disabled);
+  --color-text-inverse: var(--text-inverse);
+
+  /* Border colors */
+  --color-border-subtle: var(--border-subtle);
+  --color-border-default: var(--border-default);
+  --color-border-prominent: var(--border-prominent);
+  --color-border-active: var(--border-active);
+
+  /* Brand colors */
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-hover: var(--brand-primary-hover);
+  --color-brand-primary-pressed: var(--brand-primary-pressed);
+
+  /* Feedback colors */
+  --color-feedback-success: var(--feedback-success);
+  --color-feedback-error: var(--feedback-error);
+  --color-feedback-warning: var(--feedback-warning);
+  --color-feedback-info: var(--feedback-info);
+
+  /* Shadows */
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+
+  /* Glows */
+  --shadow-glow-primary-sm: var(--glow-primary-sm);
+  --shadow-glow-primary-md: var(--glow-primary-md);
+
+  /* Z-index scale */
+  --z-70: 70;
+  --z-80: 80;
+}
+
+:root {
+  --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), "SF Mono", "Fira Code", "Cascadia Code", monospace;
+
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(240 10% 4%);
+  --popover: hsl(0 0% 98%);
+  --popover-foreground: hsl(240 10% 4%);
+
+  /* Light mode (semantic tokens) */
+  --bg-canvas: hsl(0 0% 100%);
+  --bg-surface: hsl(0 0% 98%);
+  --bg-surface-elevated: hsl(240 5% 96%);
+  --bg-overlay: hsl(240 5% 90%);
+  --bg-inset: hsl(240 5% 96%);
+  --bg-wash: hsl(0 0% 0% / 0.02);
+
+  --text-primary: hsl(240 10% 4%);
+  --text-secondary: hsl(240 5% 34%);
+  --text-muted: hsl(240 4% 46%);
+  --text-disabled: hsl(240 5% 65%);
+  --text-inverse: hsl(0 0% 98%);
+
+  --border-subtle: hsl(240 5% 96%);
+  --border-default: hsl(240 5% 90%);
+  --border-prominent: hsl(240 5% 84%);
+  --border-active: hsl(199 89% 48%);
+
+  --brand-primary: hsl(199 89% 48%);
+  --brand-primary-hover: hsl(199 94% 60%);
+  --brand-primary-pressed: hsl(200 98% 39%);
+
+  --feedback-success: hsl(142 71% 45%);
+  --feedback-error: hsl(0 84% 60%);
+  --feedback-warning: hsl(38 92% 50%);
+  --feedback-info: hsl(199 89% 48%);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0 1px 3px hsl(0 0% 0% / 0.08), 0 1px 2px hsl(0 0% 0% / 0.04);
+  --shadow-md: 0 4px 6px hsl(0 0% 0% / 0.1), 0 2px 4px hsl(0 0% 0% / 0.05);
+  --shadow-lg: 0 10px 15px hsl(0 0% 0% / 0.12), 0 4px 6px hsl(0 0% 0% / 0.06);
+
+  --glow-primary-sm: none;
+  --glow-primary-md: none;
+  --dot-color: hsl(240 10% 4% / 0.08);
+
+  /* ── Mode toggle animation tokens ── */
+  --toggle-ease-spring:    cubic-bezier(0.22, 1, 0.36, 1);
+  --toggle-enter-duration: 320ms;
+  --toggle-exit-duration:  220ms;
+  --toggle-stagger:         40ms;
+}
+
+.dark {
+  /* Near-black canvas; shared charcoal panels (#121212) for discover, posts, feed chrome — matches product mockups */
+  --background: hsl(0 0% 2%);
+  --foreground: hsl(0 0% 98%);
+  --popover: hsl(0 0% 7%);
+  --popover-foreground: hsl(0 0% 98%);
+
+  --bg-canvas: hsl(0 0% 2%);
+  --bg-surface: hsl(0 0% 7.1%);
+  --bg-surface-elevated: hsl(0 0% 9%);
+  --bg-overlay: hsl(0 0% 12%);
+  --bg-inset: hsl(0 0% 4%);
+  --bg-wash: hsl(0 0% 100% / 0.03);
+
+  --text-primary: hsl(0 0% 98%);
+  --text-secondary: hsl(0 0% 65%);
+  --text-muted: hsl(0 0% 46%);
+  --text-disabled: hsl(0 0% 34%);
+  --text-inverse: hsl(0 0% 2%);
+
+  --border-subtle: hsl(0 0% 11%);
+  --border-default: hsl(0 0% 15%);
+  --border-prominent: hsl(0 0% 20%);
+  --border-active: hsl(199 89% 48%);
+
+  --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.3);
+  --shadow-sm: 0 1px 3px hsl(0 0% 0% / 0.25), 0 1px 2px hsl(0 0% 0% / 0.15);
+  --shadow-md: 0 4px 6px hsl(0 0% 0% / 0.3), 0 2px 4px hsl(0 0% 0% / 0.15);
+  --shadow-lg: 0 10px 15px hsl(0 0% 0% / 0.35), 0 4px 6px hsl(0 0% 0% / 0.2);
+
+  --glow-primary-sm: 0 0 10px hsl(199 89% 48% / 0.2);
+  --glow-primary-md: 0 0 20px hsl(199 89% 48% / 0.35), 0 0 60px hsl(199 89% 48% / 0.15);
+  --dot-color: hsl(0 0% 100% / 0.08);
+}
+
+* {
+  @apply border-transparent;
+}
+
+html,
+body {
+  @apply min-h-full;
+}
+
+body {
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+main {
+  @apply min-h-screen;
+}
+
+@layer base {
+  a {
+    color: var(--brand-primary);
+  }
+}
+
+:focus-visible {
+  outline: none;
+}
+
+.card-surface {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+/* Feed post cards: soft outer glow on hover / keyboard focus within */
+.feed-post-card {
+  transition:
+    transform 200ms ease-out,
+    box-shadow 200ms ease-out;
+}
+
+.feed-post-card:hover,
+.feed-post-card:focus-within {
+  transform: translateY(-2px);
+  box-shadow:
+    var(--shadow-xs),
+    0 0 22px hsl(199 89% 48% / 0.09),
+    0 0 40px hsl(199 89% 48% / 0.04),
+    0 10px 28px hsl(199 89% 48% / 0.035);
+}
+
+.electric-glow {
+  box-shadow: var(--glow-primary-sm);
+}
+
+.canvas-dot-grid {
+  background-image: radial-gradient(circle at center, var(--dot-color) 1px, transparent 1px);
+  background-size: 18px 18px;
+  background-position: 0 0;
+}
+
+@keyframes soft-float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: var(--glow-primary-sm);
+  }
+  50% {
+    box-shadow: var(--glow-primary-md);
+  }
+}
+
+@keyframes route-emerge {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.animate-soft-float {
+  animation: soft-float-up 220ms cubic-bezier(0.215, 0.61, 0.355, 1) both;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2000ms cubic-bezier(0.645, 0.045, 0.355, 1) infinite;
+}
+
+.animate-route-emerge {
+  animation: route-emerge 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+@keyframes modal-pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modal-pop-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+}
+
+@keyframes overlay-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes overlay-fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes auth-otp-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+@keyframes search-focus-spin {
+  to { --search-focus-angle: 360deg; }
+}
+
+@property --search-focus-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.search-input:focus {
+  border-color: transparent;
+  background: var(--bg-surface) padding-box,
+    conic-gradient(
+      from var(--search-focus-angle),
+      rgba(14, 165, 233, 0.55),
+      rgba(14, 165, 233, 0.12),
+      rgba(14, 165, 233, 0.0),
+      rgba(14, 165, 233, 0.12),
+      rgba(14, 165, 233, 0.55)
+    ) border-box;
+  animation: search-focus-spin 2.5s linear infinite;
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.15);
+}
+
+/* Navigation progress bar — metallic gradient shimmer */
+@property --progress-shimmer-offset {
+  syntax: "<percentage>";
+  initial-value: -100%;
+  inherits: false;
+}
+
+@keyframes progress-shimmer {
+  to { --progress-shimmer-offset: 200%; }
+}
+
+.navigation-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.navigation-progress-bar__track {
+  height: 100%;
+  border-radius: 0 1px 1px 0;
+  background: linear-gradient(
+    90deg,
+    hsl(199 89% 48%) 0%,
+    hsl(199 94% 60%) 20%,
+    hsl(200 98% 39%) 40%,
+    hsl(199 89% 60%) 60%,
+    hsl(200 98% 39%) 80%,
+    hsl(199 89% 48%) 100%
+  );
+  background-size: 200% 100%;
+  animation: progress-shimmer 1.2s linear infinite;
+  box-shadow:
+    0 0 6px hsl(199 89% 48% / 0.5),
+    0 0 14px hsl(199 89% 48% / 0.2);
+}
+
+.auth-modal-content[data-state="open"] {
+  animation: modal-pop-in 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.auth-modal-content[data-state="closed"] {
+  animation: modal-pop-out 320ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+.auth-modal-overlay[data-state="open"] {
+  animation: overlay-fade-in 320ms ease-out both;
+}
+
+.auth-modal-overlay[data-state="closed"] {
+  animation: overlay-fade-out 300ms ease-in both;
+}
+
+/* TipTap /new-post: paragraph rhythm + placeholder (Medium-style canvas) */
+.new-post-prose.tiptap p {
+  margin: 0.65em 0;
+}
+
+.new-post-prose.tiptap h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1.25em 0 0.5em;
+  letter-spacing: -0.02em;
+}
+
+.new-post-prose.tiptap h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1em 0 0.4em;
+}
+
+.new-post-prose.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--text-muted);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   MODE TOGGLE  (ModeToggle component — src/components/ui/toggle-switch.tsx)
+   ─────────────────────────────────────────────────────────────────────────
+   Animation is driven purely by CSS using data-state on the root element.
+   JS only toggles data-state and ARIA attributes — no style mutations.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Container */
+.toggle-root {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  width: 72px;
+  height: 24px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Sliding active indicator pill */
+.toggle-indicator {
+  position: absolute;
+  top: 1.5px;
+  bottom: 1.5px;
+  left: 1.5px;
+  width: calc(50% - 1.5px);
+  border-radius: 9px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-prominent);
+  box-shadow: var(--shadow-xs);
+  will-change: transform;
+  transition: transform var(--toggle-enter-duration) var(--toggle-ease-spring);
+  pointer-events: none;
+}
+
+[data-state="min"] .toggle-indicator {
+  transform: translateX(0);
+}
+
+[data-state="max"] .toggle-indicator {
+  transform: translateX(calc(100% + 1.5px));
+}
+
+/* Half buttons — grid for pixel-perfect centering */
+.toggle-half {
+  position: relative;
+  flex: 1 1 0;
+  width: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+.toggle-half:focus-visible {
+  outline: 2px solid var(--border-active);
+  outline-offset: -2px;
+  border-radius: 12px;
+  z-index: 1;
+}
+
+/* ── Icon circle (− / +) — visible when side is INACTIVE ── */
+.toggle-letter {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  opacity: 1;
+  transform: scale(1);
+  will-change: transform, opacity;
+  transition:
+    opacity    160ms ease-out,
+    transform  160ms ease-out,
+    box-shadow 200ms ease-out,
+    border-color 200ms ease-out;
+}
+
+.toggle-lucide {
+  width: 10px;
+  height: 10px;
+  transition: color 200ms ease-out, filter 200ms ease-out;
+}
+
+/* Hover glow on inactive icon */
+[data-state="max"] .left-half:hover .toggle-lucide,
+[data-state="min"] .right-half:hover .toggle-lucide {
+  color: var(--brand-primary);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--brand-primary) 50%, transparent));
+}
+
+/* ── Word (MIN / MAX) — visible when side is ACTIVE ── */
+.toggle-word {
+  grid-area: 1 / 1;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  color: var(--text-primary);
+  opacity: 0;
+  transform: translateY(3px);
+  pointer-events: none;
+  will-change: transform, opacity;
+  transition:
+    opacity  240ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 240ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ────────────────────────────────────────────────────────────
+   STATE: MIN active  →  left shows "MIN", right shows "+"
+   ──────────────────────────────────────────────────────────── */
+
+/* Left: letter exits */
+[data-state="min"] .left-half .toggle-letter {
+  opacity: 0;
+  transform: scale(0.78);
+}
+
+/* Left: word enters (staggered 50ms after letter starts exiting) */
+[data-state="min"] .left-half .toggle-word {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 50ms, 50ms;
+}
+
+/* ────────────────────────────────────────────────────────────
+   STATE: MAX active  →  right shows "MAX", left shows "−"
+   ──────────────────────────────────────────────────────────── */
+
+/* Right: letter exits */
+[data-state="max"] .right-half .toggle-letter {
+  opacity: 0;
+  transform: scale(0.78);
+}
+
+/* Right: word enters (staggered 50ms) */
+[data-state="max"] .right-half .toggle-word {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 50ms, 50ms;
+}
+
+/* ── Initial / unset state ── */
+:not([data-state]) .toggle-letter { opacity: 1; transform: scale(1); }
+:not([data-state]) .toggle-word   { opacity: 0; transform: translateY(3px); }
+
+
+@media (prefers-reduced-motion: reduce) {
+  .feed-post-card:hover,
+  .feed-post-card:focus-within {
+    transform: none;
+  }
+
+  .electric-glow,
+  .animate-pulse-glow {
+    box-shadow: none;
+    animation: none !important;
+  }
+
+  /* Keep reduced-motion respect limited to our modal + pulse effects. */
+  .animate-modal-pop-in,
+  .animate-modal-pop-out,
+  .animate-overlay-fade-in,
+  .animate-overlay-fade-out {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  .auth-modal-content[data-state],
+  .auth-modal-overlay[data-state] {
+    animation: none !important;
+    filter: none;
+  }
+
+  .auth-modal-content[data-state] {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .auth-modal-overlay[data-state] {
+    opacity: 1;
+  }
+
+  .navigation-progress-bar__track {
+    animation: none !important;
+  }
+
+  /* Mode toggle — instant state switch, no motion */
+  .toggle-indicator,
+  .toggle-icon,
+  .toggle-label {
+    transition-duration: 0ms !important;
+    transition-delay: 0ms !important;
+  }
+}

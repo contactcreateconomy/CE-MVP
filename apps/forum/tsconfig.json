@@ -37,6 +37,7 @@
   ],
   "exclude": [
     "node_modules",
-    "../../ak-redesign/specs/S02-refs/prototype"
+    "../../ak-redesign/specs/S02-refs/prototype",
+    "../../ak-redesign/specs/S02-refs/prototype-v2"
   ]
 }
