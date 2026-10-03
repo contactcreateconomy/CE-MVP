@@ -7,7 +7,9 @@ import { join } from "node:path";
  * engine. Quotes live in the source modules. */
 
 const convexRoot = join(__dirname, "../../../../../../convex");
-const read = (rel: string) => readFileSync(join(convexRoot, rel), "utf8");
+/* Normalize CRLF (Windows autocrlf checkouts) — assertions quote LF source. */
+const read = (rel: string) =>
+  readFileSync(join(convexRoot, rel), "utf8").replace(/\r\n/g, "\n");
 
 const schemaSrc = read("schema.ts");
 const autoGateSrc = read("moderation/autoGate.ts");
