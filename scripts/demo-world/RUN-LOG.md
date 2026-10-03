@@ -23,6 +23,6 @@ Total external API spend this phase: 2 LLM calls, 4 HTTP probes. Duration ≈ 1 
 | Item | Count | Tokens | Notes |
 |---|---|---|---|
 | Wikimedia Commons search | 1 | — | HTTP 200, 3 results, sample license `CC BY 2.0` via `extmetadata`; keyless. Per-image author+license recorded in ground truth at P5. |
-| Pixabay search | 0 | — | SKIPPED — `PIXABAY_API_KEY` not present in this checkout (root `.env.local`, `apps/forum/.env.local`, `apps/admin/.env.local` all scanned by name; no pixabay/wikimedia file anywhere). Re-probe when the key lands. |
+| Pixabay search | 0 | — | P0b SKIPPED — key not yet saved; **P0c re-probe after founder saved `.env.local` (23:57): HTTP 200, 500 hits ("creator workspace"), key len 34 (value never printed).** |
 
-Spend this sub-phase: 1 HTTP probe.
+Spend this sub-phase: 2 HTTP probes (1 Commons, 1 Pixabay).
