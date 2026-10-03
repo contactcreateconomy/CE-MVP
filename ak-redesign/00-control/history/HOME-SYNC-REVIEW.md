@@ -4,8 +4,9 @@ type: REVIEW
 author-model: Grok
 tool: Cursor
 round: 1
-status: ACTIVE
+status: ANSWERED
 date: 2026-10-03
+fix: HOME-SYNC-FIX-R1.md
 ---
 
 # Home-sync review — `bb4ab7b` selector case + pnpm.cjs
@@ -51,4 +52,4 @@ Cloud deployment names in this CLI are `/^[a-z]+-[a-z]+-[0-9]+$/` (`deploymentSe
 
 - [x] R1–R3 probes re-run on the new regex and on the three scripts
 - [x] Uppercase matches classified with the Convex 1.34.1 CLI
-- [ ] RED/GREEN tests for the gate and the fallback
+- [x] RED/GREEN tests for the gate and the fallback (HOME-SYNC-FIX-R1.md — 27 refuse + 3 accept driver, plain-first spawn order; RED on pre-bb4ab7b class and on reversed fallback order, GREEN on current)
