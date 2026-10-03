@@ -1,37 +1,41 @@
 /**
- * Route: /category/[slug]
- * Static design preview — renders the shared mother `ContentPage` template with seed data.
- * No Convex / DB. The `slug` is validated only; a per-category polymorphic block can be
- * wired in `CategoryPreviewLoader` when those designs exist. Production discussions live
- * under `/discussions/[slug]` and are separate from this sandbox.
+ * Route: /category/[slug] — the live feed filtered by post type (S00-SPEC
+ * §11, D-012: no fabricated data). The slug is validated against the
+ * canonical post-type literals via POST_TYPE_META (schema.ts posts.type);
+ * unknown slugs 404. Header label + one-liner come from the label map
+ * (Discover copy). The static "Maya Chen" seed preview was deleted with
+ * this task; S06 later designs the fuller category home.
  */
 import { notFound } from "next/navigation";
 
-import { CategoryPreviewLoader } from "./category-preview-loader";
+import { CanonicalFeedClient } from "@/components/feed/canonical-feed-client";
+import { POST_TYPE_META } from "@/lib/labels";
 
-const KNOWN_CATEGORIES = new Set([
-  "news",
-  "review",
-  "compare",
-  "launch-pad",
-  "debate",
-  "help",
-  "qa",
-  "list",
-  "showcase",
-  "gigs",
-]);
-
-interface CategoryPreviewPageProps {
+interface CategoryPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function CategoryPreviewPage({ params }: CategoryPreviewPageProps) {
+export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params;
+  const meta = POST_TYPE_META[slug];
+  if (!meta) notFound();
 
-  if (!KNOWN_CATEGORIES.has(slug)) {
-    notFound();
-  }
-
-  return <CategoryPreviewLoader categoryKey={slug} />;
+  return (
+    <section className="space-y-5">
+      <header className="space-y-1">
+        <h1 className="text-2xl font-semibold text-(--text-primary)">{meta.label}</h1>
+        {meta.description ? (
+          <p className="text-sm text-(--text-muted)">{meta.description}</p>
+        ) : null}
+      </header>
+      <CanonicalFeedClient
+        initialTypeFilter={slug}
+        emptyState={{
+          heading: `No ${meta.label} posts yet`,
+          actionLabel: "Write one",
+          actionHref: `/new-post?type=${slug}`,
+        }}
+      />
+    </section>
+  );
 }

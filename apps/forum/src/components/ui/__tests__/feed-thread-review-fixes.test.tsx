@@ -43,6 +43,8 @@ vi.mock("convex/react", () => ({
 }));
 vi.mock("@cemvp/convex-client", () => ({ isConvexConfigured: () => true }));
 vi.mock("@cemvp/auth-ui", () => ({ useAuth: () => ({ authStatus: "unauthenticated" }) }));
+// CanonicalFeedClient gained a category-empty CTA (S00-T04) → router push
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 import { CanonicalFeedClient } from "@/components/feed/canonical-feed-client";
 import { CanonicalThread } from "@/components/discussion/canonical-thread";

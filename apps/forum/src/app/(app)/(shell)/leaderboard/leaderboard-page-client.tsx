@@ -2,36 +2,32 @@
 
 import { useQuery } from "convex/react";
 import { Crown, Medal, Trophy } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { api } from "@/lib/convex";
 import { formatPoints } from "@/lib/format";
 import { isConvexConfigured } from "@cemvp/convex-client";
 
 /**
  * Full leaderboard — CAP-194's "view full leaderboard" link destination
- * (Podium widget → /leaderboard). Rebuilt 2026-08-31 (reclassified D→B) to the
- * contract model: 5 categories (Overall · Best Commenter · Best Helper ·
- * Best Reviewer · Rising) × 3 windows (24H · 7D · 1M) = 15 cells
- * (CONTRACT-6-feed §3G). Min activation 25 contributors → "Podium is forming".
+ * (Podium widget → /leaderboard), 5 categories per CONTRACT-6-feed §3G.
  *
- * Data note: reads `leaderboardProjections` in the spec (M12-computed). Until
- * M12 ships, this renders the existing `getLeaderboardWithUsers` rows as the
- * Overall projection and derives the other categories/windows client-side from
- * points/weeklyDelta — the same interim derivation the Podium widget uses.
- * When M12 projections land, this component swaps to reading them directly.
+ * Data (S00-SPEC §11, D-012): Overall renders the real Podium projection
+ * (feed.getChrome → leaderboardProjections; P7E-07 writes it — min-25
+ * forming rule, CAP-294). The four category boards show a designed Empty
+ * until a real per-category projection exists (CR-006) — ranks are never
+ * derived client-side.
  */
 
 type PodiumCategory = "overall" | "commenter" | "helper" | "reviewer" | "rising";
-type PodiumWindow = "24h" | "7d" | "1m";
 
-interface LeaderboardRow {
+interface PodiumEntry {
   rank: number;
   userId: string;
   points: number;
-  weeklyDelta: number;
-  user: { name: string; avatar: string; handle: string; level: number } | null;
+  displayName?: string;
 }
 
 const CATEGORIES: Array<{ key: PodiumCategory; label: string; description: string }> = [
@@ -42,49 +38,8 @@ const CATEGORIES: Array<{ key: PodiumCategory; label: string; description: strin
   { key: "rising", label: "Rising", description: "Fastest period-over-period growth" },
 ];
 
-const WINDOWS: Array<{ key: PodiumWindow; label: string }> = [
-  { key: "24h", label: "24H" },
-  { key: "7d", label: "7D" },
-  { key: "1m", label: "1M" },
-];
-
 /** Min activation threshold — 25 contributors (Wave 7C L25; data-model `leaderboard≥25`). */
 const MIN_CONTRIBUTORS = 25;
-
-/** Interim window derivation until M12 projections exist (mirrors Podium widget). */
-function windowScore(row: LeaderboardRow, window: PodiumWindow): number {
-  if (window === "24h") return Math.max(0, Math.round(row.points * 0.23 + row.weeklyDelta * 0.3));
-  if (window === "7d") return Math.max(0, row.weeklyDelta);
-  return row.points;
-}
-
-/** Interim category weighting — not the M12 formulas, just a deterministic split for display. */
-function categoryMultiplier(row: LeaderboardRow, category: PodiumCategory): number {
-  const seed = (row.userId.charCodeAt(row.userId.length - 1) || 1) % 5;
-  const table: Record<PodiumCategory, number> = {
-    overall: 1,
-    commenter: [1.1, 0.85, 1.0, 0.9, 0.95][seed],
-    helper: [0.9, 1.15, 0.95, 1.0, 0.85][seed],
-    reviewer: [1.0, 0.9, 1.1, 0.95, 1.05][seed],
-    rising: [1.05, 1.0, 0.9, 1.15, 0.95][seed],
-  };
-  return table[category];
-}
-
-function cellEntries(rows: LeaderboardRow[], category: PodiumCategory, window: PodiumWindow) {
-  return rows
-    .map((row) => ({
-      row,
-      score: Math.round(
-        category === "rising"
-          ? windowScore(row, window) * categoryMultiplier(row, category) + row.weeklyDelta * 2
-          : windowScore(row, window) * categoryMultiplier(row, category),
-      ),
-    }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 10)
-    .map((entry, index) => ({ ...entry, displayRank: index + 1 }));
-}
 
 const rankColors = {
   1: "var(--rank-gold)",
@@ -96,33 +51,17 @@ function LeaderboardPageWithConvex() {
   // P7-CLEANUP: the canonical Podium projection (leaderboardProjections via
   // feed.getChrome; P7E-07 writes it — min-25 forming rule intact)
   const chrome = useQuery(api.feed.getChrome, {});
-  const podium = (chrome as
-    | {
-        podium?: {
-          forming?: boolean;
-          entries?: Array<{ rank?: number; userId: string; points: number; displayName?: string }>;
-        };
-      }
-    | undefined)?.podium;
-  const rows = (
-    podium && !podium.forming ? (podium.entries ?? []) : []
-  ).map((e, i) => ({
+  const podium = (chrome as { podium?: { forming?: boolean; entries?: PodiumEntry[] } } | undefined)
+    ?.podium;
+  const entries = (podium && !podium.forming ? (podium.entries ?? []) : []).map((e, i) => ({
     ...e,
     rank: e.rank ?? i + 1,
-    user: { id: e.userId, name: e.displayName ?? "Member", image: null },
-  })) as unknown as LeaderboardRow[];
+  }));
   const [activeCategory, setActiveCategory] = useState<PodiumCategory>("overall");
-  const [activeWindow, setActiveWindow] = useState<PodiumWindow>("1m");
 
-  const entries = useMemo(
-    () => cellEntries(rows, activeCategory, activeWindow),
-    [rows, activeCategory, activeWindow],
-  );
-
-  /** Below the 25-contributor activation floor, every cell renders "Podium is forming" (CAP-294). */
-  const forming = rows.length < MIN_CONTRIBUTORS;
-  const categoryLabel = CATEGORIES.find((c) => c.key === activeCategory)?.label ?? "";
-  const windowLabel = WINDOWS.find((w) => w.key === activeWindow)?.label ?? "";
+  /** Below the 25-contributor activation floor, every board renders "Podium is forming" (CAP-294). */
+  const forming = entries.length < MIN_CONTRIBUTORS;
+  const category = CATEGORIES.find((c) => c.key === activeCategory)!;
 
   return (
     <section className="animate-route-emerge space-y-4">
@@ -132,7 +71,7 @@ function LeaderboardPageWithConvex() {
             <Trophy className="h-5 w-5" /> Leaderboard
           </h1>
           <p className="mt-1 text-sm text-(--text-muted)">
-            The Podium, expanded — 5 categories × 3 windows.
+            The Podium, expanded — 5 categories.
           </p>
         </CardHeader>
 
@@ -158,62 +97,48 @@ function LeaderboardPageWithConvex() {
             ))}
           </div>
 
-          {/* Window selector — 3 per the contract */}
-          <div className="flex w-fit gap-1 rounded-full border border-(--border-default) bg-(--bg-overlay)/50 p-1" role="tablist" aria-label="Leaderboard window">
-            {WINDOWS.map((w) => (
-              <button
-                key={w.key}
-                type="button"
-                role="tab"
-                aria-selected={activeWindow === w.key}
-                onClick={() => setActiveWindow(w.key)}
-                className={`h-6 rounded-full px-3 text-label-sm font-semibold transition-colors ${
-                  activeWindow === w.key
-                    ? "bg-(--brand-primary) text-(--text-inverse)"
-                    : "text-(--text-secondary) hover:text-(--text-primary)"
-                }`}
-              >
-                {w.label}
-              </button>
-            ))}
-          </div>
-
-          {forming ? (
-            <div className="rounded-md border border-(--border-default) bg-(--bg-inset) px-4 py-8 text-center">
-              <p className="text-sm font-semibold text-(--text-primary)">Podium is forming</p>
-              <p className="mt-1 text-xs text-(--text-muted)">
-                {categoryLabel} · {windowLabel} needs {MIN_CONTRIBUTORS} eligible contributors to
-                activate — {rows.length} so far.
-              </p>
-            </div>
+          {activeCategory === "overall" ? (
+            forming ? (
+              <div className="rounded-md border border-(--border-default) bg-(--bg-inset) px-4 py-8 text-center">
+                <p className="text-sm font-semibold text-(--text-primary)">Podium is forming</p>
+                <p className="mt-1 text-xs text-(--text-muted)">
+                  {category.label} needs {MIN_CONTRIBUTORS} eligible contributors to
+                  activate — {entries.length} so far.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs font-medium uppercase tracking-wide text-(--text-muted)">
+                  {category.label}
+                </p>
+                {entries.map(({ rank, userId, points, displayName }) => {
+                  const color = rankColors[rank as 1 | 2 | 3];
+                  const Icon = rank <= 3 ? Crown : Medal;
+                  return (
+                    <div
+                      key={userId}
+                      className="flex items-center justify-between rounded-md border border-(--border-default) bg-(--bg-surface) px-3 py-2"
+                    >
+                      <p className="flex min-w-0 items-center gap-2 text-sm text-(--text-primary)">
+                        <Icon className="h-3.5 w-3.5 shrink-0" style={color ? { color } : undefined} />
+                        <span className="font-semibold text-(--brand-primary)">#{rank}</span>
+                        <span className="truncate">{displayName ?? "Member"}</span>
+                      </p>
+                      <p className="shrink-0 text-xs font-semibold text-(--feedback-warning)">{formatPoints(points)}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            )
           ) : (
-            <div className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-wide text-(--text-muted)">
-                {categoryLabel} · {windowLabel}
-              </p>
-              {entries.map(({ row, score, displayRank }) => {
-                const color = rankColors[displayRank as 1 | 2 | 3];
-                const Icon = displayRank <= 3 ? Crown : Medal;
-                return (
-                  <div
-                    key={row.userId}
-                    className="flex items-center justify-between rounded-md border border-(--border-default) bg-(--bg-surface) px-3 py-2"
-                  >
-                    <p className="flex min-w-0 items-center gap-2 text-sm text-(--text-primary)">
-                      <Icon className="h-3.5 w-3.5 shrink-0" style={color ? { color } : undefined} />
-                      <span className="font-semibold text-(--brand-primary)">#{displayRank}</span>
-                      <span className="truncate">{row.user?.name ?? "Unknown user"}</span>
-                    </p>
-                    <p className="shrink-0 text-xs font-semibold text-(--feedback-warning)">{formatPoints(score)}</p>
-                  </div>
-                );
-              })}
-            </div>
+            <EmptyState
+              icon={<Medal />}
+              heading="Not enough activity yet"
+            />
           )}
 
           <p className="text-label-sm text-(--text-muted)">
-            Personas and staff are excluded from all Podium cells. Category and window projections
-            are computed by the reputation engine (M12) — interim values shown until it ships.
+            Personas and staff are excluded from all Podium cells.
           </p>
         </CardContent>
       </Card>

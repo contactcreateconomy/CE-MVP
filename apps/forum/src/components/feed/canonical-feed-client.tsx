@@ -12,11 +12,14 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
+import { PenLine } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { TrendSorter, type FeedSortMode } from "@/components/feed/trend-sorter";
 import { api } from "@/lib/convex";
 import { isConvexConfigured } from "@cemvp/convex-client";
@@ -24,7 +27,22 @@ import { useAuth } from "@cemvp/auth-ui";
 
 type SortMode = FeedSortMode;
 
-export function CanonicalFeedClient({ initialTypeFilter = null }: { initialTypeFilter?: string | null }) {
+export function CanonicalFeedClient({
+  initialTypeFilter = null,
+  emptyState,
+}: {
+  initialTypeFilter?: string | null;
+  /** Category pages (S00-SPEC §11): replaces the generic empty card with a
+   *  designed Empty ("No Review posts yet" + a write CTA) when the filtered
+   *  feed has no cards. */
+  emptyState?: {
+    heading: string;
+    description?: string;
+    actionLabel: string;
+    actionHref: string;
+  };
+}) {
+  const router = useRouter();
   const configured = isConvexConfigured();
   const { authStatus } = useAuth();
   const member = authStatus === "authenticated";
@@ -112,6 +130,21 @@ export function CanonicalFeedClient({ initialTypeFilter = null }: { initialTypeF
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-(--border-default) border-t-(--brand-primary)" />
         </div>
       ) : cards.length === 0 ? (
+        emptyState && effectiveSort !== "fav" ? (
+          <Card>
+            <CardContent className="py-6">
+              <EmptyState
+                icon={<PenLine />}
+                heading={emptyState.heading}
+                description={emptyState.description}
+                action={{
+                  label: emptyState.actionLabel,
+                  onClick: () => router.push(emptyState.actionHref),
+                }}
+              />
+            </CardContent>
+          </Card>
+        ) : (
         <Card>
           <CardContent className="py-10 text-center text-sm text-(--text-muted)">
             {effectiveSort === "fav"
@@ -119,6 +152,7 @@ export function CanonicalFeedClient({ initialTypeFilter = null }: { initialTypeF
               : "The feed is forming. Member posts appear here the moment they publish."}
           </CardContent>
         </Card>
+        )
       ) : (
         <ul className="space-y-3">
           {cards.map((card) => (
