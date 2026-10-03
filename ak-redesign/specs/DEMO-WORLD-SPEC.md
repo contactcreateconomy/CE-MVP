@@ -388,7 +388,17 @@ the env contract. Covers are sourced, in this order:
    demo quota **50 requests/hour**. The quota cannot cover ~1,750 covers,
    so Unsplash is reserved for the most visible covers (showcase, news,
    review fronts) and the search budget is paced inside 50/hr.
-2. **Keyless fallbacks for the long tail** — `https://picsum.photos/`
+2. **Pixabay** — `PIXABAY_API_KEY` in root `.env.local`, key in query
+   param (their only auth path; built in memory, never logged), rate cap
+   ≈100 requests/min. Pixabay Content License: no attribution required
+   (photographer recorded in ground truth anyway). Status at P0b probe:
+   key not yet present in this checkout — confirm before P5 relies on it.
+3. **Wikimedia Commons** — **keyless** (API etiquette limits; distinct
+   user-agent). Confirmed live at P0b (HTTP 200). Per-file CC/public-domain
+   licenses via `extmetadata` — the curator filters to permissive licenses
+   (e.g. CC0/CC BY/CC BY-SA) and records **per-image author + license** in
+   ground truth (CC BY/BY-SA require visible attribution).
+4. **Keyless fallbacks for the long tail** — `https://picsum.photos/`
    (unique by seed) and `https://api.artic.edu/` (public-domain artworks,
    unique by artwork id, attribution available). Free, random-subject,
    and explicitly approved by the founder: "you can use anything until
@@ -411,8 +421,9 @@ architecture, fact cross-checks, exemplars and gate samples.
 
 **A3 — Env contract delta.** Removed: `PEXELS_API_KEY`. Added:
 `Unsplash_Access_key` (used), `Unsplash_ApplicationID` / `Unsplash_Secret_key`
-(present, unused by the generator). Everything else unchanged. Keys live
-only in root `.env.local` (gitignored — verified in P0).
+(present, unused by the generator), `PIXABAY_API_KEY` (pending in this
+checkout). Everything else unchanged. Keys live only in root `.env.local`
+(gitignored — verified in P0).
 
 **A4 — Reasoning tokens.** The LLM endpoint emits a reasoning channel
 (34 of 54 tokens on the P0 probe). Estimates and per-call `max_tokens`

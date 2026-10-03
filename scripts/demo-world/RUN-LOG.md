@@ -17,3 +17,12 @@ driver (founder addendum A2) is measured in sessions, not API tokens.
 
 No images downloaded, no DB rows written, no generation started (P0 = recon only).
 Total external API spend this phase: 2 LLM calls, 4 HTTP probes. Duration ≈ 1 h (session).
+
+## P0b — image-source addendum probes (2026-10-03, founder added Pixabay + Wikimedia)
+
+| Item | Count | Tokens | Notes |
+|---|---|---|---|
+| Wikimedia Commons search | 1 | — | HTTP 200, 3 results, sample license `CC BY 2.0` via `extmetadata`; keyless. Per-image author+license recorded in ground truth at P5. |
+| Pixabay search | 0 | — | SKIPPED — `PIXABAY_API_KEY` not present in this checkout (root `.env.local`, `apps/forum/.env.local`, `apps/admin/.env.local` all scanned by name; no pixabay/wikimedia file anywhere). Re-probe when the key lands. |
+
+Spend this sub-phase: 1 HTTP probe.
