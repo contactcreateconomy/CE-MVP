@@ -1,9 +1,11 @@
 import {
+  Briefcase,
   GitCompare,
   HelpCircle,
   Home,
   LayoutList,
   Newspaper,
+  Rocket,
   Sparkles,
   Star,
   Swords,
@@ -12,10 +14,12 @@ import {
 } from "lucide-react";
 
 /**
- * Icon + accent per product post type (the current set is final — founder,
- * 2026-10-03). Accents are the STYLE-KIT `--cat-*` tokens; the prototype's
- * per-slide rgb accents are replaced by these. Labels are NOT here: they
- * come from data (postTypeConfig.label) per COPY-1.
+ * Icon + accent per product post type (the real set: 8 active + launch_pad
+ * and gigs, locked at runtime). Accents are the STYLE-KIT `--cat-*` tokens
+ * (hero ambient wash only — v2 draws type icons in `--text-primary`). The
+ * locked types have no `--cat-*` token and fall back to brand; no new
+ * colour is minted. Labels are NOT here: they come from data
+ * (postTypeConfig.label) per COPY-1.
  */
 export interface PostTypeMeta {
   Icon: LucideIcon;
@@ -34,6 +38,8 @@ const META: Record<string, PostTypeMeta> = {
   debate: { Icon: Swords, text: "text-cat-debate", wash: "bg-cat-debate/15" },
   list: { Icon: LayoutList, text: "text-cat-list", wash: "bg-cat-list/15" },
   showcase: { Icon: Sparkles, text: "text-cat-showcase", wash: "bg-cat-showcase/15" },
+  launch_pad: { Icon: Rocket, text: "text-brand-primary", wash: "bg-brand-primary/15" },
+  gigs: { Icon: Briefcase, text: "text-brand-primary", wash: "bg-brand-primary/15" },
 };
 
 const FALLBACK: PostTypeMeta = { Icon: Sparkles, text: "text-brand-primary", wash: "bg-brand-primary/15" };

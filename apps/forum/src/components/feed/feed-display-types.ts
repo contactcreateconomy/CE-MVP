@@ -17,6 +17,8 @@ export type FeedPostType =
   | "debate"
   | "list"
   | "showcase"
+  | "launch_pad"
+  | "gigs"
   | (string & {});
 
 export type FeedSort = "top" | "hot" | "new" | "fav";
@@ -62,7 +64,32 @@ export interface FeedCardData {
   isSaved: boolean;
   /** Rising flag from the trend projection. */
   isRising?: boolean;
+  /** One-line type-specific strip under the title (v2 CardExtras). */
+  extras?: FeedCardExtras | null;
 }
+
+/** v2 `CardExtras`: compact, one line, no images. Each field renders only
+ *  when present. */
+export type FeedCardExtras =
+  | {
+      kind: "review";
+      /** 1–5 (postReviews.verdictScore). */
+      stars?: number | null;
+      /** Categorical verdict pill — NEEDS DATA (no source today). */
+      verdict?: { label: string; tone: "positive" | "caution" | "negative" } | null;
+    }
+  | {
+      kind: "debate";
+      agree?: number | null;
+      disagree?: number | null;
+      /** Shown (italic) only while there are no votes. */
+      proposition?: string | null;
+    }
+  | {
+      /** Generic meta line (gigs: role · employment · location · budget). */
+      kind: "meta";
+      parts: string[];
+    };
 
 export interface FeedHeroMetric {
   kind: "reads" | "replies" | "shares";

@@ -7,6 +7,10 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Changed: S02 feed display components upgraded to prototype-v2 (2026-10-03)
+
+Polymorphic desktop hero (3D cover-flow ↔ compact cascade), per-type card strip, profile-linked author row, sliding nav pill, staggered entrance, hero/card skeletons; props contract, fixtures and `/lab/feed` params kept (optional additions only). Token diff 0. S02-SPEC round 2 (motion list + GAP list), CR-010 #10.
+
 ### Added: S02 feed display components + /lab/feed (2026-10-03)
 
 Founder prototype feed ported as props-only display components in `apps/forum/src/components/feed/feed-*.tsx` (card, tabs, hero carousel lg+, left nav, Vibing + Podium rail, page view) on S00 tokens; dev-only `/lab/feed` from fixtures; spec `ak-redesign/specs/S02-SPEC.md`, CR-010, decisions D-016/D-017. `/feed` not wired yet (GLM).

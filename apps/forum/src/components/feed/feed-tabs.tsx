@@ -1,5 +1,6 @@
 "use client";
 
+import type { Ref } from "react";
 import { Bookmark, Clock3, Flame, TrendingUp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -16,6 +17,8 @@ const ITEMS = [
 export interface FeedTabsProps {
   active: FeedSort;
   onSelect: (sort: FeedSort) => void;
+  /** The desktop hero aligns its focus card to this element (v2). */
+  ref?: Ref<HTMLDivElement>;
   className?: string;
 }
 
@@ -25,7 +28,7 @@ export interface FeedTabsProps {
  * `sortMode`. Guests selecting Fav is the wiring's call (feed.list returns
  * `member_only`).
  */
-export function FeedTabs({ active, onSelect, className }: FeedTabsProps) {
+export function FeedTabs({ active, onSelect, ref, className }: FeedTabsProps) {
   const activeIndex = Math.max(
     0,
     ITEMS.findIndex((item) => item.key === active),
@@ -33,6 +36,7 @@ export function FeedTabs({ active, onSelect, className }: FeedTabsProps) {
 
   return (
     <div
+      ref={ref}
       role="tablist"
       aria-label="Sort the feed"
       className={cn(

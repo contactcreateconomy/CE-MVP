@@ -92,3 +92,15 @@ Branch `s02-feed-ui` (from `011-Akilesh-Redesign`). Founder decisions → D-016,
 
 Lesson: `cn()` is plain `twMerge` and treats token type sizes (`text-micro`, `text-body-sm`…) as colours, so it drops them next to a `text-<color>` class. Keep the size class outside `cn()` (or extend tailwind-merge app-wide; flagged, not changed).
 Handoff: founder owns `s02-feed-ui` from here; Opus pushes only when asked, after pulling.
+
+## S02 PORT-V2 — feed upgraded to prototype-v2 (prompt [S02+S01][PORT-V2][OPUS], 2026-10-03)
+
+| Step | Status |
+|---|---|
+| Read v2 (README, screens, feed/layout source), VISION, D-007/9/12/13/16/17 | DONE |
+| Feed components → v2 (polymorphic hero, card extras, nav pill, entrance, skeletons); contract/fixtures/params kept | DONE — typecheck, lint, 975 tests green; token diff 0 |
+| S02-SPEC r2: motion list (38 rows, FLAGs), GAP list (NEEDS DATA / SCOPE); CR-010 #10 | DONE |
+| Evidence: `S02-evidence/feed-*`, `compare-feed-*` (ours \| v2), all < 500 KB | DONE |
+| S01 auth modal → `s01-auth-ui` | next |
+
+Lessons: v2's full-page screenshots repeat the first viewport (capture artefact) — compare against the top crop only. The VM proxy blocks web fonts, so screenshots use a fallback face.

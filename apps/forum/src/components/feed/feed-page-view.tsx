@@ -1,15 +1,14 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { Bookmark, Inbox } from "lucide-react";
 
 import { EmptyState } from "@/components/ui/empty-state";
-import { Skeleton, SkeletonAvatar, SkeletonText } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-import { FeedCard, type FeedCardActions } from "./feed-card";
+import { FeedCard, FeedCardSkeleton, type FeedCardActions } from "./feed-card";
 import type { FeedCardData, FeedHeroSlide, FeedSort } from "./feed-display-types";
-import { FeedHeroCarousel } from "./feed-hero-carousel";
+import { FeedHeroCarousel, FeedHeroCarouselSkeleton } from "./feed-hero-carousel";
 import { FeedLeftNav, type FeedLeftNavProps } from "./feed-left-nav";
 import { FeedPodiumWidget, FeedVibingWidget, type FeedPodiumWidgetProps, type FeedVibingWidgetProps } from "./feed-rail";
 import { FeedTabs } from "./feed-tabs";
@@ -19,6 +18,10 @@ export type FeedListState = "loading" | "ready" | "empty";
 
 export interface FeedPageViewProps {
   heroSlides: FeedHeroSlide[];
+  /** Hero data still resolving → skeleton (lg+). Empty + not loading → no hero. */
+  heroLoading?: boolean;
+  /** Initial hero state (lab/review only; the member toggles it). */
+  heroMode?: "default" | "compact";
   nav: FeedLeftNavProps;
   sort: FeedSort;
   onSortChange: (sort: FeedSort) => void;
@@ -35,39 +38,37 @@ export interface FeedPageViewProps {
   undo?: { message: string; onUndo: () => void; onDismiss: () => void } | null;
 }
 
-function FeedCardSkeleton() {
-  return (
-    <div className="card-surface space-y-4 p-4" aria-hidden>
-      <div className="flex items-center gap-2.5">
-        <SkeletonAvatar />
-        <div className="flex-1 space-y-2">
-          <SkeletonText className="w-32" />
-          <SkeletonText className="w-20" />
-        </div>
-      </div>
-      <Skeleton className="h-6 w-4/5" />
-      <SkeletonText className="w-full" />
-      <Skeleton className="h-11 w-full rounded-menu" />
-    </div>
-  );
-}
-
 /**
  * The whole feed page body, below the S00 shell (top bar + tab bar are the
- * shell's, not S02's). 390: tabs + cards only (no hero — founder
- * 2026-10-03). lg (1024+): hero carousel + left nav. xl (1280+): right rail.
+ * shell's, not S02's). 390: tabs + cards only (no hero — D-017).
+ * lg (1024+): polymorphic hero + left nav. xl (1280+): right rail.
  */
 export function FeedPageView(props: FeedPageViewProps) {
-  const { heroSlides, nav, sort, onSortChange, listState, cards, cardActions, onEmptyAction, footer, vibing, podium, undo } =
-    props;
+  const {
+    heroSlides,
+    heroLoading,
+    heroMode,
+    nav,
+    sort,
+    onSortChange,
+    listState,
+    cards,
+    cardActions,
+    onEmptyAction,
+    footer,
+    vibing,
+    podium,
+    undo,
+  } = props;
+  const tabsRef = useRef<HTMLDivElement>(null);
 
   return (
     <div className="relative min-h-dvh bg-bg-canvas text-text-primary">
       <div className="canvas-dot-grid pointer-events-none absolute inset-0" aria-hidden />
       <div className="relative z-10">
-        {heroSlides.length > 0 ? (
+        {heroLoading || heroSlides.length > 0 ? (
           <div className="mx-auto hidden w-full max-w-(--container-app) px-8 pb-2 pt-6 lg:block">
-            <FeedHeroCarousel slides={heroSlides} className="h-95 xl:h-105" />
+            {heroLoading ? <FeedHeroCarouselSkeleton /> : <FeedHeroCarousel slides={heroSlides} alignToRef={tabsRef} initialMode={heroMode} />}
           </div>
         ) : null}
 
@@ -76,8 +77,8 @@ export function FeedPageView(props: FeedPageViewProps) {
 
           <main className="min-w-0 flex-1 pb-[calc(var(--tabbar-h)+var(--safe-bottom)+2rem)] lg:pb-8">
             <section className="space-y-4" aria-label="Feed">
-              <header className="card-surface p-2">
-                <FeedTabs active={sort} onSelect={onSortChange} />
+              <header className="card-surface animate-soft-float p-2 motion-reduce:animate-none">
+                <FeedTabs ref={tabsRef} active={sort} onSelect={onSortChange} />
               </header>
 
               {listState === "loading" ? (

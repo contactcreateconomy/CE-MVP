@@ -38,17 +38,18 @@ export function FeedVibingWidget({ items, className }: FeedVibingWidgetProps) {
 
   return (
     <section
-      className={cn("card-surface h-62.5", className)}
+      className={cn("card-surface animate-soft-float h-62.5 border-border-default p-4 motion-reduce:animate-none", className)}
+      style={{ animationDelay: "160ms" }}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onFocusCapture={() => setIsPaused(true)}
       onBlurCapture={() => setIsPaused(false)}
       aria-label="What's Vibing"
     >
-      <h2 className="inline-flex items-center gap-2 p-4 pb-3 text-heading-xs font-semibold text-text-primary">
+      <h2 className="inline-flex items-center gap-2 pb-3 text-heading-xs font-semibold text-text-primary">
         <TrendingUp className="size-4 text-brand-primary" /> What&apos;s Vibing
       </h2>
-      <div className="h-46.5 p-4 pt-0">
+      <div className="h-46.5">
         <div className="relative h-full overflow-hidden rounded-2xl">
           {items.map((item, index) => (
             <Link
@@ -116,7 +117,11 @@ export function FeedPodiumWidget({ window, onWindowChange, entries, leaderboardH
   );
 
   return (
-    <section className={cn("card-surface space-y-3 p-3", className)} aria-label="Podium">
+    <section
+      className={cn("card-surface animate-soft-float space-y-3 p-3 motion-reduce:animate-none", className)}
+      style={{ animationDelay: "100ms" }}
+      aria-label="Podium"
+    >
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-label-md font-semibold uppercase text-text-muted">Podium</h2>
         <div role="tablist" aria-label="Podium window" className="relative w-40 rounded-full border border-border-default bg-bg-overlay/50 p-1">
@@ -157,22 +162,30 @@ export function FeedPodiumWidget({ window, onWindowChange, entries, leaderboardH
           {entries.slice(0, 5).map((entry) => {
             const tone = RANK[entry.rank as keyof typeof RANK] ?? RANK[5];
             const Icon = entry.rank <= 3 ? Crown : Medal;
+            const shimmer = entry.rank <= 3;
             const row = (
               <>
-                <span className="flex min-w-0 items-center gap-2.5">
+                {shimmer ? (
+                  // v2 top-3 hover sheen — no stated purpose; flagged in S02-SPEC §4 (founder call).
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-y-0 -left-[35%] w-[35%] -skew-x-12 bg-linear-to-r from-transparent via-text-primary/10 to-transparent opacity-0 transition-[left,opacity] duration-700 group-hover/row:left-[120%] group-hover/row:opacity-100 motion-reduce:hidden"
+                  />
+                ) : null}
+                <span className="relative z-10 flex min-w-0 flex-1 items-center gap-2.5 pr-2">
                   <Icon className={cn("size-4 shrink-0", tone.icon)} aria-label={`Rank ${entry.rank}`} />
                   <FeedAvatar person={entry.person} size="sm" className={cn("size-8 border-0 ring-2", tone.ring)} />
-                  <span className="truncate text-body-sm font-medium text-text-primary">{entry.person.name}</span>
+                  <span className="min-w-0 truncate text-body-sm font-medium text-text-primary">{entry.person.name}</span>
                 </span>
-                <span className="shrink-0 text-caption font-semibold text-feedback-warning">{formatPoints(entry.points)}</span>
+                <span className="relative z-10 shrink-0 text-caption font-semibold text-feedback-warning">{formatPoints(entry.points)}</span>
               </>
             );
             const rowClass =
-              "flex items-center justify-between gap-2 rounded-lg border border-border-subtle bg-bg-overlay/45 px-3 py-2.5";
+              "group/row relative flex items-center justify-between gap-2 overflow-hidden rounded-lg border border-border-subtle bg-bg-overlay/45 px-3 py-2.5";
             return (
               <li key={`${entry.rank}-${entry.person.name}`}>
                 {entry.href ? (
-                  <Link href={entry.href} className={cn(rowClass, "focus-ring transition-colors duration-normal hover:border-border-prominent")}>
+                  <Link href={entry.href} className={cn(rowClass, "focus-ring transition-colors duration-normal", shimmer && "hover:border-border-prominent")}>
                     {row}
                   </Link>
                 ) : (

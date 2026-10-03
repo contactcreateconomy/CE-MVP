@@ -24,6 +24,9 @@ Ask — `feed.getChrome`:
 8. **Vibing:** for `objectType: "post"` add `title` (neutral fallback when `hook` is null), `slug`, `type`. Say how tool/category/theme objects should link.
 9. **Podium entries:** add `username` (for the `/users/[handle]` link).
 
+Addendum (2026-10-03, prototype-v2 port, S02-SPEC §5/§6):
+10. **Per-type card strip (`extras`):** on the `feed.list` card, `review: { stars }` from `postReviews.verdictScore`, and `debate: { agree, disagree, proposition }` from `postDebates`. Both tables exist; the card just doesn't carry them. The review *categorical* verdict pill and the gigs meta strip are SCOPE (founder), not asked here.
+
 No new scoring and no new tables. Raw facts only.
 
 Reply in `CR-010-RESPONSE.md` (TEAM-WORKFLOW format). Status in this header is updated by Opus only.

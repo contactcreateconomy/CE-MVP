@@ -13,10 +13,11 @@ interface LabFeedClientProps {
   forcedTheme?: "dark" | "light";
   showToolbar: boolean;
   typeFilter: string;
+  heroMode: "default" | "compact";
 }
 
 /** Local-state stand-in for the wiring GLM builds on /feed. */
-export function LabFeedClient({ initialState, forcedTheme, showToolbar, typeFilter }: LabFeedClientProps) {
+export function LabFeedClient({ initialState, forcedTheme, showToolbar, typeFilter, heroMode }: LabFeedClientProps) {
   const { setTheme, resolvedTheme } = useTheme();
   const [listState, setListState] = useState<FeedListState>(initialState);
   const [sort, setSort] = useState<FeedSort>("top");
@@ -44,6 +45,8 @@ export function LabFeedClient({ initialState, forcedTheme, showToolbar, typeFilt
     <>
       <FeedPageView
         heroSlides={heroSlides}
+        heroLoading={listState === "loading"}
+        heroMode={heroMode}
         nav={{ items: navItems, activeKey: typeFilter, onStartDiscussion: () => {} }}
         sort={sort}
         onSortChange={setSort}

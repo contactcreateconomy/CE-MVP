@@ -22,8 +22,10 @@ export interface FeedLeftNavProps {
 
 /**
  * Left rail (lg+): "Start Discussion" CTA + Discover list with a sliding
- * active outline. Prototype `left-sidebar.tsx`; the conic `GlowingEffect`
- * around the CTA is removed by S00 §7 and replaced by `.glow-cta`.
+ * active pill. prototype-v2 `left-sidebar.tsx`; the conic `GlowingEffect`
+ * around the CTA and the hover text glow are not ported (D-007 / S00 §7 —
+ * flagged in S02-SPEC §4); the CTA carries `.glow-cta`. Item labels come
+ * from data: v2's sidebar ("Q&A", no Spark) is a SCOPE question, not copied.
  */
 export function FeedLeftNav({ items, activeKey, onStartDiscussion, className }: FeedLeftNavProps) {
   const activeIndex = Math.max(
@@ -34,7 +36,7 @@ export function FeedLeftNav({ items, activeKey, onStartDiscussion, className }: 
   return (
     <aside className={cn("sticky top-20 h-fit w-60 shrink-0 space-y-4", className)}>
       {onStartDiscussion ? (
-        <div className="card-surface p-3">
+        <div className="card-surface animate-soft-float p-3 motion-reduce:animate-none">
           <button
             type="button"
             onClick={onStartDiscussion}
@@ -46,13 +48,13 @@ export function FeedLeftNav({ items, activeKey, onStartDiscussion, className }: 
         </div>
       ) : null}
 
-      <nav className="card-surface" aria-label="Discover">
+      <nav className="card-surface animate-soft-float motion-reduce:animate-none" style={{ animationDelay: "60ms" }} aria-label="Discover">
         <h2 className="p-4 pb-2 text-label-md font-semibold uppercase text-text-muted">Discover</h2>
         <div className="relative space-y-1 p-3 pt-0">
           <div
             aria-hidden
-            className="glow-active pointer-events-none absolute left-3 right-3 rounded-full border border-border-active/70 transition-[top] duration-slow ease-out-cubic motion-reduce:transition-none"
-            style={{ top: activeIndex * (ITEM_H + ITEM_GAP), height: ITEM_H }}
+            className="glow-active pointer-events-none absolute left-3 right-3 top-0 rounded-full border border-border-active/70 bg-bg-overlay/55 transition-transform duration-slow ease-out-cubic will-change-transform motion-reduce:transition-none"
+            style={{ transform: `translateY(${activeIndex * (ITEM_H + ITEM_GAP)}px)`, height: ITEM_H }}
           />
           {items.map((item) => {
             const isActive = item.key === activeKey;
@@ -64,7 +66,7 @@ export function FeedLeftNav({ items, activeKey, onStartDiscussion, className }: 
                 aria-current={isActive ? "page" : undefined}
                 className={"text-heading-xs " + cn(
                   "focus-ring relative z-10 flex h-10 w-full items-center gap-2.5 rounded-full px-3 font-semibold transition-colors duration-normal",
-                  isActive ? "text-brand-primary" : "text-text-primary hover:bg-bg-overlay/55 hover:text-brand-primary",
+                  isActive ? "text-brand-primary" : "text-text-primary hover:text-brand-primary",
                 )}
               >
                 <Icon className={cn("size-4", isActive && "scale-105")} strokeWidth={2.5} />

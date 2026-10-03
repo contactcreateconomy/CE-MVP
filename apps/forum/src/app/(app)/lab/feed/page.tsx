@@ -5,7 +5,8 @@ import { LabFeedClient } from "./feed-lab-client";
 /**
  * /lab/feed — S02 display components rendered from fixtures (dev-only:
  * 404 in production). Query params for screenshots/review:
- * `theme=dark|light`, `state=ready|loading|empty`, `toolbar=0`.
+ * `theme=dark|light`, `state=ready|loading|empty`, `type=<post type>`,
+ * `hero=compact`, `toolbar=0`.
  */
 export default async function LabFeedPage({
   searchParams,
@@ -25,6 +26,7 @@ export default async function LabFeedPage({
       forcedTheme={theme === "light" || theme === "dark" ? theme : undefined}
       showToolbar={pick("toolbar") !== "0"}
       typeFilter={pick("type") ?? "home"}
+      heroMode={pick("hero") === "compact" ? "compact" : "default"}
     />
   );
 }
