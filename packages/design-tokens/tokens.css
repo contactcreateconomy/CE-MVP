@@ -83,6 +83,11 @@
   --color-rank-four: var(--rank-four);
   --color-rank-five: var(--rank-five);
 
+  /* Third-party sign-in marks (STYLE-KIT §2.5a) */
+  --color-social-google: var(--social-google);
+  --color-social-github: var(--social-github);
+  --color-social-facebook: var(--social-facebook);
+
   /* Shadows */
   --shadow-xs: var(--shadow-xs);
   --shadow-sm: var(--shadow-sm);
@@ -286,6 +291,12 @@
   --cat-debate: hsl(0 84% 60%);
   --cat-list: hsl(25 95% 53%);
   --cat-showcase: hsl(330 81% 60%);
+
+  /* Third-party sign-in marks (S01, 2026-10-03 — STYLE-KIT §2.5a).
+     Provider identity colours; same in both themes. Hover tint + icon only. */
+  --social-google: hsl(5 81% 56%);
+  --social-github: hsl(137 57% 41%);
+  --social-facebook: hsl(214 89% 52%);
 
   /* Podium / leaderboard rank medals */
   --rank-gold: hsl(45 93% 53%);

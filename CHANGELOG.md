@@ -7,6 +7,10 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Added: S01 auth modal display components + /lab/auth (2026-10-03)
+
+prototype-v2 login / sign-up modal as display components in `apps/forum/src/components/auth/` (segmented switch, validated fields with strength/match badges, optional email-code step, provider buttons); dev-only `/lab/auth` (mode/theme/state params). New tokens `--social-google|github|facebook` (STYLE-KIT §2.5a). S01-SPEC (motion list, GAP list). Not wired.
+
 ### Changed: S02 feed display components upgraded to prototype-v2 (2026-10-03)
 
 Polymorphic desktop hero (3D cover-flow ↔ compact cascade), per-type card strip, profile-linked author row, sliding nav pill, staggered entrance, hero/card skeletons; props contract, fixtures and `/lab/feed` params kept (optional additions only). Token diff 0. S02-SPEC round 2 (motion list + GAP list), CR-010 #10.

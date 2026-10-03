@@ -48,7 +48,8 @@ S00–S13 DONE + security gate (SEC) PASS → users. S14 admin during beta. Scop
 |---|---|
 | S00 Foundation | APPROVED — building (T01 next) |
 | S02 Feed | SPEC DRAFT r2 — display components on prototype-v2 (`s02-feed-ui`, D-016); next: founder SCOPE/FLAG calls (S02-SPEC §4/§6) → tweak → GLM wiring → Grok review |
-| S01, S03–S13 | not started (order per D-017) |
+| S01 First visit & join | auth modal display components on `s01-auth-ui` (S01-SPEC DRAFT); landing/setup later (D-017); next: founder SCOPE calls (S01-SPEC §5) → GLM wiring |
+| S03–S13 | not started (order per D-017) |
 | SEC security gate | not started |
 | — **beta line** — | |
 | S14 Admin restyle | during beta |

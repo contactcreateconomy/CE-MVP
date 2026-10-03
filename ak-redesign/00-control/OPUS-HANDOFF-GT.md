@@ -104,3 +104,5 @@ Handoff: founder owns `s02-feed-ui` from here; Opus pushes only when asked, afte
 | S01 auth modal → `s01-auth-ui` | next |
 
 Lessons: v2's full-page screenshots repeat the first viewport (capture artefact) — compare against the top crop only. The VM proxy blocks web fonts, so screenshots use a fallback face.
+
+- **S01 auth modal** → `s01-auth-ui` (from `s02-feed-ui`): `components/auth/*`, `/lab/auth`, S01-SPEC, tokens `--social-*` + STYLE-KIT §2.5a — DONE; typecheck, lint, 975 tests green; evidence `S01-evidence/`. Handoff: founder owns both branches; Opus pushes only when asked, after pulling.

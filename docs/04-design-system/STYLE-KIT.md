@@ -225,6 +225,18 @@ INFO
   feedback/info-text       #38BDF8 (sky-400)        #0369A1 (sky-700)
 ```
 
+### 2.5a Third-party sign-in marks (NEW — S01, 2026-10-03)
+
+Provider identity colours for the auth modal's "Continue with …" buttons (prototype-v2). Same value in both themes. Used only for the provider icon and its button's hover border/text tint — never as UI colour elsewhere, never as glow (D-007). The Google "G" logo keeps its own multi-colour artwork.
+
+```
+TOKEN              VALUE                      USE
+──────────────────────────────────────────────────────────────────────
+social/google      hsl(5 81% 56%)   #EA4335   Google button hover tint
+social/github      hsl(137 57% 41%) #2DA44E   GitHub icon + hover tint
+social/facebook    hsl(214 89% 52%) #1877F2   Facebook icon + hover tint
+```
+
 *(Subsections 2.6 category colors and 2.7 gamification colors omitted — tied to stale product lists.)*
 
 ---

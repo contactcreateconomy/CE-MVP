@@ -3816,9 +3816,9 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791033118.5480304,
-    "seen": 1791033139.93528,
-    "ast_hash": "99b8aa8897cb99e275c744d826ca2dc0",
+    "mtime": 1791033741.6445649,
+    "seen": 1791033765.8993602,
+    "ast_hash": "09c5ccec279ec0503bda2aa8505b310a",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -4338,9 +4338,9 @@
     "semantic_hash": ""
   },
   "docs/04-design-system/STYLE-KIT.md": {
-    "mtime": 1791012313.016474,
-    "seen": 1791013050.8126578,
-    "ast_hash": "54af3b0555332bf86fd609f7e9107e82",
+    "mtime": 1791033210.2182662,
+    "seen": 1791033765.8995135,
+    "ast_hash": "9ce96f55709d993daa5eea773a9d232c",
     "semantic_hash": ""
   },
   "docs/05-build-sheets/M0-build-sheet-schema.md": {
@@ -5700,9 +5700,9 @@
     "semantic_hash": ""
   },
   "ak-redesign/00-control/OPUS-HANDOFF-GT.md": {
-    "mtime": 1791033118.5510612,
-    "seen": 1791033139.9352872,
-    "ast_hash": "d301904d5bcc1fbdb9d971295bda2efa",
+    "mtime": 1791033753.6349783,
+    "seen": 1791033765.8993673,
+    "ast_hash": "5fa53eb02522af6898f857ca3ca8a94e",
     "semantic_hash": ""
   },
   "ak-redesign/00-control/PM-BRIEF.md": {
@@ -5718,9 +5718,9 @@
     "semantic_hash": ""
   },
   "ak-redesign/00-control/STATUS.md": {
-    "mtime": 1791033118.5489032,
-    "seen": 1791033139.9352903,
-    "ast_hash": "89d704c11e7cbe498cb0dfb10146e354",
+    "mtime": 1791033741.6450725,
+    "seen": 1791033765.8993702,
+    "ast_hash": "75ecdddedd835988aac4e5da37690110",
     "semantic_hash": ""
   },
   "ak-redesign/00-control/crs/CR-001-REQUEST.md": {
@@ -6417,6 +6417,210 @@
     "mtime": 1791032962.8870518,
     "seen": 1791033139.9356277,
     "ast_hash": "5e30646cf5748258e41c4b676e1c32bd",
+    "semantic_hash": ""
+  },
+  "apps/forum/src/app/(app)/lab/auth/auth-lab-client.tsx": {
+    "mtime": 1791033472.010385,
+    "seen": 1791033765.898862,
+    "ast_hash": "fa5a716f3aa554d56b2bd06de996aa32",
+    "semantic_hash": ""
+  },
+  "apps/forum/src/app/(app)/lab/auth/fixtures.ts": {
+    "mtime": 1791033441.3332624,
+    "seen": 1791033765.8988638,
+    "ast_hash": "42689f2fec7951ace2ab3b3d6c6e0fe5",
+    "semantic_hash": ""
+  },
+  "apps/forum/src/app/(app)/lab/auth/page.tsx": {
+    "mtime": 1791033419.0245202,
+    "seen": 1791033765.8988647,
+    "ast_hash": "4c6b265a5881be1caec27f3c434fa34b",
+    "semantic_hash": ""
+  },
+  "apps/forum/src/components/auth/auth-display-types.ts": {
+    "mtime": 1791033252.7270691,
+    "seen": 1791033765.8988867,
+    "ast_hash": "1d2c03c0dabb48780f84d5248597cdce",
+    "semantic_hash": ""
+  },
+  "apps/forum/src/components/auth/auth-field.tsx": {
+    "mtime": 1791033354.0810313,
+    "seen": 1791033765.898888,
+    "ast_hash": "21a8bd168722aa805ac1df0d5397e3e9",
+    "semantic_hash": ""
+  },
+  "apps/forum/src/components/auth/auth-login-form.tsx": {
+    "mtime": 1791033292.5110714,
+    "seen": 1791033765.8988895,
+    "ast_hash": "d4eebe77d077d8eb86c778a9668b93c5",
+    "semantic_hash": ""
+  },
+  "apps/forum/src/components/auth/auth-modal-view.tsx": {
+    "mtime": 1791033528.8672445,
+    "seen": 1791033765.8988905,
+    "ast_hash": "2d2da6b9a6ed540bea8ef6b2e93617e2",
+    "semantic_hash": ""
+  },
+  "apps/forum/src/components/auth/auth-parts.tsx": {
+    "mtime": 1791033528.8668668,
+    "seen": 1791033765.8988917,
+    "ast_hash": "5bbee98e3090044825332e6ee73a93f6",
+    "semantic_hash": ""
+  },
+  "apps/forum/src/components/auth/auth-signup-form.tsx": {
+    "mtime": 1791033371.4052088,
+    "seen": 1791033765.8988929,
+    "ast_hash": "425984efcc5f1a1a920f967b3d0755dd",
+    "semantic_hash": ""
+  },
+  "apps/forum/src/components/auth/auth-social-buttons.tsx": {
+    "mtime": 1791033371.427076,
+    "seen": 1791033765.8988936,
+    "ast_hash": "33859ca091d7e90de331944921a639fb",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-SPEC.md": {
+    "mtime": 1791033735.7110977,
+    "seen": 1791033765.8994045,
+    "ast_hash": "0145c0bb8f5e826b18e07cf3d91d3576",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/auth-login-1440-dark-error.jpg": {
+    "mtime": 1791033645.0350924,
+    "seen": 1791033765.8997283,
+    "ast_hash": "2a128938da32ea1eaf54070524867380",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/auth-login-1440-dark-loading.jpg": {
+    "mtime": 1791033645.0630925,
+    "seen": 1791033765.8997295,
+    "ast_hash": "ac739ee979955f36e82aa35fda766377",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/auth-login-1440-dark.jpg": {
+    "mtime": 1791033645.0950925,
+    "seen": 1791033765.8997304,
+    "ast_hash": "daf6bbb1b2bcf19e412a9871d95f6bad",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/auth-login-1440-light.jpg": {
+    "mtime": 1791033645.1230924,
+    "seen": 1791033765.8997312,
+    "ast_hash": "54e52747f2805958fb7cb66066671a30",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/auth-login-390-dark.jpg": {
+    "mtime": 1791033645.1310925,
+    "seen": 1791033765.8997319,
+    "ast_hash": "4ca91ca16080c25a9517dc1b641d8d4e",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/auth-login-390-light.jpg": {
+    "mtime": 1791033645.1390924,
+    "seen": 1791033765.8997328,
+    "ast_hash": "d8ec1096719998743d124fa7ff834ba4",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/auth-signup-1440-dark-code-error.jpg": {
+    "mtime": 1791033645.1710925,
+    "seen": 1791033765.8997335,
+    "ast_hash": "50b08529a87c450e000daea59c1a94fe",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/auth-signup-1440-dark-code.jpg": {
+    "mtime": 1791033645.2070925,
+    "seen": 1791033765.8997343,
+    "ast_hash": "b4aecc39ca74e514d6b8650fb62471bc",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/auth-signup-1440-dark-verified.jpg": {
+    "mtime": 1791033645.2350924,
+    "seen": 1791033765.8997347,
+    "ast_hash": "ef958b9197863657e75b597989f9b980",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/auth-signup-1440-dark.jpg": {
+    "mtime": 1791033645.2630925,
+    "seen": 1791033765.8997355,
+    "ast_hash": "cdd495a2694ab129ac93cd240d7c5e2d",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/auth-signup-1440-light.jpg": {
+    "mtime": 1791033645.2950923,
+    "seen": 1791033765.8997364,
+    "ast_hash": "a77c987b2c145c0aaa908346e22921c3",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/auth-signup-390-dark.jpg": {
+    "mtime": 1791033645.3070924,
+    "seen": 1791033765.8997371,
+    "ast_hash": "2b3228eecf91b8ab65085983ef98c361",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/auth-signup-390-light-error.jpg": {
+    "mtime": 1791033645.3110924,
+    "seen": 1791033765.8997378,
+    "ast_hash": "3c7e1d9c93cec176a7182f17ee17b0f5",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/auth-signup-390-light-loading.jpg": {
+    "mtime": 1791033645.3190925,
+    "seen": 1791033765.8997388,
+    "ast_hash": "88ee866530e45c9c94c603ce8f656c5a",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/auth-signup-390-light.jpg": {
+    "mtime": 1791033645.3270924,
+    "seen": 1791033765.89974,
+    "ast_hash": "7561d36f059b8c1ea8ded2c0a50f1f51",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/compare-login-1440-dark.jpg": {
+    "mtime": 1791033645.4310925,
+    "seen": 1791033765.8997407,
+    "ast_hash": "b550a58d5dbb2a3bf04d341361ec3e3e",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/compare-login-1440-light.jpg": {
+    "mtime": 1791033645.5550926,
+    "seen": 1791033765.8997414,
+    "ast_hash": "d2a8d8abd4579ef3038a53e1f77b9fc7",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/compare-login-390-dark.jpg": {
+    "mtime": 1791033645.4510925,
+    "seen": 1791033765.8997421,
+    "ast_hash": "70e4006d8b64864af00b73b86bc1a4d1",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/compare-login-390-light.jpg": {
+    "mtime": 1791033645.5790925,
+    "seen": 1791033765.899743,
+    "ast_hash": "edecc338aeff8c76b0d9d630be09870f",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/compare-signup-1440-dark.jpg": {
+    "mtime": 1791033645.6710925,
+    "seen": 1791033765.8997438,
+    "ast_hash": "d516ccade1a464fcf21a820d73ac15ca",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/compare-signup-1440-light.jpg": {
+    "mtime": 1791033645.7630925,
+    "seen": 1791033765.8997445,
+    "ast_hash": "9dddd8f5b6f6f36bb33b36887f576e6e",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/compare-signup-390-dark.jpg": {
+    "mtime": 1791033645.6870925,
+    "seen": 1791033765.8997452,
+    "ast_hash": "562d7efe0767f6a5105e26da897e704a",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S01-evidence/compare-signup-390-light.jpg": {
+    "mtime": 1791033645.7830925,
+    "seen": 1791033765.899746,
+    "ast_hash": "75ccc4143cee45e4f41671d015eabaf3",
     "semantic_hash": ""
   }
 }
