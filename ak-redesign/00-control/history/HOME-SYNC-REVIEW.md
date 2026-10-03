@@ -53,3 +53,21 @@ Cloud deployment names in this CLI are `/^[a-z]+-[a-z]+-[0-9]+$/` (`deploymentSe
 - [x] R1–R3 probes re-run on the new regex and on the three scripts
 - [x] Uppercase matches classified with the Convex 1.34.1 CLI
 - [x] RED/GREEN tests for the gate and the fallback (HOME-SYNC-FIX-R1.md — 27 refuse + 3 accept driver, plain-first spawn order; RED on pre-bb4ab7b class and on reversed fallback order, GREEN on current)
+
+## R2 — FIX-R1 `57dc607`
+
+## Verdict: PASS
+
+The one R1 finding is closed. No remaining findings.
+
+`tests/scripts/local-gate.test.ts` drives the real `assertLocalDeployment` in a node child. All 27 refuse strings from the R1 probe list are in the suite (extra segments, extra colons, cloud selectors including `dev:Happy-Animal-123`, uppercase kind and prefix, leading/trailing/mid space, tab, embedded newline, trailing newline). The three accepts are `anonymous:anonymous-CE-MVP`, `local:local-CE_MVP`, and `anonymous:anonymous-Energetic-Kangaroo-55`.
+
+`tests/scripts/pnpm-spawn.test.ts` locks `runPnpm`: plain `pnpm` wins when it spawns, node is invoked on the `%APPDATA%` `pnpm.cjs` when the plain probe fails, the node-directory candidate is next, and a missing file throws.
+
+I broke each side once, then restored both files (`git diff` on `scripts/lib/local-gate.mjs` and `scripts/lib/session.mjs` empty) and re-ran.
+
+**RED, old class** `[a-z0-9-]` / `[a-z0-9_-]` in `local-gate.mjs`: 3 failed, 27 passed. The failures are the three accepts (`anonymous:anonymous-CE-MVP`, `local:local-CE_MVP`, `anonymous:anonymous-Energetic-Kangaroo-55`), each exit 1 where the test requires exit 0.
+
+**RED, candidates checked before the plain spawn** in `runPnpm`: 1 failed, 3 passed. `prefers plain pnpm` received `node.exe` where it requires `pnpm`.
+
+**GREEN, restored tree:** `tests/scripts/local-gate.test.ts` and `tests/scripts/pnpm-spawn.test.ts` — 34 passed.
