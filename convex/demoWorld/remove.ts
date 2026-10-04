@@ -106,13 +106,15 @@ export const sweepBatch = internalMutation({
   },
 });
 
-/** Verification helper for the removal script: any demo rows left? */
+/** Verification helper for the removal script: any demo rows left?
+ * CR-015: exact count via the index count scan — the old take(1000) silently
+ * capped the bulk estimate at 1,000 rows. */
 export const removalStatus = internalMutation({
   args: {},
   returns: v.object({ registryRows: v.number() }),
   handler: async (ctx) => {
     guard();
-    const rows = await ctx.db.query("demoRegistry").take(1000);
-    return { registryRows: rows.length };
+    const registryRows = await ctx.db.query("demoRegistry").count();
+    return { registryRows };
   },
 });

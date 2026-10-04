@@ -7,6 +7,14 @@ The 0.1.0 entry below is **reconstructed from the project-status docs** (`docs/0
 
 ## [Unreleased]
 
+### Added: CR-010a — feed covers as resolved storage URLs (2026-10-04)
+
+`feed.list` cards and the `feed.getChrome` hero band now return `coverImage`: the post's cover resolved from `postSeoMeta.ogImageAssetId` through `ctx.storage.getUrl` (a live storage URL; `null` when absent). Backend-only per the CR; the feed card renders it with `next/image` (`unoptimized` — the asset is served by the deployment's own storage host). Demo-world image uploads now store the MIME on the Blob (`new Blob([…], { type })`) so the storage endpoint serves a Content-Type and browsers decode the images (previously headerless → blocked). RED/GREEN: `tests/convex/cr-010a-feed-cover.test.ts` (post with asset → URL; without → null).
+
+### Fixed: CR-015 — index-prefix failures in legitimacy/recognition jobs + exact removal bulk estimate (2026-10-04)
+
+Two projection jobs failed on any run with "query didn't use the index fields in order": `jobs/legitimacy:recompute` (discovery scan led with `occurredAt` on `rawEvents.by_user_time`) and `jobs/recognition:rollup` (aggregate led with `window` on `recognitionEvents.by_user_window` — the Podium rollup). Additive indexes `rawEvents.by_time` / `recognitionEvents.by_window` carry the time-led/window-led scans; queries rewritten onto them, semantics unchanged. `demoWorld/remove:removalStatus` now counts exactly via `.count()` (the old `take(1000)` capped the bulk estimate — the demo pilot registers 30,365 rows). Verified live: rollup projects 118 events / 10 Podium entries. Tests: `tests/convex/cr-015-index-fixes.test.ts`. CR record: `ak-redesign/00-control/crs/CR-015-REQUEST.md`.
+
 ### Changed: dev backend moved from Convex Cloud to the local open-source backend (2026-09-27)
 
 Development no longer touches Convex Cloud at all (the shared cloud dev deployment is retired — its team hit free-plan limits and the deployment was disabled). Dev now runs the **open-source Convex backend locally** (`pnpm backend`, `http://127.0.0.1:3210`; state in gitignored `.convex/`). Production stays on Convex Cloud (`energetic-kangaroo-55`, founder-only deploys — untouched). Details:

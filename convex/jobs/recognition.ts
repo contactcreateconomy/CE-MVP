@@ -100,10 +100,12 @@ export const rollup = internalMutation({
       .take(100);
     void showcases; // editorial showcases attribute to the responsible editor later (P4 byline) — flagged v1 no-op
 
-    // Aggregate per user for the window, then Podium projection
+    // Aggregate per user for the window, then Podium projection.
+    // CR-015: the aggregate leads with window — by_user_window's index starts
+    // with userId, so Convex rejects the range; by_window is window-led.
     const events = await ctx.db
       .query("recognitionEvents")
-      .withIndex("by_user_window", (q: any) => q.eq("window", "d30"))
+      .withIndex("by_window", (q: any) => q.eq("window", "d30"))
       .take(500);
     const perUser = new Map<Id<"users">, number>();
     for (const ev of events) perUser.set(ev.userId, (perUser.get(ev.userId) ?? 0) + ev.weightedValue);

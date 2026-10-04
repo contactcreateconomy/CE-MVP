@@ -549,6 +549,7 @@ export default defineSchema({
   })
     .index("by_session_sequence", ["anonymousSessionId", "sequenceInSession"])
     .index("by_user_time", ["userId", "occurredAt"])
+    .index("by_time", ["occurredAt"]) // CR-015: time-led discovery scans (legitimacy.recompute) — by_user_time cannot lead with occurredAt
     .index("by_target_eventClass", ["targetType", "targetId", "eventClass"])
     .index("by_eventType_time", ["eventType", "occurredAt"]),
 
@@ -2761,6 +2762,7 @@ export default defineSchema({
     occurredAt: v.number(),
   })
     .index("by_user_window", ["userId", "window"])
+    .index("by_window", ["window"]) // CR-015: window-led rollup scans (recognition.rollup) — by_user_window cannot lead with window
     .index("by_season_role", ["seasonId", "role"]),
 
   /** bible l.340 — Awards shelf. History append-only; revoked stays on

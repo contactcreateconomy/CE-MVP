@@ -97,10 +97,12 @@ export const recompute = internalMutation({
   returns: v.object({ recomputed: v.number() }),
   handler: async (ctx) => {
     const since = Date.now() - WINDOW_DAYS * 24 * 3_600_000;
-    // Recently-active actors = users with events in the window (bounded)
+    // Recently-active actors = users with events in the window (bounded).
+    // CR-015: the discovery scan leads with occurredAt — by_user_time's index
+    // starts with userId, so Convex rejects the range; by_time is time-led.
     const recent = await ctx.db
       .query("rawEvents")
-      .withIndex("by_user_time", (q: any) => q.gte("occurredAt", since))
+      .withIndex("by_time", (q: any) => q.gte("occurredAt", since))
       .order("desc")
       .take(500);
     const actorIds = [...new Set(recent.map((e: any) => e.userId).filter(Boolean))] as Id<"users">[];
