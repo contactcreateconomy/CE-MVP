@@ -38,21 +38,33 @@ const members = jsonl("p2/members.jsonl").map((m) => ({
 }));
 for (const [i, c] of chunk(members, 25).entries()) console.log("members", JSON.stringify(run("importMembers/importMembers", { seq: i, worldEnd, rows: c })));
 
+// ── 1b. Rising cohort: re-date selected members to recent joins ────────
+{
+  const adj = readJson(".demo-world-cache/p2/join-date-adjustments.json");
+  if (Array.isArray(adj) && adj.length) {
+    const rows = adj.map((a) => ({ userEmail: emailOf(a.handle), joinOffsetMs: a.joinOffsetMs }));
+    console.log("risingCohort", JSON.stringify(run("importMembers/adjustJoinDates", { seq: 0, worldEnd, rows })));
+  }
+}
+
 // ── 2. posts ───────────────────────────────────────────────────────────
-const plan = jsonl("p3/post-plan.jsonl");
+const plan = [...jsonl("p3/post-plan.jsonl"), ...jsonl("p3/bulk-post-plan.jsonl")];
 const posts = jsonl("p3/posts.jsonl");
-const interactions = jsonl("p4/interactions.jsonl");
-const rawExposures = jsonl("p4/rawevents.jsonl");
+const interactions = [...jsonl("p4/interactions.jsonl"), ...jsonl("p4/bulk-interactions.jsonl")];
+const rawExposures = [...jsonl("p4/rawevents.jsonl"), ...jsonl("p4/bulk-rawevents.jsonl")];
 const commentsAll = jsonl("p4/comments.jsonl").slice().sort((a, b) => a.offsetMs - b.offsetMs);
 const commentsByPost = new Map();
 for (const c of commentsAll) { const k = String(c.postI); if (!commentsByPost.has(k)) commentsByPost.set(k, []); commentsByPost.get(k).push(c); }
 // c.parentIdx is a GLOBAL comments-plan index; refs are per-post sorted-k — resolve through the plan
-const planComments = jsonl("p4/comments-plan.jsonl");
+const planComments = [...jsonl("p4/comments-plan.jsonl"), ...jsonl("p4/bulk-comments-plan.jsonl")];
 const planByPost = new Map();
 planComments.forEach((c, gi) => { const k = String(c.postI); if (!planByPost.has(k)) planByPost.set(k, []); planByPost.get(k).push([c, gi]); });
 const parentRefOf = new Map();
 for (const [pid, arr] of planByPost) arr.slice().sort((a, b) => a[0].offsetMs - b[0].offsetMs).forEach(([, gi], k) => parentRefOf.set(gi, `${pid}:${k}`));
-const newsAssign = Object.fromEntries((readJson(".demo-world-cache/p3/news-assignment.json") ?? []).map((n) => [n.i, n]));
+const newsAssign = Object.fromEntries([
+  ...(readJson(".demo-world-cache/p3/news-assignment.json") ?? []).map((n) => [n.i, n]),
+  ...plan.filter((p) => p.newsEvent).map((p) => [p.ref, { i: p.ref, eventTitle: p.newsEvent.event, url: p.newsEvent.url }]),
+]);
 const emailOf = (h) => h === "devtest" ? "devtest@example.com" : `${h}@demo.createconomy.invalid`;
 
 const postRows = posts.map((p, i) => {
@@ -246,6 +258,7 @@ for (const [i, c] of chunk(postRows, 8).entries()) console.log("posts", JSON.str
 {
   const rows = [];
   for (const [postRef, pc] of commentsByPost) {
+    if (Number(postRef) >= 250) continue; // bulk notifications come from bulk-notifications.jsonl (devtest life)
     const p = posts[Number(postRef)]; if (!p || !pc.length) continue;
     const actors = [...new Set(pc.map((c) => c.author))].slice(0, 5);
     rows.push({ recipientEmail: emailOf(p.author), notificationType: "post_comment", objectType: "post", objectIdRef: postRef, actorEmails: actors.map(emailOf), eventCount: pc.length, dedupeKey: `demo:v1:post_comment:${postRef}`, offsetMs: pc[0].offsetMs + 1_800_000 });
@@ -257,6 +270,20 @@ for (const [i, c] of chunk(postRows, 8).entries()) console.log("posts", JSON.str
   let n = 0;
   for (const [i, c] of chunk(rows, 50).entries()) { const o = run("importChrome/importNotifications", { seq: i, worldEnd, rows: c }); n += o.inserted ?? 0; }
   console.log("notifications", JSON.stringify({ planned: rows.length, inserted: n }));
+
+// ── 6b. devtest life notifications (final run) ─────────────────────────
+{
+  const dn = jsonl("p4/bulk-notifications.jsonl");
+  const rowsB = dn.map((n) => ({
+    recipientEmail: emailOf(n.recipientHandle), notificationType: n.notificationType,
+    objectType: n.objectType, objectIdRef: n.objectIdRef,
+    actorEmails: n.actorHandles.map(emailOf), eventCount: n.eventCount,
+    dedupeKey: n.dedupeKey, offsetMs: n.offsetMs,
+  }));
+  let nb = 0;
+  for (const [i, c] of chunk(rowsB, 50).entries()) { const o = run("importChrome/importNotifications", { seq: 100 + i, worldEnd, rows: c }); nb += o.inserted ?? 0; }
+  console.log("devtestNotifications", JSON.stringify({ planned: rowsB.length, inserted: nb }));
+}
 }
 
 // ── 7. ground truth (members; posts/comments gt ride their importers) ──

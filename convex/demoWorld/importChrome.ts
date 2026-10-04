@@ -84,6 +84,7 @@ export const uploadImage = internalAction({
     // endpoint serves the asset headerless and browsers refuse to decode it
     const blob = new Blob([Uint8Array.from(atob(args.bytes), (ch) => ch.charCodeAt(0))], { type: args.contentType });
     const storageId = await ctx.storage.store(blob);
+    await ctx.runMutation(internal.demoWorld.importChrome.registerStorageIds, { ids: [storageId] }); // removable via purgeDemoStorage
     return { storageId };
   },
 });
@@ -147,6 +148,7 @@ export const uploadImageFinalize = internalAction({
     const bytes = parts.map((p) => p.chunk).join("");
     const blob = new Blob([Uint8Array.from(atob(bytes), (ch) => ch.charCodeAt(0))], { type: parts[0].contentType ?? "application/octet-stream" });
     const storageId = await ctx.storage.store(blob);
+    await ctx.runMutation(internal.demoWorld.importChrome.registerStorageIds, { ids: [storageId] }); // removable via purgeDemoStorage
     const del = (await ctx.runMutation(internal.demoWorld.importChrome.deleteImageChunks, { uploadId: args.uploadId })) as { deleted: number };
     return { storageId, chunks: del.deleted };
   },
@@ -176,5 +178,108 @@ export const linkAvatar = internalMutation({
     if (!user) return { linked: false };
     await ctx.db.patch(user, { avatarAssetId: args.storageId });
     return { linked: true };
+  },
+});
+
+/** Removal support: purge every storage file the demo registered (table
+ * "_storage" in demoRegistry — uploadImage/Finalize register their ids).
+ * storage.delete is action-only, hence the action + runMutation split. */
+export const deleteRegisteredStorageBatch = internalQuery({
+  args: { limit: v.optional(v.number()) },
+  returns: v.object({ remaining: v.number(), ids: v.array(v.string()) }),
+  handler: async (ctx, args) => {
+    guard();
+    const rows = await ctx.db.query("demoRegistry").withIndex("by_table", (q: any) => q.eq("table", "_storage")).take(args.limit ?? 500);
+    return { remaining: rows.length, ids: rows.map((r: any) => r.docId) };
+  },
+});
+
+export const purgeDemoStorage = internalAction({
+  args: { limit: v.optional(v.number()) },
+  returns: v.object({ deleted: v.number(), missing: v.number() }),
+  handler: async (ctx, args) => {
+    guard();
+    const batch = await ctx.runQuery(internal.demoWorld.importChrome.deleteRegisteredStorageBatch, { limit: args.limit ?? 200 });
+    let deleted = 0, missing = 0;
+    for (const id of batch.ids) {
+      try { await ctx.storage.delete(id as any); deleted += 1; } catch { missing += 1; }
+      const reg = await ctx.runQuery(internal.demoWorld.importChrome.storageRegistryRow, { docId: id });
+      if (reg) await ctx.runMutation(internal.demoWorld.importChrome.deleteRegistryRow, { id: reg });
+    }
+    return { deleted, missing };
+  },
+});
+
+export const storageRegistryRow = internalQuery({
+  args: { docId: v.string() },
+  returns: v.any(),
+  handler: async (ctx, args) => {
+    const rows = await ctx.db.query("demoRegistry").withIndex("by_table", (q: any) => q.eq("table", "_storage")).collect();
+    return rows.find((r: any) => r.docId === args.docId)?._id ?? null;
+  },
+});
+
+export const deleteRegistryRow = internalMutation({
+  args: { id: v.string() },
+  returns: v.object({ ok: v.boolean() }),
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.id as any);
+    return { ok: true };
+  },
+});
+
+/** One-time backfill: register storage ids that predate upload-time
+ * registration (the live assets + the two orphaned crash batches). */
+export const registerStorageIds = internalMutation({
+  args: { seq: v.optional(v.number()), ids: v.array(v.string()) },
+  returns: v.object({ registered: v.number() }),
+  handler: async (ctx, args) => {
+    guard();
+    const batch = batchId("storage-backfill", args.seq ?? 0);
+    const existing = new Set((await ctx.db.query("demoRegistry").withIndex("by_table", (q: any) => q.eq("table", "_storage")).collect()).map((r: any) => r.docId));
+    let registered = 0;
+    for (const id of args.ids) {
+      if (existing.has(id)) continue;
+      await register(ctx, "_storage", id, batch);
+      existing.add(id);
+      registered += 1;
+    }
+    return { registered };
+  },
+});
+
+/** Replay proof: content fingerprint over every demo post and comment
+ * (id-independent: gt refKeys + titles/bodies), for remove → re-import
+ * identity checks. Deterministic FNV-style lanes; times and ids excluded. */
+export const worldFingerprint = internalQuery({
+  args: {},
+  returns: v.object({ posts: v.number(), comments: v.number(), fingerprint: v.string(), first: v.string() }),
+  handler: async (ctx) => {
+    guard();
+    const postAnchors = await ctx.db.query("demoGroundTruth").withIndex("by_scope_ref", (q: any) => q.eq("scope", "post")).collect();
+    const parts: string[] = [];
+    for (const a of postAnchors) {
+      const p = a.payload?.postId ? ((await ctx.db.get(a.payload.postId)) as any) : null;
+      if (p) parts.push(`P|${a.refKey}|${p.title}|${p.body}`);
+    }
+    const commentAnchors = await ctx.db.query("demoGroundTruth").withIndex("by_scope_ref", (q: any) => q.eq("scope", "comment")).collect();
+    for (const c of commentAnchors) {
+      const cm = c.payload?.commentId ? ((await ctx.db.get(c.payload.commentId)) as any) : null;
+      if (cm) parts.push(`C|${c.refKey}|${cm.body}`);
+    }
+    parts.sort();
+    const s = parts.join("\n");
+    let h1 = 0x811c9dc5, h2 = 0x01000193;
+    for (let i = 0; i < s.length; i++) {
+      const ch = s.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 16777619) >>> 0;
+      h2 = Math.imul(h2 ^ ch, 2246822519 + i) >>> 0;
+    }
+    return {
+      posts: postAnchors.length,
+      comments: commentAnchors.length,
+      fingerprint: (h1 >>> 0).toString(16).padStart(8, "0") + (h2 >>> 0).toString(16).padStart(8, "0"),
+      first: parts[0]?.slice(0, 100) ?? "",
+    };
   },
 });

@@ -19,6 +19,7 @@ const modules = {
   importPosts,
   importChrome,
   "convex/_generated/api": generatedApi,
+  "convex/demoWorld/importChrome": () => importChrome, // internal.* path resolution (prefix comes from the _generated anchor key)
 };
 
 afterEach(() => {

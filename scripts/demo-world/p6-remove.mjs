@@ -15,6 +15,20 @@ const run = (fn, args) => {
 const ids = run("remove/collectIds", {});
 console.log(`collected demo ids: ${ids.users.length} users, ${ids.posts.length} posts`);
 
+// ── 0. world fingerprint BEFORE removal (replay proof) + storage purge ──
+const fp = run("importChrome/worldFingerprint", {});
+console.log(`worldFingerprint before removal: ${JSON.stringify(fp)}`);
+let purged = { deleted: 0, missing: 0 };
+let guardN = 0;
+do {
+  const p = run("importChrome/purgeDemoStorage", { limit: 200 });
+  purged.deleted += p.deleted ?? 0;
+  purged.missing += p.missing ?? 0;
+  if ((p.deleted ?? 0) + (p.missing ?? 0) === 0) break;
+  if (++guardN > 200) break; // ~40k files max — never spin
+} while (true);
+console.log(`storage purge: ${purged.deleted} deleted, ${purged.missing} already gone`);
+
 const ORDER = [
   "rawEvents", "postDistributionBuckets",
   "commentReactions", "commentSaves", "commentContextSignals", "saves",

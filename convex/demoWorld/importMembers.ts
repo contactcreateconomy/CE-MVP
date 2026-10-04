@@ -87,3 +87,29 @@ export const finalizeMemberCounts = internalMutation({
     return { patched };
   },
 });
+
+/** Final-run Rising cohort: re-date selected existing members to recent
+ * joins (createdAt) with fresh lastActiveAt — they are the members "who
+ * joined recently and are climbing" for the Podium Rising category.
+ * Patches only; no new rows, no registry writes. */
+export const adjustJoinDates = internalMutation({
+  args: {
+    seq: v.optional(v.number()),
+    worldEnd: v.number(),
+    rows: v.array(v.object({ userEmail: v.string(), joinOffsetMs: v.number() })),
+  },
+  returns: v.object({ patched: v.number() }),
+  handler: async (ctx, args) => {
+    guard();
+    let patched = 0;
+    for (const r of args.rows) {
+      const uid = await findUserByEmail(ctx, r.userEmail);
+      if (!uid) continue;
+      const at = args.worldEnd + r.joinOffsetMs;
+      // deterministic replay: active half-way between join and world end
+      await ctx.db.patch(uid, { createdAt: at, lastActiveAt: at - Math.floor(r.joinOffsetMs / 2) });
+      patched += 1;
+    }
+    return { patched };
+  },
+});

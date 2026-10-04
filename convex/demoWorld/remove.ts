@@ -114,7 +114,7 @@ export const removalStatus = internalMutation({
   returns: v.object({ registryRows: v.number() }),
   handler: async (ctx) => {
     guard();
-    const registryRows = await ctx.db.query("demoRegistry").count();
+    const registryRows: number = await (ctx.db.query("demoRegistry") as any).count();
     return { registryRows };
   },
 });
