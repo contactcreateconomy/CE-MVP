@@ -429,3 +429,31 @@ architecture, fact cross-checks, exemplars and gate samples.
 (34 of 54 tokens on the P0 probe). Estimates and per-call `max_tokens`
 budgets account for it; parsers read `message.content` only. Logged in
 `scripts/demo-world/RUN-LOG.md`.
+
+**A5 — PM decisions on the Grok P0 review (2026-10-04 — binding;
+review: `scripts/demo-world/reports/P0-GROK-REVIEW.md`, verdict PASS
+WITH FIXES).**
+
+1. **Post counters.** The importer writes `postDistributionScores`
+   COUNTERS as exact tallies of the imported event rows (same pattern
+   as `seed/demo.ts`), dirty; the real `distributionRecompute` job then
+   computes `topScore`/`hotScore`/`trendScore`. **Scores are never
+   written by hand.** The production gap (real same-mutation post
+   counter updates; `rank.ts:186-187` claims them, they don't exist)
+   is logged as **CR-014**, deferred to S02 wiring.
+2. **Buckets.** The importer builds `postDistributionBuckets` as exact
+   rollups of the imported `rawEvents` (hourly ≤48h, daily 3–30d); the
+   real `vibingCompute` runs over them. The missing production writer
+   is logged as **CR-013**, deferred to S02 wiring.
+3. **Images.** Cover storage ids go in the existing
+   `postSeoMeta.ogImageAssetId`; avatars in `users.avatarAssetId`
+   (existing columns). Feed display of either is **S02 wiring, not
+   demo scope**. Uploads via internalAction — `ctx.storage.store` is
+   action-only (`storage.d.ts:173-176`).
+4. **Change requests.** CR-011 demo module + `demoRegistry` /
+   `demoGroundTruth`; CR-012 legitimacy reads
+   `users.createdAt ?? _creationTime`; CR-013 production bucket writer
+   (deferred); CR-014 production post counters (deferred). The CR-010
+   request file is split into these four — **no CR-010 / CR-010b
+   remains.** No `convex/` code is written until Grok re-checks the
+   P0 fixes.
