@@ -12,26 +12,27 @@ const env = loadEnv();
 
 // ── 1. visual briefs (LLM, batched) ─────────────────────────────────
 const coverPosts = posts.map((p, i) => ({ ...p, i })).filter((p) => p.cover);
-const briefs = new Map();
-const briefTasks = [];
-for (let b = 0; b < coverPosts.length; b += 25) {
-  const slice = coverPosts.slice(b, b + 25);
-  briefTasks.push(async () => {
-    const arr = await chatJsonArray([
-      { role: "system", content: "You are an image curator for a creator forum." },
-      { role: "user", content: `For each post write a photo search brief: {"i":<idx>,"keywords":"<2-5 plain search words>","brief":"<subject, mood, setting — no text, no logos, no recognisable people>"}\nPosts:\n${slice.map((p) => `${p.i}. [${p.type}] ${p.title}`).join("\n")}\nJSON array only.` },
-    ], { maxTokens: 1800, temperature: 0.7 });
-    arr.forEach((r) => briefs.set(r.i, r));
-  });
-}
-await pool(briefTasks, 6, "briefs");
+const STOP = new Set(['the','a','an','and','or','for','with','my','your','how','why','what','is','are','to','of','in','on','it','i','we','you','this','that','after','before','using','been','have']);
+const planByIndex = new Map();
+for (const l of readFileSync(cachePath("p3/post-plan.jsonl"), "utf8").trim().split("\n").map(JSON.parse)) planByIndex.set(planByIndex.size, l);
+const briefs = new Map(coverPosts.map((p) => {
+  const words = p.title.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter((w) => w.length > 2 && !STOP.has(w));
+  const kw = [...new Set(words)].slice(0, 3).join(' ') || planByIndex.get(p.i)?.topicTitle || p.type;
+  return [p.i, { keywords: kw, brief: kw + ' — ' + p.type + ' post cover, no text/logos/people' }];
+}));
 
-// ── 2. sourcing (Pixabay primary, Unsplash for showcase/news, fallback picsum/artic) ──
+/** ── 2. sourcing (founder UNBLOCK rules): Unsplash + Pixabay + Wikimedia
+ * Commons, relevance first, no repeats; ArtIC ONLY for art/design posts;
+ * no picsum. If no source yields an unused match, the post stays coverless
+ * (recorded) rather than getting an irrelevant image. Unsplash pace ≤50/hr. */
 const ledgerPath = cachePath("p5/image-ledger.json");
 const ledger = existsSync(ledgerPath) ? readJson(".demo-world-cache/p5/image-ledger.json") : { usedIds: [], images: [] };
 const used = new Set(ledger.usedIds);
+let unsplashCalls = 0;
 
 async function unsplashSearch(q) {
+  if (unsplashCalls >= 45) return []; // stay under 50/hr
+  unsplashCalls++;
   const r = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(q)}&per_page=10&orientation=landscape`, { headers: { Authorization: `Client-ID ${env.Unsplash_Access_key}` } });
   if (!r.ok) return [];
   const j = await r.json();
@@ -39,41 +40,68 @@ async function unsplashSearch(q) {
 }
 let pixabayCalls = 0;
 async function pixabaySearch(q) {
-  if (pixabayCalls > 90) return []; // stay far inside ~100/min
+  if (pixabayCalls > 90) return [];
   pixabayCalls++;
   const r = await fetch(`https://pixabay.com/api/?key=${encodeURIComponent(env.pixabay_API_KEY)}&q=${encodeURIComponent(q)}&per_page=10&image_type=photo&orientation=horizontal&safesearch=true`);
   if (!r.ok) return [];
   const j = await r.json();
   return (j.hits ?? []).map((x) => ({ id: `pixabay:${x.id}`, url: x.largeImageURL, w: x.imageWidth, h: x.imageHeight, credit: `Image by ${x.user} on Pixabay`, license: "Pixabay Content License", source: `https://pixabay.com/photos/${x.id}/` }));
 }
-async function articPick() {
+async function commonsSearch(q) {
+  const u = new URL("https://commons.wikimedia.org/w/api.php");
+  u.searchParams.set("action", "query"); u.searchParams.set("format", "json");
+  u.searchParams.set("generator", "search"); u.searchParams.set("gsrsearch", q);
+  u.searchParams.set("gsrnamespace", "6"); u.searchParams.set("gsrlimit", "8");
+  u.searchParams.set("prop", "imageinfo"); u.searchParams.set("iiprop", "url|extmetadata");
+  const r = await fetch(u, { headers: { "user-agent": "CE-MVP-demo-world/0.1 (local dev)" } });
+  if (!r.ok) return [];
+  const j = await r.json().catch(() => ({}));
+  const pages = Object.values(j.query?.pages ?? {});
+  const out = [];
+  for (const p of pages) {
+    const ii = p.imageinfo?.[0]; if (!ii?.url) continue;
+    const meta = ii.extmetadata ?? {};
+    const lic = String(meta.LicenseShortName?.value ?? "");
+    if (!/cc0|cc by|cc by-sa|public domain/i.test(lic)) continue; // permissive only
+    out.push({ id: `commons:${p.pageid}`, url: ii.url, w: 1200, h: 900, credit: `${meta.Artist?.value?.replace(/<[^>]+>/g, "").trim() || "Unknown"} via Wikimedia Commons`, license: lic, source: ii.descriptionurl ?? "https://commons.wikimedia.org" });
+  }
+  return out;
+}
+let articCalls = 0;
+async function articPick() { // ArtIC only for art/design posts (caller gates)
+  if (articCalls > 30) return null;
+  articCalls++;
   const r = await fetch("https://api.artic.edu/api/v1/artworks?fields=id,title,image_id,artist_title,license_title&page=" + (1 + Math.floor(R() * 40)) + "&limit=20");
   if (!r.ok) return null;
   const j = await r.json();
-  const ok = (j.data ?? []).filter((a) => a.image_id && a.title && !/portrait|study of a man|study of a woman/i.test(a.title));
+  const ok = (j.data ?? []).filter((a) => a.image_id && a.title);
   if (!ok.length) return null;
   const a = pick(R, ok);
   return { id: `artic:${a.id}`, url: `https://www.artic.edu/iiif/2/${a.image_id}/full/1200,/0/default.jpg`, w: 1200, h: 900, credit: `"${a.title}" by ${a.artist_title} (Art Institute of Chicago)`, license: a.license_title ?? "public domain (ArtIC)", source: `https://www.artic.edu/artworks/${a.id}` };
 }
-const picsum = (postI) => ({ id: `picsum:p${postI}`, url: `https://picsum.photos/seed/demo-p${postI}/1200/800`, w: 1200, h: 800, credit: "Lorem Picsum", license: "Picsum (Unsplash-sourced)", source: `https://picsum.photos/seed/demo-p${postI}/1200/800` });
 
 // ── 3. process one cover ─────────────────────────────────────────────
 let sharp = null; try { sharp = (await import("sharp")).default; } catch {
-  // pnpm store path (sharp not hoisted to root)
+  // pnpm store path (sharp not hoisted to root); Windows needs a file:// URL for absolute-path ESM import
   try {
     const { readdirSync } = await import("node:fs");
+    const { pathToFileURL } = await import("node:url");
     const pn = "node_modules/.pnpm";
     const dir = readdirSync(pn).find((d) => d.startsWith("sharp@"));
-    if (dir) sharp = (await import(`${process.cwd()}/${pn}/${dir}/node_modules/sharp/lib/index.js`)).default;
+    if (dir) sharp = (await import(pathToFileURL(`${pn}/${dir}/node_modules/sharp/dist/index.mjs`).href)).default;
   } catch { console.log("sharp unavailable — originals stored, crops deferred"); }
 }
 async function processCover(p) {
   const brief = briefs.get(p.i) ?? { keywords: p.title.split(" ").slice(0, 3).join(" "), brief: p.title };
+  const planRow = planByIndex.get(p.i) ?? {};
+  const isArtDesign = planRow.niche === "design" || /art|illustrat|paint|design/i.test(p.title);
   let chosen = null;
-  if (["showcase", "news"].includes(p.type)) { for (const cand of shuffle(R, await unsplashSearch(brief.keywords))) { if (!used.has(cand.id)) { chosen = cand; break; } } }
-  if (!chosen) { for (const cand of shuffle(R, await pixabaySearch(brief.keywords))) { if (!used.has(cand.id)) { chosen = cand; break; } } }
-  if (!chosen && R() < 0.5) chosen = await articPick();
-  if (!chosen || used.has(chosen.id)) chosen = picsum(p.i);
+  // relevance-first chain: Unsplash → Pixabay → Commons (permissive licenses only)
+  for (const cand of shuffle(R, await unsplashSearch(brief.keywords))) { if (!used.has(cand.id)) { chosen = cand; break; } }
+  if (!chosen) for (const cand of shuffle(R, await pixabaySearch(brief.keywords))) { if (!used.has(cand.id)) { chosen = cand; break; } }
+  if (!chosen) for (const cand of shuffle(R, await commonsSearch(brief.keywords))) { if (!used.has(cand.id)) { chosen = cand; break; } }
+  if (!chosen && isArtDesign) chosen = await articPick(); // ArtIC only for art/design posts
+  if (!chosen || used.has(chosen.id)) return { postI: p.i, type: p.type, brief: brief.brief, keywords: brief.keywords, coverless: true, note: "no unused relevant result in Unsplash/Pixabay/Commons" + (isArtDesign ? "/ArtIC" : "") };
   used.add(chosen.id);
   const meta = { postI: p.i, type: p.type, brief: brief.brief, keywords: brief.keywords, ...chosen };
   try {
@@ -84,7 +112,6 @@ async function processCover(p) {
       const c169 = await sharp(await base.toBuffer()).resize(1200, 675, { fit: "cover" }).webp({ quality: 72 }).toBuffer();
       const c43 = await sharp(await base.toBuffer()).resize(1200, 900, { fit: "cover" }).webp({ quality: 72 }).toBuffer();
       const f169 = cachePath(`p5/images/post-${p.i}-169.webp`); const f43 = cachePath(`p5/images/post-${p.i}-43.webp`);
-      const { writeFileSyncSafe } = await import("./lib/util.mjs");
       (await import("node:fs")).writeFileSync(f169, c169); (await import("node:fs")).writeFileSync(f43, c43);
       meta.file169 = `p5/images/post-${p.i}-169.webp`; meta.file43 = `p5/images/post-${p.i}-43.webp`;
       meta.cropBytes = c169.length + c43.length;
@@ -95,7 +122,8 @@ async function processCover(p) {
 }
 const { mkdirSync } = await import("node:fs");
 mkdirSync(cachePath("p5/images"), { recursive: true });
-const coverMetas = (await pool(coverPosts.map((p) => () => processCover(p)), 4, "covers"))).filter(Boolean);
+mkdirSync(cachePath("p5/avatars"), { recursive: true });
+const coverMetas = (await pool(coverPosts.map((p) => () => processCover(p)), 4, "covers")).filter(Boolean);
 ledger.usedIds = [...used];
 ledger.images = coverMetas;
 writeCache("p5/image-ledger.json", ledger);
@@ -109,7 +137,7 @@ if (env.DEMO_IMAGEGEN_MODEL) {
   } catch { imagegenOK = false; }
 }
 const PALETTES = [["#0f766e", "#ccfbf1"], ["#7c3aed", "#ede9fe"], ["#b45309", "#fef3c7"], ["#be185d", "#fce7f3"], ["#1d4ed8", "#dbeafe"], ["#4d7c0f", "#ecfccb"], ["#b91c1c", "#fee2e2"], ["#0e7490", "#cffafe"]];
-const activeHandles = new Set(readJson(".demo-world-cache/p3/post-plan.jsonl").toString().split("\n").map((l) => { try { return JSON.parse(l).author; } catch { return ""; } }).filter((h) => h && h !== "devtest"));
+const activeHandles = new Set(readFileSync(cachePath("p3/post-plan.jsonl"), "utf8").trim().split("\n").map((l) => { try { return JSON.parse(l).author; } catch { return ""; } }).filter((h) => h && h !== "devtest"));
 const avatars = [];
 let avatarSVGs = 0;
 for (const m of members) {

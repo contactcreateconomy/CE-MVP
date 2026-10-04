@@ -24,6 +24,10 @@ export const importComments = internalMutation({
       parentRef: v.optional(v.string()),
       createdOffsetMs: v.number(),
       moderationStatus: v.optional(v.string()),
+      sentiment: v.optional(v.string()),
+      intent: v.optional(v.string()),
+      stance: v.optional(v.string()),
+      badActorRole: v.optional(v.string()),
     })),
   },
   returns: v.object({ inserted: v.number(), skipped: v.number() }),
@@ -99,7 +103,7 @@ export const importComments = internalMutation({
         visibility: "public", createdAt,
       });
 
-      const cGtId = await ctx.db.insert("demoGroundTruth", { scope: "comment", refKey: c.ref, batch, payload: { commentId: id, postId, sentiment: null } });
+      const cGtId = await ctx.db.insert("demoGroundTruth", { scope: "comment", refKey: c.ref, batch, payload: { commentId: id, postId, sentiment: c.sentiment ?? null, intent: c.intent ?? null, stance: c.stance ?? null, badActorRole: c.badActorRole ?? null, authorEmail: c.authorEmail } });
       await register(ctx, "demoGroundTruth", cGtId, batch);
       inserted += 1;
     }

@@ -100,6 +100,8 @@ export const importPosts = internalMutation({
             if (!creator) continue;
             const itemId = await ctx.db.insert("postListItems", { postListId: listId, content: item.content, createdByUserId: creator, voteCount: item.voteCount /* = imported listItemVotes count */, sortOrder: item.sortOrder, createdAt });
             await register(ctx, "postListItems", itemId, batch);
+            const itemGtId = await ctx.db.insert("demoGroundTruth", { scope: "listItem", refKey: `${p.ref}:item:${item.sortOrder}`, batch, payload: { itemId, postRef: p.ref } });
+            await register(ctx, "demoGroundTruth", itemGtId, batch);
           }
           break;
         }

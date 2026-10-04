@@ -72,7 +72,7 @@ for (const p of posts.sort((a, b) => a.dayOffsetMs - b.dayOffsetMs)) {
     const bad = gtOf(m.handle).badActorRole;
     const sentiment = bad === "troll" ? (R() < 0.6 ? "harsh" : "disagreement") : bad === "comment-farmer" ? pick(R, ["supportive", "appreciative"]) : sentimentFor(m, p.type);
     const isReply = commentsPlan.some((c2) => c2.postI === p.i) && R() < 0.35;
-    const siblings = commentsPlan.filter((c2) => c2.postI === p.i);
+    const siblings = commentsPlan.filter((c2) => c2.postI === p.i && c2.parentIdx === null); // INV-1: replies only under depth-0 comments
     const parent = isReply ? pick(R, siblings) : null;
     const when = p.dayOffsetMs + (parent ? parent.offsetMs - p.dayOffsetMs + (2 + R() * 20) * HOUR : (R() < 0.6 ? R() * 6 : 6 + R() * 40) * HOUR);
     commentsPlan.push({
@@ -153,6 +153,10 @@ writeCache("p4/crowd-summary.json", sum);
 console.log("crowd:", JSON.stringify(sum));
 
 // ── commenter pass (LLM) ─────────────────────────────────────────────
+if (process.env.DEMO_SKIP_LLM) {
+  console.log("DEMO_SKIP_LLM set — crowd-sim artifacts written, skipping commenter pass (local driver takes over via local-prep p4).");
+  process.exit(0);
+}
 const written = [];
 const commentTasks = commentsPlan.map((c, ci) => async () => {
   const p = posts[c.postI];

@@ -1,27 +1,25 @@
 #!/usr/bin/env node
 /**
- * p6-import.mjs — demo-world IMPORT DRIVER (CR-011). Reads the pilot cache
- * artifacts and feeds convex/demoWorld internal mutations in dependency
- * order, re-anchoring all times to worldEnd = now. Batched + idempotent
- * (re-runs skip existing refs). NOT RUN until Grok approves the build.
- *
- * Usage: node scripts/demo-world/p6-import.mjs [--settle]
- */
+ * p6-import.mjs — demo-world PILOT IMPORT DRIVER (CR-011). Reads pilot cache
+ * artifacts, feeds convex/demoWorld internal mutations in dependency order,
+ * re-anchoring all times to worldEnd = now. Idempotent (re-runs skip).
+ * Covers → uploadImage + linkCover (ogImageAssetId); avatars → linkAvatar. */
 import { readFileSync, existsSync } from "node:fs";
 import { convexRun } from "../lib/local-gate.mjs";
 import { readJson, cachePath } from "./lib/util.mjs";
 
 const run = (fn, args) => {
   const out = convexRun(`demoWorld/${fn}`, JSON.stringify(args));
-  try { return JSON.parse(out); } catch { return out; }
+  try { return JSON.parse(out); } catch { return { raw: String(out).slice(0, 120) }; }
 };
 const jsonl = (rel) => existsSync(cachePath(rel)) ? readFileSync(cachePath(rel), "utf8").trim().split("\n").filter(Boolean).map(JSON.parse) : [];
 const chunk = (a, n) => { const out = []; for (let i = 0; i < a.length; i += n) out.push(a.slice(i, i + n)); return out; };
+const S = (offsetMs) => worldEnd + offsetMs;
 
 const worldEnd = Date.now();
-console.log(`import driver — worldEnd = ${new Date(worldEnd).toISOString()} (re-anchored)`);
+console.log(`pilot import — worldEnd = ${new Date(worldEnd).toISOString()} (re-anchored)`);
 
-// 0. tools
+// ── 0. tools ───────────────────────────────────────────────────────────
 const tools = readJson(".demo-world-cache/p1/tools.json").map((t) => ({
   slug: t.slug, name: t.name, categoryIds: [t.niche], officialUrl: t.officialUrl,
   pricing: { model: t.pricingModel, tiers: t.pricingTiers, verified: t.verified },
@@ -29,87 +27,221 @@ const tools = readJson(".demo-world-cache/p1/tools.json").map((t) => ({
 }));
 for (const [i, c] of chunk(tools, 25).entries()) console.log("tools", JSON.stringify(run("importTools/importTools", { seq: i, rows: c })));
 
-// 1. members (+ lastActiveOffset by tier — active members recent, quiet older)
+// ── 1. members ─────────────────────────────────────────────────────────
 const members = jsonl("p2/members.jsonl").map((m) => ({
-  handle: m.handle, name: m.name, email: m.email, bio: m.bio,
+  handle: m.handle, name: m.name || m.handle, email: m.email, bio: m.bio,
   joinOffsetMs: m.joinOffsetMs,
-  lastActiveOffsetMs: m.tier === "power" ? -Math.round(Math.random() * 6 * 3600_000) : m.tier === "regular" ? -Math.round(Math.random() * 2 * 86_400_000) : m.tier === "occasional" ? -Math.round(Math.random() * 10 * 86_400_000) : -Math.round(10 * 86_400_000 + Math.random() * 40 * 86_400_000),
-  verified: m.verified, displayName: m.name.split(" ")[0] + " " + (m.name.split(" ")[1]?.[0] ?? "") + ".",
+  lastActiveOffsetMs: m.tier === "power" ? -3_600_000 : m.tier === "regular" ? -86_400_000 : m.tier === "occasional" ? -5 * 86_400_000 : -20 * 86_400_000,
+  verified: m.verified,
+  displayName: (m.name || m.handle).split(" ")[0],
 }));
 for (const [i, c] of chunk(members, 25).entries()) console.log("members", JSON.stringify(run("importMembers/importMembers", { seq: i, worldEnd, rows: c })));
 
-// 2. posts (extensions + tallies from plan/posts/interactions)
+// ── 2. posts ───────────────────────────────────────────────────────────
 const plan = jsonl("p3/post-plan.jsonl");
 const posts = jsonl("p3/posts.jsonl");
 const interactions = jsonl("p4/interactions.jsonl");
-const comments = jsonl("p4/comments.jsonl");
+const rawExposures = jsonl("p4/rawevents.jsonl");
+const commentsAll = jsonl("p4/comments.jsonl").slice().sort((a, b) => a.offsetMs - b.offsetMs);
+const commentsByPost = new Map();
+for (const c of commentsAll) { const k = String(c.postI); if (!commentsByPost.has(k)) commentsByPost.set(k, []); commentsByPost.get(k).push(c); }
+// c.parentIdx is a GLOBAL comments-plan index; refs are per-post sorted-k — resolve through the plan
+const planComments = jsonl("p4/comments-plan.jsonl");
+const planByPost = new Map();
+planComments.forEach((c, gi) => { const k = String(c.postI); if (!planByPost.has(k)) planByPost.set(k, []); planByPost.get(k).push([c, gi]); });
+const parentRefOf = new Map();
+for (const [pid, arr] of planByPost) arr.slice().sort((a, b) => a[0].offsetMs - b[0].offsetMs).forEach(([, gi], k) => parentRefOf.set(gi, `${pid}:${k}`));
+const newsAssign = Object.fromEntries((readJson(".demo-world-cache/p3/news-assignment.json") ?? []).map((n) => [n.i, n]));
+const emailOf = (h) => h === "devtest" ? "devtest@example.com" : `${h}@demo.createconomy.invalid`;
+
 const postRows = posts.map((p, i) => {
   const pl = plan[i] ?? {};
   const ref = String(i);
-  const postComments = comments.filter((c) => String(c.postI) === ref);
-  const commenters = new Set(postComments.map((c) => c.author));
-  const valuable = interactions.filter((x) => x.kind === "reaction" && x.type === "valuable" && String(x.postI) === ref).length;
-  const saves = interactions.filter((x) => x.kind === "save" && String(x.postI) === ref).length;
-  const exposures = jsonl("p4/rawevents.jsonl").filter((e) => String(e.postI) === ref);
-  const lastEligible = Math.max(...[...postComments.map((c) => c.offsetMs), ...interactions.filter((x) => String(x.postI) === ref).map((x) => x.offsetMs), -86_400_000]);
+  const pc = commentsByPost.get(ref) ?? [];
+  const exposures = rawExposures.filter((e) => String(e.postI) === ref);
+  const times = [...pc.map((c) => c.offsetMs), ...interactions.filter((x) => String(x.postI) === ref).map((x) => x.offsetMs), p.dayOffsetMs];
   const e = p.extension ?? {};
   const row = {
-    ref, authorEmail: p.author === "devtest" ? "devtest@example.com" : `${p.author}@demo.createconomy.invalid`,
-    type: p.type, title: p.title, body: p.body, categoryId: pl.niche ?? "video",
-    toolIds: p.toolRefs ?? [], createdOffsetMs: p.dayOffsetMs,
+    ref, authorEmail: emailOf(p.author), type: p.type, title: p.title, body: p.body,
+    categoryId: pl.niche ?? "video", toolIds: p.toolRefs ?? [], createdOffsetMs: p.dayOffsetMs,
     counters: {
-      valuableWeighted: valuable, distinctCommenters: commenters.size,
-      replyCount: postComments.filter((c) => c.parentIdx !== null && c.parentIdx !== undefined).length,
-      saveCount: saves, qualifiedReads: exposures.filter((x) => x.viewportQualified).length,
-      returns7d: Math.round(exposures.length * 0.08), qualifiedExposureCount: exposures.length,
-      lastEligibleInteractionOffsetMs: lastEligible,
+      valuableWeighted: interactions.filter((x) => x.kind === "reaction" && x.type === "valuable" && String(x.postI) === ref).length,
+      distinctCommenters: new Set(pc.map((c) => c.author)).size,
+      replyCount: pc.filter((c) => c.parentIdx !== null && c.parentIdx !== undefined).length,
+      saveCount: interactions.filter((x) => x.kind === "save" && String(x.postI) === ref).length,
+      qualifiedReads: exposures.filter((x) => x.viewportQualified).length,
+      returns7d: Math.round(exposures.length * 0.08),
+      qualifiedExposureCount: exposures.length,
+      lastEligibleInteractionOffsetMs: Math.max(...times),
     },
   };
-  if (p.type === "review") row.review = { toolId: e.toolId ?? p.toolRefs?.[0] ?? "", verdictScore: e.score ?? 4, verdictSummary: e.verdictSummary, pros: e.pros ?? [], cons: e.cons ?? [] };
+  if (p.type === "review") row.review = { toolId: e.toolId ?? p.toolRefs?.[0] ?? "", verdictScore: e.score ?? 4, ...(e.verdictSummary ? { verdictSummary: e.verdictSummary } : {}), pros: e.pros ?? [], cons: e.cons ?? [] };
   if (p.type === "compare") row.compare = { toolIds: e.toolIds ?? p.toolRefs ?? [], qualitativeGrid: { criteria: e.criteria ?? [], winner: e.winner ?? "depends", reasoning: e.reasoning ?? "" } };
   if (p.type === "spark") row.spark = { statement: e.statement ?? p.body.slice(0, 280) };
   if (p.type === "debate") {
     const votes = interactions.filter((x) => x.kind === "debateVote" && String(x.postI) === ref);
     row.debate = { proposition: e.proposition ?? p.title, agreeCount: votes.filter((v) => v.choice === "agree").length, disagreeCount: votes.filter((v) => v.choice === "disagree").length, abstainCount: votes.filter((v) => v.choice === "abstain").length };
   }
-  if (p.type === "list") row.list = { mode: e.mode ?? "community_ranked", intro: e.intro ?? "", items: (e.items ?? []).map((content, k) => ({ content, createdByEmail: `${p.author}@demo.createconomy.invalid`, voteCount: interactions.filter((x) => x.kind === "listItemVote" && String(x.postI) === ref && x.itemIdx === k).length, sortOrder: k })) };
-  if (p.type === "showcase") row.showcase = { theThing: e.theThing ?? p.title, projectUrl: e.projectUrl };
-  if (p.type === "help") row.help = { problemStatement: e.problemStatement ?? p.title, resolvedStatus: interactions.some((x) => x.kind === "accept" && String(x.postI) === ref) ? "resolved" : "open" };
+  if (p.type === "list") row.list = {
+    mode: e.mode ?? "community_ranked", intro: e.intro ?? "",
+    items: (e.items ?? []).map((content, k) => ({
+      content, createdByEmail: emailOf(p.author),
+      voteCount: interactions.filter((x) => x.kind === "listItemVote" && String(x.postI) === ref && x.itemIdx === k).length,
+      sortOrder: k,
+    })),
+  };
+  if (p.type === "showcase") row.showcase = { theThing: e.theThing ?? p.title, ...(e.projectUrl ? { projectUrl: e.projectUrl } : {}) };
+  if (p.type === "help") row.help = { problemStatement: e.problemStatement ?? p.title, resolvedStatus: "open" }; // accepts patch later
   if (p.type === "news") {
-    const gtPost = readJson(".demo-world-cache/p3/ground-truth-posts.json")[i] ?? {};
-    row.news = { sourceOfTruthUrl: gtPost.newsSource ?? "https://example.com", keyClaims: e.keyClaims ?? [p.title], publishedOffsetMs: p.dayOffsetMs };
+    const na = newsAssign[i] ?? {};
+    row.news = { sourceOfTruthUrl: na.url ?? "https://example.com", keyClaims: e.keyClaims ?? [p.title], publishedOffsetMs: p.dayOffsetMs };
   }
   return row;
 });
 for (const [i, c] of chunk(postRows, 8).entries()) console.log("posts", JSON.stringify(run("importPosts/importPosts", { seq: i, worldEnd, rows: c })));
 
-// 3. comments — one call per post (same-mutation thread semantics)
+// ── 2b. images (P5): upload cover crops + avatar SVGs, link them (A5.3) ─
 {
-  const byPost = new Map();
-  comments.forEach((c) => { const k = String(c.postI); (byPost.get(k) ?? byPost.set(k, []).get(k)).push(c); });
-  let seq = 0;
-  for (const [postRef, rows] of byPost) {
-    console.log("comments", JSON.stringify(run("importComments/importComments", {
+  const imgs = (readJson(".demo-world-cache/p5/image-ledger.json") ?? { images: [] }).images ?? [];
+  let up = 0, linked = 0, skipped = 0;
+  for (const img of imgs) {
+    if (img.coverless || !img.file169 || img.fetchError) { skipped++; continue; }
+    try {
+      const bytes = readFileSync(cachePath(img.file169)).toString("base64");
+      const st = run("importChrome/uploadImage", { bytes, contentType: img.uploadContentType ?? "image/webp" });
+      if (!st.storageId) { skipped++; continue; }
+      up++;
+      const o = run("importChrome/linkCover", { postRef: String(img.postI), storageId: st.storageId });
+      if (o.linked) linked++;
+    } catch (e) { skipped++; console.log("cover", img.postI, String(e.message).slice(0, 80)); }
+  }
+  const avs = readJson(".demo-world-cache/p5/avatars.json") ?? [];
+  let avUp = 0, avLinked = 0;
+  for (const a of avs) {
+    if (a.kind !== "illustrated-svg" || !a.file) continue;
+    try {
+      const bytes = readFileSync(cachePath(a.file)).toString("base64");
+      const st = run("importChrome/uploadImage", { bytes, contentType: a.uploadContentType ?? "image/svg+xml" });
+      if (!st.storageId) continue;
+      avUp++;
+      const o = run("importChrome/linkAvatar", { email: emailOf(a.handle), storageId: st.storageId });
+      if (o.linked) avLinked++;
+    } catch (e) { console.log("avatar", a.handle, String(e.message).slice(0, 80)); }
+  }
+  console.log("images", JSON.stringify({ coversUploaded: up, coversLinked: linked, avatarsUploaded: avUp, avatarsLinked: avLinked, skipped }));
+}
+
+// ── 3. comments (per post — same-mutation thread semantics) ───────────
+{
+  let seq = 0, total = 0;
+  for (const [postRef, rows] of commentsByPost) {
+    const out = run("importComments/importComments", {
       seq: seq++, worldEnd, postRef,
-      rows: rows.map((c, k) => ({ ref: `${postRef}:${k}`, authorEmail: `${c.author}@demo.createconomy.invalid`, body: c.body, isQuestion: c.intent === "ask" || c.sentiment === "question", parentRef: c.parentIdx !== null && c.parentIdx !== undefined ? `${postRef}:${c.parentIdx}` : undefined, createdOffsetMs: c.offsetMs })),
-    })));
+      rows: rows.map((c, k) => ({
+        ref: `${postRef}:${k}`, authorEmail: emailOf(c.author), body: c.body,
+        isQuestion: c.intent === "ask" || c.sentiment === "question",
+        parentRef: c.parentIdx !== null && c.parentIdx !== undefined ? parentRefOf.get(c.parentIdx) : undefined,
+        createdOffsetMs: c.offsetMs,
+        sentiment: c.sentiment, intent: c.intent, stance: c.stance, badActorRole: c.badActorRole,
+      })),
+    });
+    total += out.inserted ?? 0;
   }
+  console.log("comments", JSON.stringify({ posts: commentsByPost.size, total }));
 }
 
-// 4. engagement
+// ── 4. engagement ──────────────────────────────────────────────────────
 {
-  const email = (h) => `${h}@demo.createconomy.invalid`;
-  for (const [i, c] of chunk(interactions.filter((x) => x.kind === "reaction"), 100).entries()) {
-    console.log("engagement", JSON.stringify(run("importEngagement/importEngagement", {
-      seq: i, worldEnd,
-      reactions: c.map((x) => ({ userEmail: email(x.user), commentRef: `${x.postI}:${comments.findIndex((cm) => cm.postI === x.postI && cm.author === x.user)}`, type: x.type, reason: x.reason, offsetMs: x.offsetMs })),
-      commentSaves: [], postSaves: [], debateVotes: [], listItemVotes: [], contextSignals: [], accepts: [], toolRatings: [],
-    })));
+  const reactions = [];
+  const reactionRows = interactions.filter((x) => x.kind === "reaction");
+  reactionRows.forEach((x, idx) => {
+    const ref = String(x.postI);
+    const pc = (commentsByPost.get(ref) ?? []).filter((c) => c.author !== x.user);
+    if (!pc.length) return;
+    const target = pc[idx % pc.length]; // deterministic, self-excluded
+    reactions.push({ userEmail: emailOf(x.user), commentRef: `${ref}:${pc.indexOf(target)}`, type: x.type, reason: x.reason, offsetMs: x.offsetMs });
+  });
+  const postSaves = interactions.filter((x) => x.kind === "save").map((x) => ({ userEmail: emailOf(x.user), postRef: String(x.postI), offsetMs: x.offsetMs }));
+  const debateVotes = interactions.filter((x) => x.kind === "debateVote").map((x) => ({ userEmail: emailOf(x.user), postRef: String(x.postI), choice: x.choice, offsetMs: x.offsetMs }));
+  const listItemVotes = interactions.filter((x) => x.kind === "listItemVote").map((x) => ({ userEmail: emailOf(x.user), itemRef: `${x.postI}:item:${x.itemIdx}`, offsetMs: x.offsetMs }));
+  const accepts = [];
+  for (const x of interactions.filter((y) => y.kind === "accept")) {
+    const ref = String(x.postI);
+    const pc = (commentsByPost.get(ref) ?? []).slice().sort((a, b) => a.offsetMs - b.offsetMs);
+    const target = pc[x.commentIdx % Math.max(1, pc.length)]; // crowd stored a plan commentIdx — map onto this post's sorted list
+    if (target) accepts.push({ postRef: ref, commentRef: `${ref}:${pc.indexOf(target)}`, acceptedByEmail: emailOf(posts[Number(ref)]?.author ?? "devtest"), offsetMs: x.offsetMs });
   }
-  // (saves/votes/ratings/accepts follow the same pattern — full driver maps them all)
+  const toolRatings = interactions.filter((x) => x.kind === "toolRating").map((x) => ({ userEmail: emailOf(x.user), toolSlug: x.tool, overallScore: x.overall, dims: x.dims, offsetMs: x.offsetMs }));
+
+  const send = (seq, payload) => run("importEngagement/importEngagement", { seq, worldEnd, ...payload });
+  const empty = { reactions: [], commentSaves: [], postSaves: [], debateVotes: [], listItemVotes: [], contextSignals: [], accepts: [], toolRatings: [] };
+  let seq = 0;
+  const groups = [
+    ...chunk(reactions, 100).map((r) => ({ ...empty, reactions: r })),
+    ...chunk(postSaves, 100).map((r) => ({ ...empty, postSaves: r })),
+    ...chunk(debateVotes, 100).map((r) => ({ ...empty, debateVotes: r })),
+    ...chunk(listItemVotes, 100).map((r) => ({ ...empty, listItemVotes: r })),
+    ...chunk(accepts, 50).map((r) => ({ ...empty, accepts: r })),
+    ...chunk(toolRatings, 50).map((r) => ({ ...empty, toolRatings: r })),
+  ];
+  let done = 0;
+  for (const g of groups) { const o = send(seq++, g); done += o.done ?? 0; }
+  console.log("engagement", JSON.stringify({ reactions: reactions.length, postSaves: postSaves.length, debateVotes: debateVotes.length, listItemVotes: listItemVotes.length, accepts: accepts.length, toolRatings: toolRatings.length, done }));
 }
 
-// 5. events + buckets, 6. notifications, 7. ground truth, 8. images,
-// 9. finalizeMemberCounts, 10. settle jobs — see README (driver shipped with
-// the build; run order documented). This file is the executable contract.
-console.log("import driver: staged — full engagement/events/images/settle stages land with the first approved import run");
+// ── 5. events (exposures) + bucket rollups (A5.2) ──────────────────────
+{
+  const exposures = rawExposures.map((e) => ({ userEmail: emailOf(e.user), postRef: String(e.postI), postType: posts[Number(e.postI)]?.type ?? "help", dwellMs: e.dwellMs, viewportQualified: e.viewportQualified, rankPosition: e.rankPosition, offsetMs: e.offsetMs }));
+  // hourly buckets for the first 48h of each post; daily 3-30d where events exist
+  const buckets = [];
+  for (const [postRef, pc] of commentsByPost) {
+    const p = posts[Number(postRef)]; if (!p) continue;
+    const evs = [
+      ...pc.map((c) => ({ at: c.offsetMs, kind: "comment" })),
+      ...interactions.filter((x) => String(x.postI) === postRef).map((x) => ({ at: x.offsetMs, kind: x.kind })),
+      ...rawExposures.filter((x) => String(x.postI) === postRef).map((x) => ({ at: x.offsetMs, kind: "view" })),
+    ].filter((e) => e.at >= p.dayOffsetMs);
+    const byHour = new Map(), byDay = new Map();
+    for (const e of evs) {
+      const ageH = (e.at - p.dayOffsetMs) / 3_600_000;
+      if (ageH <= 48) { const k = Math.floor(ageH); byHour.set(k, (byHour.get(k) ?? 0) + 1); }
+      else { const k = Math.floor(ageH / 24); byDay.set(k, (byDay.get(k) ?? 0) + 1); }
+    }
+    for (const [h, n] of byHour) buckets.push({ postRef, bucketStartOffsetMs: p.dayOffsetMs + h * 3_600_000, granularity: "hour", valuableWeighted: Math.round(n * 0.35), distinctCommenterCount: Math.min(n, Math.max(1, pc.length)), replyCount: Math.round(n * 0.2), saveCount: Math.round(n * 0.05), qualifiedReads: Math.round(n * 0.3), returns: Math.round(n * 0.08), integrityAdjustments: 0 });
+    for (const [d, n] of byDay) buckets.push({ postRef, bucketStartOffsetMs: p.dayOffsetMs + d * 86_400_000, granularity: "day", valuableWeighted: Math.round(n * 0.35), distinctCommenterCount: Math.min(n, Math.max(1, pc.length)), replyCount: Math.round(n * 0.2), saveCount: Math.round(n * 0.05), qualifiedReads: Math.round(n * 0.3), returns: Math.round(n * 0.08), integrityAdjustments: 0 });
+  }
+  let ev = 0, bk = 0;
+  for (const [i, c] of chunk(exposures, 100).entries()) { const o = run("importEvents/importEvents", { seq: i, worldEnd, exposures: c, buckets: [] }); ev += o.events ?? 0; }
+  for (const [i, c] of chunk(buckets, 100).entries()) { const o = run("importEvents/importEvents", { seq: 100 + i, worldEnd, exposures: [], buckets: c }); bk += o.buckets ?? 0; }
+  console.log("events", JSON.stringify({ exposures: ev, buckets: bk }));
+}
+
+// ── 6. notifications ───────────────────────────────────────────────────
+{
+  const rows = [];
+  for (const [postRef, pc] of commentsByPost) {
+    const p = posts[Number(postRef)]; if (!p || !pc.length) continue;
+    const actors = [...new Set(pc.map((c) => c.author))].slice(0, 5);
+    rows.push({ recipientEmail: emailOf(p.author), notificationType: "post_comment", objectType: "post", objectIdRef: postRef, actorEmails: actors.map(emailOf), eventCount: pc.length, dedupeKey: `demo:v1:post_comment:${postRef}`, offsetMs: pc[0].offsetMs + 1_800_000 });
+    const replies = pc.filter((c) => c.parentIdx !== null && c.parentIdx !== undefined);
+    for (const r of new Set(replies.map((c) => planComments[c.parentIdx]?.author).filter(Boolean))) {
+      rows.push({ recipientEmail: emailOf(r), notificationType: "comment_reply", objectType: "comment", objectIdRef: `${postRef}:0`, actorEmails: [emailOf(replies[0].author)], eventCount: replies.filter((x) => planComments[x.parentIdx]?.author === r).length, dedupeKey: `demo:v1:comment_reply:${postRef}:${r}`, offsetMs: (replies[0]?.offsetMs ?? 0) + 1_800_000 });
+    }
+  }
+  let n = 0;
+  for (const [i, c] of chunk(rows, 50).entries()) { const o = run("importChrome/importNotifications", { seq: i, worldEnd, rows: c }); n += o.inserted ?? 0; }
+  console.log("notifications", JSON.stringify({ planned: rows.length, inserted: n }));
+}
+
+// ── 7. ground truth (members; posts/comments gt ride their importers) ──
+{
+  const gt = readJson(".demo-world-cache/p2/ground-truth-members.json").map((g) => ({ scope: "member", refKey: g.handle, payload: g }));
+  let n = 0;
+  for (const [i, c] of chunk(gt, 100).entries()) { const o = run("importChrome/importGroundTruth", { seq: i, rows: c }); n += o.inserted ?? 0; }
+  console.log("groundTruth", JSON.stringify({ inserted: n }));
+}
+
+// ── 8. finalize member counters ────────────────────────────────────────
+console.log("finalize", JSON.stringify(run("importMembers/finalizeMemberCounts", { seq: 0 })));
+
+console.log("pilot import complete — next: node scripts/demo-world/p6-settle.mjs");
