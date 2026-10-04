@@ -209,7 +209,10 @@ for (const [i, c] of chunk(postRows, 8).entries()) console.log("posts", JSON.str
   ];
   let done = 0;
   for (const g of groups) { const o = send(seq++, g); done += o.done ?? 0; }
-  console.log("engagement", JSON.stringify({ reactions: reactions.length, postSaves: postSaves.length, debateVotes: debateVotes.length, listItemVotes: listItemVotes.length, accepts: accepts.length, toolRatings: toolRatings.length, done }));
+  // Grok fix: tallies are set ONCE from the vote rows, after all chunks land
+  const debates = run("importEngagement/setDebateTallies", {});
+  const listItems = run("importEngagement/setListItemVoteCounts", {});
+  console.log("engagement", JSON.stringify({ reactions: reactions.length, postSaves: postSaves.length, debateVotes: debateVotes.length, listItemVotes: listItemVotes.length, accepts: accepts.length, toolRatings: toolRatings.length, done, talliesSet: { debates: debates.patched, listItems: listItems.patched } }));
 }
 
 // ── 5. events (exposures) + bucket rollups (A5.2) ──────────────────────

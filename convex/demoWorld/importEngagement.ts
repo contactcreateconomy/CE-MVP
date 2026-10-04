@@ -5,7 +5,7 @@
  * them at settle) — each with the real mutations' side effects: commentScores
  * bumps dirty, bumpThreadActivity, rawEvents comment.reacted/saved backdated,
  * activityLedger rows (CR-011 §1; P0-REPORT §F steps 6-7). */
-import { internalMutation } from "../_generated/server";
+import { internalMutation, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { guard, register, batchId, findUserByEmail, findToolBySlug } from "./lib";
@@ -120,11 +120,9 @@ export const importEngagement = internalMutation({
       debateTally.set(d.postRef, t);
       done += 1;
     }
-    for (const t of debateTally.values()) {
-      const pd = await ctx.db.query("postDebates").withIndex("by_postId", (q: any) => q.eq("postId", t.postId)).unique();
-      // exact tallies = existing seed-of-truth counts + this batch's imported votes
-      if (pd) await ctx.db.patch(pd._id, { agreeCount: t.agree, disagreeCount: t.disagree, abstainCount: t.abstain });
-    }
+    // Grok fix (final run): tallies are NEVER patched per chunk — the driver
+    // calls setDebateTallies ONCE after all vote rows are in, deriving exact
+    // counts from the debateVotes table (per-chunk patches overwrote them).
 
     for (const lv of args.listItemVotes) {
       const userId = await uid(lv.userEmail);
@@ -162,5 +160,108 @@ export const importEngagement = internalMutation({
     }
 
     return { done, skipped };
+  },
+});
+
+/** Final-run fix: set EVERY debate's agree/disagree/abstain exactly once,
+ * derived from its debateVotes rows (call after all engagement chunks).
+ * Idempotent — re-running recomputes from the rows. */
+export const setDebateTallies = internalMutation({
+  args: { seq: v.optional(v.number()) },
+  returns: v.object({ patched: v.number() }),
+  handler: async (ctx) => {
+    guard();
+    const anchors = await ctx.db.query("demoGroundTruth").withIndex("by_scope_ref", (q: any) => q.eq("scope", "post")).collect();
+    let patched = 0;
+    for (const a of anchors) {
+      if (a.payload?.type !== "debate" || !a.payload?.postId) continue;
+      const votes = await ctx.db.query("debateVotes").withIndex("by_postId", (q: any) => q.eq("postId", a.payload.postId)).collect();
+      const pd = await ctx.db.query("postDebates").withIndex("by_postId", (q: any) => q.eq("postId", a.payload.postId)).unique();
+      if (!pd) continue;
+      const agree = votes.filter((x: any) => x.choice === "agree").length;
+      const disagree = votes.filter((x: any) => x.choice === "disagree").length;
+      const abstain = votes.filter((x: any) => x.choice === "abstain").length;
+      await ctx.db.patch(pd._id, { agreeCount: agree, disagreeCount: disagree, abstainCount: abstain });
+      patched += 1;
+    }
+    return { patched };
+  },
+});
+
+/** Same discipline for list items: voteCount derived from listItemVotes rows. */
+export const setListItemVoteCounts = internalMutation({
+  args: { seq: v.optional(v.number()) },
+  returns: v.object({ patched: v.number() }),
+  handler: async (ctx) => {
+    guard();
+    const anchors = await ctx.db.query("demoGroundTruth").withIndex("by_scope_ref", (q: any) => q.eq("scope", "listItem")).collect();
+    let patched = 0;
+    for (const a of anchors) {
+      const itemId = a.payload?.itemId as Id<"postListItems"> | undefined;
+      if (!itemId) continue;
+      const votes = await ctx.db.query("listItemVotes").withIndex("by_item", (q: any) => q.eq("postListItemId", itemId)).collect();
+      const item = await ctx.db.get(itemId);
+      if (!item) continue;
+      await ctx.db.patch(itemId, { voteCount: votes.length });
+      patched += 1;
+    }
+    return { patched };
+  },
+});
+
+/** Final-run verification: stored tallies/accepts match their source rows. */
+export const verifyTallies = internalQuery({
+  args: {},
+  returns: v.object({
+    debates: v.number(), debateMismatches: v.number(),
+    listItems: v.number(), listMismatches: v.number(),
+    helpsResolved: v.number(), helpsOpen: v.number(), acceptMismatches: v.number(),
+    samples: v.array(v.string()),
+  }),
+  handler: async (ctx) => {
+    const samples: string[] = [];
+    const postAnchors = await ctx.db.query("demoGroundTruth").withIndex("by_scope_ref", (q: any) => q.eq("scope", "post")).collect();
+    let debates = 0, debateMismatches = 0, helpsResolved = 0, helpsOpen = 0, acceptMismatches = 0;
+    for (const a of postAnchors) {
+      const postId = a.payload?.postId;
+      if (!postId) continue;
+      if (a.payload?.type === "debate") {
+        debates += 1;
+        const votes = await ctx.db.query("debateVotes").withIndex("by_postId", (q: any) => q.eq("postId", postId)).collect();
+        const pd = await ctx.db.query("postDebates").withIndex("by_postId", (q: any) => q.eq("postId", postId)).unique();
+        if (!pd) { debateMismatches += 1; samples.push(`debate ${a.refKey}: no postDebates row`); continue; }
+        const want = { agree: votes.filter((x: any) => x.choice === "agree").length, disagree: votes.filter((x: any) => x.choice === "disagree").length, abstain: votes.filter((x: any) => x.choice === "abstain").length };
+        if (pd.agreeCount !== want.agree || pd.disagreeCount !== want.disagree || pd.abstainCount !== want.abstain) {
+          debateMismatches += 1;
+          samples.push(`debate ${a.refKey}: stored ${pd.agreeCount}/${pd.disagreeCount}/${pd.abstainCount} vs rows ${want.agree}/${want.disagree}/${want.abstain}`);
+        }
+      }
+      if (a.payload?.type === "help") {
+        const ph = await ctx.db.query("postHelps").withIndex("by_postId", (q: any) => q.eq("postId", postId)).unique();
+        if (!ph) continue;
+        if (ph.resolvedStatus === "resolved") {
+          helpsResolved += 1;
+          const c = ph.acceptedCommentId ? await ctx.db.get(ph.acceptedCommentId as Id<"comments">) : null;
+          if (!c || c.postId !== postId || !ph.acceptedByUserId || !ph.acceptedAt) {
+            acceptMismatches += 1;
+            samples.push(`help ${a.refKey}: accept fields inconsistent`);
+          }
+        } else helpsOpen += 1;
+      }
+    }
+    const itemAnchors = await ctx.db.query("demoGroundTruth").withIndex("by_scope_ref", (q: any) => q.eq("scope", "listItem")).collect();
+    let listItems = 0, listMismatches = 0;
+    for (const a of itemAnchors) {
+      const itemId = a.payload?.itemId as Id<"postListItems"> | undefined;
+      if (!itemId) continue;
+      listItems += 1;
+      const votes = await ctx.db.query("listItemVotes").withIndex("by_item", (q: any) => q.eq("postListItemId", itemId)).collect();
+      const item = await ctx.db.get(itemId);
+      if (!item || item.voteCount !== votes.length) {
+        listMismatches += 1;
+        if (samples.length < 10) samples.push(`listItem ${a.refKey}: stored ${item?.voteCount} vs rows ${votes.length}`);
+      }
+    }
+    return { debates, debateMismatches, listItems, listMismatches, helpsResolved, helpsOpen, acceptMismatches, samples: samples.slice(0, 10) };
   },
 });
