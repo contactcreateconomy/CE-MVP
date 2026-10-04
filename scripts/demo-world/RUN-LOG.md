@@ -46,4 +46,7 @@ Artifacts: `.demo-world-cache/p1/{world,tools,events-media,events-text}.json` + 
 |---|---|---|---|---|
 | P2 casting | 500 members (20/80/175/225 tiers, 15 bad actors in ground truth, 460 verified, 407 avatars, 500 unique handles) | 25 (+~3 repairs) | ~45k/~30k | ~4 min |
 | BUILD convex/demoWorld | CR-011 module (lib+importTools/Members/Posts/Comments/Engagement/Events/Chrome + remove) + 2 schema tables + CR-012 legitimacy fix + drivers (p6-import/remove/settle); 93/93 convex tests green, convex tsc + forum typecheck clean | 0 (code) | — | ~50 min |
+| P3 posts | **BLOCKED at 29/250**: LLM endpoint returned HTTP 429 "Insufficient balance or no resource pack" after ~460k tokens; 149 calls exhausted retries; a refill attempt overwrote posts.jsonl (29→3 rows) — **nothing lost permanently: the deterministic plan + LLM cache rebuild all posts the moment balance returns** (re-run p3-posts.mjs) | 252 calls (+616 retries, 149 failed) | ~156k/~305k | ~45 min to block |
+| P4 conversation | BLOCKED (needs posts ≥240) — script ready (p4-conversation.mjs: deterministic crowd sim + commenter) | 0 | — | — |
+| P5 images | BLOCKED (needs posts) — script ready (p5-images.mjs: Pixabay/Unsplash/Commons/picsum + sharp crops; Pixabay probe still HTTP 200) | 0 | — | — |
 
