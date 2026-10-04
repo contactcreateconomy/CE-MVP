@@ -80,7 +80,9 @@ export const uploadImage = internalAction({
   returns: v.object({ storageId: v.string() }),
   handler: async (ctx, args) => {
     guard();
-    const blob = new Blob([Uint8Array.from(atob(args.bytes), (ch) => ch.charCodeAt(0))]);
+    // the Blob's `type` IS the stored content type — without it the storage
+    // endpoint serves the asset headerless and browsers refuse to decode it
+    const blob = new Blob([Uint8Array.from(atob(args.bytes), (ch) => ch.charCodeAt(0))], { type: args.contentType });
     const storageId = await ctx.storage.store(blob);
     return { storageId };
   },
@@ -109,12 +111,12 @@ export const uploadImageChunk = internalMutation({
 
 export const chunksForUpload = internalQuery({
   args: { uploadId: v.string() },
-  returns: v.array(v.object({ seq: v.number(), chunk: v.string() })),
+  returns: v.array(v.object({ seq: v.number(), chunk: v.string(), contentType: v.optional(v.string()) })),
   handler: async (ctx, args) => {
     const rows = await ctx.db.query("demoGroundTruth").withIndex("by_scope_ref", (q: any) => q.eq("scope", "imgChunk")).collect();
     return rows
       .filter((r: any) => r.payload?.uploadId === args.uploadId)
-      .map((r: any) => ({ seq: r.payload.seq as number, chunk: r.payload.chunk as string }))
+      .map((r: any) => ({ seq: r.payload.seq as number, chunk: r.payload.chunk as string, contentType: r.payload.contentType as string | undefined }))
       .sort((a, b) => a.seq - b.seq);
   },
 });
@@ -138,14 +140,14 @@ export const deleteImageChunks = internalMutation({
 export const uploadImageFinalize = internalAction({
   args: { uploadId: v.string() },
   returns: v.object({ storageId: v.string(), chunks: v.number() }),
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<{ storageId: string; chunks: number }> => {
     guard();
-    const parts = await ctx.runQuery(internal.demoWorld.importChrome.chunksForUpload, { uploadId: args.uploadId });
+    const parts = (await ctx.runQuery(internal.demoWorld.importChrome.chunksForUpload, { uploadId: args.uploadId })) as { seq: number; chunk: string; contentType?: string }[];
     if (!parts.length) throw new Error(`uploadImageFinalize: no chunks for ${args.uploadId}`);
     const bytes = parts.map((p) => p.chunk).join("");
-    const blob = new Blob([Uint8Array.from(atob(bytes), (ch) => ch.charCodeAt(0))]);
+    const blob = new Blob([Uint8Array.from(atob(bytes), (ch) => ch.charCodeAt(0))], { type: parts[0].contentType ?? "application/octet-stream" });
     const storageId = await ctx.storage.store(blob);
-    const del = await ctx.runMutation(internal.demoWorld.importChrome.deleteImageChunks, { uploadId: args.uploadId });
+    const del = (await ctx.runMutation(internal.demoWorld.importChrome.deleteImageChunks, { uploadId: args.uploadId })) as { deleted: number };
     return { storageId, chunks: del.deleted };
   },
 });

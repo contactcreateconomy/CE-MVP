@@ -12,6 +12,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { useMutation, useQuery } from "convex/react";
 
 import { Badge } from "@/components/ui/badge";
@@ -187,6 +188,18 @@ function FeedCard({
     <li>
       <Card>
         <CardContent className="space-y-2 py-4">
+          {card.coverImage ? (
+            /* CR-010a: storage-resolved cover from postSeoMeta.ogImageAssetId (backend
+             * returns the URL; null when absent). unoptimized — the asset is served by
+             * the deployment's own storage host, not a next/image remote pattern. */
+            <a
+              href={`/discussions/${card.slug ?? card.postId}`}
+              className="relative block h-[132px] w-full overflow-hidden rounded-md"
+              aria-label={`Open discussion: ${card.title}`}
+            >
+              <Image src={card.coverImage} alt={card.title} fill sizes="(max-width: 768px) 100vw, 480px" className="object-cover" unoptimized />
+            </a>
+          ) : null}
           <div className="flex flex-wrap items-center gap-2 text-xs text-(--text-muted)">
             <Badge tone="neutral">{card.type}</Badge>
             {card.rising ? <Badge tone="warning">Rising</Badge> : null}
