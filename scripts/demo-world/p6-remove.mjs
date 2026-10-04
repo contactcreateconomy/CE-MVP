@@ -8,7 +8,7 @@
 import { convexRun } from "../lib/local-gate.mjs";
 
 const run = (fn, args) => {
-  const out = convexRun(`demoWorld/${fn}`, JSON.stringify(args));
+  const out = convexRun(`demoWorld/${fn.replace("/", ":")}`, JSON.stringify(args));
   try { return JSON.parse(out); } catch { return out; }
 };
 

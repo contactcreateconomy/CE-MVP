@@ -3,7 +3,8 @@
  * windows + unique dedupeKey) + member/comment ground truth + image upload
  * (internalAction: ctx.storage.store is action-only — A5.3) and linking
  * covers → postSeoMeta.ogImageAssetId, avatars → users.avatarAssetId. */
-import { internalMutation, internalAction } from "../_generated/server";
+import { internalMutation, internalAction, internalQuery } from "../_generated/server";
+import { internal } from "../_generated/api";
 import { v } from "convex/values";
 import { guard, register, batchId, findUserByEmail } from "./lib";
 
@@ -82,6 +83,70 @@ export const uploadImage = internalAction({
     const blob = new Blob([Uint8Array.from(atob(args.bytes), (ch) => ch.charCodeAt(0))]);
     const storageId = await ctx.storage.store(blob);
     return { storageId };
+  },
+});
+
+/** Chunked upload — Windows caps a single CLI arg near 32KB, so cover-sized
+ * base64 payloads cannot pass through `convex run` in one piece. Chunks are
+ * ephemeral demoGroundTruth rows (scope imgChunk, deliberately NOT registered
+ * — uploadImageFinalize deletes them once the blob is stored). */
+export const uploadImageChunk = internalMutation({
+  args: { uploadId: v.string(), seq: v.number(), total: v.number(), contentType: v.string(), chunk: v.string() },
+  returns: v.object({ stored: v.number() }),
+  handler: async (ctx, args) => {
+    guard();
+    const refKey = `imgChunk:${args.uploadId}:${args.seq}`;
+    const existing = await ctx.db.query("demoGroundTruth").withIndex("by_scope_ref", (q: any) => q.eq("scope", "imgChunk").eq("refKey", refKey)).unique();
+    if (!existing) {
+      await ctx.db.insert("demoGroundTruth", {
+        scope: "imgChunk", refKey, batch: batchId("imgChunk", args.seq),
+        payload: { uploadId: args.uploadId, seq: args.seq, total: args.total, contentType: args.contentType, chunk: args.chunk },
+      });
+    }
+    return { stored: args.seq };
+  },
+});
+
+export const chunksForUpload = internalQuery({
+  args: { uploadId: v.string() },
+  returns: v.array(v.object({ seq: v.number(), chunk: v.string() })),
+  handler: async (ctx, args) => {
+    const rows = await ctx.db.query("demoGroundTruth").withIndex("by_scope_ref", (q: any) => q.eq("scope", "imgChunk")).collect();
+    return rows
+      .filter((r: any) => r.payload?.uploadId === args.uploadId)
+      .map((r: any) => ({ seq: r.payload.seq as number, chunk: r.payload.chunk as string }))
+      .sort((a, b) => a.seq - b.seq);
+  },
+});
+
+export const deleteImageChunks = internalMutation({
+  args: { uploadId: v.optional(v.string()), sweepAll: v.optional(v.boolean()) },
+  returns: v.object({ deleted: v.number() }),
+  handler: async (ctx, args) => {
+    guard();
+    const rows = await ctx.db.query("demoGroundTruth").withIndex("by_scope_ref", (q: any) => q.eq("scope", "imgChunk")).collect();
+    let deleted = 0;
+    for (const r of rows) {
+      if (!args.sweepAll && r.payload?.uploadId !== args.uploadId) continue;
+      await ctx.db.delete(r._id);
+      deleted++;
+    }
+    return { deleted };
+  },
+});
+
+export const uploadImageFinalize = internalAction({
+  args: { uploadId: v.string() },
+  returns: v.object({ storageId: v.string(), chunks: v.number() }),
+  handler: async (ctx, args) => {
+    guard();
+    const parts = await ctx.runQuery(internal.demoWorld.importChrome.chunksForUpload, { uploadId: args.uploadId });
+    if (!parts.length) throw new Error(`uploadImageFinalize: no chunks for ${args.uploadId}`);
+    const bytes = parts.map((p) => p.chunk).join("");
+    const blob = new Blob([Uint8Array.from(atob(bytes), (ch) => ch.charCodeAt(0))]);
+    const storageId = await ctx.storage.store(blob);
+    const del = await ctx.runMutation(internal.demoWorld.importChrome.deleteImageChunks, { uploadId: args.uploadId });
+    return { storageId, chunks: del.deleted };
   },
 });
 

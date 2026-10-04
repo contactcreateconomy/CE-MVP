@@ -4,12 +4,13 @@
  * artifacts, feeds convex/demoWorld internal mutations in dependency order,
  * re-anchoring all times to worldEnd = now. Idempotent (re-runs skip).
  * Covers → uploadImage + linkCover (ogImageAssetId); avatars → linkAvatar. */
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, appendFileSync } from "node:fs";
 import { convexRun } from "../lib/local-gate.mjs";
 import { readJson, cachePath } from "./lib/util.mjs";
 
 const run = (fn, args) => {
-  const out = convexRun(`demoWorld/${fn}`, JSON.stringify(args));
+  // convex CLI needs the colon form for nested functions (importTools/importTools → importTools:importTools)
+  const out = convexRun(`demoWorld/${fn.replace("/", ":")}`, JSON.stringify(args));
   try { return JSON.parse(out); } catch { return { raw: String(out).slice(0, 120) }; }
 };
 const jsonl = (rel) => existsSync(cachePath(rel)) ? readFileSync(cachePath(rel), "utf8").trim().split("\n").filter(Boolean).map(JSON.parse) : [];
@@ -102,33 +103,55 @@ for (const [i, c] of chunk(postRows, 8).entries()) console.log("posts", JSON.str
 
 // ── 2b. images (P5): upload cover crops + avatar SVGs, link them (A5.3) ─
 {
+  // Windows caps one CLI arg near 32KB: small payloads go direct, larger ones
+  // go through chunk rows + uploadImageFinalize (demoWorld/importChrome).
+  const CH = 24000;
+  const upload = (buf, contentType, tag) => {
+    const b64 = buf.toString("base64");
+    if (b64.length <= CH) {
+      const st = run("importChrome/uploadImage", { bytes: b64, contentType });
+      if (!st.storageId) throw new Error("uploadImage: no storageId " + JSON.stringify(st).slice(0, 80));
+      return st.storageId;
+    }
+    const uploadId = `${tag}-${Date.now().toString(36)}`;
+    const total = Math.ceil(b64.length / CH);
+    for (let s = 0; s < total; s++) run("importChrome/uploadImageChunk", { uploadId, seq: s, total, contentType, chunk: b64.slice(s * CH, (s + 1) * CH) });
+    const st = run("importChrome/uploadImageFinalize", { uploadId });
+    if (!st.storageId) throw new Error("finalize: no storageId " + JSON.stringify(st).slice(0, 80));
+    return st.storageId;
+  };
   const imgs = (readJson(".demo-world-cache/p5/image-ledger.json") ?? { images: [] }).images ?? [];
+  // resume marker: one tag per uploaded+linked image so re-runs skip them
+  const donePath = cachePath("p5/upload-done.jsonl");
+  const done = new Set(existsSync(donePath) ? readFileSync(donePath, "utf8").trim().split("\n").filter(Boolean) : []);
+  const markDone = (tag) => { done.add(tag); appendFileSync(donePath, tag + "\n"); };
   let up = 0, linked = 0, skipped = 0;
   for (const img of imgs) {
     if (img.coverless || !img.file169 || img.fetchError) { skipped++; continue; }
+    const tag = `post-${img.postI}`;
+    if (done.has(tag)) { up++; linked++; continue; }
     try {
-      const bytes = readFileSync(cachePath(img.file169)).toString("base64");
-      const st = run("importChrome/uploadImage", { bytes, contentType: img.uploadContentType ?? "image/webp" });
-      if (!st.storageId) { skipped++; continue; }
+      const storageId = upload(readFileSync(cachePath(img.file169)), img.uploadContentType ?? "image/webp", tag);
       up++;
-      const o = run("importChrome/linkCover", { postRef: String(img.postI), storageId: st.storageId });
-      if (o.linked) linked++;
-    } catch (e) { skipped++; console.log("cover", img.postI, String(e.message).slice(0, 80)); }
+      const o = run("importChrome/linkCover", { postRef: String(img.postI), storageId });
+      if (o.linked) { linked++; markDone(tag); }
+    } catch (e) { skipped++; console.log("cover", img.postI, String(e.message).slice(0, 120)); }
   }
   const avs = readJson(".demo-world-cache/p5/avatars.json") ?? [];
   let avUp = 0, avLinked = 0;
   for (const a of avs) {
     if (a.kind !== "illustrated-svg" || !a.file) continue;
+    const tag = `av-${a.handle}`;
+    if (done.has(tag)) { avUp++; avLinked++; continue; }
     try {
-      const bytes = readFileSync(cachePath(a.file)).toString("base64");
-      const st = run("importChrome/uploadImage", { bytes, contentType: a.uploadContentType ?? "image/svg+xml" });
-      if (!st.storageId) continue;
+      const storageId = upload(readFileSync(cachePath(a.file)), a.uploadContentType ?? "image/svg+xml", tag);
       avUp++;
-      const o = run("importChrome/linkAvatar", { email: emailOf(a.handle), storageId: st.storageId });
-      if (o.linked) avLinked++;
-    } catch (e) { console.log("avatar", a.handle, String(e.message).slice(0, 80)); }
+      const o = run("importChrome/linkAvatar", { email: emailOf(a.handle), storageId });
+      if (o.linked) { avLinked++; markDone(tag); }
+    } catch (e) { console.log("avatar", a.handle, String(e.message).slice(0, 120)); }
   }
   console.log("images", JSON.stringify({ coversUploaded: up, coversLinked: linked, avatarsUploaded: avUp, avatarsLinked: avLinked, skipped }));
+  console.log("imgChunk sweep", JSON.stringify(run("importChrome/deleteImageChunks", { sweepAll: true })));
 }
 
 // ── 3. comments (per post — same-mutation thread semantics) ───────────
