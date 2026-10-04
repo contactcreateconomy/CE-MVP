@@ -26,3 +26,16 @@ Total external API spend this phase: 2 LLM calls, 4 HTTP probes. Duration ≈ 1 
 | Pixabay search | 0 | — | P0b SKIPPED — key not yet saved; **P0c re-probe after founder saved `.env.local` (23:57): HTTP 200, 500 hits ("creator workspace"), key len 34 (value never printed).** |
 
 Spend this sub-phase: 2 HTTP probes (1 Commons, 1 Pixabay).
+
+## P1 — The world and the facts (2026-10-04) — driver: LOCAL (addendum A2)
+
+| Item | Count | Tokens | Notes |
+|---|---|---|---|
+| LLM API calls | **0** | 0 | entire phase produced by the local driver (zcode/GLM sub-agents) per A2 |
+| Web-verification sub-agents | 9 | n/a (local) | 7 tool batches (100 tools: official pricing pages + corroborating sources + recent-changes checks) + 2 real-event research agents (Aug 2–Oct 4 2026, per niche cluster). ~500 web fetch/search actions total. |
+| Tool rows produced | 100 | — | 59 verified:full, 41 verified:partial, 0 none; 0 duplicate slugs; 2 shutdowns discovered (OpenAI Sora, Relay.app), 4 pivots recorded (Copy.ai, Writesonic, BrandWell, Podcastle→Async) |
+| Calendar | 29 entries | — | 27 anchored to sourced real events (Suno licensing arc, Sept model-price war, Sora shutdown, Patreon 30 features, Copilot changelog…) |
+| Validator | 1 run | — | `scripts/demo-world/validate.mjs` PASS (weights 1.000, niche spread exact) |
+
+No images fetched, no DB writes, no convex/ code (blocked until Grok re-check, A5.4).
+Artifacts: `.demo-world-cache/p1/{world,tools,events-media,events-text}.json` + `batches/*.json` (gitignored cache).
