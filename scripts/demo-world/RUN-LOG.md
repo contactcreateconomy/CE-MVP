@@ -39,3 +39,10 @@ Spend this sub-phase: 2 HTTP probes (1 Commons, 1 Pixabay).
 
 No images fetched, no DB writes, no convex/ code (blocked until Grok re-check, A5.4).
 Artifacts: `.demo-world-cache/p1/{world,tools,events-media,events-text}.json` + `batches/*.json` (gitignored cache).
+
+## Lean run (2026-10-04, founder+PM: no gates, pilot P3–P5, one line per phase)
+
+| Phase | Counts | LLM calls | Tokens (in/out) | Time |
+|---|---|---|---|---|
+| P2 casting | 500 members (20/80/175/225 tiers, 15 bad actors in ground truth, 460 verified, 407 avatars, 500 unique handles) | 25 (+~3 repairs) | ~45k/~30k | ~4 min |
+

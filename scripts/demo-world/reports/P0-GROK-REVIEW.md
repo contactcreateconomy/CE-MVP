@@ -18,3 +18,23 @@ FINDINGS:
   [NOTE]  Call estimate adds up: the stage table sums to about 84,042 calls, and 84,000 / 8 × ~8s is about a day of API time before retries. The row total does not: ≤500k `rawEvents` plus ~700k `demoRegistry` rows is already ~1.2M, above the stated 0.9–1.1M. Commenter tokens (~1,300 per comment, thread included) are tight once a thread is in the prompt; reasoning on the P0 probe was 34 of 54 tokens. Not a gate block.
   [NOTE]  This verdict is `dfb68db` only. `demo-world` HEAD is `d837517` (P0b/P0c image-source addenda). Those commits do not fix the findings above. The LLM and image HTTP 200s were not re-run; the commit does not print keys, and `RUN-LOG.md` matches the report's probe story.
 QUESTIONS FOR PM: Three decisions before founder go. (1) Post feed counters have no production writer — CR for real same-mutation updates, or an explicit exception so the importer maintains them? (2) Covers and avatars are invisible to the live feed queries — CR to read `postSeoMeta.ogImageAssetId` and `users.avatarAssetId`, or accept coverless cards? (3) Confirm CR-011 / CR-012 / CR-013 replace CR-010, and whether CR-013 is a production bucket writer rather than the importer rollup in D-2.
+
+---
+
+## Re-check — `09f259b` `[DEMO][P0-FIX]` (2026-10-04)
+
+Judged against spec §6 **A5**, not the original plan. Only the six findings above.
+
+RECHECK: REMAINING ITEMS
+
+CLOSED:
+  1. Post counters — §A.5, §F step 3, and CR-014 match A5.1: importer writes counters as exact event tallies and leaves `topScore`/`hotScore`/`trendScore` to `distributionRecompute`. Production writers are CR-014, deferred. See remaining item R1; §D still says the opposite.
+  2. Images — §A.9, §F step 11, R14, and CR-011 ask 3 match A5.3: covers in `postSeoMeta.ogImageAssetId`, avatars in `users.avatarAssetId`, upload via internalAction, display is S02 wiring.
+  3. News — §F steps 3 and 3b: dedicated `postNews` insert (`sourceOfTruthUrl` + `keyClaims`); `insertExtensionRow` kept for the seven member types; Launch Pad and Gigs locked, create none.
+  4. Comment and reaction side effects — §F steps 5–7 and 10 now include `comment.created`, `comment_created`, `isQuestion` → `unresolvedQuestionCount`, `bumpThreadActivity`, `isCountableAtWrite: false` on negatives, `acceptedByUserId`, and `post_comment` / `comment_reply` / `saved_post_activity`.
+  5. Registry id — §G and CR-011 ask 2 use `docId: v.string()`.
+  6. CR split — `CR-010-REQUEST.md` is deleted. Live requests are CR-011 (module), CR-012 (legitimacy `createdAt ?? _creationTime`), CR-013 (production bucket writer, deferred), CR-014 (production post counters, deferred). Mentions of CR-010 are retirement notes, which A5.4 itself uses.
+
+REMAINING:
+  R1. `scripts/demo-world/reports/P0-REPORT.md:64` — §D still says `postDistributionScores` is imported as a minimal dirty row "so jobs compute all numbers." That is the claim A5.1 rejected. §A.5 and §F step 3 are correct; this row is not. Required fix: §D says the importer writes the counters as exact tallies; the job computes only the three scores.
+  R2. `scripts/demo-world/reports/P0-REPORT.md:108` — §F step 9 still says buckets are written "if D-2 approved." A5.2 decided the importer builds them; CR-013 is only the deferred production writer. R3 already says decided. Required fix: drop the hedge in the import table.
