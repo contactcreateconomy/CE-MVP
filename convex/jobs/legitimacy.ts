@@ -139,8 +139,11 @@ export const recompute = internalMutation({
       const passedShare = ownPosts.length > 0 ? passed / ownPosts.length : 1;
 
       const components = computeComponents({
-        daysSinceSignup: user?._creationTime
-          ? (Date.now() - user._creationTime) / 24 / 3_600_000
+        // CR-012: createdAt is the signup-time field (canonicalSignupFields);
+        // _creationTime cannot be backdated (Convex strips it from inserts),
+        // which zeroed account_age for imported/migrated user corpora.
+        daysSinceSignup: (user?.createdAt ?? user?._creationTime)
+          ? (Date.now() - (user!.createdAt ?? user!._creationTime!)) / 24 / 3_600_000
           : 30,
         distinctEventTypes,
         distinctTargets,

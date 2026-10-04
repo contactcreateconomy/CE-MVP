@@ -3260,4 +3260,27 @@ export default defineSchema({
     effectiveFrom: v.number(),
     autoReleaseEligible: v.optional(v.boolean()), // C1 — soft allowlist only
   }).index("by_code_version", ["code", "version"]),
+
+  /* ═══ DEMO-WORLD (CR-011, spec ak-redesign/specs/DEMO-WORLD-SPEC.md) ═══
+   * Local-backend demo corpus plumbing. demoRegistry: transactional
+   * registration of every imported row → one-script removal + replay
+   * parity. demoGroundTruth: per member/post/comment planned traits
+   * (sentiment/intent/stance, latent quality, bad-actor roles, verified
+   * sources) — the measurement baseline for sentiment/analytics testing.
+   * Both are additive; no existing table changed. Guarded by
+   * seed/devGuard loopback on every write path. */
+  demoRegistry: defineTable({
+    table: v.string(), // table name of the registered doc
+    docId: v.string(), // the doc's _id (v.id takes a table name; string is correct)
+    batch: v.string(), // "v1:members:0007" — import batch grouping
+  })
+    .index("by_table", ["table"])
+    .index("by_batch", ["batch"]),
+
+  demoGroundTruth: defineTable({
+    scope: v.string(), // "member" | "post" | "comment" | "listItem"
+    refKey: v.string(), // stable driver key (handle / postI / commentI)
+    batch: v.string(),
+    payload: v.any(), // {postId?, commentId?, sentiment?, intent?, ...}
+  }).index("by_scope_ref", ["scope", "refKey"]),
 });

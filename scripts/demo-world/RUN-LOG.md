@@ -45,4 +45,5 @@ Artifacts: `.demo-world-cache/p1/{world,tools,events-media,events-text}.json` + 
 | Phase | Counts | LLM calls | Tokens (in/out) | Time |
 |---|---|---|---|---|
 | P2 casting | 500 members (20/80/175/225 tiers, 15 bad actors in ground truth, 460 verified, 407 avatars, 500 unique handles) | 25 (+~3 repairs) | ~45k/~30k | ~4 min |
+| BUILD convex/demoWorld | CR-011 module (lib+importTools/Members/Posts/Comments/Engagement/Events/Chrome + remove) + 2 schema tables + CR-012 legitimacy fix + drivers (p6-import/remove/settle); 93/93 convex tests green, convex tsc + forum typecheck clean | 0 (code) | — | ~50 min |
 
