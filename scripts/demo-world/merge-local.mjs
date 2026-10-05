@@ -40,7 +40,7 @@ const CONFIG = {
 
 const cfg = CONFIG[phase];
 const existing = existsSync(cachePath(cfg.artifact)) ? readFileSync(cachePath(cfg.artifact), "utf8").trim().split("\n").filter(Boolean).map(JSON.parse) : [];
-const existingKeys = new Set(existing.map((r) => cfg.refOf(r)).filter((k) => k !== undefined));
+const existingKeys = new Set(existing.map((r) => cfg.refOf(r)).filter((k) => k !== undefined).map(String));
 const plan = phase === "p3" ? PLANS3 : null;
 const gtOld = phase === "p3" && existsSync(cachePath(cfg.gt)) ? readJsonSafe(cfg.gt) : [];
 
@@ -52,14 +52,14 @@ for (const fullPath of fList) {
   const f = fullPath.split("/").pop();
   if (!f.endsWith(".jsonl")) continue;
   let rows;
-  try { rows = JSON.parse(readFileSync(path.join(OUT, f), "utf8")); } catch {
+  try { rows = JSON.parse(readFileSync(fullPath, "utf8")); } catch {
     // line-delimited JSON fallback (some sub-agents write one object per line)
     try { rows = readFileSync(fullPath, "utf8").trim().split(/\r?\n/).filter(Boolean).map((l) => JSON.parse(l)); } catch { badJson++; continue; }
   }
   for (const r of rows) {
-    const key = cfg.refOf(r);
-    if (key === undefined) continue;
-    if (existingKeys.has(key) || newRows.some((x) => cfg.refOf(x) === key)) { skipped++; continue; }
+    const key = String(cfg.refOf(r)); // batch agents echo string refs; artifact stores numbers — normalize for comparison
+    if (key === "undefined") continue;
+    if (existingKeys.has(key) || newRows.some((x) => String(cfg.refOf(x)) === key)) { skipped++; continue; }
     const row = cfg.toRow(r);
     if (!row || !row.body && !row.title) continue;
     newRows.push(row);

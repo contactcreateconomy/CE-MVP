@@ -113,3 +113,21 @@ export const adjustJoinDates = internalMutation({
     return { patched };
   },
 });
+
+/** Final-run edge-case pass: rename selected members to authentic non-Latin
+ * script names (artifact-patched first; this syncs the imported users). */
+export const patchNames = internalMutation({
+  args: { rows: v.array(v.object({ userEmail: v.string(), name: v.string() })) },
+  returns: v.object({ patched: v.number() }),
+  handler: async (ctx, args) => {
+    guard();
+    let patched = 0;
+    for (const r of args.rows) {
+      const uid = await findUserByEmail(ctx, r.userEmail);
+      if (!uid) continue;
+      await ctx.db.patch(uid, { name: r.name, displayName: r.name.split(" ")[0] });
+      patched += 1;
+    }
+    return { patched };
+  },
+});

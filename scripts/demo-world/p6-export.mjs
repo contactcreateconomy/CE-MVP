@@ -8,6 +8,7 @@ import { mkdirSync, writeFileSync, renameSync, readFileSync, existsSync } from "
 import { createHash } from "node:crypto";
 import { convexRun } from "../lib/local-gate.mjs";
 import { cachePath } from "./lib/util.mjs";
+import { worldFingerprint } from "./lib/fingerprint.mjs";
 
 const run = (fn, args) => {
   const out = convexRun(`demoWorld/${fn.replace("/", ":")}`, JSON.stringify(args));
@@ -21,7 +22,7 @@ const hashFile = (rel) => existsSync(cachePath(rel))
   ? createHash("sha256").update(readFileSync(cachePath(rel))).digest("hex")
   : null;
 
-const fingerprint = run("importChrome/worldFingerprint", {});
+const fingerprint = worldFingerprint();
 const tallies = run("importEngagement/verifyTallies", {});
 const status = run("remove/removalStatus", {});
 

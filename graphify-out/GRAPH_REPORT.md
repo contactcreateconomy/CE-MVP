@@ -1,201 +1,201 @@
-# Graph Report - CE-MVP  (2026-10-03)
+# Graph Report - CE-MVP  (2026-10-05)
 
 ## Corpus Check
-- 894 files · ~1,375,652 words
+- 949 files · ~1,440,772 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 63 file(s) not represented in the graph (top: (none) 43, .woff 8, .example 5)
 
 ## Summary
-- 5166 nodes · 12063 edges · 363 communities (253 shown, 110 thin omitted)
-- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 151 edges (avg confidence: 0.8)
+- 5854 nodes · 12270 edges · 400 communities (289 shown, 111 thin omitted)
+- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 172 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `57dc607a`
+- Built from commit: `c68a2d0a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- requireUser
-- cn
+- p5-images-bulk.mjs
 - ref_react
+- ref_convex
 - newCorrelationId
 - local-gate.mjs
 - sell-dashboard-client.tsx
-- LegalDocPage
+- ref_next
 - toolRatings.ts
 - CONTRACT-2 Post Detail (/p/[slug])
-- Button
-- new-post-composer.tsx
+- admin/src/components/ui/button.tsx
+- intake.ts
 - admin/package.json
-- ref_vitest
+- ref_node_fs
 - demoSeed.ts
-- review.ts
-- convex_generated_api
-- top-nav.tsx
-- ref_convex
+- convex_generated_server_mutation
+- getLegalMetadata
+- guard
+- checkRateLimit
 - editorial/page.tsx
 - SLICE-P4-01 M4 post spine schema
 - marketplace/src/app/page.tsx
 - SLICE-P3-01 Two-layer admin authz foundation
 - demo.ts
 - posts.ts
-- Card
+- convex/seed.ts
 - cn
-- CONTRACT-7 cmp FINAL — Consent Management Overlay (CMP)
+- rawEvents
 - RBAC & Ops Assignments (/admin/roles)
 - marketplace/package.json
-- forum/src/lib/utils.ts
+- forum/src/components/ui/card.tsx
 - local-setup.mjs
-- post-block.tsx
-- ref_generated_datamodel
+- p6-export.mjs
+- p3-bulk-plan.mjs
 - p7g-growth.test.ts
 - App Package Dependencies
-- Createconomy Data-Model Bible
+- p4-conversation.mjs
 - p7e-economy.test.ts
 - Admin Roles & Support
 - CONTRACT-7 legal-intake FINAL — Legal & Rights Intake (/legal/intake)
 - Convex Components Catalog
-- reply-composer.tsx
-- sync-components.mjs
+- p4-bulk-crowd.mjs
+- local-gate.test.ts
 - session-start.mjs
 - seller/package.json
 - scripts
-- admin/src/app/layout.tsx
-- sources/page.tsx
+- verifyWorld.ts
+- affiliate-inventory/page.tsx
 - Rank Inference Tests
-- Hard Rules Engine
-- Recognition & Ladder Specs
+- rules.ts
+- Profile Economy Contract — M12 Metrics Tab (Wave 7C)
 - AGENTS.md — Agent Operating Instructions
 - _seed.ts
 - Screen Contract Specs
 - Content Qualification Checks
-- Resource Lifecycle Specs
+- auditLog table
 - Milestone Schema Specs
 - leaderboard-page-client.tsx
 - Milestone Roadmap Specs
 - Admin Authz Tests
-- Ops & Analytics Tests
+- p7o-ops.test.ts
 - CAP-466 assertIndexable SSR metadata
-- SLICE-P7O-03 — Analytics projection crons + effectiveCountable
+- SLICE-P2-06 — app shell routing convention helper + CAP-025 CMP slot (default-deny)
 - Convex Ops Skills
 - App Package Dependencies
 - Interventions & Admin Home
-- category-preview-loader.tsx
-- SLICE-P1-06 audit writer
+- post-card.tsx
+- admin/layout.tsx
 - Admin TSConfig
-- comment-thread.tsx
+- p5-images.mjs
 - p7e-moderation.test.ts
 - Forum TSConfig
 - App Package Dependencies
 - Marketplace TSConfig
 - App Package Dependencies
 - Seller TSConfig
-- p6-15-17-storechain.test.ts
+- p6-16-sell-dashboard.test.ts
 - Post Composer (Wave 2)
-- moderation/page.tsx
+- admin/src/components/ui/queue-board/index.tsx
 - Dev & Test Dependencies
-- CAP-529 — Keyword Search (M9)
+- convex_generated_server
 - signup-form.tsx
 - Store Application Screen (/sell/apply)
 - Moderation Console / Case Queue (/admin/moderation)
 - Admin Core Tests
-- Qualification Orchestrator
-- ref_convex_dev_auth
+- orchestrator.ts
+- ref_generated_datamodel
 - SLICE-P7E-01 M12 economy schema
 - SCREEN-SCORES — Build-Readiness Audit
 - Similarity & Clustering Tests
 - Claim Extraction Engine
 - generate.ts
 - CAP-086 posts.create
-- founder.ts
+- store.ts
 - Job System Capabilities
 - PROJECT-STATUS (Superseded Build-State Snapshot)
-- top-post-hero-carousel.tsx
+- SLICE-P7O-03 — Analytics projection crons + effectiveCountable
 - Trust & Safety Tests
 - DECISIONS — the redesign's decision log
-- rulebook.ts
+- p3-posts.mjs
 - package.json
 - What You Must Do When Invoked
 - SETUP-REPORT R3 — local environment + real baselines
-- S00 — Foundation — spec
+- top-post-hero-carousel.tsx
 - Affiliate Admin Management
-- Moderation Case Queue
-- Sanctions and Appeals
+- CAP-328 moderator claims case lease
+- moderationDomain.ts
 - Trust & Policy Pages Contract — six routes (Wave 7A)
 - Root Package Dependencies
 - TypeScript Config
-- routing-guard.tsx
+- S00 — Foundation — spec
 - Legacy Table Cleanup
 - CEY — Product Vision
 - Comment Queries
 - 2. The 16 core routes (deep, 390px)
-- checkRateLimit
+- Createconomy Data-Model Bible
 - CAP-570 — activityLedger Append on v1 Events (M7)
 - ESLint Configuration
 - Frontend Build Dependencies
-- publish.ts
+- p5-finalize.mjs
 - p5-08-persona-engine.test.ts
 - Storefront Public Screen (/s/[handle])
-- content-page.tsx
+- app-auth-provider.tsx
 - Frontend Build Dependencies
 - Frontend Build Dependencies
-- Analytics Projection Crons
+- promoteDemote.ts
 - Tool Registry Actions
 - auth-ui/package.json
 - Route Loading States
 - authz.ts
-- convex/auth.ts
-- check.ts
-- capture-baselines.mjs
+- founder.ts
+- SETUP-REPORT R3 — anti-drift local dev + demo seed + baselines
+- t01-visual-diff.mjs
 - Persona Genome Admin
 - Config Kill Switch
-- forum/src/app/layout.tsx
+- p6-import.mjs
 - App Route Inventory
 - Convex Server Wrappers
 - Package Scripts
 - RAW-INVENTORY — CE-MVP frontend, as found (facts only)
-- src/index.ts
+- lifecycle.ts
 - S## — <name> — spec
-- pollers.ts
-- post-detail-client.tsx
-- Event Instrumentation Pipeline
+- 4. Phases
+- toggle-switch.tsx
+- SLICE-P1-06 audit writer
 - Convex Client Package
 - admin/next-env.d.ts
 - Convex Context Types
-- safeFetch.ts
-- SLICE-P7E-14 moderation case queue live reads (referenced)
 - debate.ts
+- admin/src/app/layout.tsx
+- local-prep-bulk.mjs
 - p6-06-m10-schema.test.ts
 - PRE-CLOUD-REPORT — 013-opus-ground-truth input manifest
 - CEY Redesign — PM Handoff (session 1 → session 2)
-- p6-12-m11-schema.test.ts
-- profile/settings.ts
-- CONTRACT-7 admin-wiki FINAL — Admin Wiki (/admin/wiki)
-- CAP-565 — Auto-Create Distribution at Bootstrap (M12)
+- Createconomy Feed — Design & Build Spec (living)
+- convex/setup.ts
+- p6-03-feed.test.ts
+- SLICE-P1-01a roleAssignments schema + role enum
 - SETUP-REPORT — graphify setup + ak-redesign skeleton
 - Package Scripts
 - SETUP-REPORT R2 — freshness, housekeeping, raw inventory, baseline attempt
 - ref_next_dev_types_root_params_d_ts
-- queue.ts
-- Tags Schema Tests
-- rawEvents
-- Analytics Dashboard Founder (/admin/analytics)
-- store.ts
+- moderationQueue.ts
+- p4-03-tags.test.ts
+- ref_convex_dev_auth
+- tiered-ladder.tsx
+- sanctions.ts
 - Cursor Pagination Hook
 - extends
 - Package Scripts
 - Package Scripts
 - legalContent.ts
-- Reference Intake Pipeline
-- CONTRACT-1 App Shell (root layout)
+- queue.ts
+- seedThread
 - DMCA Legal Process
 - Health Probe Crons
 - ref_next_dev_types_routes_d_ts
 - Convex Data Model
-- feed-thread-review-fixes.test.tsx
+- CONTRACT-1 App Shell (root layout)
 - Packaged Convex Components
-- SETUP-REPORT R3 — anti-drift local dev + demo seed + baselines
+- 5. Tokens (STYLE-KIT is the source; `packages/design-tokens` is its code)
 - Source Console Admin
 - Persona Lifecycle Events
 - Feed Sort Algorithms
@@ -203,7 +203,7 @@
 - S## — <screen / area> — founder notes
 - Security Fix Queue
 - Public Route Inventory
-- Convex API Surface
+- t02-css-identity.mjs
 - forum/package.json
 - Static Legal Pages
 - Feed Hide Mute
@@ -211,10 +211,10 @@
 - Recognition and Badges
 - Quota Limit Notifications
 - graphify reference: extra exports and benchmark
-- SLICE-P1-01a roleAssignments schema + role enum
+- Phase checklists
 - devDependencies
 - Advanced Component Patterns
-- CURRENT-STATE — what Createconomy actually is today (ground truth for every spec)
+- SLICE-P7E-14 moderation case queue live reads (referenced)
 - Hybrid Convex Components
 - Moderator Takedown Actions
 - Profile Consent Records
@@ -223,11 +223,11 @@
 - Resource Library
 - Admin Config Console
 - Admin Operations Home
-- admin/postcss.config.mjs
+- postcss-load-config
 - Local Convex Components
-- convex/setup.ts
-- SLICE-P2-06 — app shell routing convention helper + CAP-025 CMP slot (default-deny)
-- OPUS-HANDOFF-GT — ground-truth session checkpoint log
+- normalizeHandle
+- reply-composer.tsx
+- wiki.ts
 - Tool Ratings Moderation
 - Thread Intelligence Cards
 - Store Circuit Breaker
@@ -308,21 +308,21 @@
 - Admin Wiki
 - Notifications Page
 - Workspace Definition
-- comment-card.tsx
+- comment-thread.tsx
 - graphify reference: query, path, explain
-- p4-06-rulebook.test.ts
+- merge-p2v.mjs
 - baseline/ — REAL capture, 2026-09-27 (round 3)
 - marketplace/next-env.d.ts
-- toggle-switch.tsx
+- CONTRACT-7 admin-wiki FINAL — Admin Wiki (/admin/wiki)
 - PM observations — first look at the real product (seeded, 390 + 1440)
-- thread-header.tsx
-- schema.ts
+- forum/src/components/ui/toast.tsx
+- convex_generated_api
 - ui-preferences-store.ts
 - extends
 - graphify reference: add a URL and watch a folder
 - graphify reference: commit hook and native CLAUDE.md integration
 - graphify reference: incremental update and cluster-only
-- p1-01-identity-schema.test.ts
+- p4-13-post-detail.test.ts
 - graphify reference: GitHub clone and cross-repo merge
 - graphify reference: transcribe video and audio
 - CONVENTIONS.md
@@ -330,31 +330,38 @@
 - extraction-spec.md
 - TEAM-WORKFLOW — three machines, two people, one repo
 - STATUS — where the redesign stands
-- trend-sorter.tsx
-- @testing-library/jest-dom
-- S00-PREP review — seed + reset tooling
-- wiki/page.tsx
+- settings-profile-client.tsx
+- p6-01-m9-schema.test.ts
+- SCREEN-INVENTORY — every screen in Createconomy
+- award.ts
+- CONTRACT-7 cmp FINAL — Consent Management Overlay (CMP)
 - Session log — apac-3sprs54
 - S00 Foundation — founder notes
-- creator-panel.tsx
+- editorial-policy/page.tsx
+- CAP-565 — Auto-Create Distribution at Bootstrap (M12)
+- 9. Widgets (each: job · states · lens · manual · kill · edge cases · analytics)
 - _archive/README.md
 - p4-04-tools.test.ts
 - S## — milestone gate
+- new-post-composer.tsx
 - S##-T## — <task> — build report
 - S##-T## — verdict
-- CAP-304 might.recompute
-- convex/seed.ts
-- p4-11-publish.test.ts
-- notifications-deeplink-pagination.test.ts
-- sources.ts
-- CAP-527 Journal Summary tab
-- p6-07-resources.test.ts
+- validate.mjs
+- BETA-SWITCH — removing the demo world before beta (and keeping it for dev)
+- Agent prompt — World Architect (DEMO-WORLD-SPEC §3, phase P1)
+- content-page-client.tsx
+- projections.ts
+- attributionSettle.ts
+- S00-T02 — New tokens + STYLE-KIT — build report
+- S00-T03 — Utilities — build report
+- patch-names.mjs
 - ak-redesign — the Createconomy UI/UX redesign control room
 - S##-T## — code review
-- ref_next
-- p4-08-ingest.test.ts
-- content-shell.tsx
-- SPEC-INDEX — every redesign spec, in build order
+- p6-02-m9-writers.test.ts
+- dependencies
+- error-boundary.tsx
+- CR-013-REQUEST.md
+- 5. Algorithm
 - S00-PREP verify — R2 items only (`563e75c`)
 - CR-002-REQUEST.md
 - CR-003-REQUEST.md
@@ -365,39 +372,68 @@
 - CR-008-REQUEST.md
 - CR-009-REQUEST.md
 - PM-BRIEF.md
-- forum/postcss.config.mjs
-- marketplace/postcss.config.mjs
-- seller/postcss.config.mjs
-- seedThread
+- S00-T01 — Token single source — build report
+- S00-T03 review — utilities
+- CR-014-REQUEST.md
+- routing.ts
+- notifications-deeplink-pagination.test.ts
+- feed-thread-review-fixes.test.tsx
+- Home-sync review — `bb4ab7b` selector case + pnpm.cjs
 - p6-08-09-viewer-contribute.test.ts
-- FIX-R1 — RED/GREEN tests for the selector gate and the pnpm.cjs fallback
-- p4-13-post-detail.test.ts
-- search/page.tsx
-- vibing-item.ts
+- Analytics Dashboard Founder (/admin/analytics)
+- Agent prompt — Fact Keeper (DEMO-WORLD-SPEC §3, phase P1)
+- S00-T02 review — new tokens
+- AuthModal
+- CAP-014 — waitlist.join (publicMutation)
+- DEMO-WORLD — P1: The world and the facts (GATE P1)
+- S00-T01 review — token single source
+- S00-T03 review R2 — glass blur fix
+- 10. Card information architecture
+- demo-world RUN-LOG
+- p4-01-post-spine.test.ts
+- p5-01-discussion-spine.test.ts
+- p6-10-11-admin-resources.test.ts
+- api.js
+- CR-015 — index-prefix fixes (legitimacy.recompute, recognition.rollup) + exact removal bulk estimate
+- CURRENT-STATE — what Createconomy actually is today (ground truth for every spec)
+- legitimacy.ts
+- 16. Build plan — small phases, Opus does the heavy lifting
+- p4-06-rulebook.test.ts
+- 2. Decision register
+- 4. Signals
+- p1-01-identity-schema.test.ts
+- p4-08-ingest.test.ts
+- OPUS-HANDOFF-GT — ground-truth session checkpoint log
+- category-preview-loader.tsx
+- p4-11-publish.test.ts
+- signalSummary.ts
+- 11. Visual and motion language
+- content-page.tsx
+- @testing-library/jest-dom
 
 ## God Nodes (most connected - your core abstractions)
-1. `cn()` - 175 edges
+1. `cn()` - 181 edges
 2. `newCorrelationId()` - 157 edges
-3. `writeAudited()` - 153 edges
-4. `Card()` - 111 edges
-5. `CardContent()` - 110 edges
-6. `Button` - 109 edges
-7. `assertAdminPermission()` - 108 edges
-8. `isConvexConfigured()` - 96 edges
-9. `cn()` - 93 edges
-10. `checkRateLimit()` - 73 edges
+3. `writeAudited()` - 154 edges
+4. `assertAdminPermission()` - 108 edges
+5. `isConvexConfigured()` - 96 edges
+6. `cn()` - 93 edges
+7. `checkRateLimit()` - 73 edges
+8. `useAuth` - 62 edges
+9. `assertCustomerCapability()` - 59 edges
+10. `Createconomy Data-Model Bible` - 55 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `4. Components and files` --references--> `AuthUser`  [INFERRED]
-  ak-redesign/specs/S00-SPEC.md → packages/auth-ui/src/types.ts
+- `16.1 Where we start from (build on top, never from scratch)` --references--> `CanonicalFeedClient()`  [INFERRED]
+  ak-redesign/specs/FEED-DESIGN.md → apps/forum/src/components/feed/canonical-feed-client.tsx
+- `11. No fabricated data (D-012)` --references--> `CanonicalFeedClient()`  [INFERRED]
+  ak-redesign/specs/S00-SPEC.md → apps/forum/src/components/feed/canonical-feed-client.tsx
 - `Summary` --references--> `useSharedData()`  [INFERRED]
   ak-redesign/00-control/history/RAW-INVENTORY.md → apps/forum/src/providers/shared-data-context.tsx
 - `1. Demo seed — what shipped (`convex/seed/demo.ts`, `pnpm seed:demo`)` --references--> `ensureDistributionTx()`  [INFERRED]
   ak-redesign/00-control/history/SETUP-REPORT-R3.md → convex/distributions.ts
-- `11. No fabricated data (D-012)` --references--> `CanonicalFeedClient()`  [INFERRED]
-  ak-redesign/specs/S00-SPEC.md → apps/forum/src/components/feed/canonical-feed-client.tsx
-- `8. PM-OBSERVATIONS-S1 — verified` --references--> `FeedCard()`  [INFERRED]
-  ak-redesign/00-control/CURRENT-STATE.md → apps/forum/src/components/feed/canonical-feed-client.tsx
+- `A. Summary — the ten things that decide everything downstream` --references--> `classifySafety()`  [INFERRED]
+  scripts/demo-world/reports/P0-REPORT.md → convex/lib/classifier.ts
 
 ## Import Cycles
 - None detected.
@@ -449,115 +485,115 @@
 - **Deploy-time seeding capabilities (launch-empty fix pattern)** — docs_01_product_spec_capability_register_merged_cap_536, docs_01_product_spec_capability_register_merged_cap_566, docs_01_product_spec_capability_register_merged_cap_569, docs_01_product_spec_capability_register_merged_cap_571, docs_01_product_spec_capability_register_merged_cap_572 [INFERRED 0.85]
 - **UTM dictionary governance flow (seed → build → validate)** — docs_02_contracts_wave_7_contract_7_admin_utm_final_cap_566, docs_03_slices_slice_catalog_phase2_utm_dictionary, docs_02_contracts_wave_7_contract_7_admin_utm_final_cap_479, docs_02_contracts_wave_7_contract_7_landing_final_cap_465 [INFERRED 0.85]
 
-## Communities (363 total, 110 thin omitted)
+## Communities (400 total, 111 thin omitted)
 
-### Community 0 - "requireUser"
+### Community 0 - "p5-images-bulk.mjs"
 Cohesion: 0.06
-Nodes (45): APPEALABLE_ACTION_PREFIXES, latestReasonCode(), myActions, resolveCaseTarget(), submit, TERMINATE_ACTIONS, CMP_POLICY_VERSION, CMP_PURPOSES (+37 more)
+Nodes (41): activeHandles, articPick(), avatars, AVATARS_ALL, avTmp, COMMONS_ONLY, commonsChain, commonsSearch() (+33 more)
 
-### Community 1 - "cn"
-Cohesion: 0.04
-Nodes (107): DIMENSION_LABELS, ToolProfileClientProps, configColumns, ConfigRow, configRows, KitPage(), paletteSections, queueCases (+99 more)
+### Community 1 - "ref_react"
+Cohesion: 0.03
+Nodes (97): configColumns, ConfigRow, configRows, paletteSections, queueCases, timezoneOptions, LabPage(), GlassDemo() (+89 more)
 
-### Community 2 - "ref_react"
-Cohesion: 0.06
-Nodes (53): RIGHTS_BASES, SECTION_COPY, metadata, ResourcesPage(), ResourcesPageClient(), StorefrontPage(), ProductDetailPage(), ProductDetailClient() (+45 more)
+### Community 2 - "ref_convex"
+Cohesion: 0.03
+Nodes (90): ConvexProvider(), ContributePageClient(), RIGHTS_BASES, metadata, metadata, PersonaProfileClient(), metadata, PersonasPageClient() (+82 more)
 
 ### Community 3 - "newCorrelationId"
 Cohesion: 0.05
-Nodes (107): founderDashboard, recordWeeklyDecision, requireFounderOrAdmin(), SEVEN_CARDS, requireAppealOperator(), resolve, slaTick, auditExport (+99 more)
+Nodes (106): founderDashboard, recordWeeklyDecision, requireFounderOrAdmin(), SEVEN_CARDS, requireAppealOperator(), resolve, slaTick, auditExport (+98 more)
 
 ### Community 4 - "local-gate.mjs"
-Cohesion: 0.08
-Nodes (37): Errors & founder actions, NIT, S00-PREP re-review — guard fix (`1ea46e8`), SHOULD-FIX, Verdict: PASS WITH FIXES, assertLocalDeployment(), convex(), CONVEX_BIN (+29 more)
+Cohesion: 0.06
+Nodes (41): ids, runOnce(), status, ids, runOnce(), status, sweeps, runOnce() (+33 more)
 
 ### Community 5 - "sell-dashboard-client.tsx"
-Cohesion: 0.13
-Nodes (27): DIMENSION_LABELS, DIMENSIONS, DimScores, RatingForm(), RatingFormProps, ScorePicker(), SCORES, metadata (+19 more)
+Cohesion: 0.09
+Nodes (25): DIMENSION_LABELS, DIMENSIONS, DimScores, RatingForm(), RatingFormProps, SCORES, metadata, EVIDENCE_LABELS (+17 more)
 
-### Community 6 - "LegalDocPage"
-Cohesion: 0.13
-Nodes (25): AboutPage(), generateMetadata(), AiDisclosurePage(), generateMetadata(), DmcaPage(), generateMetadata(), EditorialPolicyPage(), generateMetadata() (+17 more)
+### Community 6 - "ref_next"
+Cohesion: 0.05
+Nodes (22): Query results (5/5 pass), GoClient(), metadata, metadata, ToolProfilePageProps, ToolProfileClient(), DiscussionPageProps, CATEGORY_KEY_TO_POST_TYPE (+14 more)
 
 ### Community 7 - "toolRatings.ts"
-Cohesion: 0.10
-Nodes (36): addDims(), aggDelta(), assertRatableActor(), assertRatingShape(), assertScoreBounds(), Dimension, DIMENSIONS, dimensionScoresValidator (+28 more)
+Cohesion: 0.09
+Nodes (38): addDims(), aggDelta(), assertRatableActor(), assertRatingShape(), assertScoreBounds(), AUTOFLAG_REGISTRY_ROWS, Dimension, DIMENSIONS (+30 more)
 
 ### Community 8 - "CONTRACT-2 Post Detail (/p/[slug])"
 Cohesion: 0.10
 Nodes (38): assertCustomerCapability, comments, debateVotes, listItemVotes, postCompares, postDebates, postHelps, postListItems (+30 more)
 
-### Community 9 - "Button"
-Cohesion: 0.13
-Nodes (46): AdminAnalyticsPage(), AdminCurationPage(), FeaturedForm(), HeroForm(), AdminHomePage(), AdminLandingPage(), AdminPersonasPage(), BirthCard() (+38 more)
-
-### Community 10 - "new-post-composer.tsx"
+### Community 9 - "admin/src/components/ui/button.tsx"
 Cohesion: 0.08
-Nodes (35): DraftsPageClient(), relativeTime(), DraftsPage(), apps_forum_src_components_compose_compose_shell_compose_publish_btn_id, productTokens(), TaggedProduct, categoryIconMap, CategoryLucideIcon() (+27 more)
+Nodes (30): AdminCurationPage(), EDITABLE_FIELDS, AdminReadinessPage(), CATEGORY_LABELS, AdminResourcesPage(), OpsRow, RoleRow, AdminSeoPage() (+22 more)
+
+### Community 10 - "intake.ts"
+Cohesion: 0.09
+Nodes (28): computeCounter(), COUNTER_KEYS, refresh, buildStrip(), compose, StripItem, DEEP_LINK_ROUTE_KEYS, assertSignupOpenAllowed (+20 more)
 
 ### Community 11 - "admin/package.json"
 Cohesion: 0.06
 Nodes (32): @cemvp/auth-ui, @cemvp/convex-client, class-variance-authority, clsx, convex, @convex-dev/auth, eslint, eslint-config-next (+24 more)
 
-### Community 12 - "ref_vitest"
-Cohesion: 0.03
-Nodes (70): blockSrc, composerSrc, convexRoot, forumRoot, publicSrc, convexRoot, demoSrc, seedSrc (+62 more)
+### Community 12 - "ref_node_fs"
+Cohesion: 0.04
+Nodes (59): blockSrc, composerSrc, convexRoot, forumRoot, publicSrc, convexRoot, demoSrc, seedSrc (+51 more)
 
 ### Community 13 - "demoSeed.ts"
+Cohesion: 0.09
+Nodes (37): CR-001 — Harden the `dev/demoSeed` guard (loopback allowlist or documented cloud-dest exception), Founder decisions applied, assertAllowed, assertAllowedEnv(), bodyFor(), CATEGORIES, deleteQuery(), DEMO_EMAIL_DOMAIN (+29 more)
+
+### Community 14 - "convex_generated_server_mutation"
+Cohesion: 0.09
+Nodes (32): fieldsOf(), hasField(), schema, assertPublisher(), candidateApprove, candidateRegen, candidateReject, candidateSchedule (+24 more)
+
+### Community 15 - "getLegalMetadata"
+Cohesion: 0.12
+Nodes (12): 3. Other forum routes (shallow), generateMetadata(), generateMetadata(), generateMetadata(), generateMetadata(), generateMetadata(), generateMetadata(), generateMetadata() (+4 more)
+
+### Community 16 - "guard"
 Cohesion: 0.10
-Nodes (34): assertAllowed, assertAllowedEnv(), bodyFor(), CATEGORIES, deleteQuery(), DEMO_EMAIL_DOMAIN, DEMO_TOOL_SLUG_PREFIX, demoEmail() (+26 more)
+Nodes (43): chunksForUpload, deleteImageChunks, deleteRegisteredStorageBatch, deleteRegistryRow, fingerprintParts, importGroundTruth, importNotifications, linkAvatar (+35 more)
 
-### Community 14 - "review.ts"
-Cohesion: 0.13
-Nodes (21): fieldsOf(), hasField(), schema, assertPublisher(), candidateApprove, candidateRegen, candidateReject, candidateSchedule (+13 more)
-
-### Community 15 - "convex_generated_api"
-Cohesion: 0.15
-Nodes (16): crons, devTestPassword(), ensure, hasPasswordAccount, draft, embedText(), ForgeAssertion, ForgeOutput (+8 more)
-
-### Community 16 - "top-nav.tsx"
+### Community 17 - "checkRateLimit"
 Cohesion: 0.07
-Nodes (39): DiscoverPageClient(), DiscoverPageWithConvex(), DiscoverPage(), LandingPage(), ComposeLayout(), NewPostComposer, NewPostPageClient(), NewPostPageWithConvex() (+31 more)
-
-### Community 17 - "ref_convex"
-Cohesion: 0.05
-Nodes (52): deploySync, get, listSlugs, requireAnyStaffRole(), sanitizeMarkdown(), finalizeBootstrap, finalizeBootstrapTx(), finalizeWelcome (+44 more)
+Nodes (48): fieldsOf(), hasField(), schema, convexRoot, src, dripSupplySweep, queueLoadSweep, rankIntegritySweep (+40 more)
 
 ### Community 18 - "editorial/page.tsx"
-Cohesion: 0.11
-Nodes (47): AdminAffiliateInventoryPage(), COMMISSION_MODELS, DISCLOSURE_CLASSES, ENTITY_TYPES, RELATIONSHIP_STATUSES, AdminAuditPage(), AuditRow, AdminConfigPage() (+39 more)
+Cohesion: 0.09
+Nodes (35): AuditRow, ConfigRow, QueueRow, STATUS_TABS, ACTIVE_TYPES, RuleRow, TYPE_FIELD_VOCAB, Method (+27 more)
 
 ### Community 19 - "SLICE-P4-01 M4 post spine schema"
 Cohesion: 0.16
 Nodes (24): jobCatalog, jobDeadLetters, jobRuns, notifications, SLICE-P1-02 schema+back-fill discipline pattern, SLICE-P1-04 jobCatalog registration, SLICE-P1-09 rate limit 402 pattern, SLICE-P2-05 — /waitlist screen (waitlist.join + conversion representability) (+16 more)
 
 ### Community 20 - "marketplace/src/app/page.tsx"
-Cohesion: 0.12
-Nodes (30): MarketplaceHomePage(), AuthEntryButtons(), Avatar, AvatarFallback, AvatarImage, Button, ButtonProps, buttonVariants (+22 more)
+Cohesion: 0.10
+Nodes (29): AuthEntryButtons(), Avatar, AvatarFallback, AvatarImage, Button, ButtonProps, buttonVariants, Card() (+21 more)
 
 ### Community 21 - "SLICE-P3-01 Two-layer admin authz foundation"
 Cohesion: 0.16
 Nodes (26): SLICE-P1-10 safeFetch (R-SSRF), SLICE-P3-01 Two-layer admin authz foundation, SLICE-P3-02 Admin shell chrome + A11 command palette, SLICE-P3-03 adminWidgets catalog + deploy seeder, SLICE-P3-04 A1 Data Table component, SLICE-P3-06 Banner primitive + datetime picker, SLICE-P3-07 /admin/config typed namespace forms + CAS update, SLICE-P3-08 /admin/config STOP surface, kill-switches, signup.mode, mirror rollback (+18 more)
 
 ### Community 22 - "demo.ts"
-Cohesion: 0.13
-Nodes (26): BLOCKER, assertNotProd(), CATEGORIES, demoEmail(), findUserByEmail(), insertExtension(), insertPostDistributionScore(), leaderboardPoints() (+18 more)
+Cohesion: 0.09
+Nodes (31): BLOCKER, NIT, One-time commands per machine, S00-PREP review — seed + reset tooling, SHOULD-FIX, Verdict: BLOCK, assertNotProd(), CATEGORIES (+23 more)
 
 ### Community 23 - "posts.ts"
 Cohesion: 0.07
-Nodes (56): baseUser, convexRoot, commentScoresRow(), create, edit, isDuplicateComment(), openModerationCase(), softDelete (+48 more)
+Nodes (50): baseUser, convexRoot, ActivityEventType, ActivityMeta, ActivityMetaEntry, appendActivity(), AppendActivityArgs, commentScoresRow() (+42 more)
 
-### Community 24 - "Card"
-Cohesion: 0.06
-Nodes (88): 2.5 `/feed` — home, ContributePageClient(), ContributePage(), metadata, GoClient(), GoPage(), metadata, metadata (+80 more)
+### Community 24 - "convex/seed.ts"
+Cohesion: 0.04
+Nodes (70): CR-011 — Demo-world import module (`convex/demoWorld/` + `demoRegistry` / `demoGroundTruth`), ctxWith(), fieldsOf(), hasField(), schema, convexRoot, cronsSrc, enforceSrc (+62 more)
 
 ### Community 25 - "cn"
-Cohesion: 0.06
-Nodes (60): AdminLayout(), AdminLayoutInner(), CanvasFrame(), EMPTY_WIDGETS, AppHeader(), initials(), AppSidebar(), ConsoleShellContext (+52 more)
+Cohesion: 0.10
+Nodes (31): AppHeader(), initials(), Avatar, AvatarFallback, AvatarImage, Tag(), CardInteractive(), DataTablePagination() (+23 more)
 
-### Community 26 - "CONTRACT-7 cmp FINAL — Consent Management Overlay (CMP)"
-Cohesion: 0.38
-Nodes (10): CONTRACT-7 cmp FINAL — Consent Management Overlay (CMP), analyticsDeletionRequests, CAP-028 crash-degrade contract, CAP-149 M7 behavioral-consent withdraw, CAP-453 vendor delete (off-screen), CAP-454 vendor delete (off-screen), CAP-505 consent.record, CAP-506 consent.withdraw (+2 more)
+### Community 26 - "rawEvents"
+Cohesion: 0.14
+Nodes (27): CAP-091 — posts.listByType list-read (cross-referenced), CAP-386 notifications marked read, CAP-568 — Notification List Read (M14), /notifications — Notification List, CONTRACT-7 admin-utm FINAL — UTM Builder (/admin/utm), CAP-479 utm.builder.generate (read-only link generator), CAP-486 noindex (search-index policy), CAP-566 utm.dictionary.seedEdit (dictionary writer) (+19 more)
 
 ### Community 27 - "RBAC & Ops Assignments (/admin/roles)"
 Cohesion: 0.10
@@ -567,37 +603,37 @@ Nodes (36): CAP-398 STOP resume, CAP-431 STOP recovery check, Config Console + S
 Cohesion: 0.06
 Nodes (30): @cemvp/auth-ui, @cemvp/convex-client, class-variance-authority, clsx, convex, @convex-dev/auth, eslint, eslint-config-next (+22 more)
 
-### Community 29 - "forum/src/lib/utils.ts"
-Cohesion: 0.05
-Nodes (57): CompareBody(), compareTemplate, DebateCardExtras(), debateTemplate, GenericBody(), GigsCardExtras(), gigsTemplate, launchpadTemplate (+49 more)
+### Community 29 - "forum/src/components/ui/card.tsx"
+Cohesion: 0.04
+Nodes (90): CompareBody(), compareTemplate, DebateBody(), DebateCardExtras(), debateTemplate, GenericBody(), GigsBody(), GigsCardExtras() (+82 more)
 
 ### Community 30 - "local-setup.mjs"
-Cohesion: 0.14
-Nodes (17): 9. Performance budget ("X performance"), ref_node_child_process, ref_node_crypto, CONVEX_BIN, CONVEX_PKG_DIR, die(), info(), main() (+9 more)
+Cohesion: 0.16
+Nodes (16): ref_node_module, CONVEX_BIN, CONVEX_PKG_DIR, die(), info(), main(), nodeArgs(), ok() (+8 more)
 
-### Community 31 - "post-block.tsx"
-Cohesion: 0.21
-Nodes (12): AIKeyTakeaways(), fmtDate(), InlineMarkdown(), PostBlock(), RichBody(), AVATAR_DIM, CONTENT_PAD, DEFAULT_STATS (+4 more)
+### Community 31 - "p6-export.mjs"
+Cohesion: 0.09
+Nodes (23): NIT, S00-PREP re-review — guard fix (`1ea46e8`), SHOULD-FIX, Verdict: PASS WITH FIXES, fnv(), worldFingerprint(), exportDir, fingerprint (+15 more)
 
-### Community 32 - "ref_generated_datamodel"
-Cohesion: 0.04
-Nodes (69): fieldsOf(), hasField(), schema, ActivityEventType, ActivityMeta, ActivityMetaEntry, appendActivity(), AppendActivityArgs (+61 more)
+### Community 32 - "p3-bulk-plan.mjs"
+Cohesion: 0.05
+Nodes (49): pick(), addEvent(), ADDS, authorPick(), badByHandle, bandFor(), byHandle, byType (+41 more)
 
 ### Community 33 - "p7g-growth.test.ts"
-Cohesion: 0.09
-Nodes (28): baseEntity, convexRoot, cronsSrc, dripSrc, evaluatorSrc, forumRoot, jsonldSrc, newsletterSrc (+20 more)
+Cohesion: 0.10
+Nodes (27): baseEntity, convexRoot, cronsSrc, dripSrc, evaluatorSrc, forumRoot, jsonldSrc, newsletterSrc (+19 more)
 
 ### Community 34 - "App Package Dependencies"
 Cohesion: 0.07
 Nodes (30): dependencies, @cemvp/auth-ui, @cemvp/convex-client, class-variance-authority, clsx, convex, @convex-dev/auth, lucide-react (+22 more)
 
-### Community 35 - "Createconomy Data-Model Bible"
-Cohesion: 0.16
-Nodes (24): assertAdminPermission, calibrationExamples, consentRecords, contentCandidates, contentEmbeddings, DEC-SIGNAL-FIREWALL, Createconomy Data-Model Bible, postTypeConfig (+16 more)
+### Community 35 - "p4-conversation.mjs"
+Cohesion: 0.08
+Nodes (27): activePool, badByHandle, baseComments, byHandle, commentsPlan, commentTasks, factRows, gtDevtest (+19 more)
 
 ### Community 36 - "p7e-economy.test.ts"
-Cohesion: 0.09
-Nodes (29): awardSrc, backfillSrc, convexRoot, cronsSrc, distSrc, metricsSrc, mightSrc, recognitionSrc (+21 more)
+Cohesion: 0.15
+Nodes (11): awardSrc, backfillSrc, convexRoot, cronsSrc, distSrc, metricsSrc, mightSrc, recognitionSrc (+3 more)
 
 ### Community 37 - "Admin Roles & Support"
 Cohesion: 0.09
@@ -611,17 +647,17 @@ Nodes (23): CONTRACT-7 appeal FINAL — Appeal Submission (/appeal/[actionId]), 
 Cohesion: 0.12
 Nodes (28): convex-add — Add a Capability, convex-advisor — Live-Deployment Advisor, convex-agent — AI Agent / RAG Backend, convex-auth — Add Sign-in, convex-authz — Authz Auditor/Hardener, convex-backup — Backup & Restore Drill, convex-billing — Stripe Billing, convex-cost — Spend Preview (+20 more)
 
-### Community 40 - "reply-composer.tsx"
-Cohesion: 0.33
-Nodes (5): StanceTag, ComposerStance, ReplyComposerProps, STANCE_ACTIVE, STANCES
+### Community 40 - "p4-bulk-crowd.mjs"
+Cohesion: 0.09
+Nodes (26): shuffle(), acceptedAnswerers, activePool, audienceFor(), badByHandle, byHandle, commentBase, commentsPlan (+18 more)
 
-### Community 41 - "sync-components.mjs"
-Cohesion: 0.07
-Nodes (22): convexAuthPkg, convexPkg, __dirname, nextConfig, convexAuthPkg, convexPkg, __dirname, nextConfig (+14 more)
+### Community 41 - "local-gate.test.ts"
+Cohesion: 0.08
+Nodes (20): convexAuthPkg, convexPkg, __dirname, nextConfig, convexAuthPkg, convexPkg, __dirname, nextConfig (+12 more)
 
 ### Community 42 - "session-start.mjs"
-Cohesion: 0.05
-Nodes (37): ref_node_os, ref_node_readline, allMachinesLatest(), appendEntry(), git(), gitText(), latestEntry(), machineName() (+29 more)
+Cohesion: 0.07
+Nodes (31): ref_node_readline, allMachinesLatest(), appendEntry(), git(), gitText(), latestEntry(), machineName(), require (+23 more)
 
 ### Community 43 - "seller/package.json"
 Cohesion: 0.06
@@ -631,33 +667,33 @@ Nodes (30): @cemvp/auth-ui, @cemvp/convex-client, class-variance-authority, clsx
 Cohesion: 0.06
 Nodes (32): scripts, backend, build, build:admin, build:marketplace, build:seller, convex:codegen, convex:deploy:prod (+24 more)
 
-### Community 45 - "admin/src/app/layout.tsx"
-Cohesion: 0.10
-Nodes (28): apps_admin_src_app_globals, geistMono, geistSans, metadata, RootLayout(), ConvexProvider(), ThemeProvider(), RootLayout() (+20 more)
+### Community 45 - "verifyWorld.ts"
+Cohesion: 0.13
+Nodes (18): 4. `pnpm seed:check` — fingerprint, probePost, verifyBadActors, verifyPeople, verifyPodium, verifyThreads, verifyTools, verifyWorld (+10 more)
 
-### Community 46 - "sources/page.tsx"
-Cohesion: 0.19
-Nodes (23): AdminGenomePage(), EDITABLE_FIELDS, Method, METHODS, SourceRow, AdminStorePage(), REJECT_REASONS, AdminUtmPage() (+15 more)
+### Community 46 - "affiliate-inventory/page.tsx"
+Cohesion: 0.11
+Nodes (20): COMMISSION_MODELS, DISCLOSURE_CLASSES, ENTITY_TYPES, RELATIONSHIP_STATUSES, DatetimePicker(), DatetimePickerProps, parseISO(), wallParts() (+12 more)
 
 ### Community 47 - "Rank Inference Tests"
 Cohesion: 0.12
 Nodes (22): convexRoot, ALLOWED_INFERENCE_TYPES, assertInferenceAllowed(), inferBatch, INFERENCE_RULE_VERSION, Manifest, manifestHash(), PROHIBITED_INFERENCE_TYPES (+14 more)
 
-### Community 48 - "Hard Rules Engine"
+### Community 48 - "rules.ts"
 Cohesion: 0.09
 Nodes (11): ClaimRefInput, H_CAT(), H_DUP(), H_QUOTE(), H_SIM_SEMANTIC(), HardEvaluator, num(), QuoteRef (+3 more)
 
-### Community 49 - "Recognition & Ladder Specs"
+### Community 49 - "Profile Economy Contract — M12 Metrics Tab (Wave 7C)"
 Cohesion: 0.13
 Nodes (25): Profile Economy Contract — M12 Metrics Tab (Wave 7C), badges, CAP-194 — Podium, CAP-281 — Signals summary (cron, R-VIEWS), CAP-297 — Awards shelf (R-AWARDS), CAP-299 — Create Distribution (R-DIST), CAP-300 — Join Distribution (distribution.join), CAP-301 — Leave Distribution (distribution.leave) (+17 more)
 
 ### Community 50 - "AGENTS.md — Agent Operating Instructions"
-Cohesion: 0.18
+Cohesion: 0.17
 Nodes (22): AGENTS.md — Agent Operating Instructions, Forum App README, CE-MVP GitHub Wiki — Progress Tracker, CHANGELOG.md — Project History, CLAUDE.md — Claude Code Guidance, Convex Deployments (dev watchful-chameleon-570 / prod energetic-kangaroo-55), _data-model.md — Canonical Entities & Enums, A8 — Tiered ladder / level visualization (founder sign-off pending: A8-A / A8-B / A8-C) (+14 more)
 
 ### Community 51 - "_seed.ts"
 Cohesion: 0.11
-Nodes (20): ContentPageClient(), ContentPage(), ALEX, DEV, JAMES, JORDAN, LENA, MARCO (+12 more)
+Nodes (17): ALEX, DEV, JAMES, JORDAN, LENA, MARCO, MAYA, NINA (+9 more)
 
 ### Community 52 - "Screen Contract Specs"
 Cohesion: 0.14
@@ -667,17 +703,17 @@ Nodes (24): M15 /admin shell auth wrap (CAP-390 assertAdminPermission + CAP-392 
 Cohesion: 0.10
 Nodes (24): CAP-039 M2 Reference (H-TRACE dependency), CAP-040 M2 Qualify Callsite, CAP-041 — Candidate review (cross-referenced), CAP-043 — Candidate commit/publish (cross-referenced), CAP-045 — Re-qualify hook after operator edit (cross-referenced), CAP-064 qualify() orchestrator, CAP-065 H-SRC blocked-source check, CAP-066 H-SUF source sufficiency check (+16 more)
 
-### Community 54 - "Resource Lifecycle Specs"
-Cohesion: 0.12
-Nodes (24): CAP-191 — Featured booking (cross-referenced), CAP-208 artifact.validatePdf, CAP-209 resource.publish, CAP-217 dmca.intake, CAP-218 takedown.execute, CAP-219 cascade.review, CAP-220 pilot.metrics kill-gate, CAP-221 Admin disables UGC pilot (+16 more)
+### Community 54 - "auditLog table"
+Cohesion: 0.09
+Nodes (30): CAP-191 — Featured booking (cross-referenced), CAP-202 reference.submit, CAP-203 reference.ackContract, CAP-204 intake.scan, CAP-205 reference.rightsReview, CAP-206 reference.contentReview, CAP-207 forge.fromReferences, CAP-208 artifact.validatePdf (+22 more)
 
 ### Community 55 - "Milestone Schema Specs"
 Cohesion: 0.20
 Nodes (24): M0: Build-Sheet Schema (LOCKED, Option C hybrid/tiered), constellation.ugc.enabled flag (Path B = false), DEC-S15 acquire quota (5 distinct acquisitions/day · 20/week), DEC-S20 downloader-use licence (OPEN — blocks first public download), M10: Constellation — Free Resource Store (BACKEND-LOCKED), resourceQuotaLedgers (acquire quota ledger), M11: Affiliate Storefront (BACKEND-LOCKED), integrityFlags (monitor·damp·neutralize) (+16 more)
 
 ### Community 56 - "leaderboard-page-client.tsx"
-Cohesion: 0.11
-Nodes (20): CATEGORIES, categoryMultiplier(), cellEntries(), LeaderboardPageClient(), LeaderboardRow, PodiumCategory, PodiumWindow, rankColors (+12 more)
+Cohesion: 0.05
+Nodes (40): RoleTag, DraftsPageClient(), relativeTime(), CATEGORIES, categoryMultiplier(), cellEntries(), LeaderboardPageClient(), LeaderboardPageWithConvex() (+32 more)
 
 ### Community 57 - "Milestone Roadmap Specs"
 Cohesion: 0.19
@@ -687,17 +723,17 @@ Nodes (23): M16: Analytics & Instrumentation, analytics.posthog.mirror, analytic
 Cohesion: 0.11
 Nodes (17): adminCtx(), adminRole, configWidget, editorRole, fieldsOf(), hasField(), memberRole, revokedAdmin (+9 more)
 
-### Community 59 - "Ops & Analytics Tests"
-Cohesion: 0.12
-Nodes (19): adminRoot, analyticsSrc, consentSrc, convexRoot, cronsSrc, projectionsSrc, reliabilitySrc, schemaSrc (+11 more)
+### Community 59 - "p7o-ops.test.ts"
+Cohesion: 0.15
+Nodes (11): adminRoot, analyticsSrc, consentSrc, convexRoot, cronsSrc, projectionsSrc, reliabilitySrc, schemaSrc (+3 more)
 
 ### Community 60 - "CAP-466 assertIndexable SSR metadata"
 Cohesion: 0.10
 Nodes (22): CAP-321 autoGate on post/comment submit, CAP-322 optional classifier in autoGate, CAP-323 classifier timeout holds for review, CAP-331 queue.age cron advances aging thresholds, CAP-332 soft ops alerts at 250/400 open cases, CAP-333 S3 auto-release at 96h, CAP-334 queue >500 ingest.throttle flag, CAP-366 engaged bit (+14 more)
 
-### Community 61 - "SLICE-P7O-03 — Analytics projection crons + effectiveCountable"
-Cohesion: 0.13
-Nodes (20): SLICE-P7G-05 dripBatches scheduler, effectiveCountable = isCountableAtWrite ∧ tombstoneState=active ∧ not invalid/reversed/detached/excluded, F-22 — jobRuns manual_review has no action surface; redrive-vs-RC-4 semantics unstated (OPEN, ledgered 2026-08-29), SLICE-P1-04 — jobs spine (jobCatalog / jobRuns / jobDeadLetters, jobRunState, retryClass), SLICE-P1-07 — rawEvents / eventCatalog capture helper (assertCatalogEvent), SLICE-P7A-06 — AdminCore (CAP-484 seoHealth Home alert, CAP-334 queue throttle, CAP-381 drip supply alert), SLICE-P7O-01 — Widget catalog grow: four 7-OPS routes (CAP-569 extension), SLICE-P7O-02 — /admin/analytics founder dashboard (seven cards) (+12 more)
+### Community 61 - "SLICE-P2-06 — app shell routing convention helper + CAP-025 CMP slot (default-deny)"
+Cohesion: 0.11
+Nodes (22): assertIndexable — SEO evaluator predicate (published ∧ passed ∧ public ∧ not duplicate/doorway/thin ∧ 200 ∧ affiliate-survivable ∧ persona-density OK), drip.release — hourly UTC dripBatches publisher (default itemsPerDay=1, launch floor 40), SLICE-P4-13 — post detail SSR noindex shell (CAP-107 Wave-2), SLICE-P6-07 — acquire path + user-local quota calendar (CAP-376/377), SLICE-P7G-01 — assertIndexable evaluator + 404/410 + density/thin/affiliate gates, SLICE-P7G-02 — JSON-LD / FAQ / sitemap / slug 301 / post-edit similarity, SLICE-P7G-03 — Link-rel / OG / noindex family (shared SSR helpers), SLICE-P7G-04 — Honest empty-states + visit/since (+14 more)
 
 ### Community 62 - "Convex Ops Skills"
 Cohesion: 0.19
@@ -711,21 +747,21 @@ Nodes (21): dependencies, @cemvp/auth-ui, @cemvp/convex-client, class-variance-a
 Cohesion: 0.14
 Nodes (21): CAP-407 intervention creation, CAP-408 intervention acknowledgement, CAP-409 intervention resolve, CAP-410 intervention snooze, CAP-419 deploy syncs Wiki articles, CAP-427 intervention deep-link validation, CAP-536 — Seed qualificationRules Defaults (M3), CAP-569 — adminWidgets Deploy Seed (M15) (+13 more)
 
-### Community 65 - "category-preview-loader.tsx"
-Cohesion: 0.32
-Nodes (6): CategoryPreviewLoader(), CategoryPreviewLoaderProps, CategoryPreviewPage(), CategoryPreviewPageProps, KNOWN_CATEGORIES, seedComments
+### Community 65 - "post-card.tsx"
+Cohesion: 0.13
+Nodes (16): getCategoryTemplate(), CategoryThreadBody(), InsightRailExtras(), CommentPreviewItem, CommentsPreviewCycler(), CommentsPreviewCyclerProps, PostActionsMenu(), PostActionsMenuProps (+8 more)
 
-### Community 66 - "SLICE-P1-06 audit writer"
-Cohesion: 0.31
-Nodes (14): SLICE-P1-06 audit writer, SLICE-P3-05 A12 Queue/case board component, SLICE-P5-06 /settings/profile writes + erasure + badges, SLICE-P5-08 M8 persona spine schema + generation/evaluation chain, SLICE-P5-09 Persona public surfaces + revival voting, SLICE-P5-10 Persona lifecycle console + crons, SLICE-P5-11 Persona comment review queue, SLICE-P5-12 Genome back-door + rollback + preview + invalidation (+6 more)
+### Community 66 - "admin/layout.tsx"
+Cohesion: 0.08
+Nodes (31): AdminLayout(), AdminLayoutInner(), CanvasFrame(), EMPTY_WIDGETS, AdminLandingPage(), AppSidebar(), ConsoleShellContext, ConsoleShellProvider() (+23 more)
 
 ### Community 67 - "Admin TSConfig"
 Cohesion: 0.11
 Nodes (18): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+10 more)
 
-### Community 68 - "comment-thread.tsx"
-Cohesion: 0.20
-Nodes (12): CommentCard(), CommentThread(), CommentThreadProps, flattenComments(), QAMode(), sortComments(), SortOrder, TimelineMode() (+4 more)
+### Community 68 - "p5-images.mjs"
+Cohesion: 0.11
+Nodes (21): activeHandles, articPick(), avatars, briefs, commonsSearch(), coverMetas, coverOK, coverPosts (+13 more)
 
 ### Community 69 - "p7e-moderation.test.ts"
 Cohesion: 0.11
@@ -751,28 +787,28 @@ Nodes (19): dependencies, @cemvp/auth-ui, @cemvp/convex-client, class-variance-a
 Cohesion: 0.11
 Nodes (18): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+10 more)
 
-### Community 75 - "p6-15-17-storechain.test.ts"
-Cohesion: 0.11
-Nodes (16): convexRoot, cronsSrc, enforceSrc, goClientSrc, goSrc, sellSrc, clientSrc, convexRoot (+8 more)
+### Community 75 - "p6-16-sell-dashboard.test.ts"
+Cohesion: 0.20
+Nodes (9): clientSrc, convexRoot, decideSrc, enforceSrc, pageSrc, sellSrc, ANALYTICS_CELL_K, SELF_REPORT_WEIGHT (+1 more)
 
 ### Community 76 - "Post Composer (Wave 2)"
 Cohesion: 0.67
 Nodes (4): CAP-140 — eligibility.check, F-34 — Eligibility-state routing unowned (OPEN), FUTURE-M6-01 — MAX-assisted debate structuring (OPEN), Post Composer (Wave 2)
 
-### Community 77 - "moderation/page.tsx"
-Cohesion: 0.22
-Nodes (5): AdminModerationPage(), ORDER_LABELS, QueueCase, AVATAR_COLORS, formatRelativeDate()
+### Community 77 - "admin/src/components/ui/queue-board/index.tsx"
+Cohesion: 0.15
+Nodes (10): AdminModerationPage(), ORDER_LABELS, CaseCard(), QueueBoard(), QueueBoardProps, QueueCase, QueueSeverity, severityTone (+2 more)
 
 ### Community 78 - "Dev & Test Dependencies"
 Cohesion: 0.12
 Nodes (17): devDependencies, eslint, eslint-config-next, jsdom, postcss, tailwindcss, @tailwindcss/postcss, @testing-library/jest-dom (+9 more)
 
-### Community 79 - "CAP-529 — Keyword Search (M9)"
-Cohesion: 0.15
-Nodes (15): CAP-108 tools.create, CAP-110 tools.getProfile, CAP-118 Tool profile SEO render, CAP-140 Post eligibility check, CAP-153 Pre-publish deterministic checks, CAP-154 Pre-publish safety moderation, CAP-468 Provenance Block, CAP-486 noindex surface rules (+7 more)
+### Community 79 - "convex_generated_server"
+Cohesion: 0.08
+Nodes (26): convexRoot, fieldsOf(), hasField(), schema, heroStaleFill, refreshCards, ensureDistribution, ensureDistributionTx() (+18 more)
 
 ### Community 80 - "signup-form.tsx"
-Cohesion: 0.19
+Cohesion: 0.17
 Nodes (16): LoginForm(), LoginFormProps, getPasswordStrength(), PasswordStrength, SignupForm(), SignupFormProps, SocialLoginButtons(), SocialLoginButtonsProps (+8 more)
 
 ### Community 81 - "Store Application Screen (/sell/apply)"
@@ -787,13 +823,13 @@ Nodes (17): Moderation Console / Case Queue (/admin/moderation), CAP-328 case.cl
 Cohesion: 0.12
 Nodes (14): adminRoot, alertsSrc, configSrc, convexRoot, countersSrc, cronsSrc, homeSrc, interventionsSrc (+6 more)
 
-### Community 84 - "Qualification Orchestrator"
+### Community 84 - "orchestrator.ts"
 Cohesion: 0.17
 Nodes (15): buildContext(), evaluateHard(), evaluateSoft(), loadCalibrationSet, loadContext, neighborSimilarities(), PersistArgs, PersistResultInput (+7 more)
 
-### Community 85 - "ref_convex_dev_auth"
-Cohesion: 0.05
-Nodes (61): listActive, listPostTypes, POST_TYPE_DESCRIPTIONS, ackContract, eraseAttribution, getContributeState, intakeScan, submitReference (+53 more)
+### Community 85 - "ref_generated_datamodel"
+Cohesion: 0.04
+Nodes (63): ackContract, eraseAttribution, getContributeState, intakeScan, submitReference, ugcEnabled(), release, assertCustomerCapability() (+55 more)
 
 ### Community 86 - "SLICE-P7E-01 M12 economy schema"
 Cohesion: 0.26
@@ -801,7 +837,7 @@ Nodes (15): eventCatalog, SLICE-P1-07 rawEvents writer, leaderboardProjections �
 
 ### Community 87 - "SCREEN-SCORES — Build-Readiness Audit"
 Cohesion: 0.08
-Nodes (38): OPEN DECISIONS — Founder Ledger, CAP-003 — Bootstrap timezone finalize, CAP-014 — waitlist.join (publicMutation), CAP-025 — Root provider chain, CAP-027 — Legal pages publish/noindex, CAP-267 — Badge revocation, CAP-545 — Affiliate soft-deactivate cascade, CAP-550 — handle.reserve (+30 more)
+Nodes (34): OPEN DECISIONS — Founder Ledger, CAP-003 — Bootstrap timezone finalize, CAP-025 — Root provider chain, CAP-027 — Legal pages publish/noindex, CAP-267 — Badge revocation, CAP-545 — Affiliate soft-deactivate cascade, CAP-550 — handle.reserve, CAP-551 — mobile.verify (+26 more)
 
 ### Community 88 - "Similarity & Clustering Tests"
 Cohesion: 0.26
@@ -816,24 +852,24 @@ Cohesion: 0.27
 Nodes (12): glmGenerate(), glmScore, CadenceDecision, cadenceRecompute, counts24h(), evaluateDraft, evaluateDraftLogic(), generateComment (+4 more)
 
 ### Community 91 - "CAP-086 posts.create"
-Cohesion: 0.15
-Nodes (15): CAP-086 posts.create, CAP-090 posts.getDetail, CAP-093 debate.cast, CAP-098 help.accept, CAP-103 Moderator force-clear abuse, CAP-107 Post detail SEO render, CAP-115 — Tool aggregate recompute (cross-referenced), CAP-116 — Aggregate drift monitor (cross-referenced) (+7 more)
+Cohesion: 0.12
+Nodes (19): CAP-086 posts.create, CAP-090 posts.getDetail, CAP-093 debate.cast, CAP-098 help.accept, CAP-103 Moderator force-clear abuse, CAP-107 Post detail SEO render, CAP-108 tools.create, CAP-110 tools.getProfile (+11 more)
 
-### Community 92 - "founder.ts"
-Cohesion: 0.23
-Nodes (12): convexRoot, checkAdmission(), canonicalSignupFields(), createOrLinkAuthUser(), deriveHandle(), FOUNDER_EMAIL, founderEmails(), isFounderEmail() (+4 more)
+### Community 92 - "store.ts"
+Cohesion: 0.07
+Nodes (47): convexRoot, src, validateSrc, approveProduct, assertNotLocked(), autoScreen, decideRequest, getQueue (+39 more)
 
 ### Community 93 - "Job System Capabilities"
 Cohesion: 0.13
 Nodes (15): CAP-489 jobs.dispatch scheduling, CAP-491 scheduled function execution start, CAP-492 system-authority job runs, CAP-493 revalidate_actor jobs, CAP-494 authorized_command jobs, CAP-495 authz failure during scheduled run, CAP-496 client-forged authority rejection, CAP-497 external action idempotency (+7 more)
 
 ### Community 94 - "PROJECT-STATUS (Superseded Build-State Snapshot)"
-Cohesion: 0.27
+Cohesion: 0.30
 Nodes (13): Admin App Agent Rules (AGENTS.md), Admin CLAUDE.md, Forum App Agent Rules (AGENTS.md), Forum CLAUDE.md, Legacy forum* Tables (retired), 00-ROUTES (Canonical Route Names), 00-TOPOLOGY (App & Route Ownership), 00-TRANSITION (Live → Canonical, RESET + Strangler) (+5 more)
 
-### Community 95 - "top-post-hero-carousel.tsx"
-Cohesion: 0.17
-Nodes (16): BASE_SPRING, cardTransform(), CarouselState, CASCADE_SPRING, COLLAPSE_SPRING, defaultLayout(), Layout, swipePower() (+8 more)
+### Community 95 - "SLICE-P7O-03 — Analytics projection crons + effectiveCountable"
+Cohesion: 0.13
+Nodes (20): SLICE-P7G-05 dripBatches scheduler, effectiveCountable = isCountableAtWrite ∧ tombstoneState=active ∧ not invalid/reversed/detached/excluded, F-22 — jobRuns manual_review has no action surface; redrive-vs-RC-4 semantics unstated (OPEN, ledgered 2026-08-29), SLICE-P1-04 — jobs spine (jobCatalog / jobRuns / jobDeadLetters, jobRunState, retryClass), SLICE-P1-07 — rawEvents / eventCatalog capture helper (assertCatalogEvent), SLICE-P7A-06 — AdminCore (CAP-484 seoHealth Home alert, CAP-334 queue throttle, CAP-381 drip supply alert), SLICE-P7O-01 — Widget catalog grow: four 7-OPS routes (CAP-569 extension), SLICE-P7O-02 — /admin/analytics founder dashboard (seven cards) (+12 more)
 
 ### Community 96 - "Trust & Safety Tests"
 Cohesion: 0.14
@@ -843,37 +879,37 @@ Nodes (12): appealSrc, batchSrc, commentsSrc, consentSrc, convexRoot, cronsSrc, 
 Cohesion: 0.12
 Nodes (16): D-001 — Folder, precedence, change requests · LOCKED (PM-HANDOFF-S1 §4, 2026-09-28), D-002 — Naming, files, ownership · LOCKED (PM-HANDOFF-S1 §4), D-003 — The build loop · LOCKED (PM-HANDOFF-S1 §4), D-004 — Spec quality bar, admin, budget · LOCKED (PM-HANDOFF-S1 §4), D-005 — Beta line · DECIDED by founder (revised, 2026-09-29), D-006 — Replace AGENTS.md §11 (wiki + CHANGELOG per slice) · LOCKED (2026-09-29), D-007 — Style source and the glow/glass rule · DECIDED by founder (revised, 2026-09-29), D-008 — Product name users see · DECIDED by founder (2026-09-28) (+8 more)
 
-### Community 98 - "rulebook.ts"
-Cohesion: 0.15
-Nodes (18): ACTIVE_POST_TYPES, addCalibrationExample, assertAdministrator(), assertKnownRuleKeys(), calibrate, _callerStaffRoles, deploySeed, editCalibrationExample (+10 more)
+### Community 98 - "p3-posts.mjs"
+Cohesion: 0.04
+Nodes (60): BASE, CACHE_DIR, cacheKey(), chat(), chatJsonArray(), CONCURRENCY, env, logStats() (+52 more)
 
 ### Community 99 - "package.json"
-Cohesion: 0.11
-Nodes (16): app, dependencies, @auth/core, @convex-dev/auth, @convex-dev/rate-limiter, engines, node, convex (+8 more)
+Cohesion: 0.14
+Nodes (12): app, engines, node, convex, @convex-dev/auth, vitest, name, packageManager (+4 more)
 
 ### Community 100 - "What You Must Do When Invoked"
 Cohesion: 0.08
 Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
 
 ### Community 101 - "SETUP-REPORT R3 — local environment + real baselines"
-Cohesion: 0.15
-Nodes (12): SETUP-REPORT R3 — local environment + real baselines, Step 1 — Prerequisites, Step 2 — Env files, Step 3 — One-time backend config, Step 4 — Demo seed, Step 5 — Apps, Step 6 — Test account, Step 7 — Real baselines (+4 more)
+Cohesion: 0.14
+Nodes (13): Errors & founder actions, SETUP-REPORT R3 — local environment + real baselines, Step 1 — Prerequisites, Step 2 — Env files, Step 3 — One-time backend config, Step 4 — Demo seed, Step 5 — Apps, Step 6 — Test account (+5 more)
 
-### Community 102 - "S00 — Foundation — spec"
-Cohesion: 0.08
-Nodes (23): 0. Benchmark, 10. Copy — COPY-1 (D-011), 11. No fabricated data (D-012), 12. Tasks for the builder (one GLM build each, in order), 13. Acceptance for the whole spec (GATE, Astra + founder), 14. Data and influence signals, 15. Out of scope, 1. The six questions (VISION §6) (+15 more)
+### Community 102 - "top-post-hero-carousel.tsx"
+Cohesion: 0.07
+Nodes (25): BASE_SPRING, cardTransform(), CarouselState, CASCADE_SPRING, COLLAPSE_SPRING, defaultLayout(), Layout, swipePower() (+17 more)
 
 ### Community 103 - "Affiliate Admin Management"
 Cohesion: 0.30
 Nodes (12): CAP-012 — Upload URL mechanism (cross-referenced), CAP-049 — Qualified-CTA affiliate injection (cross-referenced), CAP-100 — Link URL validation (cross-referenced), CAP-539 — Admin CRUD commercialEntities (M2), CAP-540 — Admin CRUD affiliateRelationships (M2), CAP-541 — Admin CRUD affiliateLinks (M2), CAP-544 — Admin Lists Affiliate Inventory (M2), CAP-545 — Affiliate Soft-Deactivate Cascade (M2) (+4 more)
 
-### Community 104 - "Moderation Case Queue"
-Cohesion: 0.17
-Nodes (12): CAP-324 report submit creates/attaches case, CAP-326 R-BRIGADE detection, CAP-327 brigade abuse reporter restriction, CAP-328 moderator claims case lease, CAP-329 lease.expire releases expired leases, CAP-330 queue ordering computed, CAP-335 moderator batch actions, CAP-359 moderator resolves s2/s3 hold (+4 more)
+### Community 104 - "CAP-328 moderator claims case lease"
+Cohesion: 0.05
+Nodes (42): CAP-324 report submit creates/attaches case, CAP-326 R-BRIGADE detection, CAP-327 brigade abuse reporter restriction, CAP-328 moderator claims case lease, CAP-329 lease.expire releases expired leases, CAP-330 queue ordering computed, CAP-335 moderator batch actions, CAP-336 moderator sanctions (+34 more)
 
-### Community 105 - "Sanctions and Appeals"
-Cohesion: 0.18
-Nodes (12): CAP-336 moderator sanctions, CAP-337 admin/founder account termination, CAP-338 ri.evaluate repeat-infringer policy, CAP-339 public repeat-infringer page, CAP-340 member submits appeal, CAP-341 moderator resolves appeal, CAP-342 appeal.slaTick escalates overdue appeals, CAP-354 m12.emitConfirmed confirmed facts (+4 more)
+### Community 105 - "moderationDomain.ts"
+Cohesion: 0.23
+Nodes (16): ensureCase(), forceClearMechanic, moderateComment, moderateRating, recordAction(), requireModerator(), reviewProjectUrl, detectObfuscation() (+8 more)
 
 ### Community 106 - "Trust & Policy Pages Contract — six routes (Wave 7A)"
 Cohesion: 0.13
@@ -887,9 +923,9 @@ Nodes (12): browserslist, convex, @convex-dev/auth, eslint-plugin-react-hooks, l
 Cohesion: 0.17
 Nodes (11): compilerOptions, isolatedModules, jsx, lib, module, moduleResolution, noEmit, skipLibCheck (+3 more)
 
-### Community 109 - "routing-guard.tsx"
-Cohesion: 0.31
-Nodes (8): browserTimezone(), RoutingGuard(), AuthState, BootstrapState, getRoutingRedirect(), isProtectedRoute(), PREF_ROUTES, PROTECTED_ROUTE_PREFIXES
+### Community 109 - "S00 — Foundation — spec"
+Cohesion: 0.12
+Nodes (16): 0. Benchmark, 10. Copy — COPY-1 (D-011), 11. No fabricated data (D-012), 12. Tasks for the builder (one GLM build each, in order), 13. Acceptance for the whole spec (GATE, Astra + founder), 14. Data and influence signals, 15. Out of scope, 1. The six questions (VISION §6) (+8 more)
 
 ### Community 110 - "Legacy Table Cleanup"
 Cohesion: 0.18
@@ -907,13 +943,13 @@ Nodes (9): authorNameOf(), getThread, list, listReplies, ScoredComment, scoresBy
 Cohesion: 0.12
 Nodes (17): 2.10 `/notifications` — recognition moment, 2.11 `/search`, 2.12 `/discover`, 2.13 `/category/[slug]` — **P0 trust**, 2.14 `/leaderboard`, 2.15 `/drafts`, 2.16 `/settings` → `/settings/profile`, 2.17 Core-route scorecard (+9 more)
 
-### Community 114 - "checkRateLimit"
-Cohesion: 0.10
-Nodes (41): computeCounter(), COUNTER_KEYS, refresh, buildStrip(), compose, StripItem, dripSupplySweep, queueLoadSweep (+33 more)
+### Community 114 - "Createconomy Data-Model Bible"
+Cohesion: 0.16
+Nodes (24): assertAdminPermission, calibrationExamples, consentRecords, contentCandidates, contentEmbeddings, DEC-SIGNAL-FIREWALL, Createconomy Data-Model Bible, postTypeConfig (+16 more)
 
 ### Community 115 - "CAP-570 — activityLedger Append on v1 Events (M7)"
-Cohesion: 0.20
-Nodes (11): CAP-055 — Candidate publish (cross-referenced), CAP-120 comments.create, CAP-125 Valuable reaction toggle, CAP-126 — saves.toggle (cross-referenced), CAP-127 context.signal, CAP-133 Author accepts own Help answer, CAP-163 persona.wane, CAP-171 persona.evaluate (+3 more)
+Cohesion: 0.17
+Nodes (15): CAP-055 — Candidate publish (cross-referenced), CAP-120 comments.create, CAP-125 Valuable reaction toggle, CAP-126 — saves.toggle (cross-referenced), CAP-127 context.signal, CAP-133 Author accepts own Help answer, CAP-163 persona.wane, CAP-171 persona.evaluate (+7 more)
 
 ### Community 116 - "ESLint Configuration"
 Cohesion: 0.27
@@ -923,9 +959,9 @@ Nodes (6): eslintConfig, eslintConfig, eslintConfig, eslintConfig, ref_eslint, r
 Cohesion: 0.20
 Nodes (10): devDependencies, eslint, eslint-config-next, postcss, tailwindcss, @tailwindcss/postcss, @types/node, @types/react (+2 more)
 
-### Community 118 - "publish.ts"
-Cohesion: 0.16
-Nodes (13): insertDerivative, loadDueScheduled, loadForPublish, loadPostText, publishCandidate, publishGateFailure(), recordPublishFailure, socialExport (+5 more)
+### Community 118 - "p5-finalize.mjs"
+Cohesion: 0.09
+Nodes (19): readJson(), writeCache(), devtestCard, gtPosts, IN, members, newsPool, OUT (+11 more)
 
 ### Community 119 - "p5-08-persona-engine.test.ts"
 Cohesion: 0.22
@@ -935,9 +971,9 @@ Nodes (8): baseGenome, convexRoot, fieldsOf(), genSrc, hasField(), schema, Genom
 Cohesion: 0.07
 Nodes (38): CAP-122 — Comment soft-delete/tombstone (cross-referenced), CAP-230 Store request eligibility, CAP-231 Store application submit, CAP-233 Storefront activation, CAP-234 product.submit, CAP-235 link.validate, CAP-236 Auto-screener disposition, CAP-237 product.approve (+30 more)
 
-### Community 121 - "content-page.tsx"
-Cohesion: 0.25
-Nodes (10): ContentGlobalHeader(), ContentPage(), countAll(), ContentToast(), EngagementPanel(), ReplyComposer(), ThreadModeBar(), ReadingProgressBar() (+2 more)
+### Community 121 - "app-auth-provider.tsx"
+Cohesion: 0.37
+Nodes (12): ProfileView, AuthContext, AuthContextProvider(), AuthContextValue, useAuthContext(), AuthMode, AuthStatus, AuthUser (+4 more)
 
 ### Community 122 - "Frontend Build Dependencies"
 Cohesion: 0.20
@@ -947,9 +983,9 @@ Nodes (10): devDependencies, eslint, eslint-config-next, postcss, tailwindcss, @
 Cohesion: 0.20
 Nodes (10): devDependencies, eslint, eslint-config-next, postcss, tailwindcss, @tailwindcss/postcss, @types/node, @types/react (+2 more)
 
-### Community 124 - "Analytics Projection Crons"
-Cohesion: 0.20
-Nodes (10): CAP-434 staff exclusion from product counters, CAP-440 effectiveCountable computation, CAP-445 L08 lifecycle projection cron, CAP-446 S18 projection cron, CAP-447 activation projection cron, CAP-448 commerce funnel projection crons, CAP-449 rate rendering confidence, CAP-458 projection freshness degradation (+2 more)
+### Community 124 - "promoteDemote.ts"
+Cohesion: 0.19
+Nodes (14): levelCommitMonthly, mightRecompute, reachRefresh, finalizeAwards, mintBadgeTx(), rollup, currentSeasonTx(), demoteAnnual (+6 more)
 
 ### Community 125 - "Tool Registry Actions"
 Cohesion: 0.20
@@ -960,20 +996,20 @@ Cohesion: 0.06
 Nodes (31): devDependencies, @types/react, @types/react-dom, typescript, exports, class-variance-authority, clsx, convex (+23 more)
 
 ### Community 128 - "authz.ts"
-Cohesion: 0.05
-Nodes (54): boolKey, fieldsOf(), hasField(), numKey, schema, strKey, ctxWith(), fieldsOf() (+46 more)
+Cohesion: 0.06
+Nodes (46): boolKey, fieldsOf(), hasField(), numKey, schema, strKey, getWidgetCatalog, casUpdate (+38 more)
 
-### Community 129 - "convex/auth.ts"
-Cohesion: 0.14
-Nodes (10): auth, isAuthenticated, magicLinkHourCache, magicLinkThrottleCache, signIn, signOut, store, convex_generated_server_httpaction (+2 more)
+### Community 129 - "founder.ts"
+Cohesion: 0.08
+Nodes (29): CR-012 — Legitimacy account_age should read `users.createdAt ?? _creationTime`, convexRoot, grantFounder, grantFounderByEmail, bootstrapUser, checkAdmission(), effectiveSignupMode, getEffectiveMode (+21 more)
 
-### Community 130 - "check.ts"
-Cohesion: 0.23
-Nodes (11): 4. `pnpm seed:check` — fingerprint, convex_generated_server_internalquery, fingerprint, isRuntimeConfigKey(), isSeededBadge(), RUNTIME_CONFIG_PREFIXES, SEEDED_BADGE_TYPES, TABLES (+3 more)
-
-### Community 131 - "capture-baselines.mjs"
+### Community 130 - "SETUP-REPORT R3 — anti-drift local dev + demo seed + baselines"
 Cohesion: 0.17
-Nodes (7): ref_node_process, @playwright/test, capture(), dismissChrome(), OUT_DIR, ROUTES, VIEWPORTS
+Nodes (11): 1. Demo seed — what shipped (`convex/seed/demo.ts`, `pnpm seed:demo`), 2. What could NOT be seeded (would need backend changes — not hacked around), 3. `pnpm reset:local` — the officially supported wipe, 5. Rendering verification (390px, live demo data), 6. Baselines — `ak-redesign/00-control/baselines/`, 7. Cron `.withIndex` failures (for the dev team), 8. Machine notes (Windows/office laptop), 9.1 R2 review fixes (S00-PREP-REVIEW-R2) — guard tests, actual output (+3 more)
+
+### Community 131 - "t01-visual-diff.mjs"
+Cohesion: 0.09
+Nodes (15): GLASS_ROWS, ref_node_crypto, @playwright/test, dismissChrome(), noConsentBanner(), OUT, shoot(), SIZES (+7 more)
 
 ### Community 132 - "Persona Genome Admin"
 Cohesion: 0.44
@@ -983,9 +1019,9 @@ Nodes (9): CAP-158 — Compiled prompt (cross-referenced), CAP-178 — Persona g
 Cohesion: 0.25
 Nodes (9): CAP-394 admin reads config namespace, CAP-395 config CAS update mutation, CAP-396 kill-switch flip, CAP-397 STOP activation, CAP-425 tier2/3 blast radius evaluation, CAP-480 set signup.mode, CAP-509 readiness evaluate gate, CAP-510 signup open blocked by readiness (+1 more)
 
-### Community 134 - "forum/src/app/layout.tsx"
-Cohesion: 0.15
-Nodes (11): apps_forum_src_app_globals, geistMono, geistSans, metadata, NavigationProgressBar(), NavigationProgressProvider(), useNavigationState(), ThemeProvider() (+3 more)
+### Community 134 - "p6-import.mjs"
+Cohesion: 0.06
+Nodes (31): cachePath(), all, CONFIG, existingKeys, fList, jsonlSafe(), newRows, OUT (+23 more)
 
 ### Community 135 - "App Route Inventory"
 Cohesion: 0.25
@@ -1003,25 +1039,25 @@ Nodes (8): scripts, build, dev, lint, start, test, test:run, typecheck
 Cohesion: 0.17
 Nodes (11): A. UI dependencies, B. Design-token files, C. Mobile / app-feel infrastructure, Cross-cutting facts, D. Component inventory (136 files), E. Core routes (16), F. All other forum routes (32), Marker detail (+3 more)
 
-### Community 139 - "src/index.ts"
-Cohesion: 0.37
-Nodes (13): ProfileView, useAppAuth(), AuthContext, AuthContextProvider(), AuthContextValue, useAuthContext(), AuthMode, AuthStatus (+5 more)
+### Community 139 - "lifecycle.ts"
+Cohesion: 0.27
+Nodes (16): compileSystemPrompt(), previewCompile, activate, birth, computeRecommendation(), driftCheck, eventsToday(), lifecycleEvent() (+8 more)
 
 ### Community 140 - "S## — <name> — spec"
 Cohesion: 0.17
 Nodes (11): 0. Benchmark, 1. The six questions (VISION §6) — all mandatory, 2. Today (from CURRENT-STATE — cite, don't re-derive), 3. Target experience (390px first; desktop follows), 4. Components, 5. Copy, 6. Data, 7. Tasks for the builder (+3 more)
 
-### Community 141 - "pollers.ts"
-Cohesion: 0.28
-Nodes (11): ingestInboundEmail, MAX_ITEMS_PER_POLL, parseFeedItems(), pollRawFetch, pollRss, pollYouTube, recordPoll(), robotsAllows() (+3 more)
-
-### Community 142 - "post-detail-client.tsx"
+### Community 141 - "4. Phases"
 Cohesion: 0.11
-Nodes (21): metadata, PersonaProfilePage(), PersonaProfileClient(), metadata, ResourceViewPage(), ResourceViewClient(), DiscussionPage(), DiscussionPageProps (+13 more)
+Nodes (17): 0. Why this exists (read first, then re-read before every phase), 1. Rules you must follow throughout, 2. Where things live, 3. The agents (multi-agent pipeline), 4. Phases, 5. Done means, 6. Founder addenda (2026-10-03, in-session — binding; supersede the matching lines above), Demo World Engine — build spec (+9 more)
 
-### Community 143 - "Event Instrumentation Pipeline"
-Cohesion: 0.25
-Nodes (8): CAP-436 same-mutation authoritative rawEvents capture, CAP-437 event catalog registration check, CAP-442 PostHog mirror scheduling, CAP-443 daily PostHog reconcile cron, CAP-444 client observational events, CAP-455 instrumentation health monitor, CAP-456 forged server event rejection, CAP-460 PostHog mirror disable rollback
+### Community 142 - "toggle-switch.tsx"
+Cohesion: 0.33
+Nodes (5): ModeToggle(), ModeToggleProps, ToggleMode, @testing-library/react, vitest-axe
+
+### Community 143 - "SLICE-P1-06 audit writer"
+Cohesion: 0.31
+Nodes (14): SLICE-P1-06 audit writer, SLICE-P3-05 A12 Queue/case board component, SLICE-P5-06 /settings/profile writes + erasure + badges, SLICE-P5-08 M8 persona spine schema + generation/evaluation chain, SLICE-P5-09 Persona public surfaces + revival voting, SLICE-P5-10 Persona lifecycle console + crons, SLICE-P5-11 Persona comment review queue, SLICE-P5-12 Genome back-door + rollback + preview + invalidation (+6 more)
 
 ### Community 144 - "Convex Client Package"
 Cohesion: 0.25
@@ -1035,49 +1071,49 @@ Nodes (3): apps_admin_next_dev_types_root_params_d, apps_admin_next_dev_types_ro
 Cohesion: 0.29
 Nodes (6): ActionCtx, DatabaseReader, DatabaseWriter, MutationCtx, QueryCtx, ref_datamodel_js
 
-### Community 147 - "safeFetch.ts"
-Cohesion: 0.25
-Nodes (12): concat(), resolveAndValidate(), safeFetchTextInner(), isBlockedIp(), isBlockedIpv4(), isBlockedIpv6(), normalizeIp(), SafeFetchMode (+4 more)
-
-### Community 148 - "SLICE-P7E-14 moderation case queue live reads (referenced)"
-Cohesion: 0.27
-Nodes (14): SLICE-P7A-05 S0 cover → ingest.throttle, SLICE-P7A-06 Remote Home alert writers (318/332/334/381/484), moderationCases — case table with bible caseType/status unions; dedupe key (target, policyFamily, window), SLICE-P7E-10 policyReasonCodes / Legal copy section (referenced), SLICE-P7E-11 autoGate wiring CAP-321-323 (referenced), SLICE-P7E-12 — Report submit (comment target) + rate limit, SLICE-P7E-13 moderator approve/reject console slices (referenced), SLICE-P7E-14 moderation case queue live reads (referenced) (+6 more)
-
-### Community 149 - "debate.ts"
+### Community 147 - "debate.ts"
 Cohesion: 0.24
 Nodes (10): fieldsOf(), hasField(), schema, cast, change, Choice, CHOICES, extensionRow() (+2 more)
+
+### Community 148 - "admin/src/app/layout.tsx"
+Cohesion: 0.11
+Nodes (17): apps_admin_src_app_globals, geistMono, geistSans, metadata, RootLayout(), ThemeProvider(), apps_seller_src_app_globals, geistMono (+9 more)
+
+### Community 149 - "local-prep-bulk.mjs"
+Cohesion: 0.13
+Nodes (8): kindEmoji, ref, tools, world, bulkPlan, devtestCard, members, tools
 
 ### Community 150 - "p6-06-m10-schema.test.ts"
 Cohesion: 0.33
 Nodes (5): convexRoot, fieldsOf(), hasField(), schema, schemaSrc
 
 ### Community 151 - "PRE-CLOUD-REPORT — 013-opus-ground-truth input manifest"
-Cohesion: 0.18
-Nodes (9): CR-001 — Harden the `dev/demoSeed` guard (loopback allowlist or documented cloud-dest exception), Branch lineage, EXCLUDED from Opus inputs, Founder decisions applied, Gate on 011 (at `9bacc42`, before branching 013), Graph (post-refresh; see graphify-out/), Opus inputs — every path verified committed (`git ls-files --error-unmatch`), none gitignored, PRE-CLOUD-REPORT — 013-opus-ground-truth input manifest (+1 more)
+Cohesion: 0.29
+Nodes (6): Branch lineage, EXCLUDED from Opus inputs, Gate on 011 (at `9bacc42`, before branching 013), Graph (post-refresh; see graphify-out/), Opus inputs — every path verified committed (`git ls-files --error-unmatch`), none gitignored, PRE-CLOUD-REPORT — 013-opus-ground-truth input manifest
 
 ### Community 152 - "CEY Redesign — PM Handoff (session 1 → session 2)"
 Cohesion: 0.18
 Nodes (10): 1. Who I am in this project, 2. The situation in one paragraph, 3. Toolchain (final), 4. Locked decisions, 5. Proposed, needs the founder, 6. Status (as of handoff), 7. Ground-truth Opus prompt (summary; re-issue in full when running), 8. Key facts from the inventory (for judging specs) (+2 more)
 
-### Community 153 - "p6-12-m11-schema.test.ts"
-Cohesion: 0.33
-Nodes (5): convexRoot, fieldsOf(), hasField(), schema, INITIAL_LEVEL
+### Community 153 - "Createconomy Feed — Design & Build Spec (living)"
+Cohesion: 0.15
+Nodes (12): 0. How to use this document, 12. Admin and observability (L-02, L-21, L-48–L-50), 13. Backend and data needs (for the dev + build phases), 14. Learnings log (what this session taught us), 15. Open items, 17. Change log, 1. North star and the organism, 3. People we design for (behavioural scenarios) (+4 more)
 
-### Community 154 - "profile/settings.ts"
-Cohesion: 0.25
-Nodes (18): appendConsent(), completionRecompute, consentReaccept, consentWithdraw, detachAttribute, erasureCascade(), getSettingsState, profilesRow() (+10 more)
+### Community 154 - "convex/setup.ts"
+Cohesion: 0.09
+Nodes (38): fieldsOf(), hasField(), schema, ACTIVITY_EVENT_TYPES, appendConsent(), completionRecompute, consentReaccept, consentWithdraw (+30 more)
 
-### Community 155 - "CONTRACT-7 admin-wiki FINAL — Admin Wiki (/admin/wiki)"
-Cohesion: 0.52
-Nodes (7): adminWidgets, CAP-390 admin/staff shell gate, CONTRACT-7 admin-wiki FINAL — Admin Wiki (/admin/wiki), adminWikiArticles, CAP-418 wiki.get (article read), CAP-419 wiki.deploySync (System), CAP-420 missing-article route
+### Community 155 - "p6-03-feed.test.ts"
+Cohesion: 0.22
+Nodes (8): clientSrc, convexRoot, featuredSrc, pageSrc, rightSrc, schema, src, vibingSrc
 
-### Community 156 - "CAP-565 — Auto-Create Distribution at Bootstrap (M12)"
-Cohesion: 0.29
-Nodes (7): CAP-002 — Admission/bootstrap transaction (cross-referenced), CAP-003 — Bootstrap completion (cross-referenced), CAP-299 Distribution create, CAP-300 distribution.join, CAP-303 reachFactor compute, CAP-565 — Auto-Create Distribution at Bootstrap (M12), distributions (table)
+### Community 156 - "SLICE-P1-01a roleAssignments schema + role enum"
+Cohesion: 0.16
+Nodes (25): SLICE-P1-01a roleAssignments schema + role enum, SLICE-P1-01b users/privateUserData schema, SLICE-P1-03 moderationCases schema substrate, SLICE-P1-05 config registry validation core + getFlag, users, capabilityRestrictions, F-14 fence — waitlist-CTA submit delegation unspecified, launchReadinessResults (+17 more)
 
 ### Community 157 - "SETUP-REPORT — graphify setup + ak-redesign skeleton"
-Cohesion: 0.09
-Nodes (21): Agent-file inventory (REPORT ONLY — nothing changed), apps/admin (port 3001) — 24 pages, apps/forum (port 3000) — 48 pages, Cache rules, Environment, Errors & open issues, Graph stats, Installer diffs (exact files changed per installer) (+13 more)
+Cohesion: 0.18
+Nodes (10): apps/admin (port 3001) — 24 pages, apps/forum (port 3000) — 48 pages, Cache rules, Environment, Errors & open issues, Graph stats, Installer diffs (exact files changed per installer), MCP command (tested working) (+2 more)
 
 ### Community 158 - "Package Scripts"
 Cohesion: 0.33
@@ -1087,25 +1123,25 @@ Nodes (6): scripts, build, dev, lint, start, typecheck
 Cohesion: 0.18
 Nodes (10): Commits (this round), Errors & open issues, SETUP-REPORT R2 — freshness, housekeeping, raw inventory, baseline attempt, Step 1 — Graph freshness, Step 2 — Housekeeping, Step 3 — convex/lib/events.ts:21 diagnosis (REPORT ONLY), Step 4 — RAW-INVENTORY.md, Step 5 — Baseline screenshots (best effort → BLOCKED by disabled backend) (+2 more)
 
-### Community 161 - "queue.ts"
-Cohesion: 0.27
-Nodes (11): StaffRole, approve, listQueue, regen, regenCount(), reject, requireOperator(), schedule (+3 more)
+### Community 161 - "moderationQueue.ts"
+Cohesion: 0.15
+Nodes (16): autoRelease, batch, BATCH_VERBS, claim, leaseExpire, LEGAL_CASE_TYPES, listQueue, orderKey() (+8 more)
 
-### Community 162 - "Tags Schema Tests"
+### Community 162 - "p4-03-tags.test.ts"
 Cohesion: 0.40
 Nodes (3): fieldsOf(), hasField(), schema
 
-### Community 163 - "rawEvents"
-Cohesion: 0.14
-Nodes (27): CAP-091 — posts.listByType list-read (cross-referenced), CAP-386 notifications marked read, CAP-568 — Notification List Read (M14), /notifications — Notification List, CONTRACT-7 admin-utm FINAL — UTM Builder (/admin/utm), CAP-479 utm.builder.generate (read-only link generator), CAP-486 noindex (search-index policy), CAP-566 utm.dictionary.seedEdit (dictionary writer) (+19 more)
+### Community 163 - "ref_convex_dev_auth"
+Cohesion: 0.05
+Nodes (55): clientEmit, DEFAULT_DICTIONARY, dictionarySeedEdit, erasureConfirm, erasureRequest, FORBIDDEN_CLASSES, getDictionary, gscPull (+47 more)
 
-### Community 164 - "Analytics Dashboard Founder (/admin/analytics)"
-Cohesion: 0.33
-Nodes (9): Analytics Dashboard Founder (/admin/analytics), analyticsProjections table, analyticsWeeklyDecisions table, CAP-448 Commerce Funnel Projection (cron), CAP-452 analytics.weeklyDecision.record, CAP-463 analytics.founderDashboard, eventCatalog table, rawEvents table (+1 more)
+### Community 164 - "tiered-ladder.tsx"
+Cohesion: 0.19
+Nodes (10): DEFAULT_RUNGS, defaultRevealState(), LadderAssignmentStatus, LadderProgress, LadderRevealState, SIGNAL_LEVELS, SignalLevel, TieredLadder() (+2 more)
 
-### Community 165 - "store.ts"
-Cohesion: 0.18
-Nodes (15): approveProduct, autoScreen, decideRequest, getQueue, loadLinkForInspection, loadRescanBatch, recordDriftFlip, recordInspection (+7 more)
+### Community 165 - "sanctions.ts"
+Cohesion: 0.39
+Nodes (7): applyStanding(), brigadeSweep, requireSanctionActor(), sanction, STRIKE_CLASS_DAYS, terminate, CapabilityKey
 
 ### Community 166 - "Cursor Pagination Hook"
 Cohesion: 0.40
@@ -1127,13 +1163,13 @@ Nodes (6): scripts, build, dev, lint, start, typecheck
 Cohesion: 0.21
 Nodes (11): getPublished, listVersions, publish, requireAdmin(), saveDraft, seedDefaults, DMCA_V1, LEGAL_SEED_DOCS (+3 more)
 
-### Community 171 - "Reference Intake Pipeline"
-Cohesion: 0.33
-Nodes (6): CAP-202 reference.submit, CAP-203 reference.ackContract, CAP-204 intake.scan, CAP-205 reference.rightsReview, CAP-206 reference.contentReview, CAP-207 forge.fromReferences
+### Community 171 - "queue.ts"
+Cohesion: 0.31
+Nodes (10): approve, listQueue, regen, regenCount(), reject, requireOperator(), schedule, sweepScheduled (+2 more)
 
-### Community 172 - "CONTRACT-1 App Shell (root layout)"
+### Community 172 - "seedThread"
 Cohesion: 0.24
-Nodes (15): createOrUpdateUser, users, CONTRACT-1 App Shell (root layout), Platform-Wide Routing Convention, CONTRACT-1 Legal Pages (/privacy, /dmca, /terms), auth.finalize, CONTRACT-1 Sign In (/signin), CONTRACT-1 Waitlist Join (/waitlist) (+7 more)
+Nodes (7): seedThread, EngagementPanel(), EngagementPanelProps, PostBlockProps, THEME_COLORS, ThreadIntelligencePanel(), ThreadIntelligencePanelProps
 
 ### Community 173 - "DMCA Legal Process"
 Cohesion: 0.33
@@ -1147,17 +1183,17 @@ Nodes (6): CAP-411 adminCounters refresh cron, CAP-412 counter cron failure inte
 Cohesion: 0.40
 Nodes (4): DataModel, Doc, Id, TableNames
 
-### Community 177 - "feed-thread-review-fixes.test.tsx"
-Cohesion: 0.22
-Nodes (6): clientSrc, convexRoot, feedSrc, mocks, pageSrc, threadSrc
+### Community 177 - "CONTRACT-1 App Shell (root layout)"
+Cohesion: 0.24
+Nodes (15): createOrUpdateUser, users, CONTRACT-1 App Shell (root layout), Platform-Wide Routing Convention, CONTRACT-1 Legal Pages (/privacy, /dmca, /terms), auth.finalize, CONTRACT-1 Sign In (/signin), CONTRACT-1 Waitlist Join (/waitlist) (+7 more)
 
 ### Community 178 - "Packaged Convex Components"
 Cohesion: 0.25
 Nodes (7): Build Flow, Checklist, Default Approach, Package Exports, Packaged Convex Components, Testing, When to Choose This
 
-### Community 179 - "SETUP-REPORT R3 — anti-drift local dev + demo seed + baselines"
-Cohesion: 0.17
-Nodes (11): 1. Demo seed — what shipped (`convex/seed/demo.ts`, `pnpm seed:demo`), 2. What could NOT be seeded (would need backend changes — not hacked around), 3. `pnpm reset:local` — the officially supported wipe, 5. Rendering verification (390px, live demo data), 6. Baselines — `ak-redesign/00-control/baselines/`, 7. Cron `.withIndex` failures (for the dev team), 8. Machine notes (Windows/office laptop), 9.1 R2 review fixes (S00-PREP-REVIEW-R2) — guard tests, actual output (+3 more)
+### Community 179 - "5. Tokens (STYLE-KIT is the source; `packages/design-tokens` is its code)"
+Cohesion: 0.25
+Nodes (8): 5.1 Single source, 5.2 Glow (D-007 — "a blink with a reason"), 5.3 Glass (D-007), 5.4 Sheet, 5.5 Safe area & app chrome, 5.6 State kit, 5.7 Both themes (D-013), 5. Tokens (STYLE-KIT is the source; `packages/design-tokens` is its code)
 
 ### Community 180 - "Source Console Admin"
 Cohesion: 0.40
@@ -1187,9 +1223,9 @@ Nodes (5): Security Fix Queue — Round 2, Security R2-31 — Reaction replay aw
 Cohesion: 0.40
 Nodes (5): Rocketeer Dashboard (/sell), Store Application (/sell/apply), Legal & Rights Intake (/legal/intake), Repeat-Infringer Policy (/repeat-infringer), Trust & Policy Pages (six anonymous routes)
 
-### Community 187 - "Convex API Surface"
-Cohesion: 0.50
-Nodes (3): api, components, internal
+### Community 187 - "t02-css-identity.mjs"
+Cohesion: 0.06
+Nodes (27): ref_node_child_process, ref_node_os, ref_node_process, ref_postcss, ref_tailwindcss_postcss, capture(), dismissChrome(), OUT_DIR (+19 more)
 
 ### Community 188 - "forum/package.json"
 Cohesion: 0.05
@@ -1219,9 +1255,9 @@ Nodes (4): CAP-376 quota periodKey local timezone, CAP-377 lazy quota reset in a
 Cohesion: 0.22
 Nodes (8): graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag), Step 8 - Token reduction benchmark (only if total_words > 5000)
 
-### Community 195 - "SLICE-P1-01a roleAssignments schema + role enum"
-Cohesion: 0.16
-Nodes (25): SLICE-P1-01a roleAssignments schema + role enum, SLICE-P1-01b users/privateUserData schema, SLICE-P1-03 moderationCases schema substrate, SLICE-P1-05 config registry validation core + getFlag, users, capabilityRestrictions, F-14 fence — waitlist-CTA submit delegation unspecified, launchReadinessResults (+17 more)
+### Community 195 - "Phase checklists"
+Cohesion: 0.14
+Nodes (13): Grok review protocol — Demo World Engine, How every review works, P0 — Recon, P1 — World and facts, P2 — Members, P3 — Posts, P4 — Conversation, P5 — Images (+5 more)
 
 ### Community 196 - "devDependencies"
 Cohesion: 0.29
@@ -1231,9 +1267,9 @@ Nodes (7): devDependencies, @axe-core/playwright, convex, convex-test, jose, @pl
 Cohesion: 0.33
 Nodes (5): Advanced Component Patterns, Class-based client wrappers, Deriving validators from schema, Function Handles for callbacks, Static configuration with a globals table
 
-### Community 198 - "CURRENT-STATE — what Createconomy actually is today (ground truth for every spec)"
-Cohesion: 0.15
-Nodes (12): 0. The verdict in five lines, 10. Backend needs → CRs (never folded into a spec silently), 1. Shared foundation, 3. Other forum routes (shallow), 4. Admin (`apps/admin`, deferred until member screens ship), 5. Component rulings, 6. Copy-leak audit, 7. STYLE-KIT vs VISION (+4 more)
+### Community 198 - "SLICE-P7E-14 moderation case queue live reads (referenced)"
+Cohesion: 0.27
+Nodes (14): SLICE-P7A-05 S0 cover → ingest.throttle, SLICE-P7A-06 Remote Home alert writers (318/332/334/381/484), moderationCases — case table with bible caseType/status unions; dedupe key (target, policyFamily, window), SLICE-P7E-10 policyReasonCodes / Legal copy section (referenced), SLICE-P7E-11 autoGate wiring CAP-321-323 (referenced), SLICE-P7E-12 — Report submit (comment target) + rate limit, SLICE-P7E-13 moderator approve/reject console slices (referenced), SLICE-P7E-14 moderation case queue live reads (referenced) (+6 more)
 
 ### Community 199 - "Hybrid Convex Components"
 Cohesion: 0.33
@@ -1267,33 +1303,37 @@ Nodes (3): Config Console + STOP + kill-switches (/admin/config), Launch Readine
 Cohesion: 0.67
 Nodes (3): Admin Home (/admin/home), Reliability / Jobs & Dead-letter (/admin/reliability), SEO Health (/admin/seo)
 
+### Community 207 - "postcss-load-config"
+Cohesion: 0.22
+Nodes (4): config, config, config, config
+
 ### Community 208 - "Local Convex Components"
 Cohesion: 0.33
 Nodes (5): Checklist, Default Layout, Local Convex Components, When to Choose This, Workflow Notes
 
-### Community 214 - "convex/setup.ts"
-Cohesion: 0.18
-Nodes (17): handleReserve, reserveHandleTx(), consentRecord, getSetupState, INTEREST_TAXONOMY_VERSION, interestsRemove, interestsSelect, listInterestTiles (+9 more)
+### Community 214 - "normalizeHandle"
+Cohesion: 0.33
+Nodes (6): convexRoot, LATIN_SUPPLEMENT, normalizeHandle(), getProfilePage, handleReserve, reserveHandleTx()
 
-### Community 215 - "SLICE-P2-06 — app shell routing convention helper + CAP-025 CMP slot (default-deny)"
-Cohesion: 0.11
-Nodes (22): assertIndexable — SEO evaluator predicate (published ∧ passed ∧ public ∧ not duplicate/doorway/thin ∧ 200 ∧ affiliate-survivable ∧ persona-density OK), drip.release — hourly UTC dripBatches publisher (default itemsPerDay=1, launch floor 40), SLICE-P4-13 — post detail SSR noindex shell (CAP-107 Wave-2), SLICE-P6-07 — acquire path + user-local quota calendar (CAP-376/377), SLICE-P7G-01 — assertIndexable evaluator + 404/410 + density/thin/affiliate gates, SLICE-P7G-02 — JSON-LD / FAQ / sitemap / slug 301 / post-edit similarity, SLICE-P7G-03 — Link-rel / OG / noindex family (shared SSR helpers), SLICE-P7G-04 — Honest empty-states + visit/since (+14 more)
-
-### Community 216 - "OPUS-HANDOFF-GT — ground-truth session checkpoint log"
-Cohesion: 0.22
-Nodes (8): Evidence gathered (so a resumed session need not redo it), Next session (Opus in Cursor) starts with, Open questions / half-decided, OPUS-HANDOFF-GT — ground-truth session checkpoint log, R2 close (2026-09-29), R2 — founder decisions + S00 spec (prompt GROUND-TRUTH-R2 + S00, 2026-09-29), R2 open items for founder / PM, Steps
-
-### Community 297 - "comment-card.tsx"
+### Community 215 - "reply-composer.tsx"
 Cohesion: 0.25
-Nodes (8): ContentPageClientProps, RoleTag, SeedComment, CommentCardProps, ROLE_STYLES, STANCE_STYLES, THEME_LABELS, ContentPageProps
+Nodes (6): StanceTag, ComposerStance, ReplyComposer(), ReplyComposerProps, STANCE_ACTIVE, STANCES
+
+### Community 216 - "wiki.ts"
+Cohesion: 0.60
+Nodes (5): deploySync, get, listSlugs, requireAnyStaffRole(), sanitizeMarkdown()
+
+### Community 297 - "comment-thread.tsx"
+Cohesion: 0.19
+Nodes (12): CommentThread(), CommentThreadProps, flattenComments(), QAMode(), sortComments(), SortOrder, TimelineMode(), FILTERS (+4 more)
 
 ### Community 298 - "graphify reference: query, path, explain"
 Cohesion: 0.33
 Nodes (5): For /graphify explain, For /graphify path, graphify reference: query, path, explain, Step 0 — Constrained query expansion (REQUIRED before traversal), Step 1 — Traversal
 
-### Community 299 - "p4-06-rulebook.test.ts"
-Cohesion: 0.33
-Nodes (3): fieldsOf(), hasField(), schema
+### Community 299 - "merge-p2v.mjs"
+Cohesion: 0.16
+Nodes (8): all, covered, files, missing, S, art, cards, members
 
 ### Community 300 - "baseline/ — REAL capture, 2026-09-27 (round 3)"
 Cohesion: 0.33
@@ -1303,21 +1343,21 @@ Nodes (5): baseline/ — REAL capture, 2026-09-27 (round 3), Capture environment
 Cohesion: 0.40
 Nodes (3): NOTE: This file should not be edited, NOTE: This file should not be edited, ref_next_types_routes_d_ts
 
-### Community 302 - "toggle-switch.tsx"
-Cohesion: 0.36
-Nodes (6): StatefulToggle(), ModeToggle(), ModeToggleProps, ToggleMode, @testing-library/react, vitest-axe
+### Community 302 - "CONTRACT-7 admin-wiki FINAL — Admin Wiki (/admin/wiki)"
+Cohesion: 0.52
+Nodes (7): adminWidgets, CAP-390 admin/staff shell gate, CONTRACT-7 admin-wiki FINAL — Admin Wiki (/admin/wiki), adminWikiArticles, CAP-418 wiki.get (article read), CAP-419 wiki.deploySync (System), CAP-420 missing-article route
 
 ### Community 303 - "PM observations — first look at the real product (seeded, 390 + 1440)"
 Cohesion: 0.25
 Nodes (7): Backend / CR candidates (do not fix; log as proposed CRs), P0 — feel-special is absent, P0 — trust killers, P1 — polish / app-feel, PM observations — first look at the real product (seeded, 390 + 1440), Structural: style kit vs VISION, What works (keep)
 
-### Community 304 - "thread-header.tsx"
-Cohesion: 0.05
-Nodes (49): BriefToast(), BriefToastProps, GigsBody(), categoryIconMap, ThreadHeader(), ThreadHeaderProps, ThreadSidebarPreview, ThreadSidebarProps (+41 more)
+### Community 304 - "forum/src/components/ui/toast.tsx"
+Cohesion: 0.20
+Nodes (8): BriefToast(), BriefToastProps, FeedUndoToastProps, Toast(), ToastProps, ToastVariant, variantIconColor, variantStyles
 
-### Community 305 - "schema.ts"
-Cohesion: 0.05
-Nodes (29): fieldsOf(), hasField(), schema, fieldsOf(), hasField(), schema, fieldsOf(), hasField() (+21 more)
+### Community 305 - "convex_generated_api"
+Cohesion: 0.08
+Nodes (24): crons, devTestPassword(), ensure, hasPasswordAccount, draft, embedText(), ForgeAssertion, ForgeOutput (+16 more)
 
 ### Community 306 - "ui-preferences-store.ts"
 Cohesion: 0.50
@@ -1339,7 +1379,7 @@ Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify refer
 Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
-### Community 311 - "p1-01-identity-schema.test.ts"
+### Community 311 - "p4-13-post-detail.test.ts"
 Cohesion: 0.40
 Nodes (3): fieldsOf(), hasField(), schema
 
@@ -1351,29 +1391,41 @@ Nodes (7): Change-request (CR) flow, Integration, Seed & schema rule, TEAM-WORKF
 Cohesion: 0.25
 Nodes (7): Beta line (D-005), Next 2 specs (stay-2-ahead), Now, Spec board, STATUS — where the redesign stands, Waiting on the dev (CRs), Waiting on the founder
 
-### Community 319 - "trend-sorter.tsx"
-Cohesion: 0.33
-Nodes (5): Step 0 — environment (DONE), FeedSortMode, sortItems, TrendSorter(), TrendSorterProps
+### Community 319 - "settings-profile-client.tsx"
+Cohesion: 0.08
+Nodes (22): metadata, DirectoryTool, ToolsDirectoryClient(), AGE_BANDS, PURPOSE_LABELS, ROLE_ARCHETYPES, SettingsProfileClient(), SOCIAL_PLATFORMS (+14 more)
 
-### Community 322 - "S00-PREP review — seed + reset tooling"
-Cohesion: 0.33
-Nodes (5): NIT, One-time commands per machine, S00-PREP review — seed + reset tooling, SHOULD-FIX, Verdict: BLOCK
+### Community 320 - "p6-01-m9-schema.test.ts"
+Cohesion: 0.40
+Nodes (3): fieldsOf(), hasField(), schema
 
-### Community 323 - "wiki/page.tsx"
-Cohesion: 0.60
-Nodes (4): AdminWikiPage(), apps_admin_src_components_ui_tabs_tabs, TabsList, TabsTrigger
+### Community 321 - "SCREEN-INVENTORY — every screen in Createconomy"
+Cohesion: 0.20
+Nodes (9): Deleted by s00-t04 (on 011, not counted in totals), Dev-only (not counted), GAPS (flagged, not fixed), Non-screen surfaces (not counted), Redirects (not screens), SCREEN-INVENTORY — every screen in Createconomy, TABLE A — USER-FACING, TABLE B — CONSOLE (admin, moderation, S14) (+1 more)
+
+### Community 322 - "award.ts"
+Cohesion: 0.31
+Nodes (9): snapshotLegitimacy(), awardFromOutcomeTx(), AwardOutcome, computeProvisional(), effectiveDamp(), OUTCOME_FAMILIES, passesOutcomeGate(), SEALED_EVENT_WEIGHTS (+1 more)
+
+### Community 323 - "CONTRACT-7 cmp FINAL — Consent Management Overlay (CMP)"
+Cohesion: 0.38
+Nodes (10): CONTRACT-7 cmp FINAL — Consent Management Overlay (CMP), analyticsDeletionRequests, CAP-028 crash-degrade contract, CAP-149 M7 behavioral-consent withdraw, CAP-453 vendor delete (off-screen), CAP-454 vendor delete (off-screen), CAP-505 consent.record, CAP-506 consent.withdraw (+2 more)
 
 ### Community 324 - "Session log — apac-3sprs54"
-Cohesion: 0.50
-Nodes (3): 2026-09-29 09:45:49.475 UTC — createconomy — 011-Akilesh-Redesign @ 814939e57055b572998b018338a4bc5e22c6df14, 2026-09-29 13:55:13.521 UTC — createconomy — 011-Akilesh-Redesign @ 200ecd16d649225d022bcede9f12f8a549f8a29a, Session log — apac-3sprs54
+Cohesion: 0.22
+Nodes (8): 2026-09-29 09:45:49.475 UTC — createconomy — 011-Akilesh-Redesign @ 814939e57055b572998b018338a4bc5e22c6df14, 2026-09-29 13:55:13.521 UTC — createconomy — 011-Akilesh-Redesign @ 200ecd16d649225d022bcede9f12f8a549f8a29a, 2026-09-29 15:57:16.193 UTC — createconomy — s00-t01-token-single-source @ 3513442c096b204f8e4535e3478a51d6ade6d125, 2026-09-29 16:29:07.716 UTC — createconomy — s00-t02-new-tokens @ c5bc71c3c3e9eb2fe33353bd66f8fe27b548952d, 2026-09-30 08:29:49.300 UTC — createconomy — s00-t03-utilities @ 34f3c08a410372afdbdd29fe09cce3907b99db67, 2026-09-30 15:49:45.346 UTC — createconomy — s00-t03-utilities @ 15575a511b5e1507342ee0bf92373df26a47d921, 2026-09-30 16:34:10.672 UTC — createconomy — 011-Akilesh-Redesign @ 62bd94f38e7a228195c806f0431523b228783da7, Session log — apac-3sprs54
 
 ### Community 325 - "S00 Foundation — founder notes"
 Cohesion: 0.25
 Nodes (7): How I decide taste, Launch, Look and feel, Navigation, S00 Foundation — founder notes, Themes, What must feel premium from day one
 
-### Community 327 - "creator-panel.tsx"
-Cohesion: 0.43
-Nodes (7): SeedAuthor, SeedProduct, CreatorPanel(), CreatorPanelProps, fmtSessionAt(), avatarBg(), fmtCount()
+### Community 327 - "CAP-565 — Auto-Create Distribution at Bootstrap (M12)"
+Cohesion: 0.15
+Nodes (13): CAP-002 — Admission/bootstrap transaction (cross-referenced), CAP-003 — Bootstrap completion (cross-referenced), CAP-299 Distribution create, CAP-300 distribution.join, CAP-303 reachFactor compute, CAP-304 might.recompute, CAP-305 level.commitMonthly, CAP-306 Immediate promotion (+5 more)
+
+### Community 328 - "9. Widgets (each: job · states · lens · manual · kill · edge cases · analytics)"
+Cohesion: 0.22
+Nodes (9): 9.1 Menu bar, 9.2 Hero (desktop) — the trailer (L-31, L-40, L-43), 9.3 Start Discussion (L-34), 9.4 Sorter + Fav (L-07, L-44, L-47), 9.5 What's Vibing (L-45), 9.6 Discover, 9.7 Podium (L-28, L-32), 9.8 Page states (centre) (+1 more)
 
 ### Community 330 - "p4-04-tools.test.ts"
 Cohesion: 0.29
@@ -1383,6 +1435,10 @@ Nodes (3): fieldsOf(), hasField(), schema
 Cohesion: 0.29
 Nodes (6): Browser QA (390 + 1440 · logged in + out · **dark AND light at 390** — D-013), Deep review findings (blocking first), For the founder's inspection, Mandatory: benchmark side-by-side (D-005), Result: PASS | FAIL, S## — milestone gate
 
+### Community 332 - "new-post-composer.tsx"
+Cohesion: 0.03
+Nodes (77): DiscoverPageWithConvex(), NewPostComposer, NewPostPageClient(), NewPostPageWithConvex(), apps_forum_src_app_globals, geistMono, geistSans, metadata (+69 more)
+
 ### Community 333 - "S##-T## — <task> — build report"
 Cohesion: 0.33
 Nodes (5): Deviations from the spec (and why) — "none" if none, Evidence, Open issues / questions for Opus, S##-T## — <task> — build report, What changed
@@ -1391,33 +1447,41 @@ Nodes (5): Deviations from the spec (and why) — "none" if none, Evidence, Open
 Cohesion: 0.33
 Nodes (5): Decision: ACCEPTED | RETURNED | ESCALATED, If ACCEPTED, If RETURNED — exact list for the builder, Reasoning (short), S##-T## — verdict
 
-### Community 335 - "CAP-304 might.recompute"
-Cohesion: 0.33
-Nodes (6): CAP-304 might.recompute, CAP-305 level.commitMonthly, CAP-306 Immediate promotion, CAP-307 season.recalibrate, CAP-310 Annual routine demotion, CAP-315 Founding Season cold-start
+### Community 335 - "validate.mjs"
+Cohesion: 0.22
+Nodes (6): cacheDir, NICHES, problems, toolsPath, WEIGHTS, worldPath
 
-### Community 336 - "convex/seed.ts"
-Cohesion: 0.06
-Nodes (41): autoRelease, batch, BATCH_VERBS, claim, leaseExpire, LEGAL_CASE_TYPES, listQueue, orderKey() (+33 more)
+### Community 336 - "BETA-SWITCH — removing the demo world before beta (and keeping it for dev)"
+Cohesion: 0.40
+Nodes (4): Before you remove anything, BETA-SWITCH — removing the demo world before beta (and keeping it for dev), Keep using the world locally (development after the export), Remove the world (beta switch)
 
-### Community 337 - "p4-11-publish.test.ts"
-Cohesion: 0.50
-Nodes (3): fieldsOf(), hasField(), schema
-
-### Community 339 - "notifications-deeplink-pagination.test.ts"
-Cohesion: 0.12
-Nodes (12): convexRoot, forumRoot, pageSrc, readsSrc, topNavSrc, cardsSrc, convexRoot, cronsSrc (+4 more)
-
-### Community 340 - "sources.ts"
+### Community 337 - "Agent prompt — World Architect (DEMO-WORLD-SPEC §3, phase P1)"
 Cohesion: 0.29
-Nodes (10): safeFetch(), validateUrlSyntax(), assertPublisherOrAdmin(), configFieldsValidator, listSources, METHOD_VALUES, setTrustLevel, sourceUpsert (+2 more)
+Nodes (6): Agent prompt — World Architect (DEMO-WORLD-SPEC §3, phase P1), Inputs, Output — `world.json`, Role, Rules, Validation (pipeline rejects otherwise)
 
-### Community 341 - "CAP-527 Journal Summary tab"
-Cohesion: 0.83
-Nodes (4): CAP-526 merged profile + distribution page, CAP-527 Journal Summary tab, CAP-528 Journal Ledger tab, /u/[handle] — Profile (merged Profile + Distribution)
+### Community 338 - "content-page-client.tsx"
+Cohesion: 0.28
+Nodes (6): ContentPageClient(), ContentPageClientProps, SeedComment, seedComments, CommentCardProps, ContentPageProps
 
-### Community 343 - "p6-07-resources.test.ts"
-Cohesion: 0.25
-Nodes (7): convexRoot, cronsSrc, seedSrc, settleSrc, src, QUOTA_DAY, QUOTA_WEEK
+### Community 339 - "projections.ts"
+Cohesion: 0.36
+Nodes (8): activationInline, commerceFunnels, effectiveCountable(), l08Core, orphanSweep, reconcile, s18Core, writeProjection()
+
+### Community 340 - "attributionSettle.ts"
+Cohesion: 0.39
+Nodes (8): anchorOutcomeReversed(), clawbackForActor, clawbackTx(), finalizeTx(), journeyCommenters(), reverseCommentOutcomes(), reverseTx(), settle
+
+### Community 341 - "S00-T02 — New tokens + STYLE-KIT — build report"
+Cohesion: 0.29
+Nodes (6): Acceptance proof (spec §12 row S00-T02), Fix round (S00-T02-REVIEW 77f7aa2, PASS WITH FIXES — applied same session), Gate (this branch), Reproduce, S00-T02 — New tokens + STYLE-KIT — build report, What changed
+
+### Community 342 - "S00-T03 — Utilities — build report"
+Cohesion: 0.29
+Nodes (6): Acceptance proof (spec §12 row S00-T03), Fix round 1 (S00-T03-REVIEW 16db502, BLOCK — applied same session), Gate (this branch), Reproduce, S00-T03 — Utilities — build report, What changed
+
+### Community 343 - "patch-names.mjs"
+Cohesion: 0.22
+Nodes (8): avatars, byHandle, keep, members, picks, POOL, renamedAvs, rows
 
 ### Community 344 - "ak-redesign — the Createconomy UI/UX redesign control room"
 Cohesion: 0.40
@@ -1427,41 +1491,157 @@ Nodes (5): ak-redesign — the Createconomy UI/UX redesign control room, Graph f
 Cohesion: 0.40
 Nodes (4): Checked, Findings (most severe first), S##-T## — code review, Verdict: PASS | PASS WITH NITS | CHANGES REQUESTED
 
-### Community 346 - "ref_next"
-Cohesion: 0.08
-Nodes (11): metadata, ToolProfilePage(), ToolProfilePageProps, ShellLayout(), metadata, UserProfilePage(), UserProfilePageProps, AppShell() (+3 more)
+### Community 346 - "p6-02-m9-writers.test.ts"
+Cohesion: 0.25
+Nodes (7): cardsSrc, convexRoot, cronsSrc, exploreSrc, rankSrc, seedSrc, vibingSrc
 
-### Community 347 - "p4-08-ingest.test.ts"
+### Community 347 - "dependencies"
 Cohesion: 0.50
-Nodes (3): fieldsOf(), hasField(), schema
+Nodes (4): dependencies, @auth/core, @convex-dev/auth, @convex-dev/rate-limiter
 
-### Community 349 - "content-shell.tsx"
+### Community 348 - "error-boundary.tsx"
+Cohesion: 0.29
+Nodes (3): ErrorBoundary, ErrorBoundaryProps, ErrorBoundaryState
+
+### Community 350 - "5. Algorithm"
+Cohesion: 0.29
+Nodes (7): 5.1 Two engines (L-17), 5.2 Sorts, 5.3 Rules (KEEP from M9 unless noted), 5.4 Life stage (projection field), 5.5 Data sufficiency fallback, 5.6 Gaming check, 5. Algorithm
+
+### Community 361 - "S00-T01 — Token single source — build report"
 Cohesion: 0.33
-Nodes (6): ContentGroupLayout(), DiscussionsLayout(), ContentShell(), ContentShellProps, MobileTabBar(), tabs
+Nodes (5): Acceptance proof (spec §12 row S00-T01), Gate (this branch), Reproduce, S00-T01 — Token single source — build report, What changed
 
-### Community 350 - "SPEC-INDEX — every redesign spec, in build order"
-Cohesion: 0.50
-Nodes (3): Journey check (why this order), Rules for every spec in this index, SPEC-INDEX — every redesign spec, in build order
+### Community 362 - "S00-T03 review — utilities"
+Cohesion: 0.33
+Nodes (5): BLOCKER, S00-T03 review — utilities, SHOULD-FIX, Verdict: BLOCK, What holds
 
-### Community 365 - "seedThread"
-Cohesion: 0.32
-Nodes (7): seedThread, EngagementPanelProps, PostBlockProps, Sparkline(), THEME_COLORS, ThreadIntelligencePanel(), ThreadIntelligencePanelProps
+### Community 364 - "routing.ts"
+Cohesion: 0.36
+Nodes (6): AuthState, BootstrapState, getRoutingRedirect(), isProtectedRoute(), PREF_ROUTES, PROTECTED_ROUTE_PREFIXES
 
-### Community 366 - "p6-08-09-viewer-contribute.test.ts"
+### Community 365 - "notifications-deeplink-pagination.test.ts"
+Cohesion: 0.29
+Nodes (5): convexRoot, forumRoot, pageSrc, readsSrc, topNavSrc
+
+### Community 366 - "feed-thread-review-fixes.test.tsx"
+Cohesion: 0.22
+Nodes (6): clientSrc, convexRoot, feedSrc, mocks, pageSrc, threadSrc
+
+### Community 367 - "Home-sync review — `bb4ab7b` selector case + pnpm.cjs"
+Cohesion: 0.14
+Nodes (14): Coverage of the review asks, FIX-R1 — RED/GREEN tests for the selector gate and the pnpm.cjs fallback, GREEN — current code (`bb4ab7b` regex, plain-first fallback), RED — gate, pre-bb4ab7b regex (`[a-z0-9-]` / `[a-z0-9_-]`), RED — pnpm fallback, order reversed (candidates before plain spawn), Checked, Finding, Home-sync review — `bb4ab7b` selector case + pnpm.cjs (+6 more)
+
+### Community 368 - "p6-08-09-viewer-contribute.test.ts"
 Cohesion: 0.29
 Nodes (6): contributeClientSrc, contributeSrc, convexRoot, seedSrc, viewClientSrc, viewSrc
 
-### Community 367 - "FIX-R1 — RED/GREEN tests for the selector gate and the pnpm.cjs fallback"
-Cohesion: 0.15
-Nodes (12): Coverage of the review asks, FIX-R1 — RED/GREEN tests for the selector gate and the pnpm.cjs fallback, GREEN — current code (`bb4ab7b` regex, plain-first fallback), RED — gate, pre-bb4ab7b regex (`[a-z0-9-]` / `[a-z0-9_-]`), RED — pnpm fallback, order reversed (candidates before plain spawn), Checked, Finding, Home-sync review — `bb4ab7b` selector case + pnpm.cjs (+4 more)
+### Community 369 - "Analytics Dashboard Founder (/admin/analytics)"
+Cohesion: 0.13
+Nodes (20): CAP-140 Post eligibility check, CAP-153 Pre-publish deterministic checks, CAP-154 Pre-publish safety moderation, CAP-486 noindex surface rules, CAP-529 — Keyword Search (M9), CAP-531 — Save Post as Draft (M4), CAP-532 — My Drafts List (M4), CAP-535 — Curated Editorial Verdict on Tool (M5) (+12 more)
 
-### Community 368 - "p4-13-post-detail.test.ts"
+### Community 370 - "Agent prompt — Fact Keeper (DEMO-WORLD-SPEC §3, phase P1)"
+Cohesion: 0.33
+Nodes (5): Agent prompt — Fact Keeper (DEMO-WORLD-SPEC §3, phase P1), Output — `tools.json` rows, Role, Rules, Validation (pipeline rejects otherwise)
+
+### Community 371 - "S00-T02 review — new tokens"
+Cohesion: 0.40
+Nodes (4): S00-T02 review — new tokens, SHOULD-FIX, Verdict: PASS WITH FIXES, What holds
+
+### Community 372 - "AuthModal"
+Cohesion: 0.33
+Nodes (6): Agent-file inventory (REPORT ONLY — nothing changed), Tier 1 — real UI-redesign conflict potential, Tier 2 — low/no UI conflict (keep unless noted), Tier 3 — grouped, verified non-conflicting, useAppAuth(), AuthModal()
+
+### Community 373 - "CAP-014 — waitlist.join (publicMutation)"
+Cohesion: 1.00
+Nodes (4): CAP-014 — waitlist.join (publicMutation), F-36 — Dual waitlist capture surfaces (OPEN), Sign In (Wave 1), Waitlist Join (Wave 1)
+
+### Community 374 - "DEMO-WORLD — P1: The world and the facts (GATE P1)"
+Cohesion: 0.40
+Nodes (4): 1. World — niches, weights, topics, 2. The 60-day calendar (world end reference 2026-10-04), 3. The tools — full list (100, web-verified 2026-10-04), DEMO-WORLD — P1: The world and the facts (GATE P1)
+
+### Community 377 - "10. Card information architecture"
+Cohesion: 0.33
+Nodes (6): 10.1 Skeleton (every type), 10.2 Facets (from M4 fields), 10.3 Why-care-now line (L-33; relationship beats life stage), 10.4 Interactions, 10.5 Never on the card, 10. Card information architecture
+
+### Community 378 - "demo-world RUN-LOG"
+Cohesion: 0.29
+Nodes (6): demo-world RUN-LOG, FINAL run (2026-10-05, founder [DEMO][FINAL]: quality-first, no second demo job), Lean run (2026-10-04, founder+PM: no gates, pilot P3–P5, one line per phase), P0 — Recon (2026-10-03), P0b — image-source addendum probes (2026-10-03, founder added Pixabay + Wikimedia), P1 — The world and the facts (2026-10-04) — driver: LOCAL (addendum A2)
+
+### Community 379 - "p4-01-post-spine.test.ts"
 Cohesion: 0.40
 Nodes (3): fieldsOf(), hasField(), schema
 
-### Community 370 - "search/page.tsx"
+### Community 380 - "p5-01-discussion-spine.test.ts"
+Cohesion: 0.40
+Nodes (3): fieldsOf(), hasField(), schema
+
+### Community 381 - "p6-10-11-admin-resources.test.ts"
+Cohesion: 0.33
+Nodes (5): convexRoot, cronsSrc, lifecycleSrc, reviewSrc, REJECTED_ARTIFACT_FINDINGS
+
+### Community 382 - "api.js"
 Cohesion: 0.50
-Nodes (4): firstSearchParam(), metadata, SearchPage(), SearchPageProps
+Nodes (3): api, components, internal
+
+### Community 383 - "CR-015 — index-prefix fixes (legitimacy.recompute, recognition.rollup) + exact removal bulk estimate"
+Cohesion: 0.33
+Nodes (5): Change (additive only), CR-015 — index-prefix fixes (legitimacy.recompute, recognition.rollup) + exact removal bulk estimate, Problem, Risk, Tests
+
+### Community 384 - "CURRENT-STATE — what Createconomy actually is today (ground truth for every spec)"
+Cohesion: 0.12
+Nodes (16): 0. The verdict in five lines, 10. Backend needs → CRs (never folded into a spec silently), 1. Shared foundation, 2.5 `/feed` — home, 4. Admin (`apps/admin`, deferred until member screens ship), 5. Component rulings, 6. Copy-leak audit, 7. STYLE-KIT vs VISION (+8 more)
+
+### Community 385 - "legitimacy.ts"
+Cohesion: 0.60
+Nodes (5): clamp01(), Components, computeComponents(), geometricMean(), recompute
+
+### Community 386 - "16. Build plan — small phases, Opus does the heavy lifting"
+Cohesion: 0.40
+Nodes (5): 16.1 Where we start from (build on top, never from scratch), 16.2 Standing rules (paste once per Opus session; every phase prompt assumes them), 16.3 Phases, 16.4 Review and approval loop (per phase), 16. Build plan — small phases, Opus does the heavy lifting
+
+### Community 387 - "p4-06-rulebook.test.ts"
+Cohesion: 0.33
+Nodes (3): fieldsOf(), hasField(), schema
+
+### Community 388 - "2. Decision register"
+Cohesion: 0.40
+Nodes (5): 2.1 Locked, 2.2 Provisional / experiments, 2.3 Rejected (do not reopen without new evidence), 2.4 Parked, 2. Decision register
+
+### Community 389 - "4. Signals"
+Cohesion: 0.40
+Nodes (5): 4.1 Already in the modules (do not re-invent), 4.2 Added by this spec, 4.3 Grammar (meaning comes from combinations), 4.4 Visibility policy (L-16), 4. Signals
+
+### Community 390 - "p1-01-identity-schema.test.ts"
+Cohesion: 0.40
+Nodes (3): fieldsOf(), hasField(), schema
+
+### Community 391 - "p4-08-ingest.test.ts"
+Cohesion: 0.50
+Nodes (3): fieldsOf(), hasField(), schema
+
+### Community 392 - "OPUS-HANDOFF-GT — ground-truth session checkpoint log"
+Cohesion: 0.13
+Nodes (13): Evidence gathered (so a resumed session need not redo it), Next session (Opus in Cursor) starts with, Open questions / half-decided, OPUS-HANDOFF-GT — ground-truth session checkpoint log, R2 close (2026-09-29), R2 — founder decisions + S00 spec (prompt GROUND-TRUTH-R2 + S00, 2026-09-29), R2 open items for founder / PM, Step 0 — environment (DONE) (+5 more)
+
+### Community 393 - "category-preview-loader.tsx"
+Cohesion: 0.25
+Nodes (6): CategoryPreviewLoader(), CategoryPreviewLoaderProps, CategoryPreviewPageProps, KNOWN_CATEGORIES, ContentPage(), countAll()
+
+### Community 394 - "p4-11-publish.test.ts"
+Cohesion: 0.50
+Nodes (3): fieldsOf(), hasField(), schema
+
+### Community 395 - "signalSummary.ts"
+Cohesion: 0.70
+Nodes (4): activeDecay(), recompute, summarizeAuthor(), writeSummary()
+
+### Community 396 - "11. Visual and motion language"
+Cohesion: 0.50
+Nodes (4): 11.1 Look, 11.2 Motion, 11.3 Prototype verdicts (Figma Make, 2026-10-04), 11. Visual and motion language
+
+### Community 398 - "content-page.tsx"
+Cohesion: 0.23
+Nodes (10): SeedAuthor, SeedProduct, ContentGlobalHeader(), CreatorPanel(), CreatorPanelProps, fmtSessionAt(), ReadingProgressBar(), ScrollToTop() (+2 more)
 
 ## Ambiguous Edges - Review These
 - `Repeat-Infringer Policy Contract — /repeat-infringer (Wave 7A)` → `strikes`  [AMBIGUOUS]
@@ -1482,9 +1662,9 @@ Nodes (4): firstSearchParam(), metadata, SearchPage(), SearchPageProps
   docs/01-product-spec/MASTER-SCREEN-INVENTORY-MERGED.md · relation: references
 
 ## Knowledge Gaps
-- **2045 isolated node(s):** `RED — gate, pre-bb4ab7b regex (`[a-z0-9-]` / `[a-z0-9_-]`)`, `GREEN — current code (`bb4ab7b` regex, plain-first fallback)`, `Coverage of the review asks`, `Verdict: BLOCK`, `Probes (this round)` (+2040 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 2279 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **110 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **2469 isolated node(s):** `eslintConfig`, `__dirname`, `convexPkg`, `convexAuthPkg`, `nextConfig` (+2464 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 2854 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **111 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_

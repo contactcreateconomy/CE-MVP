@@ -283,3 +283,30 @@ export const worldFingerprint = internalQuery({
     };
   },
 });
+
+/** worldFingerprint at full-corpus scale: the one-shot query exceeds the
+ * per-execution read cap (~33k reads over 16.6k anchors + their rows), so the
+ * driver pages the SAME parts through here and folds the identical hash
+ * client-side (sort + FNV lanes unchanged — fingerprint values stay comparable). */
+export const fingerprintParts = internalQuery({
+  args: { scope: v.string(), cursor: v.optional(v.union(v.string(), v.null())) },
+  returns: v.object({ parts: v.array(v.string()), continueCursor: v.string(), isDone: v.boolean() }),
+  handler: async (ctx, args) => {
+    guard();
+    const page = await ctx.db
+      .query("demoGroundTruth")
+      .withIndex("by_scope_ref", (q: any) => q.eq("scope", args.scope))
+      .paginate((args.cursor ? { numItems: 800, cursor: args.cursor } : { numItems: 800 }) as any);
+    const parts: string[] = [];
+    for (const a of page.page as any[]) {
+      if (args.scope === "post") {
+        const p = a.payload?.postId ? ((await ctx.db.get(a.payload.postId)) as any) : null;
+        if (p) parts.push(`P|${a.refKey}|${p.title}|${p.body}`);
+      } else {
+        const cm = a.payload?.commentId ? ((await ctx.db.get(a.payload.commentId)) as any) : null;
+        if (cm) parts.push(`C|${a.refKey}|${cm.body}`);
+      }
+    }
+    return { parts, continueCursor: page.continueCursor, isDone: page.isDone };
+  },
+});

@@ -105,7 +105,25 @@ export const recompute = internalMutation({
       .withIndex("by_time", (q: any) => q.gte("occurredAt", since))
       .order("desc")
       .take(500);
-    const actorIds = [...new Set(recent.map((e: any) => e.userId).filter(Boolean))] as Id<"users">[];
+    // CAP-283 batch bound: with many active actors (500-user demo corpus ≈ 500×250
+    // reads ≈ 125k docs) one run would blow the 32k-doc transaction cap. Process a
+    // bounded actor slice per run, oldest-computed first, skipping actors computed
+    // within FRESH_MS so repeated cron/settle runs converge instead of looping the
+    // same head. Per run: 500 scan + ≤500 lookups + BATCH_ACTORS × ~250 ≈ 11k docs.
+    const BATCH_ACTORS = 40;
+    const FRESH_MS = 10 * 60_000;
+    const seen = [...new Set(recent.map((e: any) => e.userId).filter(Boolean))];
+    const actors: { id: Id<"users">; computedAt: number }[] = [];
+    for (const id of seen) {
+      const row = await ctx.db
+        .query("legitimacyScores")
+        .withIndex("by_actor", (q: any) => q.eq("actorUserId", id))
+        .unique();
+      if (row?.computedAt && Date.now() - row.computedAt < FRESH_MS) continue;
+      actors.push({ id: id as Id<"users">, computedAt: row?.computedAt ?? 0 });
+    }
+    actors.sort((a, b) => a.computedAt - b.computedAt);
+    const actorIds = actors.slice(0, BATCH_ACTORS).map((a) => a.id);
     let recomputed = 0;
     for (const actorUserId of actorIds) {
       const events = await ctx.db

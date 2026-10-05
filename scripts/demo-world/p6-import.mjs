@@ -16,9 +16,11 @@ const run = (fn, args) => {
 const jsonl = (rel) => existsSync(cachePath(rel)) ? readFileSync(cachePath(rel), "utf8").trim().split("\n").filter(Boolean).map(JSON.parse) : [];
 const chunk = (a, n) => { const out = []; for (let i = 0; i < a.length; i += n) out.push(a.slice(i, i + n)); return out; };
 const S = (offsetMs) => worldEnd + offsetMs;
+const emailOf = (h) => h === "devtest" ? "devtest@example.com" : `${h}@demo.createconomy.invalid`;
+const COVERS_ONLY = process.argv.includes("--covers-only"); // late-arriving P5 covers: upload+link only, then exit
 
 const worldEnd = Date.now();
-console.log(`pilot import — worldEnd = ${new Date(worldEnd).toISOString()} (re-anchored)`);
+console.log(`pilot import — worldEnd = ${new Date(worldEnd).toISOString()} (re-anchored)${COVERS_ONLY ? " [covers-only]" : ""}`);
 
 // ── 0. tools ───────────────────────────────────────────────────────────
 const tools = readJson(".demo-world-cache/p1/tools.json").map((t) => ({
@@ -26,7 +28,7 @@ const tools = readJson(".demo-world-cache/p1/tools.json").map((t) => ({
   pricing: { model: t.pricingModel, tiers: t.pricingTiers, verified: t.verified },
   status: /SHUT DOWN/i.test(t.whatItDoes) ? "archived" : "active",
 }));
-for (const [i, c] of chunk(tools, 25).entries()) console.log("tools", JSON.stringify(run("importTools/importTools", { seq: i, rows: c })));
+if (!COVERS_ONLY) for (const [i, c] of chunk(tools, 25).entries()) console.log("tools", JSON.stringify(run("importTools/importTools", { seq: i, rows: c })));
 
 // ── 1. members ─────────────────────────────────────────────────────────
 const members = jsonl("p2/members.jsonl").map((m) => ({
@@ -36,10 +38,10 @@ const members = jsonl("p2/members.jsonl").map((m) => ({
   verified: m.verified,
   displayName: (m.name || m.handle).split(" ")[0],
 }));
-for (const [i, c] of chunk(members, 25).entries()) console.log("members", JSON.stringify(run("importMembers/importMembers", { seq: i, worldEnd, rows: c })));
+if (!COVERS_ONLY) for (const [i, c] of chunk(members, 25).entries()) console.log("members", JSON.stringify(run("importMembers/importMembers", { seq: i, worldEnd, rows: c })));
 
 // ── 1b. Rising cohort: re-date selected members to recent joins ────────
-{
+if (!COVERS_ONLY) {
   const adj = readJson(".demo-world-cache/p2/join-date-adjustments.json");
   if (Array.isArray(adj) && adj.length) {
     const rows = adj.map((a) => ({ userEmail: emailOf(a.handle), joinOffsetMs: a.joinOffsetMs }));
@@ -65,7 +67,6 @@ const newsAssign = Object.fromEntries([
   ...(readJson(".demo-world-cache/p3/news-assignment.json") ?? []).map((n) => [n.i, n]),
   ...plan.filter((p) => p.newsEvent).map((p) => [p.ref, { i: p.ref, eventTitle: p.newsEvent.event, url: p.newsEvent.url }]),
 ]);
-const emailOf = (h) => h === "devtest" ? "devtest@example.com" : `${h}@demo.createconomy.invalid`;
 
 const postRows = posts.map((p, i) => {
   const pl = plan[i] ?? {};
@@ -97,11 +98,16 @@ const postRows = posts.map((p, i) => {
   }
   if (p.type === "list") row.list = {
     mode: e.mode ?? "community_ranked", intro: e.intro ?? "",
-    items: (e.items ?? []).map((content, k) => ({
-      content, createdByEmail: emailOf(p.author),
-      voteCount: interactions.filter((x) => x.kind === "listItemVote" && String(x.postI) === ref && x.itemIdx === k).length,
-      sortOrder: k,
-    })),
+    items: (e.items ?? []).map((raw, k) => {
+      // pilot artifacts store plain strings; bulk artifacts store import-shaped objects
+      const it = typeof raw === "string" ? { content: raw } : raw;
+      return {
+        content: it.content ?? "",
+        createdByEmail: it.createdByEmail ?? emailOf(p.author),
+        voteCount: interactions.filter((x) => x.kind === "listItemVote" && String(x.postI) === ref && x.itemIdx === k).length,
+        sortOrder: it.sortOrder ?? k,
+      };
+    }),
   };
   if (p.type === "showcase") row.showcase = { theThing: e.theThing ?? p.title, ...(e.projectUrl ? { projectUrl: e.projectUrl } : {}) };
   if (p.type === "help") row.help = { problemStatement: e.problemStatement ?? p.title, resolvedStatus: "open" }; // accepts patch later
@@ -111,7 +117,7 @@ const postRows = posts.map((p, i) => {
   }
   return row;
 });
-for (const [i, c] of chunk(postRows, 8).entries()) console.log("posts", JSON.stringify(run("importPosts/importPosts", { seq: i, worldEnd, rows: c })));
+if (!COVERS_ONLY) for (const [i, c] of chunk(postRows, 8).entries()) console.log("posts", JSON.stringify(run("importPosts/importPosts", { seq: i, worldEnd, rows: c })));
 
 // ── 2b. images (P5): upload cover crops + avatar SVGs, link them (A5.3) ─
 {
@@ -165,22 +171,35 @@ for (const [i, c] of chunk(postRows, 8).entries()) console.log("posts", JSON.str
   console.log("images", JSON.stringify({ coversUploaded: up, coversLinked: linked, avatarsUploaded: avUp, avatarsLinked: avLinked, skipped }));
   console.log("imgChunk sweep", JSON.stringify(run("importChrome/deleteImageChunks", { sweepAll: true })));
 }
+if (COVERS_ONLY) { console.log("covers-only pass complete"); process.exit(0); }
 
 // ── 3. comments (per post — same-mutation thread semantics) ───────────
 {
   let seq = 0, total = 0;
+  // Windows caps one CLI arg near 32KB: mega-threads (60+ comments) must be sliced
+  // into ≤24KB calls; parents may land in an earlier call (handler resolves via gt)
+  const sliceRows = (mapped) => {
+    const out = []; let cur = [], size = 0;
+    for (const r of mapped) {
+      const b = Buffer.byteLength(JSON.stringify(r));
+      if (cur.length && size + b > 24000) { out.push(cur); cur = []; size = 0; }
+      cur.push(r); size += b;
+    }
+    if (cur.length) out.push(cur);
+    return out;
+  };
   for (const [postRef, rows] of commentsByPost) {
-    const out = run("importComments/importComments", {
-      seq: seq++, worldEnd, postRef,
-      rows: rows.map((c, k) => ({
-        ref: `${postRef}:${k}`, authorEmail: emailOf(c.author), body: c.body,
-        isQuestion: c.intent === "ask" || c.sentiment === "question",
-        parentRef: c.parentIdx !== null && c.parentIdx !== undefined ? parentRefOf.get(c.parentIdx) : undefined,
-        createdOffsetMs: c.offsetMs,
-        sentiment: c.sentiment, intent: c.intent, stance: c.stance, badActorRole: c.badActorRole,
-      })),
-    });
-    total += out.inserted ?? 0;
+    const mapped = rows.map((c, k) => ({
+      ref: `${postRef}:${k}`, authorEmail: emailOf(c.author), body: c.body,
+      isQuestion: c.intent === "ask" || c.sentiment === "question",
+      parentRef: c.parentIdx !== null && c.parentIdx !== undefined ? parentRefOf.get(c.parentIdx) : undefined,
+      createdOffsetMs: c.offsetMs,
+      sentiment: c.sentiment, intent: c.intent, stance: c.stance, badActorRole: c.badActorRole,
+    }));
+    for (const part of sliceRows(mapped)) {
+      const out = run("importComments/importComments", { seq: seq++, worldEnd, postRef, rows: part });
+      total += out.inserted ?? 0;
+    }
   }
   console.log("comments", JSON.stringify({ posts: commentsByPost.size, total }));
 }

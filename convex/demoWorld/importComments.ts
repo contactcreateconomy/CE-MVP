@@ -51,7 +51,11 @@ export const importComments = internalMutation({
       const authorId = await findUserByEmail(ctx, c.authorEmail);
       if (!authorId) { skipped += 1; continue; }
       const createdAt = args.worldEnd + c.createdOffsetMs;
-      const parentId = c.parentRef ? refToId.get(c.parentRef) : undefined;
+      // parents normally arrive in this call; split mega-thread calls may carry them
+      // in an earlier call — resolve those through their registered ground-truth row
+      const parentId = c.parentRef
+        ? (refToId.get(c.parentRef) ?? ((await ctx.db.query("demoGroundTruth").withIndex("by_scope_ref", (q: any) => q.eq("scope", "comment").eq("refKey", c.parentRef)).unique())?.payload?.commentId as Id<"comments"> | undefined))
+        : undefined;
       const id = await ctx.db.insert("comments", {
         postId,
         ...(parentId ? { parentCommentId: parentId, replyToCommentId: parentId, depth: 1 as const } : { depth: 0 as const }),
@@ -108,20 +112,27 @@ export const importComments = internalMutation({
       inserted += 1;
     }
 
-    // threadStats — computed from the batch (equivalent to same-tx deltas)
+    // threadStats — computed from the batch (equivalent to same-tx deltas); split
+    // mega-thread calls merge into existing stats instead of clobbering them
     const existing = await ctx.db.query("threadStats").withIndex("by_postId", (q: any) => q.eq("postId", postId)).unique();
+    const allParticipants = new Set<string>(participants);
+    if (existing) {
+      const postComments = await ctx.db.query("comments").withIndex("by_post_depth_created", (q: any) => q.eq("postId", postId)).collect();
+      for (const pc of postComments) if (pc.authorType === "user" && pc.authorUserId) allParticipants.add(pc.authorUserId);
+    }
+    const isLater = latestAt > (existing?.latestActivityAt ?? 0);
     const stats = {
       humanCommentCount: (existing?.humanCommentCount ?? 0) + inserted,
       personaCommentCount: existing?.personaCommentCount ?? 0,
       topLevelCount: (existing?.topLevelCount ?? 0) + topLevel,
       replyCount: (existing?.replyCount ?? 0) + replies,
-      humanParticipantCount: participants.size, // one batch per post → set is complete for the post
+      humanParticipantCount: allParticipants.size,
       unresolvedQuestionCount: (existing?.unresolvedQuestionCount ?? 0) + unresolvedQuestions,
-      latestActivityAt: latestAt || existing?.latestActivityAt || args.worldEnd,
+      latestActivityAt: isLater ? latestAt : (existing?.latestActivityAt ?? latestAt ?? args.worldEnd),
       threadRevision: (existing?.threadRevision ?? 0) + 1,
       updatedAt: args.worldEnd,
     };
-    if (existing) await ctx.db.patch(existing._id, { ...stats, ...(latestId ? { latestHumanCommentId: latestId } : {}) });
+    if (existing) await ctx.db.patch(existing._id, { ...stats, ...(latestId && isLater ? { latestHumanCommentId: latestId } : {}) });
     else await ctx.db.insert("threadStats", { postId, ...stats, ...(latestId ? { latestHumanCommentId: latestId } : {}) });
     // threadStats rows for demo posts are job-maintained projections of registered
     // rows — they are NOT registered themselves; removal rebuilds them empty-safe.

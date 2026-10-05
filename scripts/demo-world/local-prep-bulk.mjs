@@ -91,7 +91,11 @@ Return ONLY a JSON array: {"ref":"<ref>","body":"..."}`;
     current.posts.push(pid); current.arrs.push(arr); curCount += arr.length;
   }
   if (current.posts.length) batches.push(current);
+  const OUTDIR = cachePath("local-out/p4b");
   let bi = 0;
+  if (existsSync(OUTDIR)) {
+    for (const f of readdirSync(OUTDIR)) { const m = f.match(/^batch-(\d+)\.jsonl$/); if (m) bi = Math.max(bi, Number(m[1]) + 1); }
+  }
   for (const b of batches) {
     const rows = [];
     for (const [pi, pid] of b.posts.entries()) {

@@ -57,6 +57,7 @@ import type * as demoWorld_importPosts from "../demoWorld/importPosts.js";
 import type * as demoWorld_importTools from "../demoWorld/importTools.js";
 import type * as demoWorld_lib from "../demoWorld/lib.js";
 import type * as demoWorld_remove from "../demoWorld/remove.js";
+import type * as demoWorld_verifyWorld from "../demoWorld/verifyWorld.js";
 import type * as dev_demoSeed from "../dev/demoSeed.js";
 import type * as dev_ensureTestUser from "../dev/ensureTestUser.js";
 import type * as distributions from "../distributions.js";
@@ -211,6 +212,7 @@ declare const fullApi: ApiFromModules<{
   "demoWorld/importTools": typeof demoWorld_importTools;
   "demoWorld/lib": typeof demoWorld_lib;
   "demoWorld/remove": typeof demoWorld_remove;
+  "demoWorld/verifyWorld": typeof demoWorld_verifyWorld;
   "dev/demoSeed": typeof dev_demoSeed;
   "dev/ensureTestUser": typeof dev_ensureTestUser;
   distributions: typeof distributions;

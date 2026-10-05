@@ -23,22 +23,15 @@ export const REGISTRY_ORDER = [
   "demoGroundTruth",
 ] as const;
 
+/** One PAGINATED table per call (Convex: a single paginated query per function). */
 export const collectIds = internalMutation({
-  args: {},
-  returns: v.object({ users: v.array(v.string()), posts: v.array(v.string()) }),
-  handler: async (ctx) => {
+  args: { table: v.string(), cursor: v.optional(v.union(v.string(), v.null())) },
+  returns: v.object({ ids: v.array(v.string()), continueCursor: v.string(), isDone: v.boolean() }),
+  handler: async (ctx, args) => {
     guard();
-    const users: string[] = [], posts: string[] = [];
-    let rows;
-    do {
-      rows = await ctx.db.query("demoRegistry").withIndex("by_table", (q: any) => q.eq("table", "users")).take(500);
-      for (const r of rows) users.push(r.docId);
-    } while (rows.length === 500);
-    do {
-      rows = await ctx.db.query("demoRegistry").withIndex("by_table", (q: any) => q.eq("table", "posts")).take(500);
-      for (const r of rows) posts.push(r.docId);
-    } while (rows.length === 500);
-    return { users, posts };
+    const page = await ctx.db.query("demoRegistry").withIndex("by_table", (q: any) => q.eq("table", args.table))
+      .paginate((args.cursor ? { numItems: 500, cursor: args.cursor } : { numItems: 500 }) as any);
+    return { ids: (page.page as any[]).map((r) => r.docId), continueCursor: page.continueCursor, isDone: page.isDone };
   },
 });
 
@@ -116,5 +109,29 @@ export const removalStatus = internalMutation({
     guard();
     const registryRows: number = await (ctx.db.query("demoRegistry") as any).count();
     return { registryRows };
+  },
+});
+
+/** Orphan sweep for typed-post extension rows that predate registration
+ * (importPosts now registers them; this repairs worlds imported before that).
+ * Deletes rows of `table` whose parent post no longer exists. One paginated
+ * table per call. */
+export const orphanSweep = internalMutation({
+  args: { table: v.string(), cursor: v.optional(v.union(v.string(), v.null())) },
+  returns: v.object({ deleted: v.number(), continueCursor: v.string(), isDone: v.boolean() }),
+  handler: async (ctx, args) => {
+    guard();
+    const page = await ctx.db.query(args.table as any)
+      .paginate((args.cursor ? { numItems: 200, cursor: args.cursor } : { numItems: 200 }) as any);
+    let deleted = 0;
+    for (const row of page.page as any[]) {
+      const parentOk = row.postId
+        ? (await ctx.db.get(row.postId)) !== null
+        : row.postListId
+          ? (await ctx.db.get(row.postListId)) !== null
+          : true;
+      if (!parentOk) { await ctx.db.delete(row._id); deleted += 1; }
+    }
+    return { deleted, continueCursor: page.continueCursor, isDone: page.isDone };
   },
 });

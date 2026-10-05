@@ -80,15 +80,17 @@ export const importPosts = internalMutation({
       switch (p.type) {
         case "review": {
           const r = p.review!;
-          await ctx.db.insert("postReviews", { postId, toolId: r.toolId, verdictScore: r.verdictScore, ...(r.verdictSummary ? { verdictSummary: r.verdictSummary } : {}), pros: r.pros, cons: r.cons });
+          const revId = await ctx.db.insert("postReviews", { postId, toolId: r.toolId, verdictScore: r.verdictScore, ...(r.verdictSummary ? { verdictSummary: r.verdictSummary } : {}), pros: r.pros, cons: r.cons });
+          await register(ctx, "postReviews", revId, batch);
           break;
         }
-        case "compare": await ctx.db.insert("postCompares", { postId, toolIds: p.compare!.toolIds, qualitativeGrid: p.compare!.qualitativeGrid }); break;
-        case "spark": await ctx.db.insert("postSparks", { postId, statement: p.spark!.statement }); break;
+        case "compare": { const cmpId = await ctx.db.insert("postCompares", { postId, toolIds: p.compare!.toolIds, qualitativeGrid: p.compare!.qualitativeGrid }); await register(ctx, "postCompares", cmpId, batch); break; }
+        case "spark": { const spId = await ctx.db.insert("postSparks", { postId, statement: p.spark!.statement }); await register(ctx, "postSparks", spId, batch); break; }
         case "debate": {
           const d = p.debate!;
           // tallies = exact counts of imported debateVotes rows (INV-3-equivalent)
-          await ctx.db.insert("postDebates", { postId, proposition: d.proposition, agreeCount: d.agreeCount, disagreeCount: d.disagreeCount, abstainCount: d.abstainCount });
+          const debId = await ctx.db.insert("postDebates", { postId, proposition: d.proposition, agreeCount: d.agreeCount, disagreeCount: d.disagreeCount, abstainCount: d.abstainCount });
+          await register(ctx, "postDebates", debId, batch);
           break;
         }
         case "list": {
@@ -105,26 +107,30 @@ export const importPosts = internalMutation({
           }
           break;
         }
-        case "showcase": await ctx.db.insert("postShowcases", { postId, theThing: p.showcase!.theThing, ...(p.showcase!.projectUrl ? { projectUrl: p.showcase!.projectUrl } : {}), approvalStatus: "none" }); break;
+        case "showcase": { const shId = await ctx.db.insert("postShowcases", { postId, theThing: p.showcase!.theThing, ...(p.showcase!.projectUrl ? { projectUrl: p.showcase!.projectUrl } : {}), approvalStatus: "none" }); await register(ctx, "postShowcases", shId, batch); break; }
         case "help": {
-          await ctx.db.insert("postHelps", { postId, problemStatement: p.help!.problemStatement, resolvedStatus: "open" });
+          const helpId = await ctx.db.insert("postHelps", { postId, problemStatement: p.help!.problemStatement, resolvedStatus: "open" });
+          await register(ctx, "postHelps", helpId, batch);
           break;
         }
         case "news": {
           const n = p.news!;
-          await ctx.db.insert("postNews", { postId, sourceOfTruthUrl: n.sourceOfTruthUrl, keyClaims: n.keyClaims, ...(n.publishedOffsetMs !== undefined ? { publishedAt: args.worldEnd + n.publishedOffsetMs } : {}) });
+          const newsId = await ctx.db.insert("postNews", { postId, sourceOfTruthUrl: n.sourceOfTruthUrl, keyClaims: n.keyClaims, ...(n.publishedOffsetMs !== undefined ? { publishedAt: args.worldEnd + n.publishedOffsetMs } : {}) });
+          await register(ctx, "postNews", newsId, batch);
           break;
         }
       }
 
-      await ctx.db.insert("postRevisions", { postId, revisionNumber: 1, title: p.title, body: p.body, changeType: "create", changedByUserId: authorId, createdAt });
+      const rev1Id = await ctx.db.insert("postRevisions", { postId, revisionNumber: 1, title: p.title, body: p.body, changeType: "create", changedByUserId: authorId, createdAt });
+      await register(ctx, "postRevisions", rev1Id, batch);
       const slug = slugify(p.title) + "-" + p.ref;
-      await ctx.db.insert("postSeoMeta", {
+      const seoId = await ctx.db.insert("postSeoMeta", {
         postId, seoTitle: p.title.slice(0, 70), seoDescription: p.body.slice(0, 155),
         slug, keywords: p.toolIds, canonicalUrl: `/discussions/${slug}`,
         structuredDataType: p.type === "review" ? "review" : "article", manuallyEdited: false,
         generatedAt: createdAt,
       });
+      await register(ctx, "postSeoMeta", seoId, batch);
 
       // counters = exact tallies (A5.1); scores 0 + dirtySince → the real job computes ONLY the three scores
       const lastEligible = args.worldEnd + postCounters.lastEligibleInteractionOffsetMs;

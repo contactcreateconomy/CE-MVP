@@ -24,7 +24,7 @@ const loops = [
   ["cards:refreshCards", 50],
   ["cards:heroStaleFill", 5],
   ["jobs/recognition:rollup", 10],
-  ["jobs/legitimacy:recompute", 10],
+  ["jobs/legitimacy:recompute", 20], // 40 actors/run post-CAP-283 bound; 500 actors need 13 runs
   ["jobs/signalSummary:recompute", 10],
   ["jobs/might:reachRefresh", 5],
   ["jobs/might:mightRecompute", 10],
@@ -35,7 +35,7 @@ for (const [fn, max] of loops) {
     for (let i = 0; i < max; i++) {
       last = runOnce(fn);
       if (!last.ok) break;
-      if (/0 (processed|recomputed|decayed|claimed|patched|refreshed|awarded)|"processed":0|nothing/i.test(last.out)) break;
+      if (/0 (processed|recomputed|decayed|claimed|patched|refreshed|awarded)|"(processed|recomputed)":\s*0|nothing/i.test(last.out)) break;
     }
     console.log(last.ok ? `${fn}: settled (${last.out.slice(0, 100)})` : `${fn}: FAILED — ${last.out.slice(0, 160)}`);
   } catch (e) {

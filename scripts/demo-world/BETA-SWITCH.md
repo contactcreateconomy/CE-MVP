@@ -32,6 +32,20 @@ deployment via `seed/devGuard`). Nothing in product code depends on it — see
    ```bash
    pnpm seed:check    # must report the canonical base fingerprint 63fe5110e230
    ```
+   Removal deletes every registered demo row + registered storage file + sweepable
+   job output (`removalStatus.registryRows` must be 0). Job-output tables that are
+   NOT in `seed:check`'s volatile-exclusion list can still carry run-history
+   effects (e.g. `cardSummaries`, `adminInterventionAlerts` counts differ from a
+   fresh seed). If `seed:check` mismatches after a clean removal
+   (`registryRows: 0`), restore the canonical base exactly with:
+   ```bash
+   node scripts/reset-local.mjs --password "<local devtest password>"
+   pnpm seed:check     # → 63fe5110e230
+   ```
+   (`reset:local` wipes table data and reseeds; functions, schema, env and the
+   demo corpus cache are untouched. Verified end-to-end on the final 1,500-post
+   world: remove → registryRows 0 → reset:local → 63fe5110e230 → re-import →
+   identical world fingerprint.)
 
 ## Keep using the world locally (development after the export)
 
@@ -41,9 +55,12 @@ The corpus lives in `.demo-world-cache/` (gitignored). Re-import any time:
    node scripts/demo-world/p6-import.mjs     # idempotent (re-anchors worldEnd = now), then:
    node scripts/demo-world/p6-settle.mjs
    ```
-   Re-import identity proof: `demoWorld/importChrome:worldFingerprint` hashes
-   every post/comment title+body by ground-truth refKey (ids and times excluded),
-   so two imports of the same corpus produce the SAME fingerprint. Compare with
+   Re-import identity proof: `scripts/demo-world/lib/fingerprint.mjs` (the paged
+   client fold used by `p6-export`/`p6-remove`; the one-shot
+   `demoWorld/importChrome:worldFingerprint` query hits Convex read caps at
+   full-corpus scale) hashes every post/comment title+body by ground-truth
+   refKey (ids and times excluded), so two imports of the same corpus produce
+   the SAME fingerprint. Compare with
    the one printed at removal/export time. Note `seed:check` reports a mismatch
    while the demo world is loaded — that is expected and never "fix" it by
    touching the canonical fingerprint.
