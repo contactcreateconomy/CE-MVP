@@ -129,13 +129,13 @@ describe("SLICE-P5-02 — comments module surface (CAP-120/121/122)", () => {
   it("INV-2 reuses the composer's URL guard (CAP-155: one helper, two call sites)", () => {
     expect(() => checkNoUrls("see https://example.com")).toThrow(/URL/);
     expect(() => checkNoUrls("plain body text")).not.toThrow();
-    const source = readFileSync(join(convexRoot, "comments.ts"), "utf8");
+    const source = readFileSync(join(convexRoot, "comments.ts"), "utf8").replace(/\r\n/g, "\n");
     expect(source).toContain('from "./posts"'); // shared import, no fork
   });
 });
 
 describe("SLICE-P5-02 — composer gate chain (CAP-152/153/154) source assertions", () => {
-  const postsSource = readFileSync(join(convexRoot, "posts.ts"), "utf8");
+  const postsSource = readFileSync(join(convexRoot, "posts.ts"), "utf8").replace(/\r\n/g, "\n"); // line-ending agnostic (CRLF working trees)
 
   it("CAP-152: member.posts.hour rolling limit registered (flagged default 10/h)", () => {
     const set = RATE_LIMITS["member.posts.hour"];

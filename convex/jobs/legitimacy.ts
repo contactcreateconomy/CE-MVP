@@ -21,11 +21,21 @@
  */
 
 import { internalMutation } from "../_generated/server";
+import { internal } from "../_generated/api";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 
 const WINDOW_DAYS = 90;
 const MODEL_VERSION = "legitimacy.v1";
+
+/** Self-chaining constants: the cron only STARTS the chain; each bounded slice
+ * schedules its own continuation while stale actors remain. The lease (a
+ * platformHealth probe row — volatile, job-health by design) blocks duplicate
+ * chains; a crashed chain's lease expires and the next external trigger
+ * (cron, settle driver) restarts it. */
+const CHAIN_LEASE_KEY = "jobs/legitimacy:chain";
+const CHAIN_LEASE_MS = 30_000;
+const CHAIN_DELAY_MS = 2_000;
 
 export type Components = {
   account_age: number;
@@ -91,39 +101,66 @@ export async function snapshotLegitimacy(ctx: any, actorUserId: Id<"users">): Pr
   return row ? row.value : 0.5;
 }
 
-/** legitimacy.recompute cron — bounded batch over recently-active users. */
+/** legitimacy.recompute cron — bounded batch over recently-active users; self-chaining.
+ * The chain walks the 90-day event window one 500-event page per slice, carrying
+ * the pending actor set (and the discovery ceiling) through its scheduled args,
+ * so per-slice reads stay ≈ 500 scan + ≤600 lookups + BATCH_ACTORS × ~250 ≈ 12k
+ * docs — inside the per-function budget on every backend size. */
 export const recompute = internalMutation({
-  args: {},
+  args: {
+    chainLease: v.optional(v.number()),
+    discoveryCeiling: v.optional(v.number()), // exclusive upper bound of this slice's event scan
+    actorIds: v.optional(v.array(v.id("users"))), // pending actors accumulated by the chain
+  },
   returns: v.object({ recomputed: v.number() }),
-  handler: async (ctx) => {
+  handler: async (ctx, args) => {
+    // duplicate-chain guard: only the chain's own continuation (carrying the
+    // current lease token) may run while a chain holds the lease
+    const nowStart = Date.now();
+    const lease = await ctx.db
+      .query("platformHealth")
+      .withIndex("by_probeKey", (q: any) => q.eq("probeKey", CHAIN_LEASE_KEY))
+      .unique();
+    if (lease?.expectedNextRunAt && lease.expectedNextRunAt > nowStart && args.chainLease !== lease.expectedNextRunAt) {
+      return { recomputed: 0 };
+    }
+    const token = nowStart + CHAIN_LEASE_MS;
+    if (lease) await ctx.db.patch(lease._id, { state: "healthy", severity: "info", checkedAt: nowStart, expectedNextRunAt: token, lastSuccessAt: nowStart, freshUntil: token });
+    else await ctx.db.insert("platformHealth", { probeKey: CHAIN_LEASE_KEY, state: "healthy", severity: "info", checkedAt: nowStart, expectedNextRunAt: token, lastSuccessAt: nowStart, freshUntil: token, affectedCapabilities: [], deepLinkKey: "legitimacy" });
+
     const since = Date.now() - WINDOW_DAYS * 24 * 3_600_000;
-    // Recently-active actors = users with events in the window (bounded).
-    // CR-015: the discovery scan leads with occurredAt — by_user_time's index
-    // starts with userId, so Convex rejects the range; by_time is time-led.
+    // Recently-active actors = users with events in the window. CR-015: the
+    // discovery scan leads with occurredAt (by_user_time starts with userId,
+    // so Convex rejects the range; by_time is time-led). One 500-event page
+    // per slice; the next slice continues BELOW this page's oldest event.
     const recent = await ctx.db
       .query("rawEvents")
-      .withIndex("by_time", (q: any) => q.gte("occurredAt", since))
+      .withIndex("by_time", (q: any) => q.gte("occurredAt", since).lt("occurredAt", args.discoveryCeiling ?? Number.MAX_SAFE_INTEGER))
       .order("desc")
       .take(500);
-    // CAP-283 batch bound: with many active actors (500-user demo corpus ≈ 500×250
-    // reads ≈ 125k docs) one run would blow the 32k-doc transaction cap. Process a
-    // bounded actor slice per run, oldest-computed first, skipping actors computed
-    // within FRESH_MS so repeated cron/settle runs converge instead of looping the
-    // same head. Per run: 500 scan + ≤500 lookups + BATCH_ACTORS × ~250 ≈ 11k docs.
+    const discoveryDone = recent.length < 500;
+    const nextCeiling = discoveryDone ? args.discoveryCeiling : recent[recent.length - 1].occurredAt;
+
+    // CAP-283 batch bound: process a bounded actor slice per run, oldest-computed
+    // first, skipping actors computed within FRESH_MS so convergent re-runs never
+    // loop the same head. The pending set rides the chain's scheduled args.
     const BATCH_ACTORS = 40;
     const FRESH_MS = 10 * 60_000;
-    const seen = [...new Set(recent.map((e: any) => e.userId).filter(Boolean))];
+    const pending = [...new Set([...(args.actorIds ?? []), ...recent.map((e: any) => e.userId).filter(Boolean)] as Id<"users">[])];
     const actors: { id: Id<"users">; computedAt: number }[] = [];
-    for (const id of seen) {
+    for (const id of pending) {
       const row = await ctx.db
         .query("legitimacyScores")
         .withIndex("by_actor", (q: any) => q.eq("actorUserId", id))
         .unique();
       if (row?.computedAt && Date.now() - row.computedAt < FRESH_MS) continue;
-      actors.push({ id: id as Id<"users">, computedAt: row?.computedAt ?? 0 });
+      actors.push({ id, computedAt: row?.computedAt ?? 0 });
     }
     actors.sort((a, b) => a.computedAt - b.computedAt);
     const actorIds = actors.slice(0, BATCH_ACTORS).map((a) => a.id);
+    // the pending tail = stale-but-unprocessed actors only (`actors` holds just
+    // the stale ones, oldest-first); fresh actors never ride the chain args
+    const remainingPending = actors.slice(BATCH_ACTORS).map((a) => a.id);
     let recomputed = 0;
     for (const actorUserId of actorIds) {
       const events = await ctx.db
@@ -192,6 +229,15 @@ export const recompute = internalMutation({
         });
       }
       recomputed += 1;
+    }
+    // self-chain: undiscovered events or pending actors remain — schedule the
+    // next slice (small delay; the cron only ever starts the chain, never drives it)
+    if (!discoveryDone || remainingPending.length > 0) {
+      await ctx.scheduler.runAfter(CHAIN_DELAY_MS, internal.jobs.legitimacy.recompute, {
+        chainLease: token,
+        ...(discoveryDone ? {} : { discoveryCeiling: nextCeiling }),
+        ...(remainingPending.length ? { actorIds: remainingPending } : {}),
+      });
     }
     return { recomputed };
   },

@@ -171,3 +171,14 @@ export const probePost = internalQuery({
     return { gtFound: !!gt, postId: String(postId), seoFound: !!seo, ogImageAssetId: seo?.ogImageAssetId ?? null, slug: seo?.slug ?? null };
   },
 });
+
+/** post-chain confirmation: legitimacy coverage over the loaded world */
+export const legitimacyCount = internalQuery({
+  args: {},
+  returns: v.any(),
+  handler: async (ctx) => {
+    const rows = await ctx.db.query("legitimacyScores").collect();
+    const hour = Date.now() - 3_600_000;
+    return { total: rows.length, scoredLastHour: rows.filter((r: any) => (r.computedAt ?? 0) > hour).length };
+  },
+});

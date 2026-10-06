@@ -7,7 +7,7 @@ import { join } from "node:path";
  * engine. Quotes live in the source modules. */
 
 const convexRoot = join(__dirname, "../../../../../../convex");
-const read = (rel: string) => readFileSync(join(convexRoot, rel), "utf8");
+const read = (rel: string) => readFileSync(join(convexRoot, rel), "utf8").replace(/\r\n/g, "\n"); // line-ending agnostic (CRLF working trees)
 
 const schemaSrc = read("schema.ts");
 const autoGateSrc = read("moderation/autoGate.ts");
