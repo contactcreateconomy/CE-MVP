@@ -16,7 +16,7 @@
  *    DEV_TEST_USER_PASSWORD env or --password flag, never hardcoded.
  * 5. seed:demo, then print the seed:check fingerprint.
  */
-import { writeFileSync, rmSync } from "node:fs";
+import { writeFileSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -105,6 +105,37 @@ ok(existed ? "account already existed" : "account created — staff roles auto-g
 step("demo seed…");
 convexRun("seed/demo:seed");
 ok("demo content seeded");
+
+// ── 4b. demo world replay (DEFAULT since the 011 merge) ────────────────
+// The full demo corpus (1,500 posts / 15,094 comments / 500 members) replays
+// from .demo-world-cache/ so every machine lands in the same demo state.
+// Opt out with --no-demo (base seed only). Requires the cache — check first.
+const NO_DEMO = process.argv.includes("--no-demo");
+if (NO_DEMO) {
+  ok("demo world replay SKIPPED (--no-demo)");
+} else if (!existsSync(".demo-world-cache/p3/posts.jsonl")) {
+  ok("demo world replay SKIPPED (no .demo-world-cache corpus on this machine — base seed only)");
+} else {
+  step("demo world replay (sweep orphan storage + p6-import + settle)… this takes ~1.5-2 hours");
+  // the wipe left previous replays' storage rows orphaned (registry gone) and
+  // the upload markers would make the import skip uploads — clean both first
+  for (;;) {
+    const swept = convex(["run", "demoWorld/remove:sweepOrphanStorage", "{}"]);
+    const out = (swept.stdout ?? "").trim();
+    const m = out && out.indexOf("{") >= 0 ? JSON.parse(out.slice(out.indexOf("{"))) : null;
+    if (!swept || !m || !m.remaining) break;
+  }
+  ok("orphan storage swept");
+  rmSync(".demo-world-cache/p5/upload-done.jsonl", { force: true });
+  const imp = spawnSync(process.execPath, ["scripts/demo-world/p6-import.mjs"], {
+    stdio: "inherit", shell: false,
+  });
+  if (imp.status !== 0) { console.error("  [✗] demo world import failed"); process.exit(1); }
+  ok("demo world imported");
+  const settle = spawnSync(process.execPath, ["scripts/demo-world/p6-settle.mjs"], { stdio: "inherit", shell: false });
+  if (settle.status !== 0) { console.error("  [✗] demo settle failed"); process.exit(1); }
+  ok("demo settle drained (12 projection jobs)");
+}
 
 // ── 5. fingerprint ──────────────────────────────────────────────────────
 step("fingerprint…");

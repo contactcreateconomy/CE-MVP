@@ -82,13 +82,15 @@ export const fingerprint = internalQuery({
   handler: async (ctx) => {
     const counts: Record<string, number> = {};
     for (const table of TABLES) {
-      const rows = await (ctx.db as any).query(table).collect();
+      // .count() reads index metadata (no document scan) — collect() on every
+      // table blew the per-query read cap once the demo world loads (~230k docs).
+      // The two filtered tables stay as collects (small, content-dependent counts).
       counts[table] =
         table === "systemConfig"
-          ? rows.filter((r: any) => !isRuntimeConfigKey(r?.key)).length
+          ? (await (ctx.db as any).query(table).collect()).filter((r: any) => !isRuntimeConfigKey(r?.key)).length
           : table === "badges"
-            ? rows.filter((r: any) => isSeededBadge(r?.type)).length
-            : rows.length;
+            ? (await (ctx.db as any).query(table).collect()).filter((r: any) => isSeededBadge(r?.type)).length
+            : await (ctx.db as any).query(table).count();
     }
     const userEmails = (await ctx.db.query("users").collect()).map((u: any) => u.email).sort();
     const postTitles = (await ctx.db.query("posts").collect()).map((p: any) => p.title).sort();

@@ -13,6 +13,15 @@
 
 ## Immediate (needed to verify current work)
 
+### 0. **DEV_TEST_USER_PASSWORD must be the same on every machine** (demo world parity)
+
+`reset:local` (which now replays the full demo world by default — see
+`scripts/demo-world/BETA-SWITCH.md`) requires `DEV_TEST_USER_PASSWORD` (env var
+or `--password`). The password seeds the `devtest@example.com` account AND is
+part of the local auth state: use the SAME value on every machine, or the
+replayed worlds (and the canonical seed fingerprint committed with the demo
+replay) will not match across machines. Never commit the value itself.
+
 ### 1. **DONE 2026-09-05** — ~~Convex login + codegen + legal seed~~ (executed against the live dev deployment)
 ```bash
 # from the repo root

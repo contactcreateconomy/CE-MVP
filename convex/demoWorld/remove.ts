@@ -135,3 +135,31 @@ export const orphanSweep = internalMutation({
     return { deleted, continueCursor: page.continueCursor, isDone: page.isDone };
   },
 });
+
+/** Replay hygiene for reset:local — storage rows not linked from any live
+ * postSeoMeta.ogImageAssetId / users.avatarAssetId are leftovers of a wiped
+ * world (the registry-based purge cannot see them). Deletes in batches. */
+export const sweepOrphanStorage = internalMutation({
+  args: { limit: v.optional(v.number()) },
+  returns: v.object({ deleted: v.number(), scanned: v.number(), remaining: v.boolean() }),
+  handler: async (ctx, args) => {
+    guard();
+    const limit = args.limit ?? 500;
+    const linked = new Set<string>();
+    for await (const seo of ctx.db.query("postSeoMeta")) if (seo.ogImageAssetId) linked.add(String(seo.ogImageAssetId));
+    for await (const u of ctx.db.query("users")) if (u.avatarAssetId) linked.add(String(u.avatarAssetId));
+    let deleted = 0, scanned = 0;
+    let page: any;
+    do {
+      page = await ctx.db.query("_storage" as any).paginate({ numItems: 100 } as any);
+      for (const doc of page.page as any[]) {
+        scanned += 1;
+        if (!linked.has(String(doc._id))) { await ctx.storage.delete(doc._id as any); deleted += 1; }
+        if (deleted >= limit) break;
+      }
+    } while (!page.isDone && deleted < limit);
+    // one more peek to report whether anything remains
+    const peek = await ctx.db.query("_storage" as any).paginate({ numItems: 1 } as any);
+    return { deleted, scanned, remaining: !peek.isDone || (peek.page as any[]).some((d: any) => !linked.has(String(d._id))) };
+  },
+});
