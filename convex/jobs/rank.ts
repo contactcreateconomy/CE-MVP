@@ -158,8 +158,10 @@ export const decayLiveScores = internalMutation({
     const windowStart = now - 48 * 3_600_000;
     const rows = await ctx.db
       .query("commentScores")
-      .withIndex("by_dirty_lastInteraction", (q: any) => q.eq("dirty", false))
-      .filter((q: any) => q.gte(q.field("lastInteractionAt"), windowStart))
+      // index range, not a post-filter: with the full demo corpus (~15k clean rows)
+      // the filter form scanned every dirty=false doc and timed out; the compound
+      // index (dirty, lastInteractionAt) expresses the window directly
+      .withIndex("by_dirty_lastInteraction", (q: any) => q.eq("dirty", false).gte("lastInteractionAt", windowStart))
       .take(500);
     let decayed = 0;
     for (const row of rows) {

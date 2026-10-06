@@ -97,9 +97,14 @@ async function assembleCard(ctx: any, score: any, fetchedPost?: any): Promise<an
     .query("postSeoMeta")
     .withIndex("by_postId", (q: any) => q.eq("postId", post._id))
     .unique();
+  // CR-010a: cover as a RESOLVED storage URL from postSeoMeta.ogImageAssetId —
+  // null when absent. Backend-only; the card/hero components already read
+  // `coverImage` (http URL branch) so no client change is needed.
+  const coverImage = seo?.ogImageAssetId ? ((await ctx.storage.getUrl(seo.ogImageAssetId as any)) ?? null) : null;
   return {
     postId: post._id,
     slug: seo?.slug ?? null,
+    coverImage,
     type: post.type,
     title: post.title,
     // SECURITY (scan round 2, finding 33): never the email local part —
@@ -249,6 +254,7 @@ export const getChrome = query({
         slotOrder: slot.slotOrder,
         postId: post._id,
         slug: seo?.slug ?? null, // P7-CLEANUP chrome port: the shell hero links by slug
+        coverImage: seo?.ogImageAssetId ? ((await ctx.storage.getUrl(seo.ogImageAssetId as any)) ?? null) : null, // CR-010a — the hero reads active.coverImage
         title: slot.headlineOverride ?? post.title,
         ctaLabel: slot.ctaLabel ?? null,
         disclosureClass: slot.disclosureClass,

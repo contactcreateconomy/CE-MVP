@@ -34,6 +34,9 @@ tests/integration/components/
 # Convex local-deployment state (open-source backend run by `pnpm backend`)
 .convex/
 
+# demo-world work cache (raw LLM output, images, checkpoints — regenerated, never shared via git)
+.demo-world-cache/
+
 # graphify artifacts (keep the committed graph trio)
 graphify-out/*
 !graphify-out/graph.json
