@@ -1704,9 +1704,9 @@
     "semantic_hash": ""
   },
   "apps/forum/src/components/ui/__tests__/p5-02-comments-eligibility.test.ts": {
-    "mtime": 1791048637.27945,
-    "seen": 1791048661.5131142,
-    "ast_hash": "f44188a7fd34f5b051e761ccab35ac8e",
+    "mtime": 1791262526.750435,
+    "seen": 1791263841.3404958,
+    "ast_hash": "f68807208e11b5891055c87520de8673",
     "semantic_hash": ""
   },
   "apps/forum/src/components/ui/__tests__/p5-03-reads-reactions.test.ts": {
@@ -1878,9 +1878,9 @@
     "semantic_hash": ""
   },
   "apps/forum/src/components/ui/__tests__/p7e-moderation.test.ts": {
-    "mtime": 1791048637.2876508,
-    "seen": 1791048661.51315,
-    "ast_hash": "6a1712c557e3a8ae0f7fbdf1307de1db",
+    "mtime": 1791262597.231154,
+    "seen": 1791263841.3405335,
+    "ast_hash": "bffbb10a17aec74b2b99b66ed4d7f268",
     "semantic_hash": ""
   },
   "apps/forum/src/components/ui/__tests__/p7g-growth.test.ts": {
@@ -2928,9 +2928,9 @@
     "semantic_hash": ""
   },
   "convex/jobs/legitimacy.ts": {
-    "mtime": 1791197988.126135,
-    "seen": 1791224820.4332914,
-    "ast_hash": "de96fca282a34bdd5c64cb548b6de9ed",
+    "mtime": 1791263527.488867,
+    "seen": 1791263841.340767,
+    "ast_hash": "be673bb8cc5277b4221f27ae8863c64d",
     "semantic_hash": ""
   },
   "convex/jobs/maxRefresh.ts": {
@@ -3816,9 +3816,9 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791225791.8921182,
-    "seen": 1791225822.0046785,
-    "ast_hash": "339f1722cdb3d0ee2b850a6881f6d80a",
+    "mtime": 1791263828.4184616,
+    "seen": 1791263841.3410444,
+    "ast_hash": "b9a7c59100af8b640a6e1432da773ae2",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -6276,9 +6276,9 @@
     "semantic_hash": ""
   },
   "scripts/demo-world/RUN-LOG.md": {
-    "mtime": 1791222586.315006,
-    "seen": 1791224820.4338913,
-    "ast_hash": "9c3810300099e296b8e93774d388d8bf",
+    "mtime": 1791263828.4587376,
+    "seen": 1791263841.3413415,
+    "ast_hash": "9fabe729590fe7bec29bcdb27fc6dae2",
     "semantic_hash": ""
   },
   "scripts/demo-world/reports/P0-REPORT.md": {
@@ -6546,9 +6546,9 @@
     "semantic_hash": ""
   },
   "convex/demoWorld/verifyWorld.ts": {
-    "mtime": 1791222677.6173732,
-    "seen": 1791224820.4332626,
-    "ast_hash": "98332be7f12e458e4721aba281096dfd",
+    "mtime": 1791262269.5536158,
+    "seen": 1791263841.340739,
+    "ast_hash": "f6d283898b5c3957a24d14bbda6cc1e5",
     "semantic_hash": ""
   },
   "scripts/demo-world/finish-ledger.mjs": {
@@ -6591,6 +6591,18 @@
     "mtime": 1791131545.0402913,
     "seen": 1791224820.4336436,
     "ast_hash": "66e1c34b8028c7451b5b213ce6038234",
+    "semantic_hash": ""
+  },
+  "tests/convex/cr-012-account-age.test.ts": {
+    "mtime": 1791262180.492676,
+    "seen": 1791263841.3409536,
+    "ast_hash": "74eaec1635d61ce61a014557fa566063",
+    "semantic_hash": ""
+  },
+  "tests/convex/legitimacy-chain.test.ts": {
+    "mtime": 1791262163.902234,
+    "seen": 1791263841.3409615,
+    "ast_hash": "affb3d9d2c6e95d4329880ed21eb6006",
     "semantic_hash": ""
   }
 }
