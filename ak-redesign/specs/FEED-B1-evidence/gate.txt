@@ -1,0 +1,4 @@
+typecheck: pass
+lint: pass (max-warnings 0)
+typecheck:admin: pass
+forum tests: 72 files / 996 tests passed

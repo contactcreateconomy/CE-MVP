@@ -3,9 +3,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { runThemeSwitch, themeSwitchVariant } from "../theme-transition";
 
+/** jsdom has no View Transitions API — each test installs a fake. */
+const vt = document as unknown as { startViewTransition?: unknown };
+
 afterEach(() => {
   delete document.documentElement.dataset.themeSwitch;
-  (document as any).startViewTransition = undefined;
+  vt.startViewTransition = undefined;
 });
 
 describe("theme switch variants", () => {
@@ -25,7 +28,7 @@ describe("theme switch variants", () => {
   it("variant + support → runs inside a view transition, stamps variant, origin and direction", () => {
     const apply = vi.fn();
     let finish!: () => void;
-    (document as any).startViewTransition = vi.fn((cb: () => void) => {
+    vt.startViewTransition = vi.fn((cb: () => void) => {
       cb();
       return { finished: new Promise<void>((r) => (finish = r)) };
     });
@@ -40,7 +43,7 @@ describe("theme switch variants", () => {
   });
 
   it("reduced motion → crossfade only", () => {
-    (document as any).startViewTransition = vi.fn((cb: () => void) => {
+    vt.startViewTransition = vi.fn((cb: () => void) => {
       cb();
       return { finished: new Promise<void>(() => {}) };
     });
@@ -49,8 +52,8 @@ describe("theme switch variants", () => {
   });
 
   it("no variant → instant even when supported", () => {
-    (document as any).startViewTransition = vi.fn();
+    vt.startViewTransition = vi.fn();
     expect(runThemeSwitch({ apply: () => {}, variant: null, to: "dark" })).toBe("instant");
-    expect((document as any).startViewTransition).not.toHaveBeenCalled();
+    expect(vt.startViewTransition).not.toHaveBeenCalled();
   });
 });
