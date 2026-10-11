@@ -30,7 +30,7 @@ deployment via `seed/devGuard`). Nothing in product code depends on it — see
 
 3. **Verify the base is intact**:
    ```bash
-   pnpm seed:check    # must report the canonical base fingerprint 63fe5110e230
+   pnpm seed:check    # must report the canonical fingerprint (see the S00 note below)
    ```
    Removal deletes every registered demo row + registered storage file + sweepable
    job output (`removalStatus.registryRows` must be 0). Job-output tables that are
@@ -39,13 +39,31 @@ deployment via `seed/devGuard`). Nothing in product code depends on it — see
    fresh seed). If `seed:check` mismatches after a clean removal
    (`registryRows: 0`), restore the canonical base exactly with:
    ```bash
-   node scripts/reset-local.mjs --password "<local devtest password>"
-   pnpm seed:check     # → 63fe5110e230
+   node scripts/reset-local.mjs   # DEV_TEST_USER_PASSWORD env var, never a flag with a literal
+   pnpm seed:check     # → the canonical in scripts/seed-fingerprint.txt (S00 note below)
    ```
    (`reset:local` wipes table data and reseeds; functions, schema, env and the
    demo corpus cache are untouched. Verified end-to-end on the final 1,500-post
-   world: remove → registryRows 0 → reset:local → 63fe5110e230 → re-import →
+   world: remove → registryRows 0 → reset:local → base canonical → re-import →
    identical world fingerprint.)
+
+> **S00 fix (2026-10-11, `fix-seed-fingerprint`): seed:check hashes CONTENT
+> ONLY.** Every table a scheduled job can insert into or delete from is now in
+> seed-check's VOLATILE list (25 additions incl. `cardSummaries`,
+> `vibingTrends`, `adminInterventionAlerts`, `recognitionEvents`,
+> `leaderboardProjections`, `signalLedger`, `vibingTrends`'s siblings — full
+> list + cron→table evidence in `scripts/seed-check.mjs`). Patch-only jobs
+> (`jobs/rank` value recompute over `commentScores` / `postDistribution*`)
+> can't move the hash and are not listed. RED/GREEN proof: changing one demo
+> post title flips the fingerprint (FAIL); the three machine states that
+> previously hashed apart on cron-row deltas (`384d38db79af` pre-reset,
+> `5989cbd616ce` post-replay, office `c9ebee53588c`) now ALL hash to the same
+> value. Canonical is now the content-only world fingerprint
+> **`d7b7f0c893f4`** (`scripts/seed-fingerprint.txt`). Historical values
+> (`63fe5110e230` base-only, `c9ebee53588c` world-loaded-with-counts) belong
+> to the old count-sensitive hash and are NOT comparable — the removal flow
+> above must be re-baselined against `d7b7f0c893f4`'s successor if you ever
+> go back to a base-only state (a `reset:local --no-demo` run recomputes it).
 
 ## Keep using the world locally (development after the export)
 
@@ -61,9 +79,11 @@ The corpus lives in `.demo-world-cache/` (gitignored). Re-import any time:
    full-corpus scale) hashes every post/comment title+body by ground-truth
    refKey (ids and times excluded), so two imports of the same corpus produce
    the SAME fingerprint. Compare with
-   the one printed at removal/export time. Note `seed:check` reports a mismatch
-   while the demo world is loaded — that is expected and never "fix" it by
-   touching the canonical fingerprint.
+   the one printed at removal/export time. Note (amended by the S00 fix,
+   2026-10-11): with the content-only fingerprint, `seed:check` MATCHES while
+   the demo world is loaded — cron catch-up rows no longer break parity. A
+   mismatch now means real content drift (or a seed change that must update
+   `scripts/seed-fingerprint.txt` in the same commit).
 
 ## No demo dependencies in product code
 

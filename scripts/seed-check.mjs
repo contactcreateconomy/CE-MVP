@@ -34,6 +34,33 @@ const nonZero = Object.fromEntries(Object.entries(sortedCounts).filter(([, n]) =
 // counts depend on wall-clock activity (cron fire times, login sessions,
 // reading progress from browsing) and would break cross-machine parity
 // without saying anything about seed parity.
+//
+// The fingerprint hashes COUNTS + stable keys only, so the volatile list
+// needs every table a scheduled job can INSERT INTO or DELETE FROM
+// (patch-only jobs — jobs/rank recomputing commentScores /
+// postDistributionScores / postDistributionBuckets values — can't move the
+// hash and are not listed). Cron-write evidence per table, from convex/crons.ts
+// → the function's literal insert/delete sites (S00 fix, 2026-10-11):
+//   cardSummaries, heroSlots, heroAssignments   ← cards.refreshCards, cards.heroStaleFill
+//   vibingTrends                                 ← jobs.vibing.vibingCompute
+//   adminInterventionAlerts                      ← tools.driftCheck, admin.appeals.slaTick, admin.interventions.sweepOrphans
+//   recognitionEvents, leaderboardProjections,
+//   badges                                       ← jobs.recognition.rollup / finalizeAwards (award rows; the
+//                                                   seeded badge catalog's LABELS stay hashed via keys.badgeLabels)
+//   signalLedger                                 ← signal.award.sweep, jobs.attributionSettle.settle
+//   signalSeasons                                ← signal.promoteDemote.seasonRecalibrate (appends at boundaries)
+//   threadIntelligenceRuns, threadPluginConfig   ← jobs.maxRefresh.sweep
+//   dripBatches                                  ← jobs.dripRelease.release
+//   userInferences                               ← jobs.infer.inferBatch
+//   moderationActions                            ← admin.moderationQueue.{leaseExpire,queueAge,autoRelease}
+//   moderationCases, storeStrikes, merchantComplaints ← admin.storeEnforce.circuitBreaker
+//   integrityFlags                               ← admin.sanctions.brigadeSweep
+//   trustHistory                                 ← jobs.repeatInfringer.evaluate
+//   postSocialDerivatives                        ← editorial.publish.sweepScheduled
+//   sourceClaims, claimClusters, generationRuns  ← ingest.extract.{extractClaims,buildClusters}
+//   storefrontAnalytics                          ← store.public.{clickSettle,salesReconcile,analyticsRollup}
+// Observed drifting live on the 2026-10-11 replay: cardSummaries 90→110,
+// vibingTrends 8→9, adminInterventionAlerts 2→0 (cron catch-up after downtime).
 const VOLATILE = new Set([
   "authAccounts", "authRateLimits", "authRefreshTokens", "authSessions",
   "authVerificationCodes", "authVerifiers",
@@ -43,6 +70,14 @@ const VOLATILE = new Set([
   "jobDeadLetters", "jobRuns", "legitimacyScores", "operationalIncidents",
   "pilotKillGateEvaluations", "platformHealth", "rawEvents", "signalSummary",
   "threadReadStates", "userReadingProgress",
+  // ── cron/job-output tables (S00 fix, 2026-10-11 — hash content only) ──
+  "adminInterventionAlerts", "badges", "cardSummaries", "claimClusters",
+  "dripBatches", "generationRuns", "heroAssignments", "heroSlots",
+  "integrityFlags", "leaderboardProjections", "merchantComplaints",
+  "moderationActions", "moderationCases", "postSocialDerivatives",
+  "recognitionEvents", "signalLedger", "signalSeasons", "sourceClaims",
+  "storefrontAnalytics", "storeStrikes", "threadIntelligenceRuns",
+  "threadPluginConfig", "trustHistory", "userInferences", "vibingTrends",
 ]);
 
 const hashableCounts = Object.fromEntries(
