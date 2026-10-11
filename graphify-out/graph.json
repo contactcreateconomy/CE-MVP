@@ -3524,7 +3524,7 @@
       "file_type": "code",
       "norm_label": "row",
       "source_file": "convex/seed/check.ts",
-      "source_location": "L112"
+      "source_location": "L118"
     },
     {
       "id": "apps_forum_src_app_app_content_content_seed_stancetag",
@@ -8386,7 +8386,7 @@
       "file_type": "code",
       "norm_label": "patchtitle()",
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L72"
+      "source_location": "L73"
     },
     {
       "id": "scripts_demo_world_p6_import_chunk",
@@ -10390,7 +10390,7 @@
       "file_type": "code",
       "norm_label": "hashfingerprint()",
       "source_file": "scripts/lib/seedFingerprintRules.mjs",
-      "source_location": "L48"
+      "source_location": "L56"
     },
     {
       "id": "scripts_seed_check_proof_assert",
@@ -10402,7 +10402,7 @@
       "file_type": "code",
       "norm_label": "assert()",
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L54"
+      "source_location": "L55"
     },
     {
       "id": "scripts_seed_check_proof_load",
@@ -10414,7 +10414,7 @@
       "file_type": "code",
       "norm_label": "load()",
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L102"
+      "source_location": "L103"
     },
     {
       "id": "scripts_seed_check_proof_runseedcheck",
@@ -10426,7 +10426,7 @@
       "file_type": "code",
       "norm_label": "runseedcheck()",
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L65"
+      "source_location": "L66"
     },
     {
       "id": "scripts_seed_check_proof_say",
@@ -10438,7 +10438,7 @@
       "file_type": "code",
       "norm_label": "say()",
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L53"
+      "source_location": "L54"
     },
     {
       "id": "apps_admin_src_components_layout_app_header_appheader",
@@ -33917,7 +33917,7 @@
       "file_type": "code",
       "norm_label": "volatile",
       "source_file": "scripts/lib/seedFingerprintRules.mjs",
-      "source_location": "L31"
+      "source_location": "L37"
     },
     {
       "id": "scripts_seed_check",
@@ -33994,7 +33994,7 @@
       "file_type": "code",
       "norm_label": "before",
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L81"
+      "source_location": "L82"
     },
     {
       "id": "scripts_seed_check_proof_canonical_file",
@@ -34016,7 +34016,7 @@
       "file_type": "code",
       "norm_label": "cur",
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L108"
+      "source_location": "L109"
     },
     {
       "id": "scripts_seed_check_proof_evidence_dir",
@@ -34038,7 +34038,7 @@
       "file_type": "code",
       "norm_label": "evidencefile",
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L164"
+      "source_location": "L165"
     },
     {
       "id": "scripts_seed_check_proof_green",
@@ -34049,7 +34049,7 @@
       "file_type": "code",
       "norm_label": "green",
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L96"
+      "source_location": "L97"
     },
     {
       "id": "scripts_seed_check_proof_needs_origin_field",
@@ -34060,7 +34060,7 @@
       "file_type": "code",
       "norm_label": "needs_origin_field",
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L47"
+      "source_location": "L48"
     },
     {
       "id": "scripts_seed_check_proof_out",
@@ -34071,7 +34071,7 @@
       "file_type": "code",
       "norm_label": "out",
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L51"
+      "source_location": "L52"
     },
     {
       "id": "scripts_seed_check_proof_pre",
@@ -34082,7 +34082,7 @@
       "file_type": "code",
       "norm_label": "pre",
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L107"
+      "source_location": "L108"
     },
     {
       "id": "scripts_seed_check_proof_recorded",
@@ -34093,7 +34093,7 @@
       "file_type": "code",
       "norm_label": "recorded",
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L109"
+      "source_location": "L110"
     },
     {
       "id": "scripts_seed_check_proof_root",
@@ -34126,7 +34126,7 @@
       "file_type": "code",
       "norm_label": "subset_tables",
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L42"
+      "source_location": "L43"
     },
     {
       "id": "scripts_seed_check_raw",
@@ -44891,7 +44891,7 @@
       "file_type": "code",
       "norm_label": "fingerprint",
       "source_file": "convex/seed/check.ts",
-      "source_location": "L124"
+      "source_location": "L129"
     },
     {
       "id": "convex_seed_check_runtime_config_prefixes",
@@ -44913,7 +44913,7 @@
       "file_type": "code",
       "norm_label": "seed_subsets",
       "source_file": "convex/seed/check.ts",
-      "source_location": "L113"
+      "source_location": "L119"
     },
     {
       "id": "convex_seed_check_seeded_badge_types",
@@ -45955,7 +45955,7 @@
       "node_kind": "heading",
       "norm_label": "keep using the world locally (development after the export)",
       "source_file": "scripts/demo-world/BETA-SWITCH.md",
-      "source_location": "L76"
+      "source_location": "L82"
     },
     {
       "id": "scripts_demo_world_beta_switch_remove_the_world_beta_switch",
@@ -91085,7 +91085,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "convex/seed/check.ts",
-      "source_location": "L149",
+      "source_location": "L154",
       "weight": 1.0
     },
     {
@@ -91097,7 +91097,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "convex/seed/check.ts",
-      "source_location": "L164",
+      "source_location": "L169",
       "weight": 1.0
     },
     {
@@ -94181,7 +94181,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L55",
+      "source_location": "L56",
       "weight": 1.0
     },
     {
@@ -94193,7 +94193,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L104",
+      "source_location": "L105",
       "weight": 1.0
     },
     {
@@ -94205,7 +94205,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L73",
+      "source_location": "L74",
       "weight": 1.0
     },
     {
@@ -188911,7 +188911,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "convex/seed/check.ts",
-      "source_location": "L112",
+      "source_location": "L118",
       "weight": 1.0
     },
     {
@@ -188922,7 +188922,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "convex/seed/check.ts",
-      "source_location": "L113",
+      "source_location": "L119",
       "weight": 1.0
     },
     {
@@ -188944,7 +188944,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "convex/seed/check.ts",
-      "source_location": "L124",
+      "source_location": "L129",
       "weight": 1.0
     },
     {
@@ -192431,7 +192431,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/demo-world/BETA-SWITCH.md",
-      "source_location": "L76",
+      "source_location": "L82",
       "weight": 1.0
     },
     {
@@ -196853,7 +196853,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/lib/seedFingerprintRules.mjs",
-      "source_location": "L31",
+      "source_location": "L37",
       "weight": 1.0
     },
     {
@@ -196864,7 +196864,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/lib/seedFingerprintRules.mjs",
-      "source_location": "L48",
+      "source_location": "L56",
       "weight": 1.0
     },
     {
@@ -197260,7 +197260,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L102",
+      "source_location": "L103",
       "weight": 1.0
     },
     {
@@ -197271,7 +197271,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L107",
+      "source_location": "L108",
       "weight": 1.0
     },
     {
@@ -197282,7 +197282,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L108",
+      "source_location": "L109",
       "weight": 1.0
     },
     {
@@ -197293,7 +197293,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L109",
+      "source_location": "L110",
       "weight": 1.0
     },
     {
@@ -197304,7 +197304,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L164",
+      "source_location": "L165",
       "weight": 1.0
     },
     {
@@ -197359,7 +197359,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L42",
+      "source_location": "L43",
       "weight": 1.0
     },
     {
@@ -197370,7 +197370,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L47",
+      "source_location": "L48",
       "weight": 1.0
     },
     {
@@ -197381,7 +197381,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L51",
+      "source_location": "L52",
       "weight": 1.0
     },
     {
@@ -197392,7 +197392,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L53",
+      "source_location": "L54",
       "weight": 1.0
     },
     {
@@ -197403,7 +197403,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L54",
+      "source_location": "L55",
       "weight": 1.0
     },
     {
@@ -197414,7 +197414,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L65",
+      "source_location": "L66",
       "weight": 1.0
     },
     {
@@ -197425,7 +197425,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L72",
+      "source_location": "L73",
       "weight": 1.0
     },
     {
@@ -197436,7 +197436,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L81",
+      "source_location": "L82",
       "weight": 1.0
     },
     {
@@ -197447,7 +197447,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/seed-check-proof.mjs",
-      "source_location": "L96",
+      "source_location": "L97",
       "weight": 1.0
     },
     {
@@ -220024,5 +220024,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "39ee274cabe7de352f0cecadfc33cb4b1b0b03b8"
+  "built_at_commit": "0e75bd3519be66d1f4cefb6ff0e9158a718e51c4"
 }

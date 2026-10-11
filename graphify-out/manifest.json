@@ -3816,9 +3816,9 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791734723.0275655,
-    "seen": 1791734805.0106652,
-    "ast_hash": "ee0f70f468bcc7fdc6de483cfdb22ce7",
+    "mtime": 1791735915.810755,
+    "seen": 1791735991.4749956,
+    "ast_hash": "f580b915815737ed517ebe4ac80f76af",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -4962,9 +4962,9 @@
     "semantic_hash": ""
   },
   "convex/seed/check.ts": {
-    "mtime": 1791734114.2254367,
-    "seen": 1791734805.010093,
-    "ast_hash": "df144412fd075e19cfefac4be244cf7d",
+    "mtime": 1791735788.2115786,
+    "seen": 1791735991.4747825,
+    "ast_hash": "bd4abf431083948d2abe29e543459be5",
     "semantic_hash": ""
   },
   "convex/seed/demo.ts": {
@@ -5682,9 +5682,9 @@
     "semantic_hash": ""
   },
   "scripts/seed-fingerprint.txt": {
-    "mtime": 1791734676.8617089,
-    "seen": 1791734805.011573,
-    "ast_hash": "1e07de972ca81988621d9e262848fbfd",
+    "mtime": 1791735869.712373,
+    "seen": 1791735991.4753156,
+    "ast_hash": "a8d9585f36ac38e9cab598e349697605",
     "semantic_hash": ""
   },
   "ak-redesign/00-control/CURRENT-STATE.md": {
@@ -6540,9 +6540,9 @@
     "semantic_hash": ""
   },
   "scripts/demo-world/BETA-SWITCH.md": {
-    "mtime": 1791734711.4667912,
-    "seen": 1791734805.0115292,
-    "ast_hash": "22404eee73f3e20ef8e3282f8bbba70b",
+    "mtime": 1791735825.7137482,
+    "seen": 1791735991.4753036,
+    "ast_hash": "85ad4375af9170b27892bc730b519935",
     "semantic_hash": ""
   },
   "convex/demoWorld/verifyWorld.ts": {
@@ -6810,21 +6810,27 @@
     "semantic_hash": ""
   },
   "scripts/lib/seedFingerprintRules.mjs": {
-    "mtime": 1791734193.7773015,
-    "seen": 1791734805.010349,
-    "ast_hash": "86f10e21dd7844840b0c92791f4fb3ee",
+    "mtime": 1791735802.1617591,
+    "seen": 1791735991.4748778,
+    "ast_hash": "839e4de91f6726c52659fbe7f0e42ebb",
     "semantic_hash": ""
   },
   "scripts/seed-check-proof.mjs": {
-    "mtime": 1791734660.2452612,
-    "seen": 1791734805.0103638,
-    "ast_hash": "edf1db99e91a14119c56e59d25fe5c27",
+    "mtime": 1791735899.1793487,
+    "seen": 1791735991.474884,
+    "ast_hash": "7678f26652c9c6f5e70033e3eebd050c",
     "semantic_hash": ""
   },
   "ak-redesign/evidence/seed-fingerprint/2026-10-11-fix2-proof.txt": {
-    "mtime": 1791734692.453724,
-    "seen": 1791734805.0108347,
+    "mtime": 1791735905.7296338,
+    "seen": 1791735991.475059,
     "ast_hash": "07d1c0c1e2aff50a79bae5e6c1d62404",
+    "semantic_hash": ""
+  },
+  "ak-redesign/evidence/seed-fingerprint/2026-10-11-fix3-proof.txt": {
+    "mtime": 1791735882.1591883,
+    "seen": 1791735991.4750602,
+    "ast_hash": "1408a3105a5204974f27429d91559f02",
     "semantic_hash": ""
   }
 }
