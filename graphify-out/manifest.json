@@ -3816,9 +3816,9 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791724542.8651607,
-    "seen": 1791724570.317491,
-    "ast_hash": "d850b296e1fa0f59e043006167d2101e",
+    "mtime": 1791732048.7264519,
+    "seen": 1791732240.835924,
+    "ast_hash": "8b8d4c1a690d99b60680b676f634c021",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -4998,9 +4998,9 @@
     "semantic_hash": ""
   },
   "scripts/seed-check.mjs": {
-    "mtime": 1791008869.1882918,
-    "seen": 1791009536.5416253,
-    "ast_hash": "0486fb495706d0d9d7e651efb8eb761c",
+    "mtime": 1791731773.8502665,
+    "seen": 1791732240.8358178,
+    "ast_hash": "2ec58ab5d04795001ffbdaaf12493ff7",
     "semantic_hash": ""
   },
   "scripts/seed-demo.mjs": {
@@ -5682,9 +5682,9 @@
     "semantic_hash": ""
   },
   "scripts/seed-fingerprint.txt": {
-    "mtime": 1791270863.3396602,
-    "seen": 1791270904.3901834,
-    "ast_hash": "a072a020a4f18a66b287068a29bc278f",
+    "mtime": 1791731845.433814,
+    "seen": 1791732240.83624,
+    "ast_hash": "cfe68a97d6ac96265aa55ef26263134f",
     "semantic_hash": ""
   },
   "ak-redesign/00-control/CURRENT-STATE.md": {
@@ -6540,9 +6540,9 @@
     "semantic_hash": ""
   },
   "scripts/demo-world/BETA-SWITCH.md": {
-    "mtime": 1791263891.4631126,
-    "seen": 1791263934.4151256,
-    "ast_hash": "a05e7a54df78a3cd09f580aa8a28a2a5",
+    "mtime": 1791732018.9756377,
+    "seen": 1791732240.8362274,
+    "ast_hash": "12c7092bf8b5c5a3464f7f9519ab57d5",
     "semantic_hash": ""
   },
   "convex/demoWorld/verifyWorld.ts": {
@@ -6801,6 +6801,12 @@
     "mtime": 1791731228.6810913,
     "seen": 1791731240.6850972,
     "ast_hash": "009bb3db1386461964b3a8b083e632f2",
+    "semantic_hash": ""
+  },
+  "convex/demoWorld/devPatch.ts": {
+    "mtime": 1791732101.697914,
+    "seen": 1791732240.8356056,
+    "ast_hash": "35d2b5dfbc257d5bba16e67b6fedbaed",
     "semantic_hash": ""
   }
 }
