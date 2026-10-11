@@ -1,0 +1,9726 @@
+{
+ "generatedAt": "2026-10-11T16:50:30.309Z",
+ "scanRoot": "convex",
+ "tableCount": 177,
+ "note": "patch/replace/delete attribution is heuristic (block queries T + contains the op). class: demo_seed = convex/{demoWorld,seed,dev}/**.",
+ "tables": {
+  "acquisitions": {
+   "writers": [
+    {
+     "fn": "acquire",
+     "file": "convex/resources.ts",
+     "line": 116,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "killGateEvaluate",
+     "file": "convex/admin/resourcesLifecycle.ts",
+     "line": 223,
+     "class": "prod"
+    },
+    {
+     "fn": "commerceFunnels",
+     "file": "convex/analytics/projections.ts",
+     "line": 164,
+     "class": "prod"
+    },
+    {
+     "fn": "overlayState",
+     "file": "convex/newsletter.ts",
+     "line": 26,
+     "class": "prod"
+    },
+    {
+     "fn": "acquire",
+     "file": "convex/resources.ts",
+     "line": 116,
+     "class": "prod"
+    },
+    {
+     "fn": "download",
+     "file": "convex/resources.ts",
+     "line": 220,
+     "class": "prod"
+    },
+    {
+     "fn": "getAcquisitionState",
+     "file": "convex/resources.ts",
+     "line": 99,
+     "class": "prod"
+    }
+   ]
+  },
+  "activityLedger": {
+   "writers": [
+    {
+     "fn": "appendActivity",
+     "file": "convex/activity.ts",
+     "line": 57,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "importComments",
+     "file": "convex/demoWorld/importComments.ts",
+     "line": 14,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importEngagement",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 13,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importPosts",
+     "file": "convex/demoWorld/importPosts.ts",
+     "line": 16,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "sweepBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 56,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "sweepBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 56,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "getProfilePage",
+     "file": "convex/profile/page.ts",
+     "line": 61,
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "adminCounters": {
+   "writers": [
+    {
+     "fn": "refresh",
+     "file": "convex/admin/counters.ts",
+     "line": 79,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "refresh",
+     "file": "convex/admin/counters.ts",
+     "line": 79,
+     "class": "prod"
+    },
+    {
+     "fn": "compose",
+     "file": "convex/admin/home.ts",
+     "line": 111,
+     "class": "prod"
+    }
+   ]
+  },
+  "adminInterventionAlerts": {
+   "writers": [
+    {
+     "fn": "slaTick",
+     "file": "convex/admin/appeals.ts",
+     "line": 78,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "interventionCreateTx",
+     "file": "convex/admin/interventions.ts",
+     "line": 51,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "sweepOrphans",
+     "file": "convex/admin/interventions.ts",
+     "line": 185,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "wipeChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 938,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "driftCheck",
+     "file": "convex/tools.ts",
+     "line": 638,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "slaTick",
+     "file": "convex/admin/appeals.ts",
+     "line": 78,
+     "class": "prod"
+    },
+    {
+     "fn": "compose",
+     "file": "convex/admin/home.ts",
+     "line": 111,
+     "class": "prod"
+    },
+    {
+     "fn": "interventionCreateTx",
+     "file": "convex/admin/interventions.ts",
+     "line": 51,
+     "class": "prod"
+    },
+    {
+     "fn": "sweepOrphans",
+     "file": "convex/admin/interventions.ts",
+     "line": 185,
+     "class": "prod"
+    },
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "wipeChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 938,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "driftCheck",
+     "file": "convex/tools.ts",
+     "line": 638,
+     "class": "prod"
+    }
+   ]
+  },
+  "adminWidgets": {
+   "writers": [
+    {
+     "fn": "deploySeed",
+     "file": "convex/admin/widgetsCatalog.ts",
+     "line": 241,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "deploySeed",
+     "file": "convex/admin/widgetsCatalog.ts",
+     "line": 241,
+     "class": "prod"
+    },
+    {
+     "fn": "getPermittedWidgetCatalog",
+     "file": "convex/lib/authz.ts",
+     "line": 459,
+     "class": "prod"
+    },
+    {
+     "fn": "resolveWidgetRoute",
+     "file": "convex/lib/authz.ts",
+     "line": 393,
+     "class": "prod"
+    }
+   ]
+  },
+  "adminWikiArticles": {
+   "writers": [
+    {
+     "fn": "deploySync",
+     "file": "convex/admin/wiki.ts",
+     "line": 69,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "deploySync",
+     "file": "convex/admin/wiki.ts",
+     "line": 69,
+     "class": "prod"
+    },
+    {
+     "fn": "get",
+     "file": "convex/admin/wiki.ts",
+     "line": 39,
+     "class": "prod"
+    },
+    {
+     "fn": "listSlugs",
+     "file": "convex/admin/wiki.ts",
+     "line": 103,
+     "class": "prod"
+    }
+   ]
+  },
+  "affiliateLinks": {
+   "writers": [
+    {
+     "fn": "deactivate",
+     "file": "convex/affiliateInventory.ts",
+     "line": 233,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "linkUpsert",
+     "file": "convex/affiliateInventory.ts",
+     "line": 190,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "deactivate",
+     "file": "convex/affiliateInventory.ts",
+     "line": 233,
+     "class": "prod"
+    },
+    {
+     "fn": "listInventory",
+     "file": "convex/affiliateInventory.ts",
+     "line": 44,
+     "class": "prod"
+    },
+    {
+     "fn": "listInjectable",
+     "file": "convex/editorial/inject.ts",
+     "line": 40,
+     "class": "prod"
+    }
+   ]
+  },
+  "affiliateRelationships": {
+   "writers": [
+    {
+     "fn": "deactivate",
+     "file": "convex/affiliateInventory.ts",
+     "line": 233,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "relationshipUpsert",
+     "file": "convex/affiliateInventory.ts",
+     "line": 141,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "deactivate",
+     "file": "convex/affiliateInventory.ts",
+     "line": 233,
+     "class": "prod"
+    },
+    {
+     "fn": "listInventory",
+     "file": "convex/affiliateInventory.ts",
+     "line": 44,
+     "class": "prod"
+    }
+   ]
+  },
+  "analyticsDeletionRequests": {
+   "writers": [
+    {
+     "fn": "erasureRequest",
+     "file": "convex/admin/utm.ts",
+     "line": 179,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "withdraw",
+     "file": "convex/consent.ts",
+     "line": 87,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "erasureRequest",
+     "file": "convex/admin/utm.ts",
+     "line": 179,
+     "class": "prod"
+    }
+   ]
+  },
+  "analyticsEligibilityAdjustments": {
+   "writers": [
+    {
+     "fn": "effectiveCountable",
+     "file": "convex/analytics/projections.ts",
+     "line": 29,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "effectiveCountable",
+     "file": "convex/analytics/projections.ts",
+     "line": 29,
+     "class": "prod"
+    },
+    {
+     "fn": "l08Core",
+     "file": "convex/analytics/projections.ts",
+     "line": 70,
+     "class": "prod"
+    }
+   ]
+  },
+  "analyticsProjections": {
+   "writers": [
+    {
+     "fn": "effectiveCountable",
+     "file": "convex/analytics/projections.ts",
+     "line": 29,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "orphanSweep",
+     "file": "convex/analytics/projections.ts",
+     "line": 218,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "founderDashboard",
+     "file": "convex/admin/analytics.ts",
+     "line": 52,
+     "class": "prod"
+    },
+    {
+     "fn": "recordWeeklyDecision",
+     "file": "convex/admin/analytics.ts",
+     "line": 111,
+     "class": "prod"
+    },
+    {
+     "fn": "effectiveCountable",
+     "file": "convex/analytics/projections.ts",
+     "line": 29,
+     "class": "prod"
+    },
+    {
+     "fn": "orphanSweep",
+     "file": "convex/analytics/projections.ts",
+     "line": 218,
+     "class": "prod"
+    }
+   ]
+  },
+  "analyticsReconcileResults": {
+   "writers": [],
+   "readers": [
+    {
+     "fn": "founderDashboard",
+     "file": "convex/admin/analytics.ts",
+     "line": 52,
+     "class": "prod"
+    }
+   ]
+  },
+  "analyticsWeeklyDecisions": {
+   "writers": [
+    {
+     "fn": "recordWeeklyDecision",
+     "file": "convex/admin/analytics.ts",
+     "line": 111,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": []
+  },
+  "auditLog": {
+   "writers": [
+    {
+     "fn": "grantFounder",
+     "file": "convex/admin/roles.ts",
+     "line": 232,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "grantFounderByEmail",
+     "file": "convex/admin/roles.ts",
+     "line": 277,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "persistPublish",
+     "file": "convex/editorial/publish.ts",
+     "line": 114,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "writeAudit",
+     "file": "convex/lib/audit.ts",
+     "line": 39,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "auditExport",
+     "file": "convex/admin/audit.ts",
+     "line": 72,
+     "class": "prod"
+    },
+    {
+     "fn": "auditQuery",
+     "file": "convex/admin/audit.ts",
+     "line": 32,
+     "class": "prod"
+    },
+    {
+     "fn": "driftCheck",
+     "file": "convex/tools.ts",
+     "line": 638,
+     "class": "prod"
+    }
+   ]
+  },
+  "badges": {
+   "writers": [
+    {
+     "fn": "decideRequest",
+     "file": "convex/admin/store.ts",
+     "line": 61,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "revokeBadge",
+     "file": "convex/admin/storeEnforce.ts",
+     "line": 181,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "finalizeAwards",
+     "file": "convex/jobs/recognition.ts",
+     "line": 187,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "mintBadgeTx",
+     "file": "convex/jobs/recognition.ts",
+     "line": 151,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "activate",
+     "file": "convex/store/sell.ts",
+     "line": 53,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "decideRequest",
+     "file": "convex/admin/store.ts",
+     "line": 61,
+     "class": "prod"
+    },
+    {
+     "fn": "revokeBadge",
+     "file": "convex/admin/storeEnforce.ts",
+     "line": 181,
+     "class": "prod"
+    },
+    {
+     "fn": "finalizeAwards",
+     "file": "convex/jobs/recognition.ts",
+     "line": 187,
+     "class": "prod"
+    },
+    {
+     "fn": "mintBadgeTx",
+     "file": "convex/jobs/recognition.ts",
+     "line": 151,
+     "class": "prod"
+    },
+    {
+     "fn": "getMetrics",
+     "file": "convex/profile/metrics.ts",
+     "line": 35,
+     "class": "prod"
+    },
+    {
+     "fn": "fingerprint",
+     "file": "convex/seed/check.ts",
+     "line": 70,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "discovererCheck",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 273,
+     "class": "prod"
+    },
+    {
+     "fn": "activate",
+     "file": "convex/store/sell.ts",
+     "line": 53,
+     "class": "prod"
+    }
+   ]
+  },
+  "calibrationExamples": {
+   "writers": [
+    {
+     "fn": "addCalibrationExample",
+     "file": "convex/rulebook.ts",
+     "line": 300,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "loadCalibrationSet",
+     "file": "convex/qualify/orchestrator.ts",
+     "line": 379,
+     "class": "prod"
+    },
+    {
+     "fn": "listCalibrationExamples",
+     "file": "convex/rulebook.ts",
+     "line": 363,
+     "class": "prod"
+    }
+   ]
+  },
+  "capabilityRestrictions": {
+   "writers": [
+    {
+     "fn": "sanction",
+     "file": "convex/admin/sanctions.ts",
+     "line": 73,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "userSummary",
+     "file": "convex/admin/support.ts",
+     "line": 190,
+     "class": "prod"
+    },
+    {
+     "fn": "assertCustomerCapability",
+     "file": "convex/lib/authz.ts",
+     "line": 185,
+     "class": "prod"
+    }
+   ]
+  },
+  "cardSummaries": {
+   "writers": [
+    {
+     "fn": "refreshCards",
+     "file": "convex/cards.ts",
+     "line": 29,
+     "ops": [
+      "insert",
+      "patch",
+      "replace"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedUserContent",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 406,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedPosts",
+     "file": "convex/seed/demo.ts",
+     "line": 569,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "refreshCards",
+     "file": "convex/cards.ts",
+     "line": 29,
+     "class": "prod"
+    },
+    {
+     "fn": "FEED_CARD_ACTION_EVENT_ROW",
+     "file": "convex/feed.ts",
+     "line": 34,
+     "class": "prod"
+    }
+   ]
+  },
+  "categories": {
+   "writers": [
+    {
+     "fn": "bootstrap",
+     "file": "convex/seed.ts",
+     "line": 297,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "listActive",
+     "file": "convex/categories.ts",
+     "line": 11,
+     "class": "prod"
+    },
+    {
+     "fn": "bootstrap",
+     "file": "convex/seed.ts",
+     "line": 297,
+     "class": "prod"
+    }
+   ]
+  },
+  "claimClusters": {
+   "writers": [
+    {
+     "fn": "createCluster",
+     "file": "convex/ingest/extract.ts",
+     "line": 356,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": []
+  },
+  "commentContextSignals": {
+   "writers": [
+    {
+     "fn": "importEngagement",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 13,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "signalContext",
+     "file": "convex/reactions.ts",
+     "line": 349,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "toggleNegative",
+     "file": "convex/reactions.ts",
+     "line": 190,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "signalContext",
+     "file": "convex/reactions.ts",
+     "line": 349,
+     "class": "prod"
+    }
+   ]
+  },
+  "commentReactions": {
+   "writers": [
+    {
+     "fn": "importEngagement",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 13,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedUserContent",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 406,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "recomputeDirtyBatch",
+     "file": "convex/jobs/rank.ts",
+     "line": 73,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "toggleNegative",
+     "file": "convex/reactions.ts",
+     "line": 190,
+     "ops": [
+      "insert",
+      "patch",
+      "delete"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "toggleValuable",
+     "file": "convex/reactions.ts",
+     "line": 126,
+     "ops": [
+      "insert",
+      "patch",
+      "delete"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "list",
+     "file": "convex/comments/reads.ts",
+     "line": 112,
+     "class": "prod"
+    },
+    {
+     "fn": "listReplies",
+     "file": "convex/comments/reads.ts",
+     "line": 218,
+     "class": "prod"
+    },
+    {
+     "fn": "recomputeDirtyBatch",
+     "file": "convex/jobs/rank.ts",
+     "line": 73,
+     "class": "prod"
+    },
+    {
+     "fn": "toggleNegative",
+     "file": "convex/reactions.ts",
+     "line": 190,
+     "class": "prod"
+    },
+    {
+     "fn": "toggleValuable",
+     "file": "convex/reactions.ts",
+     "line": 126,
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "comments": {
+   "writers": [
+    {
+     "fn": "refreshCards",
+     "file": "convex/cards.ts",
+     "line": 29,
+     "ops": [
+      "patch",
+      "replace"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "create",
+     "file": "convex/comments.ts",
+     "line": 153,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "importComments",
+     "file": "convex/demoWorld/importComments.ts",
+     "line": 14,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "finalizeMemberCounts",
+     "file": "convex/demoWorld/importMembers.ts",
+     "line": 70,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoSeedBlockedReason",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 73,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seed",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 814,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "compileSystemPrompt",
+     "file": "convex/persona/generate.ts",
+     "line": 69,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "approve",
+     "file": "convex/persona/queue.ts",
+     "line": 128,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "schedule",
+     "file": "convex/persona/queue.ts",
+     "line": 277,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "refreshCards",
+     "file": "convex/cards.ts",
+     "line": 29,
+     "class": "prod"
+    },
+    {
+     "fn": "COMMENT_EVENT_CATALOG_ROWS",
+     "file": "convex/comments.ts",
+     "line": 49,
+     "class": "prod"
+    },
+    {
+     "fn": "create",
+     "file": "convex/comments.ts",
+     "line": 153,
+     "class": "prod"
+    },
+    {
+     "fn": "list",
+     "file": "convex/comments/reads.ts",
+     "line": 112,
+     "class": "prod"
+    },
+    {
+     "fn": "listReplies",
+     "file": "convex/comments/reads.ts",
+     "line": 218,
+     "class": "prod"
+    },
+    {
+     "fn": "importComments",
+     "file": "convex/demoWorld/importComments.ts",
+     "line": 14,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "finalizeMemberCounts",
+     "file": "convex/demoWorld/importMembers.ts",
+     "line": 70,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "verifyPodium",
+     "file": "convex/demoWorld/verifyWorld.ts",
+     "line": 91,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "verifyThreads",
+     "file": "convex/demoWorld/verifyWorld.ts",
+     "line": 63,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seed",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 814,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "list",
+     "file": "convex/feed.ts",
+     "line": 132,
+     "class": "prod"
+    },
+    {
+     "fn": "forceRun",
+     "file": "convex/jobs/maxRefresh.ts",
+     "line": 77,
+     "class": "prod"
+    },
+    {
+     "fn": "sweep",
+     "file": "convex/jobs/maxRefresh.ts",
+     "line": 34,
+     "class": "prod"
+    },
+    {
+     "fn": "compileSystemPrompt",
+     "file": "convex/persona/generate.ts",
+     "line": 69,
+     "class": "prod"
+    },
+    {
+     "fn": "listRoster",
+     "file": "convex/persona/public.ts",
+     "line": 59,
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedNotifications",
+     "file": "convex/seed/demo.ts",
+     "line": 1166,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "commentSaves": {
+   "writers": [
+    {
+     "fn": "importEngagement",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 13,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "toggleSave",
+     "file": "convex/reactions.ts",
+     "line": 280,
+     "ops": [
+      "insert",
+      "patch",
+      "delete"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "list",
+     "file": "convex/comments/reads.ts",
+     "line": 112,
+     "class": "prod"
+    },
+    {
+     "fn": "listReplies",
+     "file": "convex/comments/reads.ts",
+     "line": 218,
+     "class": "prod"
+    },
+    {
+     "fn": "list",
+     "file": "convex/feed.ts",
+     "line": 132,
+     "class": "prod"
+    },
+    {
+     "fn": "toggleSave",
+     "file": "convex/reactions.ts",
+     "line": 280,
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "commentScores": {
+   "writers": [
+    {
+     "fn": "refreshCards",
+     "file": "convex/cards.ts",
+     "line": 29,
+     "ops": [
+      "patch",
+      "replace"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "create",
+     "file": "convex/comments.ts",
+     "line": 153,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "importComments",
+     "file": "convex/demoWorld/importComments.ts",
+     "line": 14,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importEngagement",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 13,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoSeedBlockedReason",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 73,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "decayLiveScores",
+     "file": "convex/jobs/rank.ts",
+     "line": 152,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "recomputeDirtyBatch",
+     "file": "convex/jobs/rank.ts",
+     "line": 73,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "approve",
+     "file": "convex/persona/queue.ts",
+     "line": 128,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "schedule",
+     "file": "convex/persona/queue.ts",
+     "line": 277,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "REACTION_EVENT_CATALOG_ROWS",
+     "file": "convex/reactions.ts",
+     "line": 42,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "refreshCards",
+     "file": "convex/cards.ts",
+     "line": 29,
+     "class": "prod"
+    },
+    {
+     "fn": "COMMENT_EVENT_CATALOG_ROWS",
+     "file": "convex/comments.ts",
+     "line": 49,
+     "class": "prod"
+    },
+    {
+     "fn": "importComments",
+     "file": "convex/demoWorld/importComments.ts",
+     "line": 14,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importEngagement",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 13,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "decayLiveScores",
+     "file": "convex/jobs/rank.ts",
+     "line": 152,
+     "class": "prod"
+    },
+    {
+     "fn": "recomputeDirtyBatch",
+     "file": "convex/jobs/rank.ts",
+     "line": 73,
+     "class": "prod"
+    },
+    {
+     "fn": "REACTION_EVENT_CATALOG_ROWS",
+     "file": "convex/reactions.ts",
+     "line": 42,
+     "class": "prod"
+    }
+   ]
+  },
+  "commercialEntities": {
+   "writers": [
+    {
+     "fn": "entityUpsert",
+     "file": "convex/affiliateInventory.ts",
+     "line": 94,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "listInventory",
+     "file": "convex/affiliateInventory.ts",
+     "line": 44,
+     "class": "prod"
+    }
+   ]
+  },
+  "configKeyRegistry": {
+   "writers": [
+    {
+     "fn": "bootstrap",
+     "file": "convex/seed.ts",
+     "line": 297,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getNamespace",
+     "file": "convex/config.ts",
+     "line": 20,
+     "class": "prod"
+    },
+    {
+     "fn": "SEALED_KEYS",
+     "file": "convex/lib/authz.ts",
+     "line": 23,
+     "class": "prod"
+    },
+    {
+     "fn": "bootstrap",
+     "file": "convex/seed.ts",
+     "line": 297,
+     "class": "prod"
+    }
+   ]
+  },
+  "consentRecords": {
+   "writers": [
+    {
+     "fn": "record",
+     "file": "convex/consent.ts",
+     "line": 36,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "withdraw",
+     "file": "convex/consent.ts",
+     "line": 87,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "READINESS_CATEGORIES",
+     "file": "convex/admin/readiness.ts",
+     "line": 34,
+     "class": "prod"
+    },
+    {
+     "fn": "clientEmit",
+     "file": "convex/admin/utm.ts",
+     "line": 247,
+     "class": "prod"
+    },
+    {
+     "fn": "myConsent",
+     "file": "convex/consent.ts",
+     "line": 124,
+     "class": "prod"
+    },
+    {
+     "fn": "record",
+     "file": "convex/consent.ts",
+     "line": 36,
+     "class": "prod"
+    },
+    {
+     "fn": "withdraw",
+     "file": "convex/consent.ts",
+     "line": 87,
+     "class": "prod"
+    }
+   ]
+  },
+  "contentCandidates": {
+   "writers": [
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "wipeChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 938,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "persistForgedCandidate",
+     "file": "convex/forge.ts",
+     "line": 158,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "wipeChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 938,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "loadDueScheduled",
+     "file": "convex/editorial/publish.ts",
+     "line": 295,
+     "class": "prod"
+    },
+    {
+     "fn": "queueList",
+     "file": "convex/editorial/review.ts",
+     "line": 252,
+     "class": "prod"
+    }
+   ]
+  },
+  "contentCandidateSources": {
+   "writers": [
+    {
+     "fn": "persistForgedCandidate",
+     "file": "convex/forge.ts",
+     "line": 158,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "takedownAction",
+     "file": "convex/legal/intake.ts",
+     "line": 427,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "loadForPublish",
+     "file": "convex/editorial/publish.ts",
+     "line": 57,
+     "class": "prod"
+    },
+    {
+     "fn": "candidateReview",
+     "file": "convex/editorial/review.ts",
+     "line": 74,
+     "class": "prod"
+    },
+    {
+     "fn": "takedownAction",
+     "file": "convex/legal/intake.ts",
+     "line": 427,
+     "class": "prod"
+    }
+   ]
+  },
+  "contentEmbeddings": {
+   "writers": [
+    {
+     "fn": "persistPublish",
+     "file": "convex/editorial/publish.ts",
+     "line": 114,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "persistForgedCandidate",
+     "file": "convex/forge.ts",
+     "line": 158,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "loadForPublish",
+     "file": "convex/editorial/publish.ts",
+     "line": 57,
+     "class": "prod"
+    },
+    {
+     "fn": "persistPublish",
+     "file": "convex/editorial/publish.ts",
+     "line": 114,
+     "class": "prod"
+    },
+    {
+     "fn": "loadContext",
+     "file": "convex/qualify/orchestrator.ts",
+     "line": 130,
+     "class": "prod"
+    }
+   ]
+  },
+  "contentExtractions": {
+   "writers": [
+    {
+     "fn": "insertDiscoveredItem",
+     "file": "convex/ingest/pollersData.ts",
+     "line": 58,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "loadExtractableExtractions",
+     "file": "convex/ingest/extract.ts",
+     "line": 60,
+     "class": "prod"
+    },
+    {
+     "fn": "hasSourceItemHash",
+     "file": "convex/ingest/pollersData.ts",
+     "line": 40,
+     "class": "prod"
+    }
+   ]
+  },
+  "contentVersions": {
+   "writers": [
+    {
+     "fn": "publish",
+     "file": "convex/legalContent.ts",
+     "line": 81,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "saveDraft",
+     "file": "convex/legalContent.ts",
+     "line": 53,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedDefaults",
+     "file": "convex/legalContent.ts",
+     "line": 115,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "READINESS_CATEGORIES",
+     "file": "convex/admin/readiness.ts",
+     "line": 34,
+     "class": "prod"
+    },
+    {
+     "fn": "getPublished",
+     "file": "convex/legalContent.ts",
+     "line": 27,
+     "class": "prod"
+    },
+    {
+     "fn": "listVersions",
+     "file": "convex/legalContent.ts",
+     "line": 40,
+     "class": "prod"
+    },
+    {
+     "fn": "publish",
+     "file": "convex/legalContent.ts",
+     "line": 81,
+     "class": "prod"
+    },
+    {
+     "fn": "saveDraft",
+     "file": "convex/legalContent.ts",
+     "line": 53,
+     "class": "prod"
+    },
+    {
+     "fn": "seedDefaults",
+     "file": "convex/legalContent.ts",
+     "line": 115,
+     "class": "prod"
+    }
+   ]
+  },
+  "debateVotes": {
+   "writers": [
+    {
+     "fn": "forceClearMechanic",
+     "file": "convex/admin/moderationDomain.ts",
+     "line": 125,
+     "ops": [
+      "patch",
+      "delete"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "importEngagement",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 13,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "setDebateTallies",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 169,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedUserContent",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 406,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "cast",
+     "file": "convex/posts/debate.ts",
+     "line": 51,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "change",
+     "file": "convex/posts/debate.ts",
+     "line": 70,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "forceClearMechanic",
+     "file": "convex/admin/moderationDomain.ts",
+     "line": 125,
+     "class": "prod"
+    },
+    {
+     "fn": "setDebateTallies",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 169,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "verifyTallies",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 213,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "cast",
+     "file": "convex/posts/debate.ts",
+     "line": 51,
+     "class": "prod"
+    },
+    {
+     "fn": "change",
+     "file": "convex/posts/debate.ts",
+     "line": 70,
+     "class": "prod"
+    },
+    {
+     "fn": "getDetail",
+     "file": "convex/posts/detail.ts",
+     "line": 82,
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "demoGroundTruth": {
+   "writers": [
+    {
+     "fn": "deleteImageChunks",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 125,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importGroundTruth",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 53,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "linkCover",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 158,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "uploadImageChunk",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 96,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importComments",
+     "file": "convex/demoWorld/importComments.ts",
+     "line": 14,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importEngagement",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 13,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "setDebateTallies",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 169,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "setListItemVoteCounts",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 192,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importPosts",
+     "file": "convex/demoWorld/importPosts.ts",
+     "line": 16,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "chunksForUpload",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 113,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "deleteImageChunks",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 125,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "fingerprintParts",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 291,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importGroundTruth",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 53,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importNotifications",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 11,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "linkCover",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 158,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "uploadImageChunk",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 96,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "worldFingerprint",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 254,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importComments",
+     "file": "convex/demoWorld/importComments.ts",
+     "line": 14,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importEngagement",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 13,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "setDebateTallies",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 169,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "setListItemVoteCounts",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 192,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "verifyTallies",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 213,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importEvents",
+     "file": "convex/demoWorld/importEvents.ts",
+     "line": 8,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importPosts",
+     "file": "convex/demoWorld/importPosts.ts",
+     "line": 16,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "probePost",
+     "file": "convex/demoWorld/verifyWorld.ts",
+     "line": 164,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "verifyBadActors",
+     "file": "convex/demoWorld/verifyWorld.ts",
+     "line": 150,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "demoRegistry": {
+   "writers": [
+    {
+     "fn": "finalizeMemberCounts",
+     "file": "convex/demoWorld/importMembers.ts",
+     "line": 70,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "register",
+     "file": "convex/demoWorld/lib.ts",
+     "line": 19,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "removeBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 39,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "deleteRegisteredStorageBatch",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 187,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "registerStorageIds",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 233,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "storageRegistryRow",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 213,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "finalizeMemberCounts",
+     "file": "convex/demoWorld/importMembers.ts",
+     "line": 70,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "collectIds",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 27,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "removalStatus",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 105,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "removeBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 39,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "deployLog": {
+   "writers": [],
+   "readers": []
+  },
+  "distributionLevelAssignments": {
+   "writers": [
+    {
+     "fn": "levelCommitMonthly",
+     "file": "convex/jobs/might.ts",
+     "line": 96,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoteAnnual",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 186,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "integrityDrop",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 246,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "promoteSustained",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 125,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "levelCommitMonthly",
+     "file": "convex/jobs/might.ts",
+     "line": 96,
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoteAnnual",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 186,
+     "class": "prod"
+    },
+    {
+     "fn": "promoteSustained",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 125,
+     "class": "prod"
+    }
+   ]
+  },
+  "distributionMemberships": {
+   "writers": [
+    {
+     "fn": "reachRefresh",
+     "file": "convex/jobs/might.ts",
+     "line": 31,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "join",
+     "file": "convex/profile/metrics.ts",
+     "line": 136,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "leave",
+     "file": "convex/profile/metrics.ts",
+     "line": 198,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "reachRefresh",
+     "file": "convex/jobs/might.ts",
+     "line": 31,
+     "class": "prod"
+    },
+    {
+     "fn": "getMetrics",
+     "file": "convex/profile/metrics.ts",
+     "line": 35,
+     "class": "prod"
+    },
+    {
+     "fn": "join",
+     "file": "convex/profile/metrics.ts",
+     "line": 136,
+     "class": "prod"
+    },
+    {
+     "fn": "leave",
+     "file": "convex/profile/metrics.ts",
+     "line": 198,
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "distributions": {
+   "writers": [
+    {
+     "fn": "decideRequest",
+     "file": "convex/admin/store.ts",
+     "line": 61,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "ensureDistributionTx",
+     "file": "convex/distributions.ts",
+     "line": 31,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "levelCommitMonthly",
+     "file": "convex/jobs/might.ts",
+     "line": 96,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "mightRecompute",
+     "file": "convex/jobs/might.ts",
+     "line": 60,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "join",
+     "file": "convex/profile/metrics.ts",
+     "line": 136,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "leave",
+     "file": "convex/profile/metrics.ts",
+     "line": 198,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoteAnnual",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 186,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "integrityDrop",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 246,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "promoteSustained",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 125,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seasonRecalibrate",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 64,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedPlatformStores",
+     "file": "convex/store/seed.ts",
+     "line": 31,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "decideRequest",
+     "file": "convex/admin/store.ts",
+     "line": 61,
+     "class": "prod"
+    },
+    {
+     "fn": "ensureDistributionTx",
+     "file": "convex/distributions.ts",
+     "line": 31,
+     "class": "prod"
+    },
+    {
+     "fn": "levelCommitMonthly",
+     "file": "convex/jobs/might.ts",
+     "line": 96,
+     "class": "prod"
+    },
+    {
+     "fn": "mightRecompute",
+     "file": "convex/jobs/might.ts",
+     "line": 60,
+     "class": "prod"
+    },
+    {
+     "fn": "recompute",
+     "file": "convex/jobs/signalSummary.ts",
+     "line": 64,
+     "class": "prod"
+    },
+    {
+     "fn": "getMetrics",
+     "file": "convex/profile/metrics.ts",
+     "line": 35,
+     "class": "prod"
+    },
+    {
+     "fn": "join",
+     "file": "convex/profile/metrics.ts",
+     "line": 136,
+     "class": "prod"
+    },
+    {
+     "fn": "leave",
+     "file": "convex/profile/metrics.ts",
+     "line": 198,
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoteAnnual",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 186,
+     "class": "prod"
+    },
+    {
+     "fn": "discovererCheck",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 273,
+     "class": "prod"
+    },
+    {
+     "fn": "integrityDrop",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 246,
+     "class": "prod"
+    },
+    {
+     "fn": "promoteSustained",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 125,
+     "class": "prod"
+    },
+    {
+     "fn": "seasonRecalibrate",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 64,
+     "class": "prod"
+    },
+    {
+     "fn": "storeMetricsSkeleton",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 312,
+     "class": "prod"
+    },
+    {
+     "fn": "seedPlatformStores",
+     "file": "convex/store/seed.ts",
+     "line": 31,
+     "class": "prod"
+    }
+   ]
+  },
+  "downloads": {
+   "writers": [
+    {
+     "fn": "settleQualifiedDownloads",
+     "file": "convex/jobs/settleDownload.ts",
+     "line": 19,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "download",
+     "file": "convex/resources.ts",
+     "line": 220,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "settleQualifiedDownloads",
+     "file": "convex/jobs/settleDownload.ts",
+     "line": 19,
+     "class": "prod"
+    }
+   ]
+  },
+  "draftClaimRefs": {
+   "writers": [
+    {
+     "fn": "candidateApprove",
+     "file": "convex/editorial/decisions.ts",
+     "line": 49,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "editDraft",
+     "file": "convex/editorial/review.ts",
+     "line": 210,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "persistForgedCandidate",
+     "file": "convex/forge.ts",
+     "line": 158,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "candidateApprove",
+     "file": "convex/editorial/decisions.ts",
+     "line": 49,
+     "class": "prod"
+    },
+    {
+     "fn": "loadForPublish",
+     "file": "convex/editorial/publish.ts",
+     "line": 57,
+     "class": "prod"
+    },
+    {
+     "fn": "candidateReview",
+     "file": "convex/editorial/review.ts",
+     "line": 74,
+     "class": "prod"
+    },
+    {
+     "fn": "editDraft",
+     "file": "convex/editorial/review.ts",
+     "line": 210,
+     "class": "prod"
+    },
+    {
+     "fn": "loadCandidateRefs",
+     "file": "convex/editorial/review.ts",
+     "line": 189,
+     "class": "prod"
+    },
+    {
+     "fn": "loadContext",
+     "file": "convex/qualify/orchestrator.ts",
+     "line": 130,
+     "class": "prod"
+    }
+   ]
+  },
+  "dripBatches": {
+   "writers": [
+    {
+     "fn": "release",
+     "file": "convex/jobs/dripRelease.ts",
+     "line": 33,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "release",
+     "file": "convex/jobs/dripRelease.ts",
+     "line": 33,
+     "class": "prod"
+    },
+    {
+     "fn": "emitSuppressed",
+     "file": "convex/retention/visit.ts",
+     "line": 116,
+     "class": "prod"
+    }
+   ]
+  },
+  "engagementEdges": {
+   "writers": [
+    {
+     "fn": "recompute",
+     "file": "convex/jobs/legitimacy.ts",
+     "line": 109,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "recompute",
+     "file": "convex/jobs/legitimacy.ts",
+     "line": 109,
+     "class": "prod"
+    }
+   ]
+  },
+  "eventCatalog": {
+   "writers": [
+    {
+     "fn": "bootstrap",
+     "file": "convex/seed.ts",
+     "line": 297,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "recordWeeklyDecision",
+     "file": "convex/admin/analytics.ts",
+     "line": 111,
+     "class": "prod"
+    },
+    {
+     "fn": "clientEmit",
+     "file": "convex/admin/utm.ts",
+     "line": 247,
+     "class": "prod"
+    },
+    {
+     "fn": "assertCatalogEvent",
+     "file": "convex/lib/events.ts",
+     "line": 40,
+     "class": "prod"
+    },
+    {
+     "fn": "bootstrap",
+     "file": "convex/seed.ts",
+     "line": 297,
+     "class": "prod"
+    }
+   ]
+  },
+  "feedExplorationState": {
+   "writers": [
+    {
+     "fn": "sweepBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 56,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "explorationRefresh",
+     "file": "convex/jobs/explore.ts",
+     "line": 34,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "sweepBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 56,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "getWhy",
+     "file": "convex/feed.ts",
+     "line": 328,
+     "class": "prod"
+    },
+    {
+     "fn": "explorationRefresh",
+     "file": "convex/jobs/explore.ts",
+     "line": 34,
+     "class": "prod"
+    }
+   ]
+  },
+  "feedSessions": {
+   "writers": [
+    {
+     "fn": "FEED_CARD_ACTION_EVENT_ROW",
+     "file": "convex/feed.ts",
+     "line": 34,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "FEED_CARD_ACTION_EVENT_ROW",
+     "file": "convex/feed.ts",
+     "line": 34,
+     "class": "prod"
+    }
+   ]
+  },
+  "generationRuns": {
+   "writers": [
+    {
+     "fn": "persistForgedCandidate",
+     "file": "convex/forge.ts",
+     "line": 158,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "recordGenerationRun",
+     "file": "convex/ingest/extract.ts",
+     "line": 162,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "candidateRegen",
+     "file": "convex/editorial/decisions.ts",
+     "line": 182,
+     "class": "prod"
+    },
+    {
+     "fn": "candidateReview",
+     "file": "convex/editorial/review.ts",
+     "line": 74,
+     "class": "prod"
+    }
+   ]
+  },
+  "heroAssignments": {
+   "writers": [
+    {
+     "fn": "heroUpsert",
+     "file": "convex/admin/curation.ts",
+     "line": 132,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "heroStaleFill",
+     "file": "convex/cards.ts",
+     "line": 127,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": []
+  },
+  "heroSlots": {
+   "writers": [
+    {
+     "fn": "heroUpsert",
+     "file": "convex/admin/curation.ts",
+     "line": 132,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "heroStaleFill",
+     "file": "convex/cards.ts",
+     "line": 127,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "wipeChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 938,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getCurationState",
+     "file": "convex/admin/curation.ts",
+     "line": 204,
+     "class": "prod"
+    },
+    {
+     "fn": "heroUpsert",
+     "file": "convex/admin/curation.ts",
+     "line": 132,
+     "class": "prod"
+    },
+    {
+     "fn": "heroStaleFill",
+     "file": "convex/cards.ts",
+     "line": 127,
+     "class": "prod"
+    },
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "wipeChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 938,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "getChrome",
+     "file": "convex/feed.ts",
+     "line": 235,
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "identityJoins": {
+   "writers": [
+    {
+     "fn": "finalizeBootstrapTx",
+     "file": "convex/bootstrap.ts",
+     "line": 54,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "finalizeBootstrapTx",
+     "file": "convex/bootstrap.ts",
+     "line": 54,
+     "class": "prod"
+    }
+   ]
+  },
+  "ingestionConfigs": {
+   "writers": [
+    {
+     "fn": "sourceUpsert",
+     "file": "convex/sources.ts",
+     "line": 142,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "loadDueConfigs",
+     "file": "convex/ingest/pollersData.ts",
+     "line": 13,
+     "class": "prod"
+    },
+    {
+     "fn": "loadNewsletterConfigs",
+     "file": "convex/ingest/pollersData.ts",
+     "line": 97,
+     "class": "prod"
+    },
+    {
+     "fn": "listSources",
+     "file": "convex/sources.ts",
+     "line": 59,
+     "class": "prod"
+    }
+   ]
+  },
+  "instrumentationIncidents": {
+   "writers": [
+    {
+     "fn": "clientEmit",
+     "file": "convex/admin/utm.ts",
+     "line": 247,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "orphanSweep",
+     "file": "convex/analytics/projections.ts",
+     "line": 218,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "founderDashboard",
+     "file": "convex/admin/analytics.ts",
+     "line": 52,
+     "class": "prod"
+    },
+    {
+     "fn": "orphanSweep",
+     "file": "convex/analytics/projections.ts",
+     "line": 218,
+     "class": "prod"
+    }
+   ]
+  },
+  "integrityFlags": {
+   "writers": [
+    {
+     "fn": "brigadeSweep",
+     "file": "convex/admin/sanctions.ts",
+     "line": 182,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "notifyBatched",
+     "file": "convex/notifications/batch.ts",
+     "line": 46,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "promoteSustained",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 125,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "rankIntegritySweep",
+     "file": "convex/admin/homeAlertWriters.ts",
+     "line": 230,
+     "class": "prod"
+    },
+    {
+     "fn": "brigadeSweep",
+     "file": "convex/admin/sanctions.ts",
+     "line": 182,
+     "class": "prod"
+    },
+    {
+     "fn": "notifyBatched",
+     "file": "convex/notifications/batch.ts",
+     "line": 46,
+     "class": "prod"
+    },
+    {
+     "fn": "passesOutcomeGate",
+     "file": "convex/signal/award.ts",
+     "line": 109,
+     "class": "prod"
+    },
+    {
+     "fn": "promoteSustained",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 125,
+     "class": "prod"
+    }
+   ]
+  },
+  "interestTaxonomy": {
+   "writers": [
+    {
+     "fn": "bootstrap",
+     "file": "convex/seed.ts",
+     "line": 297,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "interestsSelect",
+     "file": "convex/setup.ts",
+     "line": 261,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getProfilePage",
+     "file": "convex/profile/page.ts",
+     "line": 61,
+     "class": "prod"
+    },
+    {
+     "fn": "bootstrap",
+     "file": "convex/seed.ts",
+     "line": 297,
+     "class": "prod"
+    },
+    {
+     "fn": "interestsSelect",
+     "file": "convex/setup.ts",
+     "line": 261,
+     "class": "prod"
+    },
+    {
+     "fn": "listInterestTiles",
+     "file": "convex/setup.ts",
+     "line": 413,
+     "class": "prod"
+    }
+   ]
+  },
+  "jobCatalog": {
+   "writers": [
+    {
+     "fn": "healthProbe",
+     "file": "convex/admin/reliability.ts",
+     "line": 68,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "redriveDeadLetter",
+     "file": "convex/admin/reliability.ts",
+     "line": 131,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "bootstrap",
+     "file": "convex/seed.ts",
+     "line": 297,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "healthProbe",
+     "file": "convex/admin/reliability.ts",
+     "line": 68,
+     "class": "prod"
+    },
+    {
+     "fn": "redriveDeadLetter",
+     "file": "convex/admin/reliability.ts",
+     "line": 131,
+     "class": "prod"
+    },
+    {
+     "fn": "bootstrap",
+     "file": "convex/seed.ts",
+     "line": 297,
+     "class": "prod"
+    }
+   ]
+  },
+  "jobDeadLetters": {
+   "writers": [],
+   "readers": [
+    {
+     "fn": "READINESS_CATEGORIES",
+     "file": "convex/admin/readiness.ts",
+     "line": 34,
+     "class": "prod"
+    },
+    {
+     "fn": "listDeadLetters",
+     "file": "convex/admin/reliability.ts",
+     "line": 45,
+     "class": "prod"
+    }
+   ]
+  },
+  "jobRuns": {
+   "writers": [
+    {
+     "fn": "disposeManualReview",
+     "file": "convex/admin/reliability.ts",
+     "line": 196,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "healthProbe",
+     "file": "convex/admin/reliability.ts",
+     "line": 68,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "redriveDeadLetter",
+     "file": "convex/admin/reliability.ts",
+     "line": 131,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "stopActivate",
+     "file": "convex/admin/stop.ts",
+     "line": 59,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "healthProbe",
+     "file": "convex/admin/reliability.ts",
+     "line": 68,
+     "class": "prod"
+    },
+    {
+     "fn": "listDeadLetters",
+     "file": "convex/admin/reliability.ts",
+     "line": 45,
+     "class": "prod"
+    }
+   ]
+  },
+  "launchReadinessResults": {
+   "writers": [
+    {
+     "fn": "evaluate",
+     "file": "convex/admin/readiness.ts",
+     "line": 149,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "assertSignupOpenAllowed",
+     "file": "convex/admin/readiness.ts",
+     "line": 203,
+     "class": "prod"
+    },
+    {
+     "fn": "assertSignupOpenAllowedTx",
+     "file": "convex/admin/readiness.ts",
+     "line": 188,
+     "class": "prod"
+    },
+    {
+     "fn": "checklist",
+     "file": "convex/admin/readiness.ts",
+     "line": 229,
+     "class": "prod"
+    },
+    {
+     "fn": "effectiveSignupMode",
+     "file": "convex/admission.ts",
+     "line": 37,
+     "class": "prod"
+    }
+   ]
+  },
+  "leaderboardProjections": {
+   "writers": [
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "rollup",
+     "file": "convex/jobs/recognition.ts",
+     "line": 38,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "getChrome",
+     "file": "convex/feed.ts",
+     "line": 235,
+     "class": "prod"
+    },
+    {
+     "fn": "rollup",
+     "file": "convex/jobs/recognition.ts",
+     "line": 38,
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "legalIntake": {
+   "writers": [
+    {
+     "fn": "listLegalIntakeByStatus",
+     "file": "convex/legal/intake.ts",
+     "line": 51,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "counterNotice",
+     "file": "convex/legal/intake.ts",
+     "line": 267,
+     "class": "prod"
+    },
+    {
+     "fn": "listLegalIntakeByStatus",
+     "file": "convex/legal/intake.ts",
+     "line": 51,
+     "class": "prod"
+    },
+    {
+     "fn": "myFilings",
+     "file": "convex/legal/intake.ts",
+     "line": 487,
+     "class": "prod"
+    }
+   ]
+  },
+  "legitimacyScores": {
+   "writers": [
+    {
+     "fn": "sweepBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 56,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "recompute",
+     "file": "convex/jobs/legitimacy.ts",
+     "line": 109,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "reachRefresh",
+     "file": "convex/jobs/might.ts",
+     "line": 31,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "join",
+     "file": "convex/profile/metrics.ts",
+     "line": 136,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "sweepBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 56,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "legitimacyCount",
+     "file": "convex/demoWorld/verifyWorld.ts",
+     "line": 176,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "recompute",
+     "file": "convex/jobs/legitimacy.ts",
+     "line": 109,
+     "class": "prod"
+    },
+    {
+     "fn": "snapshotLegitimacy",
+     "file": "convex/jobs/legitimacy.ts",
+     "line": 96,
+     "class": "prod"
+    },
+    {
+     "fn": "reachRefresh",
+     "file": "convex/jobs/might.ts",
+     "line": 31,
+     "class": "prod"
+    },
+    {
+     "fn": "join",
+     "file": "convex/profile/metrics.ts",
+     "line": 136,
+     "class": "prod"
+    }
+   ]
+  },
+  "linkValidations": {
+   "writers": [
+    {
+     "fn": "approveProduct",
+     "file": "convex/admin/store.ts",
+     "line": 197,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "autoScreen",
+     "file": "convex/admin/store.ts",
+     "line": 172,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "recordInspection",
+     "file": "convex/admin/store.ts",
+     "line": 137,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "approveProduct",
+     "file": "convex/admin/store.ts",
+     "line": 197,
+     "class": "prod"
+    },
+    {
+     "fn": "autoScreen",
+     "file": "convex/admin/store.ts",
+     "line": 172,
+     "class": "prod"
+    },
+    {
+     "fn": "loadRescanBatch",
+     "file": "convex/admin/store.ts",
+     "line": 351,
+     "class": "prod"
+    }
+   ]
+  },
+  "listItemVotes": {
+   "writers": [
+    {
+     "fn": "forceClearMechanic",
+     "file": "convex/admin/moderationDomain.ts",
+     "line": 125,
+     "ops": [
+      "patch",
+      "delete"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "importEngagement",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 13,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "setListItemVoteCounts",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 192,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "remove",
+     "file": "convex/posts/listItems.ts",
+     "line": 76,
+     "ops": [
+      "delete"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "toggleVote",
+     "file": "convex/posts/listItems.ts",
+     "line": 111,
+     "ops": [
+      "insert",
+      "patch",
+      "delete"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "forceClearMechanic",
+     "file": "convex/admin/moderationDomain.ts",
+     "line": 125,
+     "class": "prod"
+    },
+    {
+     "fn": "setListItemVoteCounts",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 192,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "verifyTallies",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 213,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "getDetail",
+     "file": "convex/posts/detail.ts",
+     "line": 82,
+     "class": "prod"
+    },
+    {
+     "fn": "remove",
+     "file": "convex/posts/listItems.ts",
+     "line": 76,
+     "class": "prod"
+    },
+    {
+     "fn": "toggleVote",
+     "file": "convex/posts/listItems.ts",
+     "line": 111,
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "merchantComplaints": {
+   "writers": [
+    {
+     "fn": "circuitBreaker",
+     "file": "convex/admin/storeEnforce.ts",
+     "line": 114,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "fileComplaint",
+     "file": "convex/admin/storeEnforce.ts",
+     "line": 218,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "circuitBreaker",
+     "file": "convex/admin/storeEnforce.ts",
+     "line": 114,
+     "class": "prod"
+    }
+   ]
+  },
+  "moderationActions": {
+   "writers": [
+    {
+     "fn": "resolve",
+     "file": "convex/admin/appeals.ts",
+     "line": 35,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "batch",
+     "file": "convex/admin/moderationQueue.ts",
+     "line": 310,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "resolve",
+     "file": "convex/admin/moderationQueue.ts",
+     "line": 254,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "submit",
+     "file": "convex/appeal.ts",
+     "line": 40,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "autoGateTx",
+     "file": "convex/moderation/autoGate.ts",
+     "line": 91,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "myActions",
+     "file": "convex/appeal.ts",
+     "line": 118,
+     "class": "prod"
+    },
+    {
+     "fn": "autoGateTx",
+     "file": "convex/moderation/autoGate.ts",
+     "line": 91,
+     "class": "prod"
+    },
+    {
+     "fn": "priorObfuscations",
+     "file": "convex/moderation/autoGate.ts",
+     "line": 81,
+     "class": "prod"
+    }
+   ]
+  },
+  "moderationCases": {
+   "writers": [
+    {
+     "fn": "autoRelease",
+     "file": "convex/admin/moderationQueue.ts",
+     "line": 230,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "leaseExpire",
+     "file": "convex/admin/moderationQueue.ts",
+     "line": 178,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "queueAge",
+     "file": "convex/admin/moderationQueue.ts",
+     "line": 200,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "fileComplaint",
+     "file": "convex/admin/storeEnforce.ts",
+     "line": 218,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "COMMENT_EVENT_CATALOG_ROWS",
+     "file": "convex/comments.ts",
+     "line": 49,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seed",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 814,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "legalIntakeAuthenticated",
+     "file": "convex/legal/intake.ts",
+     "line": 176,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "openCaseDeduped",
+     "file": "convex/moderation/autoGate.ts",
+     "line": 50,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "createPost",
+     "file": "convex/posts.ts",
+     "line": 132,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "toggleNegative",
+     "file": "convex/reactions.ts",
+     "line": 190,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "hideForReview",
+     "file": "convex/store/public.ts",
+     "line": 300,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "AUTOFLAG_REGISTRY_ROWS",
+     "file": "convex/toolRatings.ts",
+     "line": 161,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "slaTick",
+     "file": "convex/admin/appeals.ts",
+     "line": 78,
+     "class": "prod"
+    },
+    {
+     "fn": "queueLoadSweep",
+     "file": "convex/admin/homeAlertWriters.ts",
+     "line": 117,
+     "class": "prod"
+    },
+    {
+     "fn": "s0CoverSweep",
+     "file": "convex/admin/homeAlertWriters.ts",
+     "line": 60,
+     "class": "prod"
+    },
+    {
+     "fn": "autoRelease",
+     "file": "convex/admin/moderationQueue.ts",
+     "line": 230,
+     "class": "prod"
+    },
+    {
+     "fn": "leaseExpire",
+     "file": "convex/admin/moderationQueue.ts",
+     "line": 178,
+     "class": "prod"
+    },
+    {
+     "fn": "listQueue",
+     "file": "convex/admin/moderationQueue.ts",
+     "line": 59,
+     "class": "prod"
+    },
+    {
+     "fn": "queueAge",
+     "file": "convex/admin/moderationQueue.ts",
+     "line": 200,
+     "class": "prod"
+    },
+    {
+     "fn": "READINESS_CATEGORIES",
+     "file": "convex/admin/readiness.ts",
+     "line": 34,
+     "class": "prod"
+    },
+    {
+     "fn": "userSummary",
+     "file": "convex/admin/support.ts",
+     "line": 190,
+     "class": "prod"
+    },
+    {
+     "fn": "seed",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 814,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "findOpenCase",
+     "file": "convex/moderation/autoGate.ts",
+     "line": 40,
+     "class": "prod"
+    }
+   ]
+  },
+  "newsletterConsents": {
+   "writers": [
+    {
+     "fn": "consent",
+     "file": "convex/newsletter.ts",
+     "line": 47,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "unsubscribe",
+     "file": "convex/newsletter.ts",
+     "line": 73,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "consent",
+     "file": "convex/newsletter.ts",
+     "line": 47,
+     "class": "prod"
+    },
+    {
+     "fn": "overlayState",
+     "file": "convex/newsletter.ts",
+     "line": 26,
+     "class": "prod"
+    },
+    {
+     "fn": "unsubscribe",
+     "file": "convex/newsletter.ts",
+     "line": 73,
+     "class": "prod"
+    }
+   ]
+  },
+  "notifications": {
+   "writers": [
+    {
+     "fn": "importNotifications",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 11,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "notifyBatched",
+     "file": "convex/notifications/batch.ts",
+     "line": 46,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "onQuotaExhausted",
+     "file": "convex/notifications/quota.ts",
+     "line": 18,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "onSessionStart",
+     "file": "convex/notifications/quota.ts",
+     "line": 50,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedNotifications",
+     "file": "convex/seed/demo.ts",
+     "line": 1166,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "importNotifications",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 11,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "verifyPeople",
+     "file": "convex/demoWorld/verifyWorld.ts",
+     "line": 126,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "notifyBatched",
+     "file": "convex/notifications/batch.ts",
+     "line": 46,
+     "class": "prod"
+    },
+    {
+     "fn": "onSessionStart",
+     "file": "convex/notifications/quota.ts",
+     "line": 50,
+     "class": "prod"
+    },
+    {
+     "fn": "list",
+     "file": "convex/notifications/reads.ts",
+     "line": 51,
+     "class": "prod"
+    },
+    {
+     "fn": "fingerprint",
+     "file": "convex/seed/check.ts",
+     "line": 70,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedNotifications",
+     "file": "convex/seed/demo.ts",
+     "line": 1166,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "operationalIncidents": {
+   "writers": [
+    {
+     "fn": "redriveDeadLetter",
+     "file": "convex/admin/reliability.ts",
+     "line": 131,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "redriveDeadLetter",
+     "file": "convex/admin/reliability.ts",
+     "line": 131,
+     "class": "prod"
+    }
+   ]
+  },
+  "opsAssignments": {
+   "writers": [
+    {
+     "fn": "opsAck",
+     "file": "convex/admin/roles.ts",
+     "line": 181,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "opsUpsert",
+     "file": "convex/admin/roles.ts",
+     "line": 154,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "listOpsAssignments",
+     "file": "convex/admin/roles.ts",
+     "line": 216,
+     "class": "prod"
+    },
+    {
+     "fn": "opsAck",
+     "file": "convex/admin/roles.ts",
+     "line": 181,
+     "class": "prod"
+    }
+   ]
+  },
+  "outcomeDefinitions": {
+   "writers": [],
+   "readers": []
+  },
+  "personaCadenceState": {
+   "writers": [
+    {
+     "fn": "compileSystemPrompt",
+     "file": "convex/persona/generate.ts",
+     "line": 69,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "driftCheck",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 439,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "approve",
+     "file": "convex/persona/queue.ts",
+     "line": 128,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "compileSystemPrompt",
+     "file": "convex/persona/generate.ts",
+     "line": 69,
+     "class": "prod"
+    },
+    {
+     "fn": "driftCheck",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 439,
+     "class": "prod"
+    },
+    {
+     "fn": "populationSignals",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 407,
+     "class": "prod"
+    },
+    {
+     "fn": "approve",
+     "file": "convex/persona/queue.ts",
+     "line": 128,
+     "class": "prod"
+    }
+   ]
+  },
+  "personaCommentDrafts": {
+   "writers": [
+    {
+     "fn": "compileSystemPrompt",
+     "file": "convex/persona/generate.ts",
+     "line": 69,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "activate",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 182,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "sweepScheduled",
+     "file": "convex/persona/queue.ts",
+     "line": 359,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "compileSystemPrompt",
+     "file": "convex/persona/generate.ts",
+     "line": 69,
+     "class": "prod"
+    },
+    {
+     "fn": "activate",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 182,
+     "class": "prod"
+    },
+    {
+     "fn": "listQueue",
+     "file": "convex/persona/queue.ts",
+     "line": 54,
+     "class": "prod"
+    },
+    {
+     "fn": "sweepScheduled",
+     "file": "convex/persona/queue.ts",
+     "line": 359,
+     "class": "prod"
+    }
+   ]
+  },
+  "personaCommentEvaluations": {
+   "writers": [
+    {
+     "fn": "compileSystemPrompt",
+     "file": "convex/persona/generate.ts",
+     "line": 69,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": []
+  },
+  "personaEngagements": {
+   "writers": [
+    {
+     "fn": "approve",
+     "file": "convex/persona/queue.ts",
+     "line": 128,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "schedule",
+     "file": "convex/persona/queue.ts",
+     "line": 277,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getPersonaProfile",
+     "file": "convex/persona/public.ts",
+     "line": 94,
+     "class": "prod"
+    }
+   ]
+  },
+  "personaGenomeEdits": {
+   "writers": [
+    {
+     "fn": "edit",
+     "file": "convex/persona/genome.ts",
+     "line": 156,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "rollback",
+     "file": "convex/persona/genome.ts",
+     "line": 235,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getGenomeState",
+     "file": "convex/persona/genome.ts",
+     "line": 88,
+     "class": "prod"
+    }
+   ]
+  },
+  "personaGenomes": {
+   "writers": [
+    {
+     "fn": "compileSystemPrompt",
+     "file": "convex/persona/generate.ts",
+     "line": 69,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "edit",
+     "file": "convex/persona/genome.ts",
+     "line": 156,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "invalidateCompiledPrompts",
+     "file": "convex/persona/genome.ts",
+     "line": 51,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "rollback",
+     "file": "convex/persona/genome.ts",
+     "line": 235,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "birth",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 103,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "reviveConfirm",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 320,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "compileSystemPrompt",
+     "file": "convex/persona/generate.ts",
+     "line": 69,
+     "class": "prod"
+    },
+    {
+     "fn": "edit",
+     "file": "convex/persona/genome.ts",
+     "line": 156,
+     "class": "prod"
+    },
+    {
+     "fn": "getGenomeState",
+     "file": "convex/persona/genome.ts",
+     "line": 88,
+     "class": "prod"
+    },
+    {
+     "fn": "invalidateCompiledPrompts",
+     "file": "convex/persona/genome.ts",
+     "line": 51,
+     "class": "prod"
+    },
+    {
+     "fn": "rollback",
+     "file": "convex/persona/genome.ts",
+     "line": 235,
+     "class": "prod"
+    },
+    {
+     "fn": "reviveConfirm",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 320,
+     "class": "prod"
+    }
+   ]
+  },
+  "personaLifecycleEvents": {
+   "writers": [
+    {
+     "fn": "LIFECYCLE_DEFAULTS",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 45,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "LIFECYCLE_DEFAULTS",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 45,
+     "class": "prod"
+    },
+    {
+     "fn": "getPersonaProfile",
+     "file": "convex/persona/public.ts",
+     "line": 94,
+     "class": "prod"
+    }
+   ]
+  },
+  "personaMemoryEmbeddings": {
+   "writers": [
+    {
+     "fn": "compileSystemPrompt",
+     "file": "convex/persona/generate.ts",
+     "line": 69,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "approve",
+     "file": "convex/persona/queue.ts",
+     "line": 128,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "compileSystemPrompt",
+     "file": "convex/persona/generate.ts",
+     "line": 69,
+     "class": "prod"
+    }
+   ]
+  },
+  "personaPositions": {
+   "writers": [
+    {
+     "fn": "approve",
+     "file": "convex/persona/queue.ts",
+     "line": 128,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": []
+  },
+  "personaRevivalVotes": {
+   "writers": [
+    {
+     "fn": "reviveConfirm",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 320,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "revivalVote",
+     "file": "convex/persona/public.ts",
+     "line": 142,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "reviveConfirm",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 320,
+     "class": "prod"
+    },
+    {
+     "fn": "revivalTally",
+     "file": "convex/persona/public.ts",
+     "line": 181,
+     "class": "prod"
+    },
+    {
+     "fn": "revivalVote",
+     "file": "convex/persona/public.ts",
+     "line": 142,
+     "class": "prod"
+    }
+   ]
+  },
+  "personas": {
+   "writers": [
+    {
+     "fn": "invalidateCompiledPrompts",
+     "file": "convex/persona/genome.ts",
+     "line": 51,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "birth",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 103,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "driftCheck",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 439,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "reviveConfirm",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 320,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "invalidateCompiledPrompts",
+     "file": "convex/persona/genome.ts",
+     "line": 51,
+     "class": "prod"
+    },
+    {
+     "fn": "birth",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 103,
+     "class": "prod"
+    },
+    {
+     "fn": "driftCheck",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 439,
+     "class": "prod"
+    },
+    {
+     "fn": "populationSignals",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 407,
+     "class": "prod"
+    },
+    {
+     "fn": "reviveConfirm",
+     "file": "convex/persona/lifecycle.ts",
+     "line": 320,
+     "class": "prod"
+    },
+    {
+     "fn": "listRoster",
+     "file": "convex/persona/public.ts",
+     "line": 59,
+     "class": "prod"
+    }
+   ]
+  },
+  "personaStyleBaseline": {
+   "writers": [],
+   "readers": []
+  },
+  "pilotKillGateEvaluations": {
+   "writers": [
+    {
+     "fn": "killGateEvaluate",
+     "file": "convex/admin/resourcesLifecycle.ts",
+     "line": 223,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": []
+  },
+  "platformHealth": {
+   "writers": [
+    {
+     "fn": "healthProbe",
+     "file": "convex/admin/reliability.ts",
+     "line": 68,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "recompute",
+     "file": "convex/jobs/legitimacy.ts",
+     "line": 109,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "READINESS_CATEGORIES",
+     "file": "convex/admin/readiness.ts",
+     "line": 34,
+     "class": "prod"
+    },
+    {
+     "fn": "healthProbe",
+     "file": "convex/admin/reliability.ts",
+     "line": 68,
+     "class": "prod"
+    },
+    {
+     "fn": "recompute",
+     "file": "convex/jobs/legitimacy.ts",
+     "line": 109,
+     "class": "prod"
+    }
+   ]
+  },
+  "policyReasonCodes": {
+   "writers": [
+    {
+     "fn": "seedReasonCodes",
+     "file": "convex/moderation/reasonCodesSeed.ts",
+     "line": 65,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "myActions",
+     "file": "convex/appeal.ts",
+     "line": 118,
+     "class": "prod"
+    },
+    {
+     "fn": "founderBumpAll",
+     "file": "convex/moderation/reasonCodes.ts",
+     "line": 92,
+     "class": "prod"
+    },
+    {
+     "fn": "listLatest",
+     "file": "convex/moderation/reasonCodes.ts",
+     "line": 130,
+     "class": "prod"
+    },
+    {
+     "fn": "seedReasonCodes",
+     "file": "convex/moderation/reasonCodesSeed.ts",
+     "line": 65,
+     "class": "prod"
+    }
+   ]
+  },
+  "postAffiliateLinks": {
+   "writers": [
+    {
+     "fn": "persistPublish",
+     "file": "convex/editorial/publish.ts",
+     "line": 114,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getDetail",
+     "file": "convex/posts/detail.ts",
+     "line": 82,
+     "class": "prod"
+    }
+   ]
+  },
+  "postCompares": {
+   "writers": [
+    {
+     "fn": "importPosts",
+     "file": "convex/demoWorld/importPosts.ts",
+     "line": 16,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoSeedBlockedReason",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 73,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "insertExtensionRow",
+     "file": "convex/posts.ts",
+     "line": 394,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "class": "prod"
+    }
+   ]
+  },
+  "postDebates": {
+   "writers": [
+    {
+     "fn": "setDebateTallies",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 169,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importPosts",
+     "file": "convex/demoWorld/importPosts.ts",
+     "line": 16,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoSeedBlockedReason",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 73,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "insertExtensionRow",
+     "file": "convex/posts.ts",
+     "line": 394,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "setDebateTallies",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 169,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "verifyTallies",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 213,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "verifyWorld",
+     "file": "convex/demoWorld/verifyWorld.ts",
+     "line": 9,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "class": "prod"
+    }
+   ]
+  },
+  "postDistributionBuckets": {
+   "writers": [
+    {
+     "fn": "importEvents",
+     "file": "convex/demoWorld/importEvents.ts",
+     "line": 8,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "distributionRecompute",
+     "file": "convex/jobs/rank.ts",
+     "line": 210,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "vibingCompute",
+     "file": "convex/jobs/vibing.ts",
+     "line": 36,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "distributionRecompute",
+     "file": "convex/jobs/rank.ts",
+     "line": 210,
+     "class": "prod"
+    },
+    {
+     "fn": "vibingCompute",
+     "file": "convex/jobs/vibing.ts",
+     "line": 36,
+     "class": "prod"
+    }
+   ]
+  },
+  "postDistributionScores": {
+   "writers": [
+    {
+     "fn": "heroStaleFill",
+     "file": "convex/cards.ts",
+     "line": 127,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "refreshCards",
+     "file": "convex/cards.ts",
+     "line": 29,
+     "ops": [
+      "patch",
+      "replace"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "importPosts",
+     "file": "convex/demoWorld/importPosts.ts",
+     "line": 16,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoSeedBlockedReason",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 73,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "explorationRefresh",
+     "file": "convex/jobs/explore.ts",
+     "line": 34,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "distributionRecompute",
+     "file": "convex/jobs/rank.ts",
+     "line": 210,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "ensurePostDistributionScoreTx",
+     "file": "convex/lib/distributionScores.ts",
+     "line": 23,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "heroStaleFill",
+     "file": "convex/cards.ts",
+     "line": 127,
+     "class": "prod"
+    },
+    {
+     "fn": "refreshCards",
+     "file": "convex/cards.ts",
+     "line": 29,
+     "class": "prod"
+    },
+    {
+     "fn": "getWhy",
+     "file": "convex/feed.ts",
+     "line": 328,
+     "class": "prod"
+    },
+    {
+     "fn": "list",
+     "file": "convex/feed.ts",
+     "line": 132,
+     "class": "prod"
+    },
+    {
+     "fn": "explorationRefresh",
+     "file": "convex/jobs/explore.ts",
+     "line": 34,
+     "class": "prod"
+    },
+    {
+     "fn": "distributionRecompute",
+     "file": "convex/jobs/rank.ts",
+     "line": 210,
+     "class": "prod"
+    },
+    {
+     "fn": "ensurePostDistributionScoreTx",
+     "file": "convex/lib/distributionScores.ts",
+     "line": 23,
+     "class": "prod"
+    }
+   ]
+  },
+  "postGigs": {
+   "writers": [],
+   "readers": []
+  },
+  "postHelps": {
+   "writers": [
+    {
+     "fn": "forceClearMechanic",
+     "file": "convex/admin/moderationDomain.ts",
+     "line": 125,
+     "ops": [
+      "patch",
+      "delete"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "moderateComment",
+     "file": "convex/admin/moderationDomain.ts",
+     "line": 249,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "softDelete",
+     "file": "convex/comments.ts",
+     "line": 466,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "importEngagement",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 13,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importPosts",
+     "file": "convex/demoWorld/importPosts.ts",
+     "line": 16,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoSeedBlockedReason",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 73,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "rollup",
+     "file": "convex/jobs/recognition.ts",
+     "line": 38,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "insertExtensionRow",
+     "file": "convex/posts.ts",
+     "line": 394,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "forceClearMechanic",
+     "file": "convex/admin/moderationDomain.ts",
+     "line": 125,
+     "class": "prod"
+    },
+    {
+     "fn": "moderateComment",
+     "file": "convex/admin/moderationDomain.ts",
+     "line": 249,
+     "class": "prod"
+    },
+    {
+     "fn": "softDelete",
+     "file": "convex/comments.ts",
+     "line": 466,
+     "class": "prod"
+    },
+    {
+     "fn": "getThread",
+     "file": "convex/comments/reads.ts",
+     "line": 275,
+     "class": "prod"
+    },
+    {
+     "fn": "list",
+     "file": "convex/comments/reads.ts",
+     "line": 112,
+     "class": "prod"
+    },
+    {
+     "fn": "importEngagement",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 13,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "verifyTallies",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 213,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "verifyWorld",
+     "file": "convex/demoWorld/verifyWorld.ts",
+     "line": 9,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "rollup",
+     "file": "convex/jobs/recognition.ts",
+     "line": 38,
+     "class": "prod"
+    },
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "class": "prod"
+    }
+   ]
+  },
+  "postingEligibilityEvents": {
+   "writers": [
+    {
+     "fn": "checkPostEligibility",
+     "file": "convex/eligibility.ts",
+     "line": 111,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "upsertBasic",
+     "file": "convex/setup.ts",
+     "line": 113,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": []
+  },
+  "postLaunchPads": {
+   "writers": [],
+   "readers": []
+  },
+  "postListItems": {
+   "writers": [
+    {
+     "fn": "forceClearMechanic",
+     "file": "convex/admin/moderationDomain.ts",
+     "line": 125,
+     "ops": [
+      "patch",
+      "delete"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "importPosts",
+     "file": "convex/demoWorld/importPosts.ts",
+     "line": 16,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoSeedBlockedReason",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 73,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seed",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 814,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "add",
+     "file": "convex/posts/listItems.ts",
+     "line": 50,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "forceClearMechanic",
+     "file": "convex/admin/moderationDomain.ts",
+     "line": 125,
+     "class": "prod"
+    },
+    {
+     "fn": "seed",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 814,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "getDetail",
+     "file": "convex/posts/detail.ts",
+     "line": 82,
+     "class": "prod"
+    },
+    {
+     "fn": "add",
+     "file": "convex/posts/listItems.ts",
+     "line": 50,
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "postLists": {
+   "writers": [
+    {
+     "fn": "forceClearMechanic",
+     "file": "convex/admin/moderationDomain.ts",
+     "line": 125,
+     "ops": [
+      "patch",
+      "delete"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "importPosts",
+     "file": "convex/demoWorld/importPosts.ts",
+     "line": 16,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoSeedBlockedReason",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 73,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seed",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 814,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "insertExtensionRow",
+     "file": "convex/posts.ts",
+     "line": 394,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "forceClearMechanic",
+     "file": "convex/admin/moderationDomain.ts",
+     "line": 125,
+     "class": "prod"
+    },
+    {
+     "fn": "verifyWorld",
+     "file": "convex/demoWorld/verifyWorld.ts",
+     "line": 9,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seed",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 814,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "postNews": {
+   "writers": [
+    {
+     "fn": "importPosts",
+     "file": "convex/demoWorld/importPosts.ts",
+     "line": 16,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "persistPublish",
+     "file": "convex/editorial/publish.ts",
+     "line": 114,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": []
+  },
+  "postResources": {
+   "writers": [
+    {
+     "fn": "tagInPost",
+     "file": "convex/resources.ts",
+     "line": 255,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "tagInPost",
+     "file": "convex/resources.ts",
+     "line": 255,
+     "class": "prod"
+    }
+   ]
+  },
+  "postReviews": {
+   "writers": [
+    {
+     "fn": "importPosts",
+     "file": "convex/demoWorld/importPosts.ts",
+     "line": 16,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoSeedBlockedReason",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 73,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "insertExtensionRow",
+     "file": "convex/posts.ts",
+     "line": 394,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "class": "prod"
+    }
+   ]
+  },
+  "postRevisions": {
+   "writers": [
+    {
+     "fn": "importPosts",
+     "file": "convex/demoWorld/importPosts.ts",
+     "line": 16,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seed",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 814,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedUserContent",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 406,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "persistPublish",
+     "file": "convex/editorial/publish.ts",
+     "line": 114,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "createPost",
+     "file": "convex/posts.ts",
+     "line": 132,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedPosts",
+     "file": "convex/seed/demo.ts",
+     "line": 569,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "seed",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 814,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "class": "prod"
+    }
+   ]
+  },
+  "posts": {
+   "writers": [
+    {
+     "fn": "finalizeMemberCounts",
+     "file": "convex/demoWorld/importMembers.ts",
+     "line": 70,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importPosts",
+     "file": "convex/demoWorld/importPosts.ts",
+     "line": 16,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedUserContent",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 406,
+     "ops": [
+      "insert",
+      "patch",
+      "replace"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "persistPublish",
+     "file": "convex/editorial/publish.ts",
+     "line": 114,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "recompute",
+     "file": "convex/jobs/legitimacy.ts",
+     "line": 109,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "rollup",
+     "file": "convex/jobs/recognition.ts",
+     "line": 38,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "createPost",
+     "file": "convex/posts.ts",
+     "line": 132,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedPosts",
+     "file": "convex/seed/demo.ts",
+     "line": 569,
+     "ops": [
+      "insert",
+      "patch",
+      "replace"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "createShadowPost",
+     "file": "convex/store/public.ts",
+     "line": 256,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "finalizeMemberCounts",
+     "file": "convex/demoWorld/importMembers.ts",
+     "line": 70,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "verifyPodium",
+     "file": "convex/demoWorld/verifyWorld.ts",
+     "line": 91,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "verifyThreads",
+     "file": "convex/demoWorld/verifyWorld.ts",
+     "line": 63,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "verifyWorld",
+     "file": "convex/demoWorld/verifyWorld.ts",
+     "line": 9,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedUserContent",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 406,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "wipeUserContent",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 914,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "recompute",
+     "file": "convex/jobs/legitimacy.ts",
+     "line": 109,
+     "class": "prod"
+    },
+    {
+     "fn": "rollup",
+     "file": "convex/jobs/recognition.ts",
+     "line": 38,
+     "class": "prod"
+    },
+    {
+     "fn": "createPost",
+     "file": "convex/posts.ts",
+     "line": 132,
+     "class": "prod"
+    },
+    {
+     "fn": "hasProductTag",
+     "file": "convex/posts.ts",
+     "line": 58,
+     "class": "prod"
+    },
+    {
+     "fn": "myDrafts",
+     "file": "convex/posts.ts",
+     "line": 691,
+     "class": "prod"
+    },
+    {
+     "fn": "listByType",
+     "file": "convex/posts/detail.ts",
+     "line": 241,
+     "class": "prod"
+    },
+    {
+     "fn": "searchQuery",
+     "file": "convex/search.ts",
+     "line": 48,
+     "class": "prod"
+    },
+    {
+     "fn": "fingerprint",
+     "file": "convex/seed/check.ts",
+     "line": 70,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedNotifications",
+     "file": "convex/seed/demo.ts",
+     "line": 1166,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedPosts",
+     "file": "convex/seed/demo.ts",
+     "line": 569,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "createShadowPost",
+     "file": "convex/store/public.ts",
+     "line": 256,
+     "class": "prod"
+    }
+   ]
+  },
+  "postSeoMeta": {
+   "writers": [
+    {
+     "fn": "linkCover",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 158,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importPosts",
+     "file": "convex/demoWorld/importPosts.ts",
+     "line": 16,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "sweepOrphanStorage",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 142,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "ensurePostSeoMetaTx",
+     "file": "convex/lib/distributionScores.ts",
+     "line": 61,
+     "ops": [
+      "insert",
+      "replace"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "linkCover",
+     "file": "convex/demoWorld/importChrome.ts",
+     "line": 158,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "sweepOrphanStorage",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 142,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "probePost",
+     "file": "convex/demoWorld/verifyWorld.ts",
+     "line": 164,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "verifyWorld",
+     "file": "convex/demoWorld/verifyWorld.ts",
+     "line": 9,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "FEED_CARD_ACTION_EVENT_ROW",
+     "file": "convex/feed.ts",
+     "line": 34,
+     "class": "prod"
+    },
+    {
+     "fn": "getChrome",
+     "file": "convex/feed.ts",
+     "line": 235,
+     "class": "prod"
+    },
+    {
+     "fn": "ensurePostSeoMetaTx",
+     "file": "convex/lib/distributionScores.ts",
+     "line": 61,
+     "class": "prod"
+    },
+    {
+     "fn": "list",
+     "file": "convex/notifications/reads.ts",
+     "line": 51,
+     "class": "prod"
+    },
+    {
+     "fn": "getPersonaProfile",
+     "file": "convex/persona/public.ts",
+     "line": 94,
+     "class": "prod"
+    },
+    {
+     "fn": "getDetail",
+     "file": "convex/posts/detail.ts",
+     "line": 82,
+     "class": "prod"
+    },
+    {
+     "fn": "listByType",
+     "file": "convex/posts/detail.ts",
+     "line": 241,
+     "class": "prod"
+    },
+    {
+     "fn": "searchQuery",
+     "file": "convex/search.ts",
+     "line": 48,
+     "class": "prod"
+    }
+   ]
+  },
+  "postShowcases": {
+   "writers": [
+    {
+     "fn": "reviewProjectUrl",
+     "file": "convex/admin/moderationDomain.ts",
+     "line": 84,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "importPosts",
+     "file": "convex/demoWorld/importPosts.ts",
+     "line": 16,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoSeedBlockedReason",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 73,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "insertExtensionRow",
+     "file": "convex/posts.ts",
+     "line": 394,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "submitProjectUrl",
+     "file": "convex/posts/showcase.ts",
+     "line": 59,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "reviewProjectUrl",
+     "file": "convex/admin/moderationDomain.ts",
+     "line": 84,
+     "class": "prod"
+    },
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "class": "prod"
+    },
+    {
+     "fn": "submitProjectUrl",
+     "file": "convex/posts/showcase.ts",
+     "line": 59,
+     "class": "prod"
+    }
+   ]
+  },
+  "postSocialDerivatives": {
+   "writers": [
+    {
+     "fn": "insertDerivative",
+     "file": "convex/editorial/publish.ts",
+     "line": 359,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "candidateReview",
+     "file": "convex/editorial/review.ts",
+     "line": 74,
+     "class": "prod"
+    }
+   ]
+  },
+  "postSparks": {
+   "writers": [
+    {
+     "fn": "importPosts",
+     "file": "convex/demoWorld/importPosts.ts",
+     "line": 16,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoSeedBlockedReason",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 73,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "insertExtensionRow",
+     "file": "convex/posts.ts",
+     "line": 394,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "class": "prod"
+    }
+   ]
+  },
+  "postTags": {
+   "writers": [
+    {
+     "fn": "setPostTags",
+     "file": "convex/tags.ts",
+     "line": 132,
+     "ops": [
+      "insert",
+      "delete"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getPostTags",
+     "file": "convex/tags.ts",
+     "line": 70,
+     "class": "prod"
+    },
+    {
+     "fn": "setPostTags",
+     "file": "convex/tags.ts",
+     "line": 132,
+     "class": "prod"
+    }
+   ]
+  },
+  "postTypeConfig": {
+   "writers": [
+    {
+     "fn": "createPost",
+     "file": "convex/posts.ts",
+     "line": 132,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "bootstrap",
+     "file": "convex/seed.ts",
+     "line": 297,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "listPostTypes",
+     "file": "convex/categories.ts",
+     "line": 41,
+     "class": "prod"
+    },
+    {
+     "fn": "getChrome",
+     "file": "convex/feed.ts",
+     "line": 235,
+     "class": "prod"
+    },
+    {
+     "fn": "createPost",
+     "file": "convex/posts.ts",
+     "line": 132,
+     "class": "prod"
+    },
+    {
+     "fn": "listActiveTypes",
+     "file": "convex/posts.ts",
+     "line": 707,
+     "class": "prod"
+    },
+    {
+     "fn": "searchQuery",
+     "file": "convex/search.ts",
+     "line": 48,
+     "class": "prod"
+    },
+    {
+     "fn": "bootstrap",
+     "file": "convex/seed.ts",
+     "line": 297,
+     "class": "prod"
+    }
+   ]
+  },
+  "privateUserData": {
+   "writers": [
+    {
+     "fn": "bootstrapUser",
+     "file": "convex/admission.ts",
+     "line": 83,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "finalizeBootstrapTx",
+     "file": "convex/bootstrap.ts",
+     "line": 54,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "wipeUsersAndTools",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 987,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "createOrLinkAuthUser",
+     "file": "convex/lib/founder.ts",
+     "line": 49,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "mobileVerifyPersist",
+     "file": "convex/setup.ts",
+     "line": 529,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "finalizeBootstrapTx",
+     "file": "convex/bootstrap.ts",
+     "line": 54,
+     "class": "prod"
+    },
+    {
+     "fn": "wipeUsersAndTools",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 987,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "createOrLinkAuthUser",
+     "file": "convex/lib/founder.ts",
+     "line": 49,
+     "class": "prod"
+    },
+    {
+     "fn": "mobileVerifyPersist",
+     "file": "convex/setup.ts",
+     "line": 529,
+     "class": "prod"
+    }
+   ]
+  },
+  "profileCompletionEvents": {
+   "writers": [
+    {
+     "fn": "upsertBasic",
+     "file": "convex/setup.ts",
+     "line": 113,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": []
+  },
+  "profiles": {
+   "writers": [
+    {
+     "fn": "upsertBasic",
+     "file": "convex/setup.ts",
+     "line": 113,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getProfilePage",
+     "file": "convex/profile/page.ts",
+     "line": 61,
+     "class": "prod"
+    },
+    {
+     "fn": "defaultConsentGranted",
+     "file": "convex/setup.ts",
+     "line": 80,
+     "class": "prod"
+    }
+   ]
+  },
+  "qualificationRuleResults": {
+   "writers": [
+    {
+     "fn": "persistRun",
+     "file": "convex/qualify/orchestrator.ts",
+     "line": 71,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "candidateReview",
+     "file": "convex/editorial/review.ts",
+     "line": 74,
+     "class": "prod"
+    }
+   ]
+  },
+  "qualificationRules": {
+   "writers": [
+    {
+     "fn": "deploySeed",
+     "file": "convex/rulebook.ts",
+     "line": 132,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "setRuleConfig",
+     "file": "convex/rulebook.ts",
+     "line": 234,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "loadCalibrationSet",
+     "file": "convex/qualify/orchestrator.ts",
+     "line": 379,
+     "class": "prod"
+    },
+    {
+     "fn": "loadContext",
+     "file": "convex/qualify/orchestrator.ts",
+     "line": 130,
+     "class": "prod"
+    },
+    {
+     "fn": "deploySeed",
+     "file": "convex/rulebook.ts",
+     "line": 132,
+     "class": "prod"
+    },
+    {
+     "fn": "listRules",
+     "file": "convex/rulebook.ts",
+     "line": 159,
+     "class": "prod"
+    },
+    {
+     "fn": "setRuleConfig",
+     "file": "convex/rulebook.ts",
+     "line": 234,
+     "class": "prod"
+    }
+   ]
+  },
+  "qualificationRuns": {
+   "writers": [
+    {
+     "fn": "candidateApprove",
+     "file": "convex/editorial/decisions.ts",
+     "line": 49,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "persistRun",
+     "file": "convex/qualify/orchestrator.ts",
+     "line": 71,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "candidateApprove",
+     "file": "convex/editorial/decisions.ts",
+     "line": 49,
+     "class": "prod"
+    },
+    {
+     "fn": "loadForPublish",
+     "file": "convex/editorial/publish.ts",
+     "line": 57,
+     "class": "prod"
+    },
+    {
+     "fn": "candidateReview",
+     "file": "convex/editorial/review.ts",
+     "line": 74,
+     "class": "prod"
+    },
+    {
+     "fn": "listRules",
+     "file": "convex/rulebook.ts",
+     "line": 159,
+     "class": "prod"
+    }
+   ]
+  },
+  "quotaGrants": {
+   "writers": [
+    {
+     "fn": "quotaGrant",
+     "file": "convex/admin/support.ts",
+     "line": 48,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "quotaGrant",
+     "file": "convex/admin/support.ts",
+     "line": 48,
+     "class": "prod"
+    },
+    {
+     "fn": "userSummary",
+     "file": "convex/admin/support.ts",
+     "line": 190,
+     "class": "prod"
+    }
+   ]
+  },
+  "rawEvents": {
+   "writers": [
+    {
+     "fn": "orphanSweep",
+     "file": "convex/analytics/projections.ts",
+     "line": 218,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "importComments",
+     "file": "convex/demoWorld/importComments.ts",
+     "line": 14,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importEngagement",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 13,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importEvents",
+     "file": "convex/demoWorld/importEvents.ts",
+     "line": 8,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "reverseCommentOutcomes",
+     "file": "convex/jobs/attributionSettle.ts",
+     "line": 310,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "inferBatch",
+     "file": "convex/jobs/infer.ts",
+     "line": 72,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "recompute",
+     "file": "convex/jobs/legitimacy.ts",
+     "line": 109,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "captureEvent",
+     "file": "convex/lib/events.ts",
+     "line": 58,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "erasureRequest",
+     "file": "convex/admin/utm.ts",
+     "line": 179,
+     "class": "prod"
+    },
+    {
+     "fn": "l08Core",
+     "file": "convex/analytics/projections.ts",
+     "line": 70,
+     "class": "prod"
+    },
+    {
+     "fn": "orphanSweep",
+     "file": "convex/analytics/projections.ts",
+     "line": 218,
+     "class": "prod"
+    },
+    {
+     "fn": "reverseCommentOutcomes",
+     "file": "convex/jobs/attributionSettle.ts",
+     "line": 310,
+     "class": "prod"
+    },
+    {
+     "fn": "inferBatch",
+     "file": "convex/jobs/infer.ts",
+     "line": 72,
+     "class": "prod"
+    },
+    {
+     "fn": "recompute",
+     "file": "convex/jobs/legitimacy.ts",
+     "line": 109,
+     "class": "prod"
+    },
+    {
+     "fn": "sinceLastVisit",
+     "file": "convex/retention/visit.ts",
+     "line": 84,
+     "class": "prod"
+    },
+    {
+     "fn": "sweep",
+     "file": "convex/signal/award.ts",
+     "line": 205,
+     "class": "prod"
+    }
+   ]
+  },
+  "recognitionEvents": {
+   "writers": [
+    {
+     "fn": "sweepBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 56,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "rollup",
+     "file": "convex/jobs/recognition.ts",
+     "line": 38,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "sweepBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 56,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "rollup",
+     "file": "convex/jobs/recognition.ts",
+     "line": 38,
+     "class": "prod"
+    }
+   ]
+  },
+  "reports": {
+   "writers": [
+    {
+     "fn": "cardAction",
+     "file": "convex/feed.ts",
+     "line": 360,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "submit",
+     "file": "convex/moderation/report.ts",
+     "line": 39,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "brigadeSweep",
+     "file": "convex/admin/sanctions.ts",
+     "line": 182,
+     "class": "prod"
+    },
+    {
+     "fn": "submit",
+     "file": "convex/moderation/report.ts",
+     "line": 39,
+     "class": "prod"
+    }
+   ]
+  },
+  "resourceCascadeReviews": {
+   "writers": [
+    {
+     "fn": "executeTakedown",
+     "file": "convex/admin/resourcesLifecycle.ts",
+     "line": 148,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": []
+  },
+  "resourceContributions": {
+   "writers": [
+    {
+     "fn": "assignWeights",
+     "file": "convex/admin/resources.ts",
+     "line": 263,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "forgeFromReferences",
+     "file": "convex/admin/resources.ts",
+     "line": 105,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "executeTakedown",
+     "file": "convex/admin/resourcesLifecycle.ts",
+     "line": 148,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "assignWeights",
+     "file": "convex/admin/resources.ts",
+     "line": 263,
+     "class": "prod"
+    },
+    {
+     "fn": "executeTakedown",
+     "file": "convex/admin/resourcesLifecycle.ts",
+     "line": 148,
+     "class": "prod"
+    }
+   ]
+  },
+  "resourceQuotaLedgers": {
+   "writers": [
+    {
+     "fn": "acquire",
+     "file": "convex/resources.ts",
+     "line": 116,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "acquire",
+     "file": "convex/resources.ts",
+     "line": 116,
+     "class": "prod"
+    }
+   ]
+  },
+  "resourceReferenceGrants": {
+   "writers": [
+    {
+     "fn": "ackContract",
+     "file": "convex/contribute.ts",
+     "line": 50,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "submitReference",
+     "file": "convex/contribute.ts",
+     "line": 76,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": []
+  },
+  "resourceReferences": {
+   "writers": [
+    {
+     "fn": "intakeScan",
+     "file": "convex/contribute.ts",
+     "line": 134,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "submitReference",
+     "file": "convex/contribute.ts",
+     "line": 76,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getReviewQueue",
+     "file": "convex/admin/resources.ts",
+     "line": 322,
+     "class": "prod"
+    },
+    {
+     "fn": "killGateEvaluate",
+     "file": "convex/admin/resourcesLifecycle.ts",
+     "line": 223,
+     "class": "prod"
+    },
+    {
+     "fn": "intakeScan",
+     "file": "convex/contribute.ts",
+     "line": 134,
+     "class": "prod"
+    }
+   ]
+  },
+  "resources": {
+   "writers": [
+    {
+     "fn": "forgeFromReferences",
+     "file": "convex/admin/resources.ts",
+     "line": 105,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "release",
+     "file": "convex/jobs/dripRelease.ts",
+     "line": 33,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getReviewQueue",
+     "file": "convex/admin/resources.ts",
+     "line": 322,
+     "class": "prod"
+    },
+    {
+     "fn": "release",
+     "file": "convex/jobs/dripRelease.ts",
+     "line": 33,
+     "class": "prod"
+    },
+    {
+     "fn": "scheduledSupplyDays",
+     "file": "convex/jobs/dripRelease.ts",
+     "line": 23,
+     "class": "prod"
+    },
+    {
+     "fn": "listLibrary",
+     "file": "convex/resources.ts",
+     "line": 69,
+     "class": "prod"
+    },
+    {
+     "fn": "getViewerState",
+     "file": "convex/resources/view.ts",
+     "line": 48,
+     "class": "prod"
+    },
+    {
+     "fn": "getViewUrl",
+     "file": "convex/resources/view.ts",
+     "line": 88,
+     "class": "prod"
+    }
+   ]
+  },
+  "resourceTakedownActions": {
+   "writers": [
+    {
+     "fn": "executeTakedown",
+     "file": "convex/admin/resourcesLifecycle.ts",
+     "line": 148,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": []
+  },
+  "resourceVersions": {
+   "writers": [
+    {
+     "fn": "forgeFromReferences",
+     "file": "convex/admin/resources.ts",
+     "line": 105,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "publish",
+     "file": "convex/admin/resourcesLifecycle.ts",
+     "line": 43,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "publish",
+     "file": "convex/admin/resourcesLifecycle.ts",
+     "line": 43,
+     "class": "prod"
+    }
+   ]
+  },
+  "reviewConflicts": {
+   "writers": [],
+   "readers": [
+    {
+     "fn": "getProductDetail",
+     "file": "convex/store/public.ts",
+     "line": 114,
+     "class": "prod"
+    }
+   ]
+  },
+  "roleAssignments": {
+   "writers": [
+    {
+     "fn": "rolesAssign",
+     "file": "convex/admin/roles.ts",
+     "line": 33,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "rolesRevoke",
+     "file": "convex/admin/roles.ts",
+     "line": 80,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "bootstrapUser",
+     "file": "convex/admission.ts",
+     "line": 83,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "finalizeBootstrapTx",
+     "file": "convex/bootstrap.ts",
+     "line": 54,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "createOrLinkAuthUser",
+     "file": "convex/lib/founder.ts",
+     "line": 49,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "ensureFounderPrivileges",
+     "file": "convex/lib/founder.ts",
+     "line": 210,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "countActiveAdmins",
+     "file": "convex/admin/roles.ts",
+     "line": 315,
+     "class": "prod"
+    },
+    {
+     "fn": "grantFounder",
+     "file": "convex/admin/roles.ts",
+     "line": 232,
+     "class": "prod"
+    },
+    {
+     "fn": "listAssignments",
+     "file": "convex/admin/roles.ts",
+     "line": 208,
+     "class": "prod"
+    },
+    {
+     "fn": "rolesAssign",
+     "file": "convex/admin/roles.ts",
+     "line": 33,
+     "class": "prod"
+    },
+    {
+     "fn": "rolesRevoke",
+     "file": "convex/admin/roles.ts",
+     "line": 80,
+     "class": "prod"
+    },
+    {
+     "fn": "finalizeBootstrapTx",
+     "file": "convex/bootstrap.ts",
+     "line": 54,
+     "class": "prod"
+    },
+    {
+     "fn": "assertAdminPermission",
+     "file": "convex/lib/authz.ts",
+     "line": 326,
+     "class": "prod"
+    },
+    {
+     "fn": "isFounder",
+     "file": "convex/lib/authz.ts",
+     "line": 358,
+     "class": "prod"
+    },
+    {
+     "fn": "createOrLinkAuthUser",
+     "file": "convex/lib/founder.ts",
+     "line": 49,
+     "class": "prod"
+    },
+    {
+     "fn": "ensureFounderPrivileges",
+     "file": "convex/lib/founder.ts",
+     "line": 210,
+     "class": "prod"
+    },
+    {
+     "fn": "current",
+     "file": "convex/profile.ts",
+     "line": 11,
+     "class": "prod"
+    },
+    {
+     "fn": "_callerStaffRoles",
+     "file": "convex/rulebook.ts",
+     "line": 392,
+     "class": "prod"
+    },
+    {
+     "fn": "getPostTags",
+     "file": "convex/tags.ts",
+     "line": 70,
+     "class": "prod"
+    },
+    {
+     "fn": "AUTOFLAG_REGISTRY_ROWS",
+     "file": "convex/toolRatings.ts",
+     "line": 161,
+     "class": "prod"
+    }
+   ]
+  },
+  "salesEvidence": {
+   "writers": [
+    {
+     "fn": "salesReconcile",
+     "file": "convex/store/public.ts",
+     "line": 370,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "submitSelfReport",
+     "file": "convex/store/sell.ts",
+     "line": 328,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "sweep",
+     "file": "convex/signal/award.ts",
+     "line": 205,
+     "class": "prod"
+    },
+    {
+     "fn": "salesReconcile",
+     "file": "convex/store/public.ts",
+     "line": 370,
+     "class": "prod"
+    },
+    {
+     "fn": "getSellState",
+     "file": "convex/store/sell.ts",
+     "line": 374,
+     "class": "prod"
+    }
+   ]
+  },
+  "saves": {
+   "writers": [
+    {
+     "fn": "importEngagement",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 13,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "list",
+     "file": "convex/feed.ts",
+     "line": 132,
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "seoHealth": {
+   "writers": [],
+   "readers": [
+    {
+     "fn": "seoHealthSweep",
+     "file": "convex/admin/homeAlertWriters.ts",
+     "line": 199,
+     "class": "prod"
+    },
+    {
+     "fn": "seoHealthView",
+     "file": "convex/admin/utm.ts",
+     "line": 132,
+     "class": "prod"
+    }
+   ]
+  },
+  "signalLedger": {
+   "writers": [
+    {
+     "fn": "sweepBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 56,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "clawbackTx",
+     "file": "convex/jobs/attributionSettle.ts",
+     "line": 220,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "reverseCommentOutcomes",
+     "file": "convex/jobs/attributionSettle.ts",
+     "line": 310,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "reverseTx",
+     "file": "convex/jobs/attributionSettle.ts",
+     "line": 152,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "activeDecay",
+     "file": "convex/jobs/signalSummary.ts",
+     "line": 19,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "awardFromOutcomeTx",
+     "file": "convex/signal/award.ts",
+     "line": 165,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "promoteSustained",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 125,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "sweepBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 56,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "clawbackTx",
+     "file": "convex/jobs/attributionSettle.ts",
+     "line": 220,
+     "class": "prod"
+    },
+    {
+     "fn": "reverseCommentOutcomes",
+     "file": "convex/jobs/attributionSettle.ts",
+     "line": 310,
+     "class": "prod"
+    },
+    {
+     "fn": "reverseTx",
+     "file": "convex/jobs/attributionSettle.ts",
+     "line": 152,
+     "class": "prod"
+    },
+    {
+     "fn": "settle",
+     "file": "convex/jobs/attributionSettle.ts",
+     "line": 117,
+     "class": "prod"
+    },
+    {
+     "fn": "activeDecay",
+     "file": "convex/jobs/signalSummary.ts",
+     "line": 19,
+     "class": "prod"
+    },
+    {
+     "fn": "recompute",
+     "file": "convex/jobs/signalSummary.ts",
+     "line": 64,
+     "class": "prod"
+    },
+    {
+     "fn": "awardFromOutcomeTx",
+     "file": "convex/signal/award.ts",
+     "line": 165,
+     "class": "prod"
+    },
+    {
+     "fn": "passesOutcomeGate",
+     "file": "convex/signal/award.ts",
+     "line": 109,
+     "class": "prod"
+    },
+    {
+     "fn": "promoteSustained",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 125,
+     "class": "prod"
+    }
+   ]
+  },
+  "signalLevelDefinitions": {
+   "writers": [
+    {
+     "fn": "seedFoundingSeason",
+     "file": "convex/economy/seed.ts",
+     "line": 31,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "levelCommitMonthly",
+     "file": "convex/jobs/might.ts",
+     "line": 96,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "demoteAnnual",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 186,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "seedFoundingSeason",
+     "file": "convex/economy/seed.ts",
+     "line": 31,
+     "class": "prod"
+    },
+    {
+     "fn": "levelCommitMonthly",
+     "file": "convex/jobs/might.ts",
+     "line": 96,
+     "class": "prod"
+    },
+    {
+     "fn": "getMetrics",
+     "file": "convex/profile/metrics.ts",
+     "line": 35,
+     "class": "prod"
+    },
+    {
+     "fn": "demoteAnnual",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 186,
+     "class": "prod"
+    }
+   ]
+  },
+  "signalSeasons": {
+   "writers": [
+    {
+     "fn": "seedFoundingSeason",
+     "file": "convex/economy/seed.ts",
+     "line": 31,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seasonRecalibrate",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 64,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "seedFoundingSeason",
+     "file": "convex/economy/seed.ts",
+     "line": 31,
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "currentSeasonTx",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 40,
+     "class": "prod"
+    },
+    {
+     "fn": "seasonRecalibrate",
+     "file": "convex/signal/promoteDemote.ts",
+     "line": 64,
+     "class": "prod"
+    }
+   ]
+  },
+  "signalSummary": {
+   "writers": [
+    {
+     "fn": "sweepBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 56,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "mightRecompute",
+     "file": "convex/jobs/might.ts",
+     "line": 60,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "activeDecay",
+     "file": "convex/jobs/signalSummary.ts",
+     "line": 19,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "founderDashboard",
+     "file": "convex/admin/analytics.ts",
+     "line": 52,
+     "class": "prod"
+    },
+    {
+     "fn": "sweepBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 56,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "mightRecompute",
+     "file": "convex/jobs/might.ts",
+     "line": 60,
+     "class": "prod"
+    },
+    {
+     "fn": "activeDecay",
+     "file": "convex/jobs/signalSummary.ts",
+     "line": 19,
+     "class": "prod"
+    },
+    {
+     "fn": "getMetrics",
+     "file": "convex/profile/metrics.ts",
+     "line": 35,
+     "class": "prod"
+    }
+   ]
+  },
+  "similarityChecks": {
+   "writers": [],
+   "readers": [
+    {
+     "fn": "candidateReview",
+     "file": "convex/editorial/review.ts",
+     "line": 74,
+     "class": "prod"
+    }
+   ]
+  },
+  "sourceClaims": {
+   "writers": [
+    {
+     "fn": "insertClaims",
+     "file": "convex/ingest/extract.ts",
+     "line": 191,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "loadExtractableExtractions",
+     "file": "convex/ingest/extract.ts",
+     "line": 60,
+     "class": "prod"
+    },
+    {
+     "fn": "loadUnclusteredClaims",
+     "file": "convex/ingest/extract.ts",
+     "line": 286,
+     "class": "prod"
+    }
+   ]
+  },
+  "sourceItems": {
+   "writers": [
+    {
+     "fn": "insertDiscoveredItem",
+     "file": "convex/ingest/pollersData.ts",
+     "line": 58,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "hasSourceItemHash",
+     "file": "convex/ingest/pollersData.ts",
+     "line": 40,
+     "class": "prod"
+    },
+    {
+     "fn": "loadDueConfigs",
+     "file": "convex/ingest/pollersData.ts",
+     "line": 13,
+     "class": "prod"
+    }
+   ]
+  },
+  "sources": {
+   "writers": [
+    {
+     "fn": "sourceUpsert",
+     "file": "convex/sources.ts",
+     "line": 142,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "listSources",
+     "file": "convex/sources.ts",
+     "line": 59,
+     "class": "prod"
+    }
+   ]
+  },
+  "storefrontAnalytics": {
+   "writers": [
+    {
+     "fn": "analyticsRollup",
+     "file": "convex/store/public.ts",
+     "line": 398,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "analyticsRollup",
+     "file": "convex/store/public.ts",
+     "line": 398,
+     "class": "prod"
+    },
+    {
+     "fn": "getAnalytics",
+     "file": "convex/store/sell.ts",
+     "line": 284,
+     "class": "prod"
+    }
+   ]
+  },
+  "storefrontClicks": {
+   "writers": [
+    {
+     "fn": "recordClick",
+     "file": "convex/go.ts",
+     "line": 111,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "analyticsRollup",
+     "file": "convex/store/public.ts",
+     "line": 398,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "clickSettle",
+     "file": "convex/store/public.ts",
+     "line": 340,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "commerceFunnels",
+     "file": "convex/analytics/projections.ts",
+     "line": 164,
+     "class": "prod"
+    },
+    {
+     "fn": "sweep",
+     "file": "convex/signal/award.ts",
+     "line": 205,
+     "class": "prod"
+    },
+    {
+     "fn": "analyticsRollup",
+     "file": "convex/store/public.ts",
+     "line": 398,
+     "class": "prod"
+    },
+    {
+     "fn": "clickSettle",
+     "file": "convex/store/public.ts",
+     "line": 340,
+     "class": "prod"
+    }
+   ]
+  },
+  "storefrontLinks": {
+   "writers": [
+    {
+     "fn": "blockDomain",
+     "file": "convex/admin/storeEnforce.ts",
+     "line": 59,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedPlatformStores",
+     "file": "convex/store/seed.ts",
+     "line": 31,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "submitProduct",
+     "file": "convex/store/sell.ts",
+     "line": 100,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getQueue",
+     "file": "convex/admin/store.ts",
+     "line": 305,
+     "class": "prod"
+    },
+    {
+     "fn": "loadRescanBatch",
+     "file": "convex/admin/store.ts",
+     "line": 351,
+     "class": "prod"
+    },
+    {
+     "fn": "blockDomain",
+     "file": "convex/admin/storeEnforce.ts",
+     "line": 59,
+     "class": "prod"
+    }
+   ]
+  },
+  "storefrontProducts": {
+   "writers": [
+    {
+     "fn": "seedPlatformStores",
+     "file": "convex/store/seed.ts",
+     "line": 31,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "activate",
+     "file": "convex/store/sell.ts",
+     "line": 53,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "submitProduct",
+     "file": "convex/store/sell.ts",
+     "line": 100,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getStorefront",
+     "file": "convex/store/public.ts",
+     "line": 52,
+     "class": "prod"
+    },
+    {
+     "fn": "listOwnProducts",
+     "file": "convex/store/public.ts",
+     "line": 209,
+     "class": "prod"
+    },
+    {
+     "fn": "seedPlatformStores",
+     "file": "convex/store/seed.ts",
+     "line": 31,
+     "class": "prod"
+    },
+    {
+     "fn": "activate",
+     "file": "convex/store/sell.ts",
+     "line": 53,
+     "class": "prod"
+    },
+    {
+     "fn": "getSellState",
+     "file": "convex/store/sell.ts",
+     "line": 374,
+     "class": "prod"
+    }
+   ]
+  },
+  "storefrontProductVersions": {
+   "writers": [
+    {
+     "fn": "approveProduct",
+     "file": "convex/admin/store.ts",
+     "line": 197,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedPlatformStores",
+     "file": "convex/store/seed.ts",
+     "line": 31,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "requestEdit",
+     "file": "convex/store/sell.ts",
+     "line": 189,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "approveProduct",
+     "file": "convex/admin/store.ts",
+     "line": 197,
+     "class": "prod"
+    },
+    {
+     "fn": "requestEdit",
+     "file": "convex/store/sell.ts",
+     "line": 189,
+     "class": "prod"
+    }
+   ]
+  },
+  "storefronts": {
+   "writers": [
+    {
+     "fn": "decideRequest",
+     "file": "convex/admin/store.ts",
+     "line": 61,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedPlatformStores",
+     "file": "convex/store/seed.ts",
+     "line": 31,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "decideRequest",
+     "file": "convex/admin/store.ts",
+     "line": 61,
+     "class": "prod"
+    },
+    {
+     "fn": "notifyRevocations",
+     "file": "convex/admin/storeEnforce.ts",
+     "line": 267,
+     "class": "prod"
+    },
+    {
+     "fn": "hasProductTag",
+     "file": "convex/posts.ts",
+     "line": 58,
+     "class": "prod"
+    },
+    {
+     "fn": "getProductDetail",
+     "file": "convex/store/public.ts",
+     "line": 114,
+     "class": "prod"
+    },
+    {
+     "fn": "getStorefront",
+     "file": "convex/store/public.ts",
+     "line": 52,
+     "class": "prod"
+    },
+    {
+     "fn": "listOwnProducts",
+     "file": "convex/store/public.ts",
+     "line": 209,
+     "class": "prod"
+    },
+    {
+     "fn": "seedPlatformStores",
+     "file": "convex/store/seed.ts",
+     "line": 31,
+     "class": "prod"
+    },
+    {
+     "fn": "getAnalytics",
+     "file": "convex/store/sell.ts",
+     "line": 284,
+     "class": "prod"
+    },
+    {
+     "fn": "getSellState",
+     "file": "convex/store/sell.ts",
+     "line": 374,
+     "class": "prod"
+    },
+    {
+     "fn": "WISHLIST_SUPPRESSION_K",
+     "file": "convex/store/sell.ts",
+     "line": 40,
+     "class": "prod"
+    }
+   ]
+  },
+  "storeRequests": {
+   "writers": [
+    {
+     "fn": "submit",
+     "file": "convex/store/apply.ts",
+     "line": 74,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getQueue",
+     "file": "convex/admin/store.ts",
+     "line": 305,
+     "class": "prod"
+    },
+    {
+     "fn": "getApplyState",
+     "file": "convex/store/apply.ts",
+     "line": 49,
+     "class": "prod"
+    },
+    {
+     "fn": "submit",
+     "file": "convex/store/apply.ts",
+     "line": 74,
+     "class": "prod"
+    }
+   ]
+  },
+  "storeStrikes": {
+   "writers": [
+    {
+     "fn": "circuitBreaker",
+     "file": "convex/admin/storeEnforce.ts",
+     "line": 114,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "strike",
+     "file": "convex/admin/storeEnforce.ts",
+     "line": 87,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": []
+  },
+  "strikes": {
+   "writers": [
+    {
+     "fn": "sanction",
+     "file": "convex/admin/sanctions.ts",
+     "line": 73,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "evaluate",
+     "file": "convex/jobs/repeatInfringer.ts",
+     "line": 21,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "erasureSubmit",
+     "file": "convex/legal/intake.ts",
+     "line": 337,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "sanction",
+     "file": "convex/admin/sanctions.ts",
+     "line": 73,
+     "class": "prod"
+    },
+    {
+     "fn": "evaluate",
+     "file": "convex/jobs/repeatInfringer.ts",
+     "line": 21,
+     "class": "prod"
+    },
+    {
+     "fn": "erasureSubmit",
+     "file": "convex/legal/intake.ts",
+     "line": 337,
+     "class": "prod"
+    }
+   ]
+  },
+  "subIdRegistry": {
+   "writers": [
+    {
+     "fn": "seedSubIdRegistry",
+     "file": "convex/store/seed.ts",
+     "line": 218,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "recordClick",
+     "file": "convex/go.ts",
+     "line": 111,
+     "class": "prod"
+    },
+    {
+     "fn": "resolveGo",
+     "file": "convex/go.ts",
+     "line": 71,
+     "class": "prod"
+    },
+    {
+     "fn": "seedSubIdRegistry",
+     "file": "convex/store/seed.ts",
+     "line": 218,
+     "class": "prod"
+    }
+   ]
+  },
+  "systemConfig": {
+   "writers": [
+    {
+     "fn": "ugcKillSwitch",
+     "file": "convex/admin/resourcesLifecycle.ts",
+     "line": 252,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "secondFounderFlip",
+     "file": "convex/admin/roles.ts",
+     "line": 117,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "mirrorDisable",
+     "file": "convex/admin/stop.ts",
+     "line": 141,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "stopActivate",
+     "file": "convex/admin/stop.ts",
+     "line": 59,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "circuitBreaker",
+     "file": "convex/admin/storeEnforce.ts",
+     "line": 114,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "founderBumpAll",
+     "file": "convex/moderation/reasonCodes.ts",
+     "line": 92,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "createPost",
+     "file": "convex/posts.ts",
+     "line": 132,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "submitProjectUrl",
+     "file": "convex/posts/showcase.ts",
+     "line": 59,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "bootstrap",
+     "file": "convex/seed.ts",
+     "line": 297,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "recomputeAggregate",
+     "file": "convex/tools.ts",
+     "line": 534,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "READINESS_CATEGORIES",
+     "file": "convex/admin/readiness.ts",
+     "line": 34,
+     "class": "prod"
+    },
+    {
+     "fn": "ugcKillSwitch",
+     "file": "convex/admin/resourcesLifecycle.ts",
+     "line": 252,
+     "class": "prod"
+    },
+    {
+     "fn": "secondFounderFlip",
+     "file": "convex/admin/roles.ts",
+     "line": 117,
+     "class": "prod"
+    },
+    {
+     "fn": "circuitBreaker",
+     "file": "convex/admin/storeEnforce.ts",
+     "line": 114,
+     "class": "prod"
+    },
+    {
+     "fn": "effectiveSignupMode",
+     "file": "convex/admission.ts",
+     "line": 37,
+     "class": "prod"
+    },
+    {
+     "fn": "DISTRIBUTION_CONFIG_VERSION",
+     "file": "convex/jobs/rank.ts",
+     "line": 191,
+     "class": "prod"
+    },
+    {
+     "fn": "RANK_CONFIG_VERSION",
+     "file": "convex/jobs/rank.ts",
+     "line": 34,
+     "class": "prod"
+    },
+    {
+     "fn": "assertCustomerCapability",
+     "file": "convex/lib/authz.ts",
+     "line": 185,
+     "class": "prod"
+    },
+    {
+     "fn": "SEALED_KEYS",
+     "file": "convex/lib/authz.ts",
+     "line": 23,
+     "class": "prod"
+    },
+    {
+     "fn": "createPost",
+     "file": "convex/posts.ts",
+     "line": 132,
+     "class": "prod"
+    },
+    {
+     "fn": "updatePost",
+     "file": "convex/posts.ts",
+     "line": 445,
+     "class": "prod"
+    },
+    {
+     "fn": "submitProjectUrl",
+     "file": "convex/posts/showcase.ts",
+     "line": 59,
+     "class": "prod"
+    },
+    {
+     "fn": "listLibrary",
+     "file": "convex/resources.ts",
+     "line": 69,
+     "class": "prod"
+    },
+    {
+     "fn": "getViewerState",
+     "file": "convex/resources/view.ts",
+     "line": 48,
+     "class": "prod"
+    },
+    {
+     "fn": "bootstrap",
+     "file": "convex/seed.ts",
+     "line": 297,
+     "class": "prod"
+    },
+    {
+     "fn": "recomputeAggregate",
+     "file": "convex/tools.ts",
+     "line": 534,
+     "class": "prod"
+    }
+   ]
+  },
+  "tags": {
+   "writers": [
+    {
+     "fn": "release",
+     "file": "convex/jobs/dripRelease.ts",
+     "line": 33,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "bootstrap",
+     "file": "convex/seed.ts",
+     "line": 297,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "release",
+     "file": "convex/jobs/dripRelease.ts",
+     "line": 33,
+     "class": "prod"
+    },
+    {
+     "fn": "bootstrap",
+     "file": "convex/seed.ts",
+     "line": 297,
+     "class": "prod"
+    },
+    {
+     "fn": "listTaxonomy",
+     "file": "convex/tags.ts",
+     "line": 55,
+     "class": "prod"
+    }
+   ]
+  },
+  "threadIntelligenceRuns": {
+   "writers": [
+    {
+     "fn": "forceRun",
+     "file": "convex/jobs/maxRefresh.ts",
+     "line": 77,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "sweep",
+     "file": "convex/jobs/maxRefresh.ts",
+     "line": 34,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "sweep",
+     "file": "convex/jobs/maxRefresh.ts",
+     "line": 34,
+     "class": "prod"
+    }
+   ]
+  },
+  "threadPluginConfig": {
+   "writers": [
+    {
+     "fn": "setPluginEnabled",
+     "file": "convex/jobs/maxRefresh.ts",
+     "line": 110,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getThread",
+     "file": "convex/comments/reads.ts",
+     "line": 275,
+     "class": "prod"
+    },
+    {
+     "fn": "setPluginEnabled",
+     "file": "convex/jobs/maxRefresh.ts",
+     "line": 110,
+     "class": "prod"
+    }
+   ]
+  },
+  "threadPositions": {
+   "writers": [],
+   "readers": []
+  },
+  "threadQuestions": {
+   "writers": [],
+   "readers": []
+  },
+  "threadReadStates": {
+   "writers": [
+    {
+     "fn": "markReadState",
+     "file": "convex/reactions.ts",
+     "line": 392,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getThread",
+     "file": "convex/comments/reads.ts",
+     "line": 275,
+     "class": "prod"
+    },
+    {
+     "fn": "markReadState",
+     "file": "convex/reactions.ts",
+     "line": 392,
+     "class": "prod"
+    }
+   ]
+  },
+  "threadStats": {
+   "writers": [
+    {
+     "fn": "create",
+     "file": "convex/comments.ts",
+     "line": 153,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "importComments",
+     "file": "convex/demoWorld/importComments.ts",
+     "line": 14,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importEngagement",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 13,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "sweepBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 56,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoSeedBlockedReason",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 73,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "approve",
+     "file": "convex/persona/queue.ts",
+     "line": 128,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "schedule",
+     "file": "convex/persona/queue.ts",
+     "line": 277,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "markReadState",
+     "file": "convex/reactions.ts",
+     "line": 392,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "REACTION_EVENT_CATALOG_ROWS",
+     "file": "convex/reactions.ts",
+     "line": 42,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "COMMENT_EVENT_CATALOG_ROWS",
+     "file": "convex/comments.ts",
+     "line": 49,
+     "class": "prod"
+    },
+    {
+     "fn": "getThread",
+     "file": "convex/comments/reads.ts",
+     "line": 275,
+     "class": "prod"
+    },
+    {
+     "fn": "importComments",
+     "file": "convex/demoWorld/importComments.ts",
+     "line": 14,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "importEngagement",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 13,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "sweepBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 56,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "approve",
+     "file": "convex/persona/queue.ts",
+     "line": 128,
+     "class": "prod"
+    },
+    {
+     "fn": "schedule",
+     "file": "convex/persona/queue.ts",
+     "line": 277,
+     "class": "prod"
+    },
+    {
+     "fn": "markReadState",
+     "file": "convex/reactions.ts",
+     "line": 392,
+     "class": "prod"
+    },
+    {
+     "fn": "REACTION_EVENT_CATALOG_ROWS",
+     "file": "convex/reactions.ts",
+     "line": 42,
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "threadThemes": {
+   "writers": [],
+   "readers": []
+  },
+  "toolRatings": {
+   "writers": [
+    {
+     "fn": "importEngagement",
+     "file": "convex/demoWorld/importEngagement.ts",
+     "line": 13,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "rollup",
+     "file": "convex/jobs/recognition.ts",
+     "line": 38,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "submit",
+     "file": "convex/toolRatings.ts",
+     "line": 287,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "recomputeAggregate",
+     "file": "convex/tools.ts",
+     "line": 534,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "verifyTools",
+     "file": "convex/demoWorld/verifyWorld.ts",
+     "line": 114,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "rollup",
+     "file": "convex/jobs/recognition.ts",
+     "line": 38,
+     "class": "prod"
+    },
+    {
+     "fn": "getProductDetail",
+     "file": "convex/store/public.ts",
+     "line": 114,
+     "class": "prod"
+    },
+    {
+     "fn": "AUTOFLAG_REGISTRY_ROWS",
+     "file": "convex/toolRatings.ts",
+     "line": 161,
+     "class": "prod"
+    },
+    {
+     "fn": "submit",
+     "file": "convex/toolRatings.ts",
+     "line": 287,
+     "class": "prod"
+    },
+    {
+     "fn": "driftCheck",
+     "file": "convex/tools.ts",
+     "line": 638,
+     "class": "prod"
+    },
+    {
+     "fn": "getProfile",
+     "file": "convex/tools.ts",
+     "line": 341,
+     "class": "prod"
+    },
+    {
+     "fn": "listRatings",
+     "file": "convex/tools.ts",
+     "line": 431,
+     "class": "prod"
+    },
+    {
+     "fn": "recomputeAggregate",
+     "file": "convex/tools.ts",
+     "line": 534,
+     "class": "prod"
+    }
+   ]
+  },
+  "tools": {
+   "writers": [
+    {
+     "fn": "importTools",
+     "file": "convex/demoWorld/importTools.ts",
+     "line": 9,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoSeedBlockedReason",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 73,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedUsersAndTools",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 337,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "wipeUsersAndTools",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 987,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "create",
+     "file": "convex/tools.ts",
+     "line": 107,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "importTools",
+     "file": "convex/demoWorld/importTools.ts",
+     "line": 9,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "findToolBySlug",
+     "file": "convex/demoWorld/lib.ts",
+     "line": 40,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoSeedBlockedReason",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 73,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedUsersAndTools",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 337,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "wipeUsersAndTools",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 987,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "searchQuery",
+     "file": "convex/search.ts",
+     "line": 48,
+     "class": "prod"
+    },
+    {
+     "fn": "fingerprint",
+     "file": "convex/seed/check.ts",
+     "line": 70,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "create",
+     "file": "convex/tools.ts",
+     "line": 107,
+     "class": "prod"
+    },
+    {
+     "fn": "driftCheck",
+     "file": "convex/tools.ts",
+     "line": 638,
+     "class": "prod"
+    },
+    {
+     "fn": "getProfile",
+     "file": "convex/tools.ts",
+     "line": 341,
+     "class": "prod"
+    },
+    {
+     "fn": "list",
+     "file": "convex/tools.ts",
+     "line": 263,
+     "class": "prod"
+    }
+   ]
+  },
+  "toolTags": {
+   "writers": [
+    {
+     "fn": "create",
+     "file": "convex/tools.ts",
+     "line": 107,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "update",
+     "file": "convex/tools.ts",
+     "line": 179,
+     "ops": [
+      "insert",
+      "patch",
+      "delete"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "list",
+     "file": "convex/tools.ts",
+     "line": 263,
+     "class": "prod"
+    },
+    {
+     "fn": "update",
+     "file": "convex/tools.ts",
+     "line": 179,
+     "class": "prod"
+    }
+   ]
+  },
+  "trustHistory": {
+   "writers": [
+    {
+     "fn": "evaluate",
+     "file": "convex/jobs/repeatInfringer.ts",
+     "line": 21,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "evaluate",
+     "file": "convex/jobs/repeatInfringer.ts",
+     "line": 21,
+     "class": "prod"
+    }
+   ]
+  },
+  "userConsentRecords": {
+   "writers": [
+    {
+     "fn": "consentReaccept",
+     "file": "convex/profile/settings.ts",
+     "line": 365,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "consentRecord",
+     "file": "convex/setup.ts",
+     "line": 336,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "upsertBasic",
+     "file": "convex/setup.ts",
+     "line": 113,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getSettingsState",
+     "file": "convex/profile/settings.ts",
+     "line": 403,
+     "class": "prod"
+    },
+    {
+     "fn": "consentRecord",
+     "file": "convex/setup.ts",
+     "line": 336,
+     "class": "prod"
+    }
+   ]
+  },
+  "userInferences": {
+   "writers": [
+    {
+     "fn": "inferBatch",
+     "file": "convex/jobs/infer.ts",
+     "line": 72,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "consentWithdraw",
+     "file": "convex/profile/settings.ts",
+     "line": 242,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "inferBatch",
+     "file": "convex/jobs/infer.ts",
+     "line": 72,
+     "class": "prod"
+    },
+    {
+     "fn": "consentWithdraw",
+     "file": "convex/profile/settings.ts",
+     "line": 242,
+     "class": "prod"
+    }
+   ]
+  },
+  "userInterests": {
+   "writers": [
+    {
+     "fn": "release",
+     "file": "convex/jobs/dripRelease.ts",
+     "line": 33,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "interestsRemove",
+     "file": "convex/setup.ts",
+     "line": 315,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "interestsSelect",
+     "file": "convex/setup.ts",
+     "line": 261,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "upsertBasic",
+     "file": "convex/setup.ts",
+     "line": 113,
+     "ops": [
+      "insert",
+      "patch",
+      "delete"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "release",
+     "file": "convex/jobs/dripRelease.ts",
+     "line": 33,
+     "class": "prod"
+    },
+    {
+     "fn": "getProfilePage",
+     "file": "convex/profile/page.ts",
+     "line": 61,
+     "class": "prod"
+    },
+    {
+     "fn": "getSetupState",
+     "file": "convex/setup.ts",
+     "line": 385,
+     "class": "prod"
+    },
+    {
+     "fn": "interestsRemove",
+     "file": "convex/setup.ts",
+     "line": 315,
+     "class": "prod"
+    },
+    {
+     "fn": "interestsSelect",
+     "file": "convex/setup.ts",
+     "line": 261,
+     "class": "prod"
+    },
+    {
+     "fn": "upsertBasic",
+     "file": "convex/setup.ts",
+     "line": 113,
+     "class": "prod"
+    }
+   ]
+  },
+  "userProfileAttributes": {
+   "writers": [
+    {
+     "fn": "consentWithdraw",
+     "file": "convex/profile/settings.ts",
+     "line": 242,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "detachAttribute",
+     "file": "convex/profile/settings.ts",
+     "line": 306,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "setAttribute",
+     "file": "convex/profile/settings.ts",
+     "line": 111,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "consentWithdraw",
+     "file": "convex/profile/settings.ts",
+     "line": 242,
+     "class": "prod"
+    },
+    {
+     "fn": "detachAttribute",
+     "file": "convex/profile/settings.ts",
+     "line": 306,
+     "class": "prod"
+    },
+    {
+     "fn": "setAttribute",
+     "file": "convex/profile/settings.ts",
+     "line": 111,
+     "class": "prod"
+    }
+   ]
+  },
+  "userReadingProgress": {
+   "writers": [
+    {
+     "fn": "markReadState",
+     "file": "convex/reactions.ts",
+     "line": 392,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "markReadState",
+     "file": "convex/reactions.ts",
+     "line": 392,
+     "class": "prod"
+    }
+   ]
+  },
+  "users": {
+   "writers": [
+    {
+     "fn": "circuitBreaker",
+     "file": "convex/admin/storeEnforce.ts",
+     "line": 114,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "heroStaleFill",
+     "file": "convex/cards.ts",
+     "line": 127,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "importMembers",
+     "file": "convex/demoWorld/importMembers.ts",
+     "line": 12,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "sweepOrphanStorage",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 142,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoSeedBlockedReason",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 73,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedUserContent",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 406,
+     "ops": [
+      "patch",
+      "replace"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedUsersAndTools",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 337,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "wipeUsersAndTools",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 987,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "evaluate",
+     "file": "convex/jobs/repeatInfringer.ts",
+     "line": 21,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "createOrLinkAuthUser",
+     "file": "convex/lib/founder.ts",
+     "line": 49,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "join",
+     "file": "convex/profile/metrics.ts",
+     "line": 136,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "leave",
+     "file": "convex/profile/metrics.ts",
+     "line": 198,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "reserveHandleTx",
+     "file": "convex/profile/page.ts",
+     "line": 32,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "backfillCanonicalUsers",
+     "file": "convex/seed.ts",
+     "line": 482,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedIdentities",
+     "file": "convex/seed/demo.ts",
+     "line": 219,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedPlatformStores",
+     "file": "convex/store/seed.ts",
+     "line": 31,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "grantFounderByEmail",
+     "file": "convex/admin/roles.ts",
+     "line": 277,
+     "class": "prod"
+    },
+    {
+     "fn": "circuitBreaker",
+     "file": "convex/admin/storeEnforce.ts",
+     "line": 114,
+     "class": "prod"
+    },
+    {
+     "fn": "activationInline",
+     "file": "convex/analytics/projections.ts",
+     "line": 139,
+     "class": "prod"
+    },
+    {
+     "fn": "heroStaleFill",
+     "file": "convex/cards.ts",
+     "line": 127,
+     "class": "prod"
+    },
+    {
+     "fn": "importEvents",
+     "file": "convex/demoWorld/importEvents.ts",
+     "line": 8,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "findUserByEmail",
+     "file": "convex/demoWorld/lib.ts",
+     "line": 34,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "sweepOrphanStorage",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 142,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "verifyPeople",
+     "file": "convex/demoWorld/verifyWorld.ts",
+     "line": 126,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "demoSeedBlockedReason",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 73,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedUserContent",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 406,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedUsersAndTools",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 337,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "wipeUserContent",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 914,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "wipeUsersAndTools",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 987,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "evaluate",
+     "file": "convex/jobs/repeatInfringer.ts",
+     "line": 21,
+     "class": "prod"
+    },
+    {
+     "fn": "backfillAll",
+     "file": "convex/migrations/backfillDistributions.ts",
+     "line": 19,
+     "class": "prod"
+    },
+    {
+     "fn": "getMetrics",
+     "file": "convex/profile/metrics.ts",
+     "line": 35,
+     "class": "prod"
+    },
+    {
+     "fn": "join",
+     "file": "convex/profile/metrics.ts",
+     "line": 136,
+     "class": "prod"
+    },
+    {
+     "fn": "leave",
+     "file": "convex/profile/metrics.ts",
+     "line": 198,
+     "class": "prod"
+    },
+    {
+     "fn": "getProfilePage",
+     "file": "convex/profile/page.ts",
+     "line": 61,
+     "class": "prod"
+    },
+    {
+     "fn": "reserveHandleTx",
+     "file": "convex/profile/page.ts",
+     "line": 32,
+     "class": "prod"
+    },
+    {
+     "fn": "searchQuery",
+     "file": "convex/search.ts",
+     "line": 48,
+     "class": "prod"
+    },
+    {
+     "fn": "backfillCanonicalUsers",
+     "file": "convex/seed.ts",
+     "line": 482,
+     "class": "prod"
+    },
+    {
+     "fn": "fingerprint",
+     "file": "convex/seed/check.ts",
+     "line": 70,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "getProductDetail",
+     "file": "convex/store/public.ts",
+     "line": 114,
+     "class": "prod"
+    },
+    {
+     "fn": "getStorefront",
+     "file": "convex/store/public.ts",
+     "line": 52,
+     "class": "prod"
+    },
+    {
+     "fn": "seedPlatformStores",
+     "file": "convex/store/seed.ts",
+     "line": 31,
+     "class": "prod"
+    }
+   ]
+  },
+  "userSocialAccounts": {
+   "writers": [
+    {
+     "fn": "socialAdd",
+     "file": "convex/profile/settings.ts",
+     "line": 178,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getSettingsState",
+     "file": "convex/profile/settings.ts",
+     "line": 403,
+     "class": "prod"
+    },
+    {
+     "fn": "socialAdd",
+     "file": "convex/profile/settings.ts",
+     "line": 178,
+     "class": "prod"
+    }
+   ]
+  },
+  "utmDictionary": {
+   "writers": [
+    {
+     "fn": "dictionarySeedEdit",
+     "file": "convex/admin/utm.ts",
+     "line": 52,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "dictionarySeedEdit",
+     "file": "convex/admin/utm.ts",
+     "line": 52,
+     "class": "prod"
+    },
+    {
+     "fn": "getDictionary",
+     "file": "convex/admin/utm.ts",
+     "line": 94,
+     "class": "prod"
+    }
+   ]
+  },
+  "vibingFeatured": {
+   "writers": [
+    {
+     "fn": "setFeatured",
+     "file": "convex/admin/curation.ts",
+     "line": 51,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seed",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 814,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "getCurationState",
+     "file": "convex/admin/curation.ts",
+     "line": 204,
+     "class": "prod"
+    },
+    {
+     "fn": "setFeatured",
+     "file": "convex/admin/curation.ts",
+     "line": 51,
+     "class": "prod"
+    },
+    {
+     "fn": "seed",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 814,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "getChrome",
+     "file": "convex/feed.ts",
+     "line": 235,
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "vibingHooks": {
+   "writers": [
+    {
+     "fn": "seed",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 814,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "seed",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 814,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "getChrome",
+     "file": "convex/feed.ts",
+     "line": 235,
+     "class": "prod"
+    }
+   ]
+  },
+  "vibingTrends": {
+   "writers": [
+    {
+     "fn": "sweepBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 56,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seed",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 814,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "vibingCompute",
+     "file": "convex/jobs/vibing.ts",
+     "line": 36,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "ops": [
+      "insert",
+      "patch"
+     ],
+     "class": "demo_seed"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "sweepBatch",
+     "file": "convex/demoWorld/remove.ts",
+     "line": 56,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seed",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 814,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "getChrome",
+     "file": "convex/feed.ts",
+     "line": 235,
+     "class": "prod"
+    },
+    {
+     "fn": "vibingCompute",
+     "file": "convex/jobs/vibing.ts",
+     "line": 36,
+     "class": "prod"
+    },
+    {
+     "fn": "seedEngagement",
+     "file": "convex/seed/demo.ts",
+     "line": 687,
+     "class": "demo_seed"
+    }
+   ]
+  },
+  "vouches": {
+   "writers": [],
+   "readers": []
+  },
+  "waitlistEntries": {
+   "writers": [
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "ops": [
+      "insert"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "wipeChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 938,
+     "ops": [
+      "delete"
+     ],
+     "class": "demo_seed"
+    },
+    {
+     "fn": "join",
+     "file": "convex/waitlist.ts",
+     "line": 44,
+     "ops": [
+      "insert"
+     ],
+     "class": "prod"
+    },
+    {
+     "fn": "markConverted",
+     "file": "convex/waitlist.ts",
+     "line": 100,
+     "ops": [
+      "patch"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "seedChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 535,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "wipeChromeAndQueues",
+     "file": "convex/dev/demoSeed.ts",
+     "line": 938,
+     "class": "demo_seed"
+    },
+    {
+     "fn": "join",
+     "file": "convex/waitlist.ts",
+     "line": 44,
+     "class": "prod"
+    },
+    {
+     "fn": "markConverted",
+     "file": "convex/waitlist.ts",
+     "line": 100,
+     "class": "prod"
+    }
+   ]
+  },
+  "wishlists": {
+   "writers": [
+    {
+     "fn": "toggleWishlist",
+     "file": "convex/store/public.ts",
+     "line": 233,
+     "ops": [
+      "insert",
+      "delete"
+     ],
+     "class": "prod"
+    }
+   ],
+   "readers": [
+    {
+     "fn": "toggleWishlist",
+     "file": "convex/store/public.ts",
+     "line": 233,
+     "class": "prod"
+    }
+   ]
+  }
+ }
+}

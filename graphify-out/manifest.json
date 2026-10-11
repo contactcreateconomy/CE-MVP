@@ -3816,8 +3816,8 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791724542.8651607,
-    "seen": 1791724570.317491,
+    "mtime": 1791737239.5033813,
+    "seen": 1791737252.8658524,
     "ast_hash": "d850b296e1fa0f59e043006167d2101e",
     "semantic_hash": ""
   },
@@ -4962,8 +4962,8 @@
     "semantic_hash": ""
   },
   "convex/seed/check.ts": {
-    "mtime": 1791270662.4524293,
-    "seen": 1791270904.3896532,
+    "mtime": 1791737239.5131128,
+    "seen": 1791737252.8656445,
     "ast_hash": "63043c011c954f8daaeec4c666e63dd9",
     "semantic_hash": ""
   },
@@ -4998,8 +4998,8 @@
     "semantic_hash": ""
   },
   "scripts/seed-check.mjs": {
-    "mtime": 1791008869.1882918,
-    "seen": 1791009536.5416253,
+    "mtime": 1791737239.71948,
+    "seen": 1791737252.8657432,
     "ast_hash": "0486fb495706d0d9d7e651efb8eb761c",
     "semantic_hash": ""
   },
@@ -5682,8 +5682,8 @@
     "semantic_hash": ""
   },
   "scripts/seed-fingerprint.txt": {
-    "mtime": 1791270863.3396602,
-    "seen": 1791270904.3901834,
+    "mtime": 1791737239.71948,
+    "seen": 1791737252.8661723,
     "ast_hash": "a072a020a4f18a66b287068a29bc278f",
     "semantic_hash": ""
   },
@@ -6540,8 +6540,8 @@
     "semantic_hash": ""
   },
   "scripts/demo-world/BETA-SWITCH.md": {
-    "mtime": 1791263891.4631126,
-    "seen": 1791263934.4151256,
+    "mtime": 1791737239.7160628,
+    "seen": 1791737252.8661602,
     "ast_hash": "a05e7a54df78a3cd09f580aa8a28a2a5",
     "semantic_hash": ""
   },
@@ -6588,9 +6588,9 @@
     "semantic_hash": ""
   },
   "ak-redesign/specs/FEED-DESIGN.md": {
-    "mtime": 1791131545.0402913,
-    "seen": 1791224820.4336436,
-    "ast_hash": "66e1c34b8028c7451b5b213ce6038234",
+    "mtime": 1791732760.0359535,
+    "seen": 1791737252.8659174,
+    "ast_hash": "d84e35e989096c82f5479bdf48c8fa64",
     "semantic_hash": ""
   },
   "tests/convex/cr-012-account-age.test.ts": {
@@ -6795,6 +6795,12 @@
     "mtime": 1791724397.6284096,
     "seen": 1791724570.3180234,
     "ast_hash": "50aa6757157aef14c425982aafde9078",
+    "semantic_hash": ""
+  },
+  "ak-redesign/00-control/session-log/akilesh.md": {
+    "mtime": 1791731228.6810913,
+    "seen": 1791737252.865909,
+    "ast_hash": "009bb3db1386461964b3a8b083e632f2",
     "semantic_hash": ""
   }
 }
