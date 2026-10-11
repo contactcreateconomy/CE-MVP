@@ -48,22 +48,30 @@ deployment via `seed/devGuard`). Nothing in product code depends on it — see
    identical world fingerprint.)
 
 > **S00 fix (2026-10-11, `fix-seed-fingerprint`): seed:check hashes CONTENT
-> ONLY.** Every table a scheduled job can insert into or delete from is now in
-> seed-check's VOLATILE list (25 additions incl. `cardSummaries`,
-> `vibingTrends`, `adminInterventionAlerts`, `recognitionEvents`,
-> `leaderboardProjections`, `signalLedger`, `vibingTrends`'s siblings — full
-> list + cron→table evidence in `scripts/seed-check.mjs`). Patch-only jobs
-> (`jobs/rank` value recompute over `commentScores` / `postDistribution*`)
-> can't move the hash and are not listed. RED/GREEN proof: changing one demo
-> post title flips the fingerprint (FAIL); the three machine states that
-> previously hashed apart on cron-row deltas (`384d38db79af` pre-reset,
-> `5989cbd616ce` post-replay, office `c9ebee53588c`) now ALL hash to the same
-> value. Canonical is now the content-only world fingerprint
-> **`d7b7f0c893f4`** (`scripts/seed-fingerprint.txt`). Historical values
-> (`63fe5110e230` base-only, `c9ebee53588c` world-loaded-with-counts) belong
-> to the old count-sensitive hash and are NOT comparable — the removal flow
-> above must be re-baselined against `d7b7f0c893f4`'s successor if you ever
-> go back to a base-only state (a `reset:local --no-demo` run recomputes it).
+> ONLY** — refined same-day by the Grok FIX-2 verdict. VOLATILE now contains
+> only cron-ONLY tables (+ the pre-existing runtime surfaces); every
+> MIXED-writer table is counted as its seed/human subset, selected by an
+> existing origin field in `seed/check:fingerprint` (field + writer-site
+> evidence in `convex/seed/check.ts`): storeStrikes `actorUserId` (platform
+> reserved user = cron), trustHistory `reason` ("repeat_infringer*" = cron),
+> generationRuns `runType` ("claims.extract" = cron), heroSlots
+> `disclosureClass` ("community_top" = system fill), heroAssignments
+> `reason` ("stale_auto_fill_community_top" = system), signalSeasons
+> `seasonNumber` (1 = the founding season, restored to the hash), badges
+> `subjectType` ("user" = seed/human; cron mints are "distribution"),
+> cardSummaries `generationRunId` ("cards:*" = cron refresh). Three mixed
+> tables have NO usable origin field and stay whole-hashed — **vibingTrends**
+> (observed replay drift 8↔9: the one residual cross-machine parity risk;
+> founder CR needed to add an origin field), integrityFlags,
+> leaderboardProjections (upsert-stable, observed 2/2/2). Corrected record:
+> merchantComplaints / moderationCases / moderationActions have no scheduled
+> writer at all (precise function-block attribution) and are whole-hashed.
+> RED/GREEN + three-state proof: `scripts/seed-check-proof.mjs`, full output
+> committed under `ak-redesign/evidence/seed-fingerprint/`. Canonical is
+> **`b6794007e68a`** (`scripts/seed-fingerprint.txt`, recomputed 2026-10-11
+> after the reset:local replay). Historical values (`63fe5110e230`,
+> `c9ebee53588c`, `d7b7f0c893f4`) belong to superseded hash definitions and
+> are NOT comparable.
 
 ## Keep using the world locally (development after the export)
 

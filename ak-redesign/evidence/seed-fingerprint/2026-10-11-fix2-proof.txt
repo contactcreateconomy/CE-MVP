@@ -1,0 +1,29 @@
+seed-check-proof — 2026-10-11T16:04:44.954Z
+rules: scripts/lib/seedFingerprintRules.mjs (shared with scripts/seed-check.mjs)
+
+== (a) content sensitivity: one demo post title ==
+canonical (scripts/seed-fingerprint.txt): b6794007e68a
+  [✓] baseline seed:check PASS (b6794007e68a)
+  [✓] probe patched post ref "0" (previous: "How are you handling SEO when the AI answer eats the click?")
+  [✓] RED: seed:check FAILS with changed title (exit 1, fingerprint a48dd68c0659 ≠ canonical)
+  [✓] title restored to "How are you handling SEO when the AI answer eats the click?"
+  [✓] GREEN: seed:check PASSES after restore (b6794007e68a)
+
+== (b) three saved states, one shared hash definition ==
+  post-replay construction notes (tables where recorded ≠ current, all must be volatile/subset):
+    analyticsProjections: recorded 5 → current 10 (volatile/subset — current used)
+    cardSummaries: recorded 110 → current 60 (volatile/subset — current used)
+    heroSlots: recorded 3 → current 2 (volatile/subset — current used)
+  [✓] every recorded≠current table is volatile or subset-counted (no unexplained content drift)
+  pre-reset  → 9dfe2b1f0fc6
+  post-replay→ b6794007e68a
+  current    → b6794007e68a
+  [✓] post-replay === current (same world content under the shared rules)
+  [✓] current === canonical (scripts/seed-fingerprint.txt)
+  pre-reset hashed-count diffs: vibingTrends: pre 8 vs cur 9
+  pre-reset stable keys equal current: true
+  [✓] pre-reset stable keys identical (emails/titles/slugs/dedupeKeys/badges)
+  [✓] pre-reset differs ONLY on needs-origin-field tables (vibingTrends, integrityFlags, leaderboardProjections) — the founder ask
+  → demonstrated: cron-row deltas (cardSummaries totals 90↔110, analyticsProjections 70↔5↔10,
+    feedExplorationState 100↔163, distributionLevelAssignments 31↔15, adminInterventionAlerts 2↔0)
+    are hash-neutral; the sole residual divergence is vibingTrends (no origin field — CR ask).
