@@ -82,14 +82,19 @@ export function isSeededBadge(type: unknown): boolean {
  *   generationRuns  runType          — cron extract writes "claims.extract"
  *                                      (ingest/extract.ts:171); user forge writes "forge.draft"
  *                                      (forge.ts:204)
- *   heroSlots       disclosureClass  — system auto-fill is labeled "community_top"
- *                                      (cards.ts:157, crons.ts "labeled 'Community Top'");
- *                                      operator curation "operator_curated" (admin/curation.ts:169),
- *                                      seeds "editorial"/"community_top" (seed/demo.ts:1093 — the
- *                                      seed's own community_top slot is treated as system-class)
- *   heroAssignments reason           — system fill "stale_auto_fill_community_top" ("the reason
- *                                      carries it", cards.ts:171); operator "operator_schedule"
- *                                      (admin/curation.ts:184)
+ *   heroSlots       disclosureClass  — "community_top" is the AUTO-FILL class,
+ *                                      excluded BY DESIGN including the seed's
+ *                                      first slot (any community_top row is
+ *                                      machine-assignable refresh material —
+ *                                      cards.ts:157 system fill; curation's
+ *                                      "operator_curated" admin/curation.ts:169
+ *                                      and seeds' "editorial" seed/demo.ts:1093
+ *                                      stay hashed)
+ *   heroAssignments reason           — "stale_auto_fill_community_top" is the
+ *                                      auto-fill class, excluded BY DESIGN ("the
+ *                                      reason carries it", cards.ts:171);
+ *                                      operator "operator_schedule"
+ *                                      (admin/curation.ts:184) stays hashed
  *   signalSeasons   seasonNumber     — the founding seeded season is number 1
  *                                      (economy/seed.ts:43); seasonRecalibrate mints n+1
  *                                      (signal/promoteDemote.ts:106)
@@ -97,13 +102,14 @@ export function isSeededBadge(type: unknown): boolean {
  *                                      subjectType "distribution" (signal/promoteDemote.ts:167,293);
  *                                      every seed/human writer is subjectType "user"
  *                                      (seed/demo.ts:345,366; admin/store.ts:110)
- *   cardSummaries   generationRunId  — cron refresh stamps `cards:${now}` (cards.ts:107);
- *                                      seeds stamp fixed run keys ("demo-seed-r3" seed/demo.ts:36,
- *                                      "demo-seed" dev/demoSeed.ts:516)
- * NOT subset-counted (no usable origin field — whole table stays hashed and
- * the founder was flagged): vibingTrends (seed/demo.ts:1056 vs jobs/vibing.ts:90
- * shapes share every field), integrityFlags (brigadeSweep sanctions.ts:208 vs
- * reply_flood notifications/batch.ts:85 differ only inside evidence),
+ * NOT subset-counted:
+ *   cardSummaries — fully VOLATILE (S00 FIX-3): a derived cache, rebuilt by
+ *     cards.refreshCards from the posts/comments rows that ARE hashed —
+ *     count drift carries no seed information (see scripts/lib/seedFingerprintRules.mjs).
+ * No usable origin field — whole table stays hashed and the founder was
+ * flagged: vibingTrends (seed/demo.ts:1056 vs jobs/vibing.ts:90 shapes share
+ * every field), integrityFlags (brigadeSweep sanctions.ts:208 vs reply_flood
+ * notifications/batch.ts:85 differ only inside evidence),
  * leaderboardProjections (seed and rollup both write projectionVersion 1;
  * rollup upserts, observed 2/2/2 across states). merchantComplaints /
  * moderationCases / moderationActions have no scheduled writer at all
@@ -118,7 +124,6 @@ const SEED_SUBSETS: Record<string, (row: Row, platformReservedUserId: string | n
   heroAssignments: (r) => r.reason !== "stale_auto_fill_community_top",
   signalSeasons: (r) => r.seasonNumber === 1,
   badges: (r) => isSeededBadge(r.type) && r.subjectType === "user",
-  cardSummaries: (r) => !String(r.generationRunId ?? "").startsWith("cards:"),
 };
 
 export const fingerprint = internalQuery({

@@ -38,10 +38,11 @@ const ROOT = path.resolve(import.meta.dirname, "..");
 const STATES = path.resolve(ROOT, "..", "demo-verify");
 const CANONICAL_FILE = path.join(ROOT, "scripts", "seed-fingerprint.txt");
 const EVIDENCE_DIR = path.join(ROOT, "ak-redesign", "evidence", "seed-fingerprint");
-// tables subset-counted in convex/seed/check.ts (cron rows excluded there)
+// tables subset-counted in convex/seed/check.ts (cron rows excluded there);
+// cardSummaries is fully VOLATILE since FIX-3 (derived cache) — not listed
 const SUBSET_TABLES = new Set([
   "storeStrikes", "trustHistory", "generationRuns", "heroSlots",
-  "heroAssignments", "signalSeasons", "badges", "cardSummaries",
+  "heroAssignments", "signalSeasons", "badges",
 ]);
 // mixed tables with NO usable origin field — whole-hashed, cron-insertable
 const NEEDS_ORIGIN_FIELD = new Set(["vibingTrends", "integrityFlags", "leaderboardProjections"]);
@@ -161,7 +162,7 @@ if (pre && cur && recorded) {
 
 // ── save evidence ──────────────────────────────────────────────────────
 mkdirSync(EVIDENCE_DIR, { recursive: true });
-const evidenceFile = path.join(EVIDENCE_DIR, `${new Date().toISOString().slice(0, 10)}-fix2-proof.txt`);
+const evidenceFile = path.join(EVIDENCE_DIR, `${new Date().toISOString().slice(0, 10)}-fix3-proof.txt`);
 writeFileSync(evidenceFile, out.join("\n") + "\n");
 say(`\nevidence written: ${path.relative(ROOT, evidenceFile)}`);
 if (failures > 0) {

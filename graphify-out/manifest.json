@@ -3816,9 +3816,9 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791732048.7264519,
-    "seen": 1791732240.835924,
-    "ast_hash": "8b8d4c1a690d99b60680b676f634c021",
+    "mtime": 1791734723.0275655,
+    "seen": 1791734805.0106652,
+    "ast_hash": "ee0f70f468bcc7fdc6de483cfdb22ce7",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -4962,9 +4962,9 @@
     "semantic_hash": ""
   },
   "convex/seed/check.ts": {
-    "mtime": 1791270662.4524293,
-    "seen": 1791270904.3896532,
-    "ast_hash": "63043c011c954f8daaeec4c666e63dd9",
+    "mtime": 1791734114.2254367,
+    "seen": 1791734805.010093,
+    "ast_hash": "df144412fd075e19cfefac4be244cf7d",
     "semantic_hash": ""
   },
   "convex/seed/demo.ts": {
@@ -4998,9 +4998,9 @@
     "semantic_hash": ""
   },
   "scripts/seed-check.mjs": {
-    "mtime": 1791731773.8502665,
-    "seen": 1791732240.8358178,
-    "ast_hash": "2ec58ab5d04795001ffbdaaf12493ff7",
+    "mtime": 1791734162.951791,
+    "seen": 1791734805.010367,
+    "ast_hash": "9cdcc78364f5782d52f249b6caac0a58",
     "semantic_hash": ""
   },
   "scripts/seed-demo.mjs": {
@@ -5682,9 +5682,9 @@
     "semantic_hash": ""
   },
   "scripts/seed-fingerprint.txt": {
-    "mtime": 1791731845.433814,
-    "seen": 1791732240.83624,
-    "ast_hash": "cfe68a97d6ac96265aa55ef26263134f",
+    "mtime": 1791734676.8617089,
+    "seen": 1791734805.011573,
+    "ast_hash": "1e07de972ca81988621d9e262848fbfd",
     "semantic_hash": ""
   },
   "ak-redesign/00-control/CURRENT-STATE.md": {
@@ -6540,9 +6540,9 @@
     "semantic_hash": ""
   },
   "scripts/demo-world/BETA-SWITCH.md": {
-    "mtime": 1791732018.9756377,
-    "seen": 1791732240.8362274,
-    "ast_hash": "12c7092bf8b5c5a3464f7f9519ab57d5",
+    "mtime": 1791734711.4667912,
+    "seen": 1791734805.0115292,
+    "ast_hash": "22404eee73f3e20ef8e3282f8bbba70b",
     "semantic_hash": ""
   },
   "convex/demoWorld/verifyWorld.ts": {
@@ -6588,9 +6588,9 @@
     "semantic_hash": ""
   },
   "ak-redesign/specs/FEED-DESIGN.md": {
-    "mtime": 1791131545.0402913,
-    "seen": 1791224820.4336436,
-    "ast_hash": "66e1c34b8028c7451b5b213ce6038234",
+    "mtime": 1791732760.0359535,
+    "seen": 1791734805.0108416,
+    "ast_hash": "d84e35e989096c82f5479bdf48c8fa64",
     "semantic_hash": ""
   },
   "tests/convex/cr-012-account-age.test.ts": {
@@ -6807,6 +6807,24 @@
     "mtime": 1791732101.697914,
     "seen": 1791732240.8356056,
     "ast_hash": "35d2b5dfbc257d5bba16e67b6fedbaed",
+    "semantic_hash": ""
+  },
+  "scripts/lib/seedFingerprintRules.mjs": {
+    "mtime": 1791734193.7773015,
+    "seen": 1791734805.010349,
+    "ast_hash": "86f10e21dd7844840b0c92791f4fb3ee",
+    "semantic_hash": ""
+  },
+  "scripts/seed-check-proof.mjs": {
+    "mtime": 1791734660.2452612,
+    "seen": 1791734805.0103638,
+    "ast_hash": "edf1db99e91a14119c56e59d25fe5c27",
+    "semantic_hash": ""
+  },
+  "ak-redesign/evidence/seed-fingerprint/2026-10-11-fix2-proof.txt": {
+    "mtime": 1791734692.453724,
+    "seen": 1791734805.0108347,
+    "ast_hash": "07d1c0c1e2aff50a79bae5e6c1d62404",
     "semantic_hash": ""
   }
 }

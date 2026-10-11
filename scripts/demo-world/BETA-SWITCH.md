@@ -47,31 +47,37 @@ deployment via `seed/devGuard`). Nothing in product code depends on it — see
    world: remove → registryRows 0 → reset:local → base canonical → re-import →
    identical world fingerprint.)
 
-> **S00 fix (2026-10-11, `fix-seed-fingerprint`): seed:check hashes CONTENT
-> ONLY** — refined same-day by the Grok FIX-2 verdict. VOLATILE now contains
-> only cron-ONLY tables (+ the pre-existing runtime surfaces); every
+> **S00 fix (2026-10-11, `fix-seed-fingerprint`) — Grok FIX-2 + FIX-3.**
+> VOLATILE now contains only cron-ONLY tables (+ the pre-existing runtime
+> surfaces) and **`cardSummaries` — fully VOLATILE as a derived cache**:
+> `cards.refreshCards` rebuilds every row from the posts/comments rows that
+> ARE hashed, so its count carries no seed information (FIX-3). Every
 > MIXED-writer table is counted as its seed/human subset, selected by an
 > existing origin field in `seed/check:fingerprint` (field + writer-site
 > evidence in `convex/seed/check.ts`): storeStrikes `actorUserId` (platform
 > reserved user = cron), trustHistory `reason` ("repeat_infringer*" = cron),
 > generationRuns `runType` ("claims.extract" = cron), heroSlots
-> `disclosureClass` ("community_top" = system fill), heroAssignments
-> `reason` ("stale_auto_fill_community_top" = system), signalSeasons
-> `seasonNumber` (1 = the founding season, restored to the hash), badges
-> `subjectType` ("user" = seed/human; cron mints are "distribution"),
-> cardSummaries `generationRunId` ("cards:*" = cron refresh). Three mixed
-> tables have NO usable origin field and stay whole-hashed — **vibingTrends**
-> (observed replay drift 8↔9: the one residual cross-machine parity risk;
-> founder CR needed to add an origin field), integrityFlags,
-> leaderboardProjections (upsert-stable, observed 2/2/2). Corrected record:
-> merchantComplaints / moderationCases / moderationActions have no scheduled
-> writer at all (precise function-block attribution) and are whole-hashed.
-> RED/GREEN + three-state proof: `scripts/seed-check-proof.mjs`, full output
-> committed under `ak-redesign/evidence/seed-fingerprint/`. Canonical is
-> **`b6794007e68a`** (`scripts/seed-fingerprint.txt`, recomputed 2026-10-11
-> after the reset:local replay). Historical values (`63fe5110e230`,
-> `c9ebee53588c`, `d7b7f0c893f4`) belong to superseded hash definitions and
-> are NOT comparable.
+> `disclosureClass`, heroAssignments `reason`, signalSeasons `seasonNumber`
+> (1 = the founding season, restored to the hash), badges `subjectType`
+> ("user" = seed/human; cron mints are "distribution"). **heroSlots /
+> heroAssignments design note (FIX-3): the `community_top` /
+> `stale_auto_fill_community_top` rows are the auto-fill class and are
+> excluded BY DESIGN — including the seed's first slot**: any such row is
+> machine-assignable refresh material, indistinguishable by design from a
+> cron fill; only "editorial"/"operator_curated"/"operator_schedule" rows
+> (human/seed curation choices) are hashed. Three mixed tables have no
+> usable origin field and stay whole-hashed — **vibingTrends** (observed
+> replay drift 8↔9: the one residual cross-machine parity risk; founder CR
+> needed to add an origin field), integrityFlags, leaderboardProjections
+> (upsert-stable, observed 2/2/2). Corrected record: merchantComplaints /
+> moderationCases / moderationActions have no scheduled writer at all
+> (precise function-block attribution) and are whole-hashed. RED/GREEN +
+> three-state proof: `scripts/seed-check-proof.mjs`, full output committed
+> under `ak-redesign/evidence/seed-fingerprint/`. Canonical is
+> **`scripts/seed-fingerprint.txt`** (recomputed per fix — see the file).
+> Historical values (`63fe5110e230`, `c9ebee53588c`, `d7b7f0c893f4`,
+> `b6794007e68a`) belong to superseded hash definitions and are NOT
+> comparable.
 
 ## Keep using the world locally (development after the export)
 
