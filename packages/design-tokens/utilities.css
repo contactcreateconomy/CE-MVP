@@ -751,6 +751,68 @@ main {
   }
 }
 
+/* ── Theme switch candidates (O-04; apps/forum/src/lib/theme-transition.ts) ── */
+/* Only active while html[data-theme-switch] is set by runThemeSwitch().
+   The old snapshot stays still; the new one is revealed on top. */
+html[data-theme-switch="iris"]::view-transition-old(root),
+html[data-theme-switch="horizon"]::view-transition-old(root) {
+  animation: none;
+}
+
+html[data-theme-switch="iris"]::view-transition-new(root),
+html[data-theme-switch="horizon"]::view-transition-new(root) {
+  mix-blend-mode: normal;
+  animation-duration: var(--duration-media);
+  animation-timing-function: var(--ease-emerge);
+  animation-fill-mode: both;
+}
+
+@keyframes theme-switch-iris {
+  from {
+    clip-path: circle(0 at var(--theme-switch-x) var(--theme-switch-y));
+  }
+  to {
+    clip-path: circle(var(--theme-switch-r) at var(--theme-switch-x) var(--theme-switch-y));
+  }
+}
+
+html[data-theme-switch="iris"]::view-transition-new(root) {
+  animation-name: theme-switch-iris;
+}
+
+/* Horizon: dark falls from the top (dusk), light rises from the bottom (dawn). */
+@keyframes theme-switch-dusk {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes theme-switch-dawn {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+html[data-theme-switch="horizon"][data-theme-switch-to="dark"]::view-transition-new(root) {
+  animation-name: theme-switch-dusk;
+}
+
+html[data-theme-switch="horizon"][data-theme-switch-to="light"]::view-transition-new(root) {
+  animation-name: theme-switch-dawn;
+}
+
+/* Reduced motion: a plain crossfade, no moving edge. */
+html[data-theme-switch="fade"]::view-transition-old(root),
+html[data-theme-switch="fade"]::view-transition-new(root) {
+  animation-duration: var(--duration-normal);
+}
+
 /* ── Safe areas (§5.5) ───────────────────────────────────────────────── */
 
 @utility pt-safe {
