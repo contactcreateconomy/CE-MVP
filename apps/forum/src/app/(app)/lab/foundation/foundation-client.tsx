@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { motion } from "motion/react";
 import { useTheme } from "next-themes";
@@ -8,7 +8,7 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { CreateconomyLogoFull } from "@/components/ui/createconomy-logo-full";
 import { CreateconomyLogoMark } from "@/components/ui/createconomy-logo-mark";
-import { useFeedMotion, type SpringFamily } from "@/lib/motion";
+import { useFeedMotion, usePrefersReducedMotion, type SpringFamily } from "@/lib/motion";
 import { runThemeSwitch, themeSwitchVariant } from "@/lib/theme-transition";
 import { cn } from "@/lib/utils";
 
@@ -23,20 +23,22 @@ export function LabFoundationClient({ forcedTheme, variantParam }: LabFoundation
   const { setTheme, resolvedTheme } = useTheme();
   const variant = themeSwitchVariant(variantParam);
   const m = useFeedMotion();
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const reducedMotion = usePrefersReducedMotion();
   const [replay, setReplay] = useState(0);
+  // next-themes resolves the theme on the client only — label after mount.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const themeLabel = !mounted ? "Theme" : resolvedTheme === "dark" ? "Dark" : "Light";
 
+  // ?theme= applies once on load; re-running it (setTheme changes identity
+  // when the theme changes) would undo every toggle.
+  const forcedApplied = useRef(false);
   useEffect(() => {
-    if (forcedTheme) setTheme(forcedTheme);
+    if (forcedTheme && !forcedApplied.current) {
+      forcedApplied.current = true;
+      setTheme(forcedTheme);
+    }
   }, [forcedTheme, setTheme]);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(mq.matches);
-    const on = () => setReducedMotion(mq.matches);
-    mq.addEventListener("change", on);
-    return () => mq.removeEventListener("change", on);
-  }, []);
 
   const toggleTheme = (e: MouseEvent<HTMLButtonElement>) => {
     const to = resolvedTheme === "dark" ? "light" : "dark";
@@ -67,7 +69,7 @@ export function LabFoundationClient({ forcedTheme, variantParam }: LabFoundation
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" variant="secondary" onClick={toggleTheme} data-testid="theme-toggle">
-            {resolvedTheme === "dark" ? "Dark" : "Light"} → switch ({variant ? VARIANT_LABEL[variant] : "instant"})
+            {themeLabel} → switch ({variant ? VARIANT_LABEL[variant] : "instant"})
           </Button>
           <a className="text-body-sm text-text-link underline" href="?v=a">Iris</a>
           <a className="text-body-sm text-text-link underline" href="?v=b">Horizon</a>
@@ -79,11 +81,13 @@ export function LabFoundationClient({ forcedTheme, variantParam }: LabFoundation
       </p>
 
       <Section title="Frost (L-39, L-40)" note="Real blur on chrome / hero / rail / sheets; feed cards get the look without live blur. Neutral: no colour bleed.">
-        <div className="lab-glass-content relative h-[420px] overflow-hidden rounded-lg border border-border-subtle">
-          {Array.from({ length: 10 }, (_, i) => (
-            <p key={i}>Content scrolling under the frost — row {i + 1}. Colour behind should soften, not tint.</p>
-          ))}
-          <div className="absolute inset-x-4 top-4 grid gap-3 sm:grid-cols-2">
+        <div className="relative h-[420px] overflow-hidden rounded-lg border border-border-subtle">
+          <div className="lab-glass-content absolute inset-0">
+            {Array.from({ length: 10 }, (_, i) => (
+              <p key={i}>Content scrolling under the frost — row {i + 1}. Colour behind should soften, not tint.</p>
+            ))}
+          </div>
+          <div className="absolute inset-x-4 top-10 grid gap-3 sm:grid-cols-2">
             <Panel cls="frost-strong" label=".frost-strong" hint="menu island, hero, sheets" />
             <Panel cls="frost-subtle" label=".frost-subtle" hint="rail widgets, tab bar" />
             <Panel cls="frost-look" label=".frost-look" hint="feed cards — no live blur" />

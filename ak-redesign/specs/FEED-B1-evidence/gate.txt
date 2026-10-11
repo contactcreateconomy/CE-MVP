@@ -1,4 +1,6 @@
-typecheck: pass
-lint: pass (max-warnings 0)
-typecheck:admin: pass
-forum tests: 72 files / 996 tests passed
+typecheck: pass (0 errors)
+lint: pass (0 problems, max-warnings 0)
+typecheck:admin: pass (0 errors)
+forum tests: 73 files / 997 tests passed
+console: no errors on /lab/foundation in 11 captures (external analytics/fonts blocked by container network excluded)
+screenshots: chromium 1194 with --use-angle=swiftshader (without it headless does not paint backdrop-filter)
