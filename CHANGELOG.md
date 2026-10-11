@@ -30,6 +30,13 @@ The remove→re-import handover test surfaced four more gaps at 1,500-post scale
 ### Fixed: CR-015 — index-prefix failures in legitimacy/recognition jobs + exact removal bulk estimate (2026-10-04)
 
 Two projection jobs failed on any run with "query didn't use the index fields in order": `jobs/legitimacy:recompute` (discovery scan led with `occurredAt` on `rawEvents.by_user_time`) and `jobs/recognition:rollup` (aggregate led with `window` on `recognitionEvents.by_user_window` — the Podium rollup). Additive indexes `rawEvents.by_time` / `recognitionEvents.by_window` carry the time-led/window-led scans; queries rewritten onto them, semantics unchanged. `demoWorld/remove:removalStatus` now counts exactly via `.count()` (the old `take(1000)` capped the bulk estimate — the demo pilot registers 30,365 rows). Verified live: rollup projects 118 events / 10 Podium entries. Tests: `tests/convex/cr-015-index-fixes.test.ts`. CR record: `ak-redesign/00-control/crs/CR-015-REQUEST.md`.
+### Changed: S02 feed display components upgraded to prototype-v2 (2026-10-03)
+
+Polymorphic desktop hero (3D cover-flow ↔ compact cascade), per-type card strip, profile-linked author row, sliding nav pill, staggered entrance, hero/card skeletons; props contract, fixtures and `/lab/feed` params kept (optional additions only). Token diff 0. S02-SPEC round 2 (motion list + GAP list), CR-010 #10.
+
+### Added: S02 feed display components + /lab/feed (2026-10-03)
+
+Founder prototype feed ported as props-only display components in `apps/forum/src/components/feed/feed-*.tsx` (card, tabs, hero carousel lg+, left nav, Vibing + Podium rail, page view) on S00 tokens; dev-only `/lab/feed` from fixtures; spec `ak-redesign/specs/S02-SPEC.md`, CR-010, decisions D-016/D-017. `/feed` not wired yet (GLM).
 
 ### Changed: dev backend moved from Convex Cloud to the local open-source backend (2026-09-27)
 

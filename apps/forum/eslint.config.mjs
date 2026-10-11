@@ -29,6 +29,7 @@ const eslintConfig = defineConfig([
     "convex/_generated/**",
     // Founder feed prototype — frozen reference copy, never linted.
     "../ak-redesign/specs/S02-refs/prototype/**",
+    "../ak-redesign/specs/S02-refs/prototype-v2/**",
   ]),
 ]);
 

@@ -100,3 +100,15 @@ The founder decides taste live in the browser, screen by screen. For **visual sp
 - **Q2** Theme switch at 390 lives in the avatar menu (sheet); full appearance settings in S08. **Yes.**
 - **Q3** No service worker before beta; offline handled by the state kit. **Yes.**
 - **Q4** Generated logomark app icon until a designed icon is supplied. **Yes.**
+
+## D-016 — Taste-critical UI is built by Opus as display components · DECIDED by founder (2026-10-03; amends D-014 for S02 onward)
+- Opus builds taste-critical UI as **display components** (props in, UI out, no data fetching), faithful to founder-approved references, on S00 tokens/utilities, with a dev-only `/lab/<screen>` from fixtures.
+- **GLM** wires data, states and tests; **Grok** reviews both; the **founder tweaks live** after wiring.
+- Branch handoff: once Opus reports a UI branch done, the founder owns it; Opus pushes again only when asked (and pulls first).
+
+## D-017 — New spec order; S02 feed rulings · DECIDED by founder (2026-10-03)
+- Order: **S02 Feed+Search → S04 Composer → S03 Post+Threads → S05 Profile → S12 Affiliate**. S01 front door later.
+- S02's NOTES are the founder's prototype (`specs/S02-refs/prototype/`). Only the feed is ported in S02.
+- Hero: **desktop (lg+) keeps the carousel; mobile starts with the feed.** (Supersedes SPEC-INDEX's "small Top this week rail" for S02.)
+- Categories/post types: the product's current set is final; the prototype's 9 categories are ignored.
+- Prototype numbers are placeholders. Every production number comes from real rows (AI personas create real activity). **D-012 stands.**
