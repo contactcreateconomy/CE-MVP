@@ -14,9 +14,9 @@ const buttonVariants = cva(
   "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md font-medium outline-hidden transition-[background-color,border-color,color,box-shadow,transform] duration-normal ease-out-cubic focus-visible:ring-2 focus-visible:ring-brand-primary-hover focus-visible:ring-offset-2 focus-visible:ring-offset-bg-canvas disabled:pointer-events-none disabled:opacity-40 disabled:shadow-none [&_svg]:pointer-events-none [&_svg]:shrink-0",  {
     variants: {
       variant: {
-        // §11.1 PRIMARY: brand bg, white text, glow sm (dark), hover lift + glow md
+        // §11.1 PRIMARY: brand bg, white text; no glow at rest (L-38) — hover lift + glow md, press glow sm
         primary:
-          "bg-brand-primary text-text-inverse hover:-translate-y-px hover:bg-brand-primary-hover hover:shadow-glow-primary-md active:translate-y-0 active:bg-brand-primary-pressed active:shadow-glow-primary-sm dark:shadow-glow-primary-sm",
+          "bg-brand-primary text-text-inverse hover:-translate-y-px hover:bg-brand-primary-hover hover:shadow-glow-primary-md active:translate-y-0 active:bg-brand-primary-pressed active:shadow-glow-primary-sm",
         // §11.1 SECONDARY: outlined
         secondary:
           "border border-border-prominent bg-transparent text-text-primary hover:border-border-active hover:bg-bg-overlay active:bg-bg-surface-elevated",

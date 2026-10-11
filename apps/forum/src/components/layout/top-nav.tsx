@@ -243,7 +243,7 @@ function TopNavInner({
                       (pathname === "/notifications" || notificationsOpen) && "text-brand-primary",
                     )}
                   >
-                    <Bell className={cn("h-4 w-4", unread > 0 && !notificationsOpen && "animate-pulse-glow")} />
+                    <Bell className="h-4 w-4" />
                     {unread > 0 ? (
                       <span className="absolute -right-0.5 -top-0.5 rounded-full bg-(--feedback-error) px-1.5 py-0.5 text-micro font-semibold text-white">
                         {unread}

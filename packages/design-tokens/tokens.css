@@ -457,6 +457,17 @@
   --glass-strong-blur: blur(24px);
   --glass-border: color-mix(in srgb, var(--border-subtle) 60%, transparent);
 
+  /* Frost (FEED-DESIGN L-39, L-40) — neutral glass: same surface mixes as
+     glass, but NO saturate boost, so content behind never bleeds colour.
+     frost-look = feed cards: translucent surface + 1px top highlight, no
+     live blur (perf on mid Android). */
+  --frost-subtle-bg: color-mix(in srgb, var(--bg-surface) 78%, transparent);
+  --frost-subtle-blur: blur(12px);
+  --frost-strong-bg: color-mix(in srgb, var(--bg-surface) 55%, transparent);
+  --frost-strong-blur: blur(24px);
+  --frost-look-bg: color-mix(in srgb, var(--bg-surface) 85%, transparent);
+  --frost-highlight: color-mix(in srgb, var(--bg-canvas) 90%, transparent);
+
   /* Sheet (§5.4) */
   --sheet-radius: var(--radius-xl);
   --sheet-max-h: 90dvh;
@@ -559,6 +570,12 @@
 
   /* Glass (§5.3) — dark: 72% surface */
   --glass-subtle-bg: color-mix(in srgb, var(--bg-surface) 72%, transparent);
+
+  /* Frost (L-39, L-40) — dark surface mixes; highlight = a faint light edge. */
+  --frost-subtle-bg: color-mix(in srgb, var(--bg-surface) 72%, transparent);
+  --frost-strong-bg: color-mix(in srgb, var(--bg-surface) 55%, transparent);
+  --frost-look-bg: color-mix(in srgb, var(--bg-surface) 85%, transparent);
+  --frost-highlight: color-mix(in srgb, var(--text-primary) 7%, transparent);
   --scrim: hsl(0 0% 0% / 0.4);
 }
 

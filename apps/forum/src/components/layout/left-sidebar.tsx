@@ -70,7 +70,7 @@ function LeftSidebarShell({ discoverItems }: { discoverItems: DiscoverItem[] }) 
             />
             <Button
               onClick={() => { signalNavigationStart(); router.push("/new-post"); }}
-              className="relative z-10 h-9 w-full rounded-full text-base font-semibold shadow-glow-primary-pill transition-all duration-slow hover:shadow-glow-primary-pill-hover"
+              className="relative z-10 h-9 w-full rounded-full text-base font-semibold transition-all duration-slow hover:shadow-glow-primary-pill-hover"
               style={{ color: "var(--text-inverse)" }}
             >
               + Start Discussion

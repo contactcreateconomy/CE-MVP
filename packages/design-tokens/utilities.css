@@ -673,6 +673,57 @@ main {
   }
 }
 
+/* ── Frost (FEED-DESIGN L-39, L-40) ───────────────────────────────────── */
+/* Neutral glass for chrome, hero, rail widgets, sheets: real backdrop blur
+   with no saturate boost (no colour bleed), solid fallbacks nested like the
+   glass utilities above. frost-look is the feed-card surface: the frost
+   LOOK without live blur (translucent surface + 1px top highlight). */
+
+@utility frost-strong {
+  background: var(--frost-strong-bg);
+  -webkit-backdrop-filter: var(--frost-strong-blur);
+  backdrop-filter: var(--frost-strong-blur);
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: var(--bg-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--bg-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@utility frost-subtle {
+  background: var(--frost-subtle-bg);
+  -webkit-backdrop-filter: var(--frost-subtle-blur);
+  backdrop-filter: var(--frost-subtle-blur);
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: var(--bg-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--bg-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@utility frost-look {
+  background: var(--frost-look-bg);
+  box-shadow: inset 0 1px 0 var(--frost-highlight);
+
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--bg-surface);
+  }
+}
+
 /* ── Safe areas (§5.5) ───────────────────────────────────────────────── */
 
 @utility pt-safe {

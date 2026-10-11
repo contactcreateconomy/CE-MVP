@@ -24,7 +24,7 @@ export interface FeedLeftNavProps {
  * Left rail (lg+): "Start Discussion" CTA + Discover list with a sliding
  * active pill. prototype-v2 `left-sidebar.tsx`; the conic `GlowingEffect`
  * around the CTA and the hover text glow are not ported (D-007 / S00 §7 —
- * flagged in S02-SPEC §4); the CTA carries `.glow-cta`. Item labels come
+ * flagged in S02-SPEC §4); the CTA glows on hover/press only (`hover:glow-cta`, L-38). Item labels come
  * from data: v2's sidebar ("Q&A", no Spark) is a SCOPE question, not copied.
  */
 export function FeedLeftNav({ items, activeKey, onStartDiscussion, className }: FeedLeftNavProps) {
@@ -40,7 +40,7 @@ export function FeedLeftNav({ items, activeKey, onStartDiscussion, className }: 
           <button
             type="button"
             onClick={onStartDiscussion}
-            className="glow-cta focus-ring inline-flex h-9 w-full items-center justify-center gap-1 rounded-full bg-brand-primary text-body-md font-semibold text-text-inverse transition-[transform,background-color] duration-normal ease-out-cubic hover:bg-brand-primary-hover active:scale-97"
+            className="hover:glow-cta active:glow-active focus-ring inline-flex h-9 w-full items-center justify-center gap-1 rounded-full bg-brand-primary text-body-md font-semibold text-text-inverse transition-[transform,background-color] duration-normal ease-out-cubic hover:bg-brand-primary-hover active:scale-97"
           >
             <Plus className="size-4" strokeWidth={2.5} />
             Start Discussion
