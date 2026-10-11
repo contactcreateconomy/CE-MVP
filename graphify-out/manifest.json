@@ -3816,9 +3816,9 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791737239.5033813,
-    "seen": 1791737252.8658524,
-    "ast_hash": "d850b296e1fa0f59e043006167d2101e",
+    "mtime": 1791737857.2197354,
+    "seen": 1791737930.1171281,
+    "ast_hash": "c7cd245d0ff2cfe2821c0656e7f01cda",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -6801,6 +6801,24 @@
     "mtime": 1791731228.6810913,
     "seen": 1791737252.865909,
     "ast_hash": "009bb3db1386461964b3a8b083e632f2",
+    "semantic_hash": ""
+  },
+  "scripts/gen-table-index.mjs": {
+    "mtime": 1791737897.6524022,
+    "seen": 1791737930.1170094,
+    "ast_hash": "82131af9e66cfdec7cf5b0e262dcc47e",
+    "semantic_hash": ""
+  },
+  "scripts/graph-explain.mjs": {
+    "mtime": 1791737330.8341854,
+    "seen": 1791737930.1170123,
+    "ast_hash": "66eb861078205433cd98d4de66aedd24",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/FEED-GAP.md": {
+    "mtime": 1791737253.8994982,
+    "seen": 1791737930.1171954,
+    "ast_hash": "d73df9690728d3a96186591a77826787",
     "semantic_hash": ""
   }
 }
