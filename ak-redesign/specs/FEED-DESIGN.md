@@ -120,6 +120,12 @@ The **lens** = subject (all / type / tool / topic) × time (New·24H / Hot·7D /
 | L-48 | Featured: publisher drafts, founder approves; labelled + holdout-measured | B | |
 | L-49 | Support gets per-user Explain at launch (masked, reasoned, audited) | B | |
 | L-50 | Admin console is built from M15's kit; no Make prototype | A | |
+| L-51 | Canonical display layer = s02 `feed-*` components (`feed-page-view`, `feed-card`, `feed-hero-carousel`, `feed-tabs`, `feed-left-nav`, `feed-rail`, `feed-avatar`, `feed-display-types`, `feed-post-type-meta`). Retire `post-card`, `post-interaction-row`, `comments-preview-cycler`, `post-actions-menu` (B5); `trend-sorter` → `feed-tabs` (B6); `top-post-hero-carousel` + `layout/top-post-hero-section` → `feed-hero-carousel` (B7) | B | FEED-GAP F-1 |
+| L-52 | New = `publishedAt` inside the config window (24H); Hot/Top candidates bounded by their windows (7D/30D) | B | FEED-GAP F-3; additive index |
+| L-53 | Editorial posts never enter organic ranking; they appear only as labelled placements (hero, pinned) | B | FEED-GAP F-4 |
+| L-54 | D-14 = the BETA-SWITCH removal (demo world deleted before beta) is the exclusion switch; no read-time filter. Base seed + admin fixtures must also be covered by removal (register them) | B | FEED-GAP F-5; prod is loopback-guarded |
+| L-55 | Post saves get a `toggleSavePost` mutation in B2 | B | FEED-GAP F-7 |
+| L-56 | Every Opus session queries the code graph via a committed helper (`scripts/graph-explain.mjs`) plus a generated table-access index (`graphify-out/tables.json`: which functions read/write each table); GLM regenerates both locally after every merged phase | B | graph indexes functions only |
 
 ### 2.2 Provisional / experiments
 | ID | Item | How we validate |
@@ -168,7 +174,7 @@ K-01 free-form topics beyond the taxonomy · K-02 follows (CR-007) · K-03 anti-
 | Goal-driven | "I came for something specific" | Search (high-intent signal), Discover drill-down, tool lens |
 | Distracted (2 min) | "Quick" | Facets + why-care line make the value scannable without opening |
 
-**Day-one test:** at 50 users exploration dominates, Top·1M is nearly everything, Hot is quiet — honest and fine if life-stage labels read "young and alive". Demo world (500 members / 5,000 posts / ~45–50k comments) is the simulation bed; it proves mechanics, fairness math, latency, gaming resistance — **never human psychology**.
+**Day-one test:** at 50 users exploration dominates, Top·1M is nearly everything, Hot is quiet — honest and fine if life-stage labels read "young and alive". Demo world (actual: 517 members / 1,560 posts / ~15k comments / ~30k reactions; snapshot 2026-10-11, 133 MB) is the simulation bed; it proves mechanics, fairness math, latency, gaming resistance — **never human psychology**.
 
 ---
 
@@ -392,7 +398,7 @@ Plugs into **M15** (shell, widget registry, kill_switch / config_group / monitor
 
 | Surface | Contains | Roles |
 |---|---|---|
-| Feed control | per-widget on/off · safe mode (chronological) · ranking rollback (pin version) · **exclude demo data** · global dials (exploration rate, gravity, affinity strength) | founder, administrator |
+| Feed control | per-widget on/off · safe mode (chronological) · ranking rollback (pin version) · global dials (exploration rate, gravity, affinity strength) | founder, administrator |
 | Placements | hero editorial frames + schedule · Featured (1 hero + 1 Vibing; publisher drafts, founder approves; holdout automatic) · pins · announcement strip · Start Discussion prompts | publisher, editor, founder |
 | Podium review | holds, freeze, exclusions, opt-outs, M12 collusion flags | moderator, administrator |
 | Feed health | the 5 numbers + per-widget panels | founder, administrator |
@@ -425,7 +431,7 @@ Plugs into **M15** (shell, widget registry, kill_switch / config_group / monitor
 | D-11 | Hero slots: kind + lens + label class + holdout; community answer from M6 discussion map | §9.2 |
 | D-12 | Podium dimension registry + projections incl. top comments/solutions, tools, personas by human reactions; pins per user | §9.7 |
 | D-13 | Fav activity query (human activity on saved/joined since last Fav open) | L-47 |
-| D-14 | Demo-data flag honoured by every projection + global exclude switch | D-012 |
+| D-14 | Demo exclusion = BETA-SWITCH removal covering world + base seed + admin fixtures (L-54) | D-012 |
 | D-15 | Feed admin: config keys, kill switches, placements, health projections, explain queries, experiments registry | §12 |
 
 ---
@@ -452,6 +458,8 @@ Plugs into **M15** (shell, widget registry, kill_switch / config_group / monitor
 | O-06 | Taxonomy list (20–30 topics) — founder approves | before B4 |
 | O-07 | Exact thresholds: Earned "emerging", Podium minimums, exploration rate/taper, Hot gravity | B3/B10 config + demo sim |
 | O-08 | Auth confirmations from firestarter §4 (forgot password, socials, remember me, Terms links) | S01, not feed |
+| O-10 | **Post-level Valuable (F-6):** new post reaction vs sum of comment Valuables — blocks CR-014 definition | founder, before B2 |
+| O-11 | Persona posts in organic sorts (labelled, ranked by human reactions only) or excluded like editorial | founder, before B3 |
 | O-09 | Office laptop `setx DEV_TEST_USER_PASSWORD`; forum tests 973/975 TZ issue (S2 handoff §7) | founder Monday |
 
 ---
@@ -460,7 +468,7 @@ Plugs into **M15** (shell, widget registry, kill_switch / config_group / monitor
 
 ### 16.1 Where we start from (build on top, never from scratch)
 - **Live route `/feed`:** `CanonicalFeedClient` over `postDistributionScores` + `cardSummaries` with `api.feed.list` (sortMode, typeFilter, cursor), `api.feed.getChrome` (hero/featured/vibing/podium), `api.feed.getWhy`, `api.feed.cardAction` (hide/mute/report), `api.feed.unhide`. Visitors land on Hot. Its card is a plain admin-looking card — to be replaced by the display components.
-- **Display components (design):** `apps/forum/src/components/feed/` on branch `s02-feed-ui` (Opus v2 upgrade @ `c77e6d4`: 2-state hero, per-type strips, sliding sorter, skeletons) — `post-card.tsx`, `post-interaction-row.tsx`, `trend-sorter.tsx`, `top-post-hero-carousel.tsx`, `comments-preview-cycler.tsx`, `post-actions-menu.tsx`, `report-post-dialog.tsx`, `feed-undo-toast.tsx`; lab `/lab/feed` (`?theme=light`, `?state=loading|empty`, `?type=`, `?v=a|b`). S02-SPEC + S01-SPEC exist; Grok has not reviewed them.
+- **Display components (canonical, L-51):** `apps/forum/src/components/feed/feed-*` (s02 v2 port @ `c77e6d4`): `feed-page-view`, `feed-card`, `feed-hero-carousel`, `feed-tabs`, `feed-left-nav`, `feed-rail`, `feed-avatar`, `feed-display-types`, `feed-post-type-meta`, plus `feed-undo-toast`; lab `/lab/feed` (`?theme=light`, `?state=loading|empty`, `?type=`, `?v=a|b`). Legacy (retire per L-51): `post-card`, `post-interaction-row`, `comments-preview-cycler`, `post-actions-menu`, `trend-sorter`, `top-post-hero-carousel`. Ground truth: `ak-redesign/specs/FEED-GAP.md` (B0).
 - **Design reference:** founder v2 in CEMVP (`localhost:3004`), Figma Make prototype (rounds 1–3) screenshots in `ak-redesign/specs/S02-refs/make/` (founder to drop them there).
 - **Tokens:** `packages/design-tokens/utilities.css` (glow utilities only here), STYLE-KIT, `globals.css`. Known bug: `cn()` drops custom size tokens → fix via `extendTailwindMerge` (S2 handoff §7.2).
 - **Modules:** M9 feed, M6 reactions/discussion map, M12 recognition, M5 tools, M7 profile/interests, M14 sinceLastVisit, M15 admin shell, M16 analytics.
@@ -470,8 +478,9 @@ Plugs into **M15** (shell, widget registry, kill_switch / config_group / monitor
 STANDING RULES — CREATECONOMY FEED BUILD
 Read first: ak-redesign/specs/FEED-DESIGN.md (the living spec; decision IDs
 L-xx are binding), ak-redesign/00-control/STATUS.md, DECISIONS.md,
-TEAM-WORKFLOW.md, templates/BUILD.md. Use graphify-out/graph.json
-("explain", not "query") to find code before reading files.
+TEAM-WORKFLOW.md, templates/BUILD.md. Find code with node scripts/graph-explain.mjs <name> and
+graphify-out/tables.json (who reads/writes each table) BEFORE reading
+files; if either is missing or stale, say so in your report.
 1. BUILD ON WHAT EXISTS. Extend the files named in the phase prompt.
    Never create a parallel version of an existing component or query.
    If you think a rewrite is needed, STOP and explain why first.
@@ -537,9 +546,11 @@ qualifying reaction/comment/save (idempotent, legitimacy-aware per M12);
 (3) envelope fields L-12 (why shown, lens, rankingVersion, variant) and
 qualified exposure L-13 + controls L-14 + reveal L-14a as catalogued
 events (M16 eventCatalog); aggregate-on-write counters, raw sampled;
-(4) demo flag honoured + config key feed.excludeDemo (D-14).
-Tests: counters move on reactions; buckets fill; exposure dedup per
-session; exclusion removes demo rows from projections. Write
+(4) toggleSavePost mutation (L-55); (5) register base seed + admin
+fixtures for BETA-SWITCH removal (L-54). Post-level Valuable per the
+founder's answer to O-10.
+Tests: counters move on reactions/comments/saves; buckets fill;
+exposure dedup per session; removal leaves zero demo rows anywhere. Write
 CR-013/014-RESPONSE.md for the dev.
 ```
 
@@ -573,22 +584,24 @@ layer: Explored (removable) + Earned (threshold, emerging) projections
 ```
 [FEED-B5][CARD] Two branches: feed-b5a-card-payload (backend) and
 feed-b5b-card-ui. (a) Extend feed.list card payload with D-03 + D-10.
-(b) Rebuild the card by EXTENDING components/feed/post-card.tsx +
-post-interaction-row.tsx + comments-preview-cycler.tsx to FEED-DESIGN
-§10: skeleton rows, 8 facets, why-care line (life stage + relationship),
+(b) Rebuild the card by EXTENDING components/feed/feed-card.tsx (+
+feed-display-types, feed-post-type-meta) to FEED-DESIGN §10, then delete
+the retired post-card family (L-51): skeleton rows, 8 facets, why-care line (life stage + relationship),
 Valuable (Gem, hidden at 0, celebrate once), save, ⋯ menu with
 "Why am I seeing this?" sheet (from getWhy, plain language), hide/see
 fewer → "Hidden · Undo", debate vote-to-reveal with equal weights,
 Updated, persona/editorial labels, pinned label, skeleton. Lab fixtures
 for every type × life stage × relationship; ?v=a|b for mobile cover.
-Replace the plain FeedCard in CanonicalFeedClient with it.
+Split CanonicalFeedClient: data container + an adapter assembleCard →
+FeedCardData; render FeedPageView. Fix refreshCards covering only the
+freshest 30 posts (FEED-GAP risk 11).
 ```
 
 **B6 — Shell, menu bar, sorter, Fav glow, page states**
 ```
 [FEED-B6][SHELL] Branch feed-b6-shell. Page layout §8 (v2 proportions,
 dot grid); menu bar island §9.1 (all states, subject chip, announcement
-strip); sorter §9.4 extending trend-sorter.tsx (equal tabs, hover note /
+strip); sorter §9.4 extending feed-tabs.tsx (retire trend-sorter, L-51) (equal tabs, hover note /
 first-use tooltip from config windows, Fav glow from D-13, visitor
 popover, mobile dock); page states §9.8 (new-posts pill, caught-up
 divider, thin fallback, skeletons on first load/pagination only); mobile
@@ -599,7 +612,8 @@ top island + tab bar. Wire to B3 sorts.
 ```
 [FEED-B7][HERO] Branches feed-b7a-hero-data (hero slots: kind, lens,
 label class, holdout, community answer source — D-11) and
-feed-b7b-hero-ui EXTENDING top-post-hero-carousel.tsx to §9.2: remove
+feed-b7b-hero-ui EXTENDING feed-hero-carousel.tsx to §9.2 (retire
+top-post-hero-carousel + layout/top-post-hero-section, L-51): remove
 autoplay (L-31); large = centred cover-flow with overlaid text, side
 frames dim/scale no blur (L-43, L-40); compact cascade; lens header;
 six kinds ≤3 lines; tease → reveal once; labels; CTA arrow 3 pulses;
@@ -677,4 +691,5 @@ Opus builds → Grok reviews against the decision IDs touched (prompt: "Review b
 ---
 
 ## 17. Change log
+- 2026-10-11 — FEED-B0 audit: ak-redesign/specs/FEED-GAP.md. Prod has no writer for post counters (CR-014), day buckets (CR-013), post saves or exposure events → Top/Hot/Vibing/Rising/Fav/exploration flat in prod. Recorded L-51…L-56; opened O-10 (post-level Valuable), O-11 (persona posts in organic). Amended §16 file names, B2/B5/B6/B7 prompts, standing rules (graph helper), D-14 scope, demo-world size.
 - 2026-10-04 — v1 created from session 3 (council phases 1–7, StellarMap, polymorphism, Figma Make rounds 1–3, user testing). Supersedes firestarter §5–§8.
