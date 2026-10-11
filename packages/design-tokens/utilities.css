@@ -724,6 +724,33 @@ main {
   }
 }
 
+/* ── Logo reveal (FEED-DESIGN §11.1, L-42) ─────────────────────────────── */
+/* 3-segment reveal: each segment pulls in from its own centre, staggered by
+   --i (0, 1, 2). Plays once; reduced motion shows the mark at rest. */
+@keyframes logo-segment-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.logo-reveal-segment {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: logo-segment-in var(--duration-emerge) var(--ease-emerge) both;
+  animation-delay: calc(var(--i, 0) * var(--duration-fast));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-reveal-segment {
+    animation: none;
+  }
+}
+
 /* ── Safe areas (§5.5) ───────────────────────────────────────────────── */
 
 @utility pt-safe {
