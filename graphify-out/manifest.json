@@ -3816,9 +3816,9 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791263891.1294248,
-    "seen": 1791263934.414804,
-    "ast_hash": "186828ede2b9afe008833f473d159020",
+    "mtime": 1791270882.5541275,
+    "seen": 1791270904.389861,
+    "ast_hash": "cd57bf81c90f845fd2dc56bfb7db3d61",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -4494,9 +4494,9 @@
     "semantic_hash": ""
   },
   "docs/DEV-HANDOFF.md": {
-    "mtime": 1790533641.9890995,
-    "seen": 1791009536.5418727,
-    "ast_hash": "ec97fe4b706d495667aee47715275607",
+    "mtime": 1791264164.32601,
+    "seen": 1791270904.3900936,
+    "ast_hash": "68fe4e4d30933956fd10fd87fcc490b7",
     "semantic_hash": ""
   },
   "docs/FOUNDER-BOOTSTRAP.md": {
@@ -4962,9 +4962,9 @@
     "semantic_hash": ""
   },
   "convex/seed/check.ts": {
-    "mtime": 1791008868.9460475,
-    "seen": 1791009536.5415776,
-    "ast_hash": "0fbbc3edf969d50dff39b3c652e7cce0",
+    "mtime": 1791270662.4524293,
+    "seen": 1791270904.3896532,
+    "ast_hash": "63043c011c954f8daaeec4c666e63dd9",
     "semantic_hash": ""
   },
   "convex/seed/demo.ts": {
@@ -4992,9 +4992,9 @@
     "semantic_hash": ""
   },
   "scripts/reset-local.mjs": {
-    "mtime": 1791008869.1882918,
-    "seen": 1791009536.5416243,
-    "ast_hash": "f7c54ed0cb9abf19477f1ab99d2a5066",
+    "mtime": 1791264118.382926,
+    "seen": 1791270904.3897486,
+    "ast_hash": "31acb4c7186f674a39db2fe4230b6311",
     "semantic_hash": ""
   },
   "scripts/seed-check.mjs": {
@@ -5682,9 +5682,9 @@
     "semantic_hash": ""
   },
   "scripts/seed-fingerprint.txt": {
-    "mtime": 1791008869.1882918,
-    "seen": 1791009536.5419328,
-    "ast_hash": "18458e4726527ec3d46f4006375108db",
+    "mtime": 1791270863.3396602,
+    "seen": 1791270904.3901834,
+    "ast_hash": "a072a020a4f18a66b287068a29bc278f",
     "semantic_hash": ""
   },
   "ak-redesign/00-control/CURRENT-STATE.md": {
@@ -6420,9 +6420,9 @@
     "semantic_hash": ""
   },
   "convex/demoWorld/remove.ts": {
-    "mtime": 1791263891.2159889,
-    "seen": 1791263934.4144397,
-    "ast_hash": "c746d260cd6aebb14d8942bf543d1341",
+    "mtime": 1791264054.3177807,
+    "seen": 1791270904.38955,
+    "ast_hash": "5226e07321f15da131b8c4aa6bca8e78",
     "semantic_hash": ""
   },
   "scripts/demo-world/p3-posts.mjs": {
