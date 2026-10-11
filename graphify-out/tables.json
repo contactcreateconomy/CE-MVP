@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-11T16:50:30.309Z",
+ "generatedAt": "2026-10-11T17:19:03.571Z",
  "scanRoot": "convex",
  "tableCount": 177,
  "note": "patch/replace/delete attribution is heuristic (block queries T + contains the op). class: demo_seed = convex/{demoWorld,seed,dev}/**.",
@@ -695,7 +695,7 @@
     {
      "fn": "fingerprint",
      "file": "convex/seed/check.ts",
-     "line": 70,
+     "line": 129,
      "class": "demo_seed"
     },
     {
@@ -1882,6 +1882,15 @@
   "demoGroundTruth": {
    "writers": [
     {
+     "fn": "patchPostTitle",
+     "file": "convex/demoWorld/devPatch.ts",
+     "line": 13,
+     "ops": [
+      "patch"
+     ],
+     "class": "demo_seed"
+    },
+    {
      "fn": "deleteImageChunks",
      "file": "convex/demoWorld/importChrome.ts",
      "line": 125,
@@ -1965,6 +1974,12 @@
     }
    ],
    "readers": [
+    {
+     "fn": "patchPostTitle",
+     "file": "convex/demoWorld/devPatch.ts",
+     "line": 13,
+     "class": "demo_seed"
+    },
     {
      "fn": "chunksForUpload",
      "file": "convex/demoWorld/importChrome.ts",
@@ -4032,7 +4047,7 @@
     {
      "fn": "fingerprint",
      "file": "convex/seed/check.ts",
-     "line": 70,
+     "line": 129,
      "class": "demo_seed"
     },
     {
@@ -5780,7 +5795,7 @@
     {
      "fn": "fingerprint",
      "file": "convex/seed/check.ts",
-     "line": 70,
+     "line": 129,
      "class": "demo_seed"
     },
     {
@@ -8716,7 +8731,7 @@
     {
      "fn": "fingerprint",
      "file": "convex/seed/check.ts",
-     "line": 70,
+     "line": 129,
      "class": "demo_seed"
     },
     {
@@ -9340,7 +9355,7 @@
     {
      "fn": "fingerprint",
      "file": "convex/seed/check.ts",
-     "line": 70,
+     "line": 129,
      "class": "demo_seed"
     },
     {
