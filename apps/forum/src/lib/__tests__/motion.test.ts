@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- variant objects are untyped records */
 /** FEED-B1 #3 — motion module matches FEED-DESIGN §11.2 / §7. */
 import { describe, expect, it } from "vitest";
 
@@ -23,8 +24,11 @@ describe("motion (FEED-DESIGN §11.2)", () => {
   it("reduced motion → crossfades only (opacity, tweens, no stagger)", () => {
     const r = motionFor(true);
     expect(Object.keys(r.focusPull.hidden as object)).toEqual(["opacity"]);
-    const visible = r.focusPull.visible as Record<string, unknown>;
-    expect(Object.keys(visible).filter((k) => k !== "transition")).toEqual(["opacity"]);
+    // visible resets any SSR'd blur/scale/y INSTANTLY (duration 0) and only fades opacity
+    const visible = r.focusPull.visible as Record<string, any>;
+    expect(visible).toMatchObject({ opacity: 1, filter: "blur(0px)", scale: 1, y: 0 });
+    for (const k of ["filter", "scale", "y"]) expect(visible.transition[k]).toEqual({ duration: 0 });
+    expect(visible.transition).toMatchObject({ type: "tween" });
     for (const t of Object.values(r.springs)) expect(t).toMatchObject({ type: "tween" });
     expect(r.stagger.visible).toMatchObject({ transition: { staggerChildren: 0 } });
     expect(motionFor(false).springs).toBe(SPRINGS);

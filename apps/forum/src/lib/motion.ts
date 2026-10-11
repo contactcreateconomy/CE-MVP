@@ -23,7 +23,8 @@
  *     `useFeedMotion()` — never hand-roll a spring in a component.
  *  7. Admin surfaces: fade only.
  */
-import { useReducedMotion, type Transition, type Variants } from "motion/react";
+import { useSyncExternalStore } from "react";
+import type { Transition, Variants } from "motion/react";
 
 export const SPRINGS = {
   feedback: { type: "spring", stiffness: 520, damping: 34 },
@@ -50,9 +51,18 @@ export const focusPull: Variants = {
   visible: { opacity: 1, filter: "blur(0px)", scale: 1, y: 0, transition: SPRINGS.glide },
 };
 
+/** Reduced: fade opacity only. `visible` also snaps blur/scale/y to rest
+ *  with no animation, so markup rendered with full motion (SSR) never keeps
+ *  a stuck blur or offset after the client switches to reduced motion. */
 const focusPullReduced: Variants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: CROSSFADES.glide },
+  visible: {
+    opacity: 1,
+    filter: "blur(0px)",
+    scale: 1,
+    y: 0,
+    transition: { ...CROSSFADES.glide, filter: { duration: 0 }, scale: { duration: 0 }, y: { duration: 0 } },
+  },
 };
 
 const stagger: Variants = { hidden: {}, visible: { transition: { staggerChildren: STAGGER_S } } };
@@ -71,7 +81,27 @@ export function motionFor(reduced: boolean): FeedMotion {
     : { springs: SPRINGS, focusPull, stagger };
 }
 
-/** Hook form: reads the OS reduced-motion setting. */
+const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
+
+function subscribeReduced(onChange: () => void): () => void {
+  const mq = window.matchMedia(REDUCED_QUERY);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+
+/** OS reduced-motion setting, hydration-safe: the server (and hydration)
+ *  render full motion, then the client switches if the user asked for less.
+ *  (motion's own useReducedMotion caches a module-level value and can
+ *  mismatch on hydration.) */
+export function usePrefersReducedMotion(): boolean {
+  return useSyncExternalStore(
+    subscribeReduced,
+    () => window.matchMedia(REDUCED_QUERY).matches,
+    () => false,
+  );
+}
+
+/** Hook form of motionFor(): follows the OS reduced-motion setting. */
 export function useFeedMotion(): FeedMotion {
-  return motionFor(useReducedMotion() ?? false);
+  return motionFor(usePrefersReducedMotion());
 }
