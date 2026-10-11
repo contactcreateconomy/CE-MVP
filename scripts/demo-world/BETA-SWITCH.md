@@ -30,7 +30,7 @@ deployment via `seed/devGuard`). Nothing in product code depends on it — see
 
 3. **Verify the base is intact**:
    ```bash
-   pnpm seed:check    # must report the canonical base fingerprint 63fe5110e230
+   pnpm seed:check    # must report the canonical fingerprint (see the S00 note below)
    ```
    Removal deletes every registered demo row + registered storage file + sweepable
    job output (`removalStatus.registryRows` must be 0). Job-output tables that are
@@ -39,13 +39,45 @@ deployment via `seed/devGuard`). Nothing in product code depends on it — see
    fresh seed). If `seed:check` mismatches after a clean removal
    (`registryRows: 0`), restore the canonical base exactly with:
    ```bash
-   node scripts/reset-local.mjs --password "<local devtest password>"
-   pnpm seed:check     # → 63fe5110e230
+   node scripts/reset-local.mjs   # DEV_TEST_USER_PASSWORD env var, never a flag with a literal
+   pnpm seed:check     # → the canonical in scripts/seed-fingerprint.txt (S00 note below)
    ```
    (`reset:local` wipes table data and reseeds; functions, schema, env and the
    demo corpus cache are untouched. Verified end-to-end on the final 1,500-post
-   world: remove → registryRows 0 → reset:local → 63fe5110e230 → re-import →
+   world: remove → registryRows 0 → reset:local → base canonical → re-import →
    identical world fingerprint.)
+
+> **S00 fix (2026-10-11, `fix-seed-fingerprint`) — Grok FIX-2 + FIX-3.**
+> VOLATILE now contains only cron-ONLY tables (+ the pre-existing runtime
+> surfaces) and **`cardSummaries` — fully VOLATILE as a derived cache**:
+> `cards.refreshCards` rebuilds every row from the posts/comments rows that
+> ARE hashed, so its count carries no seed information (FIX-3). Every
+> MIXED-writer table is counted as its seed/human subset, selected by an
+> existing origin field in `seed/check:fingerprint` (field + writer-site
+> evidence in `convex/seed/check.ts`): storeStrikes `actorUserId` (platform
+> reserved user = cron), trustHistory `reason` ("repeat_infringer*" = cron),
+> generationRuns `runType` ("claims.extract" = cron), heroSlots
+> `disclosureClass`, heroAssignments `reason`, signalSeasons `seasonNumber`
+> (1 = the founding season, restored to the hash), badges `subjectType`
+> ("user" = seed/human; cron mints are "distribution"). **heroSlots /
+> heroAssignments design note (FIX-3): the `community_top` /
+> `stale_auto_fill_community_top` rows are the auto-fill class and are
+> excluded BY DESIGN — including the seed's first slot**: any such row is
+> machine-assignable refresh material, indistinguishable by design from a
+> cron fill; only "editorial"/"operator_curated"/"operator_schedule" rows
+> (human/seed curation choices) are hashed. Three mixed tables have no
+> usable origin field and stay whole-hashed — **vibingTrends** (observed
+> replay drift 8↔9: the one residual cross-machine parity risk; founder CR
+> needed to add an origin field), integrityFlags, leaderboardProjections
+> (upsert-stable, observed 2/2/2). Corrected record: merchantComplaints /
+> moderationCases / moderationActions have no scheduled writer at all
+> (precise function-block attribution) and are whole-hashed. RED/GREEN +
+> three-state proof: `scripts/seed-check-proof.mjs`, full output committed
+> under `ak-redesign/evidence/seed-fingerprint/`. Canonical is
+> **`scripts/seed-fingerprint.txt`** (recomputed per fix — see the file).
+> Historical values (`63fe5110e230`, `c9ebee53588c`, `d7b7f0c893f4`,
+> `b6794007e68a`) belong to superseded hash definitions and are NOT
+> comparable.
 
 ## Keep using the world locally (development after the export)
 
@@ -61,9 +93,11 @@ The corpus lives in `.demo-world-cache/` (gitignored). Re-import any time:
    full-corpus scale) hashes every post/comment title+body by ground-truth
    refKey (ids and times excluded), so two imports of the same corpus produce
    the SAME fingerprint. Compare with
-   the one printed at removal/export time. Note `seed:check` reports a mismatch
-   while the demo world is loaded — that is expected and never "fix" it by
-   touching the canonical fingerprint.
+   the one printed at removal/export time. Note (amended by the S00 fix,
+   2026-10-11): with the content-only fingerprint, `seed:check` MATCHES while
+   the demo world is loaded — cron catch-up rows no longer break parity. A
+   mismatch now means real content drift (or a seed change that must update
+   `scripts/seed-fingerprint.txt` in the same commit).
 
 ## No demo dependencies in product code
 

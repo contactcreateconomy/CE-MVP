@@ -48,6 +48,7 @@ import type * as config from "../config.js";
 import type * as consent from "../consent.js";
 import type * as contribute from "../contribute.js";
 import type * as crons from "../crons.js";
+import type * as demoWorld_devPatch from "../demoWorld/devPatch.js";
 import type * as demoWorld_importChrome from "../demoWorld/importChrome.js";
 import type * as demoWorld_importComments from "../demoWorld/importComments.js";
 import type * as demoWorld_importEngagement from "../demoWorld/importEngagement.js";
@@ -203,6 +204,7 @@ declare const fullApi: ApiFromModules<{
   consent: typeof consent;
   contribute: typeof contribute;
   crons: typeof crons;
+  "demoWorld/devPatch": typeof demoWorld_devPatch;
   "demoWorld/importChrome": typeof demoWorld_importChrome;
   "demoWorld/importComments": typeof demoWorld_importComments;
   "demoWorld/importEngagement": typeof demoWorld_importEngagement;
