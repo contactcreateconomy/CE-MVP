@@ -125,6 +125,16 @@ The **lens** = subject (all / type / tool / topic) × time (New·24H / Hot·7D /
 | L-53 | Editorial posts never enter organic ranking; they appear only as labelled placements (hero, pinned) | B | FEED-GAP F-4 |
 | L-54 | D-14 = the BETA-SWITCH removal (demo world deleted before beta) is the exclusion switch; no read-time filter. Base seed + admin fixtures must also be covered by removal (register them) | B | FEED-GAP F-5; prod is loopback-guarded |
 | L-55 | Post saves get a `toggleSavePost` mutation in B2 | B | FEED-GAP F-7 |
+| L-57 | AI persona posts appear in organic sorts: labelled, ranked only by human reactions, max 1 per page, never in exploration slots | B | closes O-11 |
+| L-58 | Dev reviews only at the end (security audit, final code review, prod deploy). Until then backend branches are gated by Grok review + RED/GREEN + additive-only, each with a CR-RESPONSE note so the final review is fast | B | closes O-03; amends L-03 |
+| L-59 | **Gravity** replaces "Valuable": a reader gives Gravity to a post or a comment (one per member per item, legitimacy-weighted, never counted from personas/staff). Lucide `Orbit` icon; tap = a particle falls into the orb, the ring tightens once, count ticks (one celebrate glow, dark only); reduced motion = fill only. Final look judged in the lab (B5) | B | closes O-10 |
+| L-60 | Two layers: **public Gravity** starts at 0 and never drops because of others; **hidden mass** (internal only) = per-post prior (type rubric: structure, specificity, completeness + originality as a near-duplicate test, plain code, no AI scoring) updated by evidence (Gravity, saves, returns, type outcomes; quick-exit patterns and hides can lower it). Topic scarcity/momentum used for routing only. Never in the prior: author reach, Level, demography | C | Quality engine input |
+| L-61 | **Author flux** (author-only): the author sees how their post's Gravity and reach moved over time with plain-language causes, plus a structure checklist for their post type. Never the hidden mass number or weights (Goodhart). Card: author line "412 saw · 18G ↗" → tap opens the flux panel | B | needs B2 buckets/exposure |
+| L-62 | Gravity is written as a unit, never the word: **"18G"** (Geist Mono, capital G). Full digits up to 9,999 ("1,240G"); above that "12.4K G" with a thin space so it never reads as kilograms. Button = Orbit icon; tooltip "Add Gravity" | A | amends L-59 copy |
+| L-63 | **G-switch** replaces the Orbit icon: at rest a "G" mark; once the viewer has added Gravity in any way, a capsule slides in from the left and docks into the G (switch "on" — "you've slid into this post"), echoing the logo geometry. Tap G = appreciate (like). Comment, save or a qualified share also slide it on. Tooltip/SR names why ("You appreciated and saved this"). Reduced motion: instant state | B | amends L-59 icon |
+| L-64 | Interactions: appreciate (tap G) · Not for me (in ⋯, private) · save · share · comment. **Public numbers on card and post: only G and Strings.** Gravity = legitimacy-weighted sum of positive interactions, each member counted at most once per kind: appreciate 1 · save 3 · qualified share 2 (counts only when someone arrives via the link) · comment 1 per distinct human (not per comment). Not-for-me never adds or subtracts publicly; it feeds hidden mass only. Personas/staff weigh 0 | C | Quality engine input; weights in config |
+| L-65 | **Strings** = comments (threads are made of strings). Card shows "24 strings"; empty = "No strings attached · start one" | A | |
+| L-66 | Author-only breakdown (appreciations, saves, shares, strings, not-for-me, reach) inside author flux; **no switch to make it public** (keeps G the single public currency, avoids vanity/farming). Precedent: YouTube hid public dislikes in 2021 but creators still see them | B | extends L-16, L-61 |
 | L-56 | Every Opus session queries the code graph via a committed helper (`scripts/graph-explain.mjs`) plus a generated table-access index (`graphify-out/tables.json`: which functions read/write each table); GLM regenerates both locally after every merged phase | B | graph indexes functions only |
 
 ### 2.2 Provisional / experiments
@@ -342,7 +352,7 @@ New-posts pill ("12 new posts ↑", content never jumps in) · caught-up divider
 3. **Title** (Spark: the statement is the title, larger)
 4. **Facet** (per type)
 5. **Why-care-now line** (one fixed-height line)
-6. **Footer:** Valuable (Gem + count, hidden at 0) · comments · Save · Share — right: 3 faces + "24 discussing"
+6. **Footer:** G-switch + "18G" (hidden at 0) · "24 strings" · Save · Share — right: 3 faces (L-63–L-65)
 Optional cover: real photo, right thumbnail desktop (P-02 for mobile). Surface: frost look without live blur (L-39). Height target ≤ ~⅓ of 390 without cover (P-03).
 
 ### 10.2 Facets (from M4 fields)
@@ -452,14 +462,11 @@ Plugs into **M15** (shell, widget registry, kill_switch / config_group / monitor
 ## 15. Open items
 | ID | Item | Owner / when |
 |---|---|---|
-| O-03 | Dev agreement: Opus writes backend, dev reviews/deploys (L-03); CRs 001–010, 013, 014 | founder → dev, before B2 |
 | O-04 | Theme switch variant (Iris vs Horizon) | founder in browser, B1 |
 | O-05 | Gem icon (P-04), mobile cover (P-02), card height (P-03) | founder in browser, B5 |
 | O-06 | Taxonomy list (20–30 topics) — founder approves | before B4 |
 | O-07 | Exact thresholds: Earned "emerging", Podium minimums, exploration rate/taper, Hot gravity | B3/B10 config + demo sim |
 | O-08 | Auth confirmations from firestarter §4 (forgot password, socials, remember me, Terms links) | S01, not feed |
-| O-10 | **Post-level Valuable (F-6):** new post reaction vs sum of comment Valuables — blocks CR-014 definition | founder, before B2 |
-| O-11 | Persona posts in organic sorts (labelled, ranked by human reactions only) or excluded like editorial | founder, before B3 |
 | O-09 | Office laptop `setx DEV_TEST_USER_PASSWORD`; forum tests 973/975 TZ issue (S2 handoff §7) | founder Monday |
 
 ---
@@ -547,8 +554,9 @@ qualifying reaction/comment/save (idempotent, legitimacy-aware per M12);
 qualified exposure L-13 + controls L-14 + reveal L-14a as catalogued
 events (M16 eventCatalog); aggregate-on-write counters, raw sampled;
 (4) toggleSavePost mutation (L-55); (5) register base seed + admin
-fixtures for BETA-SWITCH removal (L-54). Post-level Valuable per the
-founder's answer to O-10.
+fixtures for BETA-SWITCH removal (L-54). Gravity model per L-59/L-60: new
+postGravity table (+ comment Gravity = existing reaction, renamed in
+UI); hidden-mass prior stub (type rubric) feeding the Quality engine.
 Tests: counters move on reactions/comments/saves; buckets fill;
 exposure dedup per session; removal leaves zero demo rows anywhere. Write
 CR-013/014-RESPONSE.md for the dev.
@@ -587,7 +595,7 @@ feed-b5b-card-ui. (a) Extend feed.list card payload with D-03 + D-10.
 (b) Rebuild the card by EXTENDING components/feed/feed-card.tsx (+
 feed-display-types, feed-post-type-meta) to FEED-DESIGN §10, then delete
 the retired post-card family (L-51): skeleton rows, 8 facets, why-care line (life stage + relationship),
-Valuable (Gem, hidden at 0, celebrate once), save, ⋯ menu with
+Gravity (Orbit, hidden at 0, celebrate once, L-59), save, ⋯ menu with
 "Why am I seeing this?" sheet (from getWhy, plain language), hide/see
 fewer → "Hidden · Undo", debate vote-to-reveal with equal weights,
 Updated, persona/editorial labels, pinned label, skeleton. Lab fixtures
@@ -691,5 +699,5 @@ Opus builds → Grok reviews against the decision IDs touched (prompt: "Review b
 ---
 
 ## 17. Change log
-- 2026-10-11 — FEED-B0 audit: ak-redesign/specs/FEED-GAP.md. Prod has no writer for post counters (CR-014), day buckets (CR-013), post saves or exposure events → Top/Hot/Vibing/Rising/Fav/exploration flat in prod. Recorded L-51…L-56; opened O-10 (post-level Valuable), O-11 (persona posts in organic). Amended §16 file names, B2/B5/B6/B7 prompts, standing rules (graph helper), D-14 scope, demo-world size.
+- 2026-10-11 — FEED-B0 audit: ak-redesign/specs/FEED-GAP.md. Prod has no writer for post counters (CR-014), day buckets (CR-013), post saves or exposure events → Top/Hot/Vibing/Rising/Fav/exploration flat in prod. Recorded L-51…L-66 (Gravity L-59–L-66: G-switch, Strings, author-only breakdown) (persona posts L-57, dev-at-the-end L-58); opened O-10 (post-level Valuable), O-11 (persona posts in organic). Amended §16 file names, B2/B5/B6/B7 prompts, standing rules (graph helper), D-14 scope, demo-world size.
 - 2026-10-04 — v1 created from session 3 (council phases 1–7, StellarMap, polymorphism, Figma Make rounds 1–3, user testing). Supersedes firestarter §5–§8.
