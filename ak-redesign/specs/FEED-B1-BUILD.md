@@ -62,3 +62,47 @@ date: 2026-10-11
 ```
 - 2026-10-11 — FEED-B1 foundation (branch feed-b1-foundation, FEED-B1-BUILD.md): cn() knows the 22 font-size tokens; frost-strong/-subtle/-look utilities (neutral, no saturate; frost-look no live blur); glow at rest removed (primary button, auth button, Start Discussion, sidebar CTA, mobile Create, bell pulse) and test-fenced; lib/motion.ts (feedback/settle/glide, focus pull, 50ms stagger, hydration-safe reduced motion); logo gaps transparent, +15% in dark, 3-segment reveal; theme-switch candidates Iris/Horizon at /lab/foundation?v=a|b; CanonicalFeedClient hero grid removed (F-2). PROPOSED L-67 (Iris/Horizon reading), L-68 (shell glass-* → frost-* in B6), L-69 (L-38 supersedes S00 Create-tab glow), L-70 (sorter active pill = glow/active?).
 ```
+
+---
+
+# Round 2 — FEED-B1 FIX (2026-10-12)
+
+Rebased on `feed-base` @ 153c43f (DESIGN-BIBLE v1, L-67…L-72). Cites Bible §3, §9, §10 (L-71).
+
+## What changed
+| Decision | Change | Proof (RED → GREEN) |
+|---|---|---|
+| **L-72** taps critically damped | `SPRINGS.feedback` 520/34 → **520/46** (ratio 0.745 → 1.009). Kept stiffness/damping (one form for all three springs; `bounce/duration` gave no extra clarity). | `red-07` (ratio 0.745; motion's own `spring()` peaked at **1.0298**) → `green-07`: ratio ∈ [1, 1.1), generator peak = **1.0000**, 95% reached at **212ms** (≈ Bible response 0.2s) |
+| **L-70** sorter pill no glow | `feed-tabs.tsx` drops `glow-active`, `trend-sorter.tsx` drops `shadow-glow-primary-pill`; glow-at-rest allowlist loses trend-sorter; new test: neither sorter file contains any glow class, brand fill kept | `red-08` → `green-08`; browser: `/lab/feed` pill `box-shadow: none` (`sorter-no-glow-lab-feed-1440-dark.png`) |
+| **L-67** Iris chosen | `runThemeSwitch` defaults to Iris; shared `applyTheme()`; `utilities.css` keeps only Iris + reduced-motion fade; **Horizon moved to `lab/foundation/horizon.css`** (lab-only, `?v=b`); **top-nav theme toggle now uses Iris** from the button (reduced motion → crossfade, no API → instant) | `red-09` → `green-09` (incl. "no horizon/dusk/dawn in shared CSS", "top-nav calls runThemeSwitch"); browser: Iris default mid-frame + Horizon under `?v=b` (`theme-switch-iris-default-…`, `theme-switch-horizon-lab-…`) |
+| Bible §10.7 (lab only) | lab spring demo press scale 0.94 → **0.97** + dim 0.9 | visual |
+
+Gate: typecheck ✅ · lint ✅ · typecheck:admin ✅ · forum tests **73 files / 1000 tests ✅** · no console errors on `/lab/foundation`.
+
+## Bible check — gaps (reported, not fixed unless listed above)
+| # | Bible | Gap in B1 | Proposed fix · phase |
+|---|---|---|---|
+| G1 | §3.1 shadows per layer (L1 `shadow/xs`, L2 `shadow/md`, L3 `shadow/lg`) | `frost-*` utilities carry material only — no layer shadow | **PROPOSED L-73:** bake the layer shadow into each frost utility (`frost-look`+xs, `frost-subtle/strong`+md) so a material can't be used at the wrong depth; L3 adds `shadow-lg` at the call site · B1-fix or B6 |
+| G2 | §3.2 rule 8 `prefers-contrast: more` → solid + 1px border | not handled (only reduced-transparency + no-support) | add nested `@media (prefers-contrast: more)` to all three frost utilities · small, B1-fix |
+| G3 | §3.2 rule 4 scroll-edge fade under glass | no utility yet | B6 (shell) |
+| G4 | §3.2 rule 5 35% dark dim over bright media | no token/utility | B7 (hero) |
+| G5 | §9.3 `settle` ≈1.0 | 260/30 = ratio **0.93** (peak 1.00013 — invisible); `glide` 0.93 is inside 0.9–1.0 ✅ | optional: settle damping 33 (ratio 1.02) · founder taste |
+| G6 | §9.2 rule 2 never block input | the Iris View Transition makes the page non-interactive for its 500ms | accept as the one exception (user-caused, rare) or shorten Iris to `--duration-emerge` 420ms · founder |
+| G7 | §9.2 rule 5 transform/opacity only | Iris animates `clip-path` | Bible names Iris as a signature move (§9.4) → accepted exception; record it |
+| G8 | §9.2 rule 9 no sustained oscillation | `pulse-live` (2000ms infinite) and `.animate-pulse-glow` still exist in `utilities.css` (no product use after B1; `pulse-live` only in `/lab/utilities`) | cap to 3 pulses then rest when Live is built; retire `animate-pulse-glow` · B6/B13 |
+| G9 | §9.2 rule 1 + §10.7 press ≈0.97 + dim on pointer-down within 100ms | **`Button` (forum + `auth-ui`) has no press scale**; primary only drops its hover lift; transition is `duration-normal` 200ms (> 100ms); no 100ms duration token exists | **PROPOSED L-74:** base Button gets `active:scale-97` + slight dim and a new `--duration-press: 100ms` token (STYLE-KIT addition → founder/PM) · B5 or a B1-fix |
+| G10 | §10.6 focus = visible solid ring, both themes | dark `--glow-focus` = 1px ring + 15px halo (thin; halo is glow); light = solid 2px ✅. `Button` itself uses its own `ring-2` ✅ | make dark `--glow-focus` a solid 2px ring (halo optional) · B13 |
+| G11 | §10.2 hover delays (0 / ~150 / ~500ms) | not in B1 scope; no tokens for 150/500 delays yet | B5/B6 |
+| — | §3.2 rules 1–3, 6; §4 rules 1–4; §9.2 rules 3, 8, 11; §10 rules 3–6 | ✅ met by B1 pieces (neutral frost, no live blur on cards, reduced motion = crossfade, hover adds no layout in lab) | — |
+
+Also found (outside B1): `/lab/feed` throws a hydration error — `feed-lab-client.tsx:83` renders `resolvedTheme` text during SSR (same bug fixed in `/lab/foundation`); its `?theme=` effect also re-forces the theme on every toggle. B1 only changed class strings in `feed-tabs`. One-line fixes; not applied (lab/feed is s02 scope).
+
+## Open questions
+1. G1 + G2 (frost shadows, high-contrast fallback): fold into B1 now (small, frost is B1's) or B6?
+2. G9 press state: approve `--duration-press: 100ms` (new token) + `active:scale-97` on Button?
+3. G6/G7: record Iris as the accepted exception to Bible §9.2 rules 2 and 5?
+
+## Lines to append to FEED-DESIGN.md §17
+```
+- 2026-10-12 — FEED-B1 fix round (FEED-B1-BUILD.md "Round 2"): L-72 feedback spring 520/46 (ratio ≈1.01; motion spring peak 1.0000, 95% at 212ms); L-70 sorter pill solid brand, no glow (feed-tabs, trend-sorter; test-fenced); L-67 Iris is the product theme switch (top-nav), Horizon kept lab-only at ?v=b. Bible audit gaps G1–G11 reported: PROPOSED L-73 (layer shadow baked into frost utilities), L-74 (Button press 0.97 + --duration-press 100ms); prefers-contrast fallback for frost missing; Iris = accepted exception to §9.2 rules 2 & 5 (to record).
+```
