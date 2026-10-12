@@ -1,0 +1,8 @@
+before dark lab-feed: themed-border elements with a visible colour = 1/48
+before dark signin: themed-border elements with a visible colour = 0/0
+before dark lab-foundation: themed-border elements with a visible colour = 0/16
+before dark landing: themed-border elements with a visible colour = 0/2
+before light lab-feed: themed-border elements with a visible colour = 1/48
+before light signin: themed-border elements with a visible colour = 0/0
+before light lab-foundation: themed-border elements with a visible colour = 0/16
+before light landing: themed-border elements with a visible colour = 0/2

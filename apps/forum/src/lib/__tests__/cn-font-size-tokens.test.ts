@@ -16,7 +16,7 @@ const tokensCss = readFileSync(resolve(__dirname, "../../../../../packages/desig
 const cssSizeTokens = Array.from(tokensCss.matchAll(/^\s*--text-([a-z0-9-]+):/gm))
   .map((m) => m[1])
   .filter((n) => !n.includes("--"))
-  .filter((n) => !["primary", "secondary", "muted", "disabled", "inverse", "link", "link-hover"].includes(n));
+  .filter((n) => !["primary", "secondary", "muted", "disabled", "inverse", "link", "link-hover", "on-media"].includes(n));
 
 describe("cn() font-size tokens (FEED-B1)", () => {
   it("keeps a named size next to a text colour", () => {

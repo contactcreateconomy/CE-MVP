@@ -573,6 +573,14 @@ main {
   box-shadow: var(--glow-active);
 }
 
+/* Fav "new activity" (L-47): a steady soft glow in the letters — a state,
+   never a pulse; cleared when the viewer opens Fav. Light: brand colour only
+   (--glow-primary-text is none in light). */
+@utility glow-text-new {
+  color: var(--brand-primary);
+  text-shadow: var(--glow-primary-text);
+}
+
 /* Keyboard focus only — the solid-in-light, ring-in-dark focus treatment. */
 @utility focus-ring {
   &:focus-visible {
@@ -773,6 +781,16 @@ html[data-theme-switch="iris"]::view-transition-new(root) {
 html[data-theme-switch="fade"]::view-transition-old(root),
 html[data-theme-switch="fade"]::view-transition-new(root) {
   animation-duration: var(--duration-normal);
+}
+
+/* Sideways chip rows (mobile Discover, podium dimensions): scroll without
+   a visible scrollbar. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* ── Safe areas (§5.5) ───────────────────────────────────────────────── */

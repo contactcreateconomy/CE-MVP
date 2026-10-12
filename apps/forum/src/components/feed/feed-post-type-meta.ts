@@ -2,7 +2,7 @@ import {
   Briefcase,
   GitCompare,
   HelpCircle,
-  Home,
+  LayoutGrid,
   LayoutList,
   Newspaper,
   Rocket,
@@ -43,7 +43,7 @@ const META: Record<string, PostTypeMeta> = {
 };
 
 const FALLBACK: PostTypeMeta = { Icon: Sparkles, text: "text-brand-primary", wash: "bg-brand-primary/15" };
-const HOME: PostTypeMeta = { Icon: Home, text: "text-brand-primary", wash: "bg-brand-primary/15" };
+const HOME: PostTypeMeta = { Icon: LayoutGrid, text: "text-brand-primary", wash: "bg-brand-primary/15" };
 
 export function postTypeMeta(type: string | null | undefined): PostTypeMeta {
   if (type === "home") return HOME;

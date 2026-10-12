@@ -1,211 +1,323 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { ArrowRightCircle, ArrowUpRight, Crown, Medal, TrendingUp } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { AnimatePresence, motion, type Variants } from "motion/react";
+import { ArrowUpRight, Check, ChevronDown, Crown, Pause, Play, TrendingUp } from "lucide-react";
 
-import { formatPoints } from "@/lib/format";
+import { motionFor, useFeedMotion, usePrefersReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 import { FeedAvatar } from "./feed-avatar";
-import type { FeedPodiumEntry, FeedPodiumWindow, FeedVibingItem } from "./feed-display-types";
+import type { FeedPodiumDimension, FeedPodiumEntry, FeedVibingItem } from "./feed-display-types";
 
-/* ── What's Vibing ─────────────────────────────────────────────────── */
+const full = new Intl.NumberFormat("en-US");
 
-const VIBING_INTERVAL_MS = 4000;
+/* ── What's Vibing (§9.5, L-45) ─────────────────────────────────────── */
+
+const PERIOD_MS = 6000;
+
+/** Rotation clock: pausable without losing progress. */
+function useRotation(n: number, paused: boolean) {
+  const [i, setI] = useState(0);
+  const elapsed = useRef(0);
+  useEffect(() => {
+    if (paused || n < 2) return;
+    let last = performance.now();
+    const id = window.setInterval(() => {
+      const now = performance.now();
+      elapsed.current += now - last;
+      last = now;
+      if (elapsed.current >= PERIOD_MS) {
+        elapsed.current = 0;
+        setI((x) => (x + 1) % n);
+      }
+    }, 100);
+    return () => window.clearInterval(id);
+  }, [paused, n]);
+  return i % Math.max(n, 1);
+}
+
+/** Sequential, never overlapping: out = fade + soft blur (180ms), in = focus
+ *  pull context → hook → meta, 60ms apart. Reduced motion → crossfade. */
+function useSequence() {
+  const reduced = usePrefersReducedMotion();
+  const m = motionFor(reduced);
+  const container: Variants = {
+    hidden: {},
+    visible: { transition: { staggerChildren: reduced ? 0 : 0.06 } },
+    exit: { opacity: 0, filter: reduced ? "none" : "blur(4px)", transition: { duration: 0.18 } },
+  };
+  return { container, item: m.focusPull };
+}
 
 export interface FeedVibingWidgetProps {
   items: FeedVibingItem[];
   className?: string;
 }
 
-/** Prototype `whats-vibing-widget.tsx`: one trending item at a time, stacked
- *  slide-up rotation every 4 s, paused on hover/focus and under reduced
- *  motion. Renders nothing when there is nothing trending (D-012). */
+/** Renders nothing when nothing is trending (D-012); quiet fallback is B9. */
 export function FeedVibingWidget({ items, className }: FeedVibingWidgetProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-
-  useEffect(() => {
-    if (items.length <= 1 || isPaused) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const timer = window.setInterval(() => setActiveIndex((i) => (i + 1) % items.length), VIBING_INTERVAL_MS);
-    return () => window.clearInterval(timer);
-  }, [isPaused, items.length]);
-
+  const [hold, setHold] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
+  const i = useRotation(items.length, hold || userPaused);
+  const { container, item } = useSequence();
   if (items.length === 0) return null;
-  const current = activeIndex % items.length;
+  const h = items[i];
 
   return (
     <section
-      className={cn("card-surface animate-soft-float h-62.5 border-border-default p-4 motion-reduce:animate-none", className)}
-      style={{ animationDelay: "160ms" }}
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onFocusCapture={() => setIsPaused(true)}
-      onBlurCapture={() => setIsPaused(false)}
       aria-label="What's Vibing"
+      aria-roledescription="rotating highlights"
+      onPointerEnter={() => setHold(true)}
+      onPointerLeave={() => setHold(false)}
+      onFocus={() => setHold(true)}
+      onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node) && setHold(false)}
+      className={cn("group/v frost-subtle rounded-lg border border-border-subtle p-2.5", className)}
     >
-      <h2 className="inline-flex items-center gap-2 pb-3 text-heading-xs font-semibold text-text-primary">
-        <TrendingUp className="size-4 text-brand-primary" /> What&apos;s Vibing
-      </h2>
-      <div className="h-46.5">
-        <div className="relative h-full overflow-hidden rounded-2xl">
-          {items.map((item, index) => (
-            <Link
-              key={item.id}
-              href={item.href}
-              tabIndex={index === current ? 0 : -1}
-              aria-hidden={index !== current}
-              className={cn(
-                "focus-ring group absolute inset-0 flex flex-col justify-between rounded-2xl border border-border-prominent bg-bg-overlay/25 p-4 transition-[transform,opacity,border-color] duration-slow ease-out-cubic hover:border-border-active/45 motion-reduce:transition-opacity",
-                index === current
-                  ? "z-10 translate-y-0 scale-100 opacity-100"
-                  : index < current
-                    ? "pointer-events-none -translate-y-4 scale-95 opacity-0"
-                    : "pointer-events-none translate-y-4 scale-95 opacity-0",
-              )}
-            >
-              <div className="space-y-2">
-                <span className="block text-caption font-semibold text-brand-primary">{item.contextLabel}</span>
-                <h3 className="line-clamp-4 text-heading-xs font-semibold text-text-primary">{item.title}</h3>
-              </div>
-              <div className="inline-flex items-center gap-2 text-label-sm font-semibold uppercase tracking-widest text-text-muted">
-                <span>{item.engagedCount.toLocaleString("en-US")} engaged</span>
-                <ArrowUpRight className="size-3.5 text-text-secondary transition-[transform,color] duration-normal group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand-primary" />
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
+      <header className="flex h-7 items-center gap-2 px-1">
+        <TrendingUp className="size-3.75 text-brand-primary" strokeWidth={1.5} aria-hidden />
+        <h2 className="flex-1 text-body-sm font-semibold text-text-primary">What&apos;s Vibing</h2>
+        {items.length > 1 ? (
+          // WCAG 2.2.2: pause control, visible on hover / focus only.
+          <button
+            type="button"
+            onClick={() => setUserPaused((p) => !p)}
+            aria-label={userPaused ? "Resume rotation" : "Pause rotation"}
+            className="focus-ring flex size-7 items-center justify-center rounded-full text-text-muted opacity-0 transition-opacity duration-normal hover:bg-bg-overlay hover:text-text-primary focus-visible:opacity-100 group-hover/v:opacity-100 group-focus-within/v:opacity-100"
+          >
+            {userPaused ? <Play className="size-3" strokeWidth={1.75} /> : <Pause className="size-3" strokeWidth={1.75} />}
+          </button>
+        ) : null}
+      </header>
+
+      <Link
+        href={h.href}
+        aria-live={hold || userPaused ? "polite" : "off"}
+        className={cn(
+          "focus-ring group mt-2 block h-45 rounded-md border bg-bg-surface/70 p-4 transition-colors duration-normal hover:border-border-default",
+          h.featured ? "border-border-active" : "border-border-subtle",
+        )}
+      >
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div key={h.id} variants={container} initial="hidden" animate="visible" exit="exit" className="flex h-full flex-col">
+            <motion.p variants={item} className="flex items-center gap-1.5 text-caption font-medium text-brand-primary">
+              {h.featured ? (
+                <span className="rounded-full border border-border-active px-1.5 font-mono text-micro uppercase tracking-wider">Featured</span>
+              ) : null}
+              {h.contextLabel}
+            </motion.p>
+            <motion.p variants={item} className="mt-2 line-clamp-3 text-body-md font-semibold text-text-primary">
+              {h.title}
+            </motion.p>
+            <motion.div variants={item} className="mt-auto flex items-center justify-between">
+              <span className="font-mono text-micro uppercase tracking-widest text-text-muted">
+                <span className="text-text-secondary">{full.format(h.engagedCount)}</span> engaged
+              </span>
+              <ArrowUpRight
+                className="size-3.75 text-text-muted transition-[translate,color] duration-normal group-hover:-translate-y-px group-hover:translate-x-px group-hover:text-text-primary"
+                strokeWidth={1.5}
+                aria-hidden
+              />
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
+      </Link>
     </section>
   );
 }
 
-/* ── Podium ────────────────────────────────────────────────────────── */
+/** Mobile: one-line ticker under the sorter (§8); same sequence, holds on touch. */
+export function FeedVibingTicker({ items, className }: FeedVibingWidgetProps) {
+  const [hold, setHold] = useState(false);
+  const i = useRotation(items.length, hold);
+  const { container, item } = useSequence();
+  if (items.length === 0) return null;
+  const h = items[i];
+  return (
+    <Link
+      href={h.href}
+      aria-label={`What's Vibing: ${h.contextLabel}, ${h.shortTitle ?? h.title}`}
+      onTouchStart={() => setHold(true)}
+      onTouchEnd={() => window.setTimeout(() => setHold(false), 1500)}
+      className={cn("focus-ring flex h-9 items-center gap-2 overflow-hidden rounded-full border border-border-subtle bg-bg-surface/70 px-3", className)}
+    >
+      <TrendingUp className="size-3.5 shrink-0 text-brand-primary" strokeWidth={1.5} aria-hidden />
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span key={h.id} variants={container} initial="hidden" animate="visible" exit="exit" className="flex min-w-0 flex-1 items-center gap-1 whitespace-nowrap text-caption">
+          <motion.span variants={item} className="shrink-0 text-brand-primary">
+            {h.featured ? "Featured" : h.contextLabel}
+          </motion.span>
+          <motion.span variants={item} className="truncate text-text-secondary">
+            · {h.shortTitle ?? h.title}
+          </motion.span>
+        </motion.span>
+      </AnimatePresence>
+    </Link>
+  );
+}
 
-const WINDOWS: Array<{ key: FeedPodiumWindow; label: string }> = [
-  { key: "h24", label: "24H" },
-  { key: "d7", label: "7D" },
-  { key: "m1", label: "1M" },
-];
+/* ── Podium (§9.7, L-28/L-32) ───────────────────────────────────────── */
 
-const RANK = {
-  1: { icon: "text-rank-gold", ring: "ring-rank-gold" },
-  2: { icon: "text-rank-silver", ring: "ring-rank-silver" },
-  3: { icon: "text-rank-bronze", ring: "ring-rank-bronze" },
-  4: { icon: "text-rank-four", ring: "ring-rank-four" },
-  5: { icon: "text-rank-five", ring: "ring-rank-five" },
-} as const;
+const CROWN = ["text-rank-gold", "text-rank-silver", "text-rank-bronze"] as const;
+
+function Rank({ rank }: { rank: number }) {
+  return rank <= 3 ? (
+    <Crown className={cn("size-3.75 shrink-0 fill-current/20", CROWN[rank - 1])} strokeWidth={1.75} aria-label={`Rank ${rank}`} />
+  ) : (
+    <span className="w-3.75 shrink-0 text-center font-mono text-caption tabular-nums text-text-muted">{rank}</span>
+  );
+}
+
+/** Numbers in Geist Mono, words in Geist. */
+const monoNumbers = (t: string) =>
+  t.split(/(\+?\d[\d,.]*)/).map((x, i) => (i % 2 ? <span key={i} className="font-mono">{x}</span> : x));
+
+function Rows({ entries }: { entries: FeedPodiumEntry[] }) {
+  const m = useFeedMotion();
+  return (
+    <motion.ol variants={m.stagger} initial="hidden" animate="visible" className="flex flex-col">
+      {entries.map((e) => {
+        const inner = (
+          <>
+            <Rank rank={e.rank} />
+            <FeedAvatar person={e.person} size="sm" />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-body-sm font-medium text-text-primary">{e.person.name}</span>
+              {e.did ? <span className="block truncate text-micro text-text-muted">{monoNumbers(e.did)}</span> : null}
+            </span>
+            {e.person.levelLabel ? <span className="shrink-0 text-micro text-text-muted">{e.person.levelLabel}</span> : null}
+          </>
+        );
+        const row = "flex w-full items-center gap-2.5 rounded-md px-1.5 py-1.5";
+        return (
+          <motion.li key={`${e.rank}-${e.person.name}`} variants={m.focusPull}>
+            {e.href ? (
+              <Link href={e.href} className={cn(row, "focus-ring transition-colors duration-normal hover:bg-bg-overlay/60")}>
+                {inner}
+              </Link>
+            ) : (
+              <div className={row}>{inner}</div>
+            )}
+          </motion.li>
+        );
+      })}
+    </motion.ol>
+  );
+}
+
+function DimensionPicker({ dimensions, active, onChange }: { dimensions: FeedPodiumDimension[]; active: string; onChange: (key: string) => void }) {
+  const current = dimensions.find((d) => d.key === active) ?? dimensions[0];
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button
+          type="button"
+          className="focus-ring flex h-7 items-center gap-1 rounded-full border border-border-subtle px-2.5 text-caption font-medium text-text-secondary transition-colors duration-normal hover:border-border-default hover:text-text-primary"
+        >
+          {current?.label} <ChevronDown className="size-3" strokeWidth={1.75} aria-hidden />
+        </button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content align="end" sideOffset={4} className="frost-strong z-dropdown w-48 rounded-lg border border-border-subtle p-1">
+          {dimensions.map((d) => (
+            <DropdownMenu.Item
+              key={d.key}
+              onSelect={() => onChange(d.key)}
+              className={cn(
+                "flex h-8 cursor-pointer items-center justify-between rounded-md px-2.5 text-body-sm outline-none data-highlighted:bg-bg-overlay",
+                d.key === active ? "text-brand-primary" : "text-text-secondary",
+              )}
+            >
+              {d.label}
+              {d.key === active ? <Check className="size-3.5" strokeWidth={2} aria-hidden /> : null}
+            </DropdownMenu.Item>
+          ))}
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
+}
 
 export interface FeedPodiumWidgetProps {
-  window: FeedPodiumWindow;
-  onWindowChange: (window: FeedPodiumWindow) => void;
-  /** null → "forming" (projection below its threshold, CAP-294). */
+  /** Follows the sorter window: "this week" (Hot), "this month" (Top), "today" (New). */
+  windowLabel: string;
+  /** Dimension registry (L-32). Absent / single → no picker. */
+  dimensions?: FeedPodiumDimension[];
+  activeDimension?: string;
+  onDimensionChange?: (key: string) => void;
+  /** null → "Forming" (below the projection threshold, CAP-294). */
   entries: FeedPodiumEntry[] | null;
+  /** e.g. "needs 25 contributors (12 so far)" — from data, never invented. */
+  formingDetail?: string | null;
   leaderboardHref: string;
   className?: string;
 }
 
-/** Prototype `podium-widget.tsx`: 24H/7D/1M switch + top 5 with rank-tinted
- *  rings. Points are the projection's, never derived client-side (D-012 —
- *  the prototype's per-window multipliers are not ported). */
-export function FeedPodiumWidget({ window, onWindowChange, entries, leaderboardHref, className }: FeedPodiumWidgetProps) {
-  const activeIndex = Math.max(
-    0,
-    WINDOWS.findIndex((w) => w.key === window),
-  );
-
+function Forming({ detail }: { detail?: string | null }) {
   return (
-    <section
-      className={cn("card-surface animate-soft-float space-y-3 p-3 motion-reduce:animate-none", className)}
-      style={{ animationDelay: "100ms" }}
-      aria-label="Podium"
-    >
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-label-md font-semibold uppercase text-text-muted">Podium</h2>
-        <div role="tablist" aria-label="Podium window" className="relative w-40 rounded-full border border-border-default bg-bg-overlay/50 p-1">
-          <div
-            aria-hidden
-            className="glow-active pointer-events-none absolute bottom-1 left-1 top-1 w-[calc((100%-0.5rem)/3)] rounded-full bg-brand-primary transition-transform duration-slow ease-out-cubic motion-reduce:transition-none"
-            style={{ transform: `translateX(${activeIndex * 100}%)` }}
-          />
-          <div className="relative z-10 grid grid-cols-3">
-            {WINDOWS.map((w) => {
-              const isActive = w.key === window;
-              return (
-                <button
-                  key={w.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  onClick={() => onWindowChange(w.key)}
-                  className={"text-micro " + cn(
-                    "focus-ring h-6 rounded-full px-2 font-semibold transition-colors duration-normal",
-                    isActive ? "text-text-inverse" : "text-text-secondary hover:text-text-primary",
-                  )}
-                >
-                  {w.label}
-                </button>
-              );
-            })}
-          </div>
+    <div className="rounded-md border border-dashed border-border-default px-3 py-5 text-center">
+      <p className="text-body-sm font-medium text-text-primary">Forming</p>
+      {detail ? <p className="mt-0.5 text-caption text-text-muted">{monoNumbers(detail)}</p> : null}
+    </div>
+  );
+}
+
+/** Rows say WHAT someone did, in plain words — never opaque points (R-10). */
+export function FeedPodiumWidget(p: FeedPodiumWidgetProps) {
+  const picker = p.dimensions && p.dimensions.length > 1 && p.onDimensionChange;
+  return (
+    <section aria-label="Podium" className={cn("frost-subtle rounded-lg border border-border-subtle p-2.5", p.className)}>
+      <header className="flex items-center gap-2 px-1">
+        <h2 className="flex-1 text-body-sm font-semibold text-text-primary">
+          Podium <span className="font-normal text-text-muted">· {p.windowLabel}</span>
+        </h2>
+        {picker ? <DimensionPicker dimensions={p.dimensions!} active={p.activeDimension ?? p.dimensions![0].key} onChange={p.onDimensionChange!} /> : null}
+      </header>
+      <div className="mt-2">{p.entries && p.entries.length ? <Rows entries={p.entries.slice(0, 5)} /> : <Forming detail={p.formingDetail} />}</div>
+      <Link
+        href={p.leaderboardHref}
+        className="focus-ring mt-2 flex h-8 w-full items-center justify-center gap-1 rounded-full text-caption font-medium text-text-secondary transition-colors duration-normal hover:bg-bg-overlay hover:text-text-primary"
+      >
+        Full leaderboard <ArrowUpRight className="size-3.5" strokeWidth={1.75} aria-hidden />
+      </Link>
+    </section>
+  );
+}
+
+/** Mobile in-feed card (after the 5th post, §8): dimension chips + top 3. */
+export function FeedPodiumCard(p: FeedPodiumWidgetProps) {
+  return (
+    <section aria-label="Podium" className={cn("frost-look rounded-lg border border-border-subtle p-3.5", p.className)}>
+      <h2 className="text-body-sm font-semibold text-text-primary">
+        Podium <span className="font-normal text-text-muted">· {p.windowLabel}</span>
+      </h2>
+      {p.dimensions && p.dimensions.length > 1 && p.onDimensionChange ? (
+        <div className="no-scrollbar -mx-3.5 mt-2 flex gap-1.5 overflow-x-auto px-3.5">
+          {p.dimensions.map((d) => (
+            <button
+              key={d.key}
+              type="button"
+              onClick={() => p.onDimensionChange!(d.key)}
+              aria-pressed={d.key === p.activeDimension}
+              className={cn(
+                "focus-ring h-7 shrink-0 rounded-full border px-2.5 text-caption font-medium transition-[scale] active:scale-97 active:duration-press",
+                d.key === p.activeDimension ? "border-transparent bg-brand-primary text-text-inverse" : "border-border-subtle text-text-secondary",
+              )}
+            >
+              {d.label}
+            </button>
+          ))}
         </div>
-      </div>
-
-      {entries === null || entries.length === 0 ? (
-        <p className="rounded-lg border border-border-subtle bg-bg-overlay/45 px-3 py-4 text-center text-body-sm text-text-secondary">
-          Podium is forming
-        </p>
-      ) : (
-        <ol className="space-y-2">
-          {entries.slice(0, 5).map((entry) => {
-            const tone = RANK[entry.rank as keyof typeof RANK] ?? RANK[5];
-            const Icon = entry.rank <= 3 ? Crown : Medal;
-            const shimmer = entry.rank <= 3;
-            const row = (
-              <>
-                {shimmer ? (
-                  // v2 top-3 hover sheen — no stated purpose; flagged in S02-SPEC §4 (founder call).
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute inset-y-0 -left-[35%] w-[35%] -skew-x-12 bg-linear-to-r from-transparent via-text-primary/10 to-transparent opacity-0 transition-[left,opacity] duration-700 group-hover/row:left-[120%] group-hover/row:opacity-100 motion-reduce:hidden"
-                  />
-                ) : null}
-                <span className="relative z-10 flex min-w-0 flex-1 items-center gap-2.5 pr-2">
-                  <Icon className={cn("size-4 shrink-0", tone.icon)} aria-label={`Rank ${entry.rank}`} />
-                  <FeedAvatar person={entry.person} size="sm" className={cn("size-8 border-0 ring-2", tone.ring)} />
-                  <span className="min-w-0 truncate text-body-sm font-medium text-text-primary">{entry.person.name}</span>
-                </span>
-                <span className="relative z-10 shrink-0 text-caption font-semibold text-feedback-warning">{formatPoints(entry.points)}</span>
-              </>
-            );
-            const rowClass =
-              "group/row relative flex items-center justify-between gap-2 overflow-hidden rounded-lg border border-border-subtle bg-bg-overlay/45 px-3 py-2.5";
-            return (
-              <li key={`${entry.rank}-${entry.person.name}`}>
-                {entry.href ? (
-                  <Link href={entry.href} className={cn(rowClass, "focus-ring transition-colors duration-normal", shimmer && "hover:border-border-prominent")}>
-                    {row}
-                  </Link>
-                ) : (
-                  <div className={rowClass}>{row}</div>
-                )}
-              </li>
-            );
-          })}
-        </ol>
-      )}
-
-      <div className="flex justify-center">
-        <Link
-          href={leaderboardHref}
-          aria-label="Open full leaderboard"
-          className="focus-ring inline-flex size-8 items-center justify-center rounded-full text-brand-primary transition-colors duration-normal hover:bg-bg-overlay/55 hover:text-brand-primary-hover"
-        >
-          <ArrowRightCircle className="size-4" />
-        </Link>
-      </div>
+      ) : null}
+      <div className="mt-2">{p.entries && p.entries.length ? <Rows entries={p.entries.slice(0, 3)} /> : <Forming detail={p.formingDetail} />}</div>
+      <Link
+        href={p.leaderboardHref}
+        className="focus-ring mt-1 flex h-9 w-full items-center justify-center gap-1 rounded-full border border-border-subtle text-caption font-medium text-text-primary transition-colors duration-normal hover:bg-bg-overlay"
+      >
+        See leaderboard <ArrowUpRight className="size-3.5" strokeWidth={1.75} aria-hidden />
+      </Link>
     </section>
   );
 }

@@ -1,59 +1,31 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useQuery } from "convex/react";
 
-import {
-  TopPostHeroCarousel,
-  TopPostHeroCarouselEmpty,
-  TopPostHeroCarouselSkeleton,
-} from "@/components/feed/top-post-hero-carousel";
+import { toHeroSlides } from "@/components/feed/feed-adapter";
+import { FeedHeroCarousel, FeedHeroCarouselSkeleton } from "@/components/feed/feed-hero-carousel";
 import { api } from "@/lib/convex";
-import type { TopPostHeroSlide } from "@/types/hero";
 import { isConvexConfigured } from "@cemvp/convex-client";
 
+/** Shell hero on non-feed shell routes: the canonical carousel fed by
+ *  feed.getChrome (L-31 no autoplay, L-43 centred cover-flow). On /feed the
+ *  hero lives inside FeedPageView, so the shell renders none (FEED-U2). */
 function TopPostHeroSectionWithConvex() {
-  // P7-CLEANUP: the canonical hero (feed.getChrome — CAP-192's own data)
   const chrome = useQuery(api.feed.getChrome, {});
-  type HeroRow = {
-    slotOrder: number;
-    postId: string;
-    slug: string | null;
-    title: string;
-    ctaLabel: string | null;
-    disclosureClass: string;
-    isCommunityTop: boolean;
-  };
-  const raw = (chrome as { hero?: HeroRow[] } | undefined)?.hero ?? [];
-  const slides: TopPostHeroSlide[] = raw
-    .filter((h): h is HeroRow & { slug: string } => h.slug !== null)
-    .map((h) => ({
-      id: h.postId,
-      slug: h.slug,
-      discussionHref: `/discussions/${h.slug}`,
-      title: h.title,
-      summary: h.isCommunityTop ? "Community Top — the freshest active slots." : "Editorially selected.",
-      reads: 0, // legacy counters retired; hero copy carries the slot, not vanity counts
-      comments: 0,
-      shares: 0,
-      eyebrow: h.isCommunityTop ? "Community Top" : "Featured",
-      ctaLabel: h.ctaLabel ?? "Read",
-      accentRgb: "88 101 242" as const, // brand accent (display concern)
-    }));
-
-  if (chrome === undefined) {
-    return <TopPostHeroCarouselSkeleton className="h-[440px] xl:h-[520px]" />;
-  }
-
-  if (slides.length === 0) {
-    return <TopPostHeroCarouselEmpty className="h-[440px] xl:h-[520px]" />;
-  }
-
-  return <TopPostHeroCarousel slides={slides} />;
+  const slides = chrome === undefined ? [] : toHeroSlides((chrome as { hero?: unknown[] }).hero as never);
+  if (chrome !== undefined && slides.length === 0) return null;
+  return (
+    <section className="mx-auto hidden w-full max-w-(--container-app) px-4 pb-2 pt-6 md:px-6 lg:block lg:px-8">
+      {chrome === undefined ? <FeedHeroCarouselSkeleton /> : <FeedHeroCarousel slides={slides} />}
+    </section>
+  );
 }
 
 /** Avoid `useQuery` when Convex is not configured (e.g. Vercel build without `NEXT_PUBLIC_CONVEX_URL`) — `useQuery` still requires a provider even with `"skip"`. */
 export function TopPostHeroSection() {
-  if (!isConvexConfigured()) {
+  const pathname = usePathname();
+  if (pathname === "/feed" || !isConvexConfigured()) {
     return null;
   }
   return <TopPostHeroSectionWithConvex />;

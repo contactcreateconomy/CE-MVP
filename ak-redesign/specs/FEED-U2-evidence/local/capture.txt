@@ -1,0 +1,29 @@
+U2 local /feed capture — 2026-10-12, GLM (home PC)
+branch feed-u2-wire @ abd116a; forum dev on :3002
+backend: local anonymous-CE-MVP @ 127.0.0.1:3210, convex dev pushed U2
+functions (DISABLE_BEACON=1 — cold boot 15s vs 30s CLI window), beacon off
+seed:check PASS 0ef8369aa5d8 (unchanged — U2 functions additive)
+viewport shots, DSF 1, chromium headless (--use-angle=swiftshader), dark = default,
+light = html.dark removed after load
+
+Observed (DOM + pixels):
+- card covers: real photos load (1200px storage assets, in-view ones complete)
+- avatars: render (256px raster + SVG initials; SVG reports naturalWidth 0 —
+  the "unloaded" block in DOM probes is lazy + SVG, nothing 404s)
+- comments: strings counts render ("22 strings", "No strings attached · start one");
+  no best-comment text in the Hot first page (established-stage cards needed)
+- HERO GAP: all 3 hero frames render without photos — getChrome returns
+  mediaUrl:"" for every slot. Cause: convex/feed.ts:270 reads only
+  slot.mediaAssetId (demo heroSlots have none) and the post-cover fallback
+  ("slot media wins over the post cover", comment at :267) is not implemented.
+  Demo posts DO have covers (card covers load). → U2 fix candidate, not patched
+  here (backend changes go through the CR flow, L-58).
+
+After L-83/L-84/L-85 (commit ce9103b, 2026-10-12 evening):
+- L-85 live: hero mediaUrl falls back to post covers; the three demo hero posts
+  were seeded WITHOUT covers, so 3 existing cover assets were attached to them
+  via a throwaway mutation (ogImageAssetId patch — not fingerprinted; seed:check
+  PASS before and after; mutation file deleted, never committed). Hero now shows
+  3 real photos (feed-1440-dark-after-l85.png).
+- L-83 live: no G counts on cards (adapter sends null) — G-switch still renders.
+- L-84 live: sorter tabs carry no hover notes on /feed.

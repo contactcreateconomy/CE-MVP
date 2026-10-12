@@ -2,33 +2,35 @@
 "use client";
 
 /**
- * CanonicalFeedClient — SLICE-P6-03 (CAP-182…186/194/198…201/553): the
- * canonical /feed over postDistributionScores + cardSummaries. Four sorts
- * (anonymous lands on Hot — quoted), type filter via Discover `?category=`
- * (left rail); hero band in the shell only (its own getChrome — FEED-GAP F-2:
- * the duplicate in-feed hero grid is gone); Featured + Vibing + Podium in the
- * right rail ("forming" until M12), snapshot pagination, per-card why-drawer
- * + hide/mute/report + unhide. The legacy demo feed is retired from this
- * route (00-TRANSITION: canonical replaces; demo data disposable).
+ * CanonicalFeedClient — the /feed DATA CONTAINER (SLICE-P6-03 + FEED-U2).
+ * Owns every query, mutation and session state, maps payloads through
+ * `feed-adapter` and renders the canonical display layer (`FeedPageView`,
+ * D-016: display components take props only). Four sorts over
+ * postDistributionScores (anonymous lands on Hot — quoted), type filter via
+ * Discover `?category=`, snapshot pagination, hide / mute / report with the
+ * inline "Hidden · Undo" (L-79), debate vote-to-reveal (L-29). The hero,
+ * Vibing and Podium come from feed.getChrome (L-31: the hero never
+ * auto-rotates).
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { TrendSorter, type FeedSortMode } from "@/components/feed/trend-sorter";
 import { api } from "@/lib/convex";
 import { isConvexConfigured } from "@cemvp/convex-client";
 import { useAuth } from "@cemvp/auth-ui";
 
-type SortMode = FeedSortMode;
+import { toCardData, toHeroSlides, toNavItems, toPodium, toVibingItems } from "./feed-adapter";
+import type { FeedCardData, FeedSort } from "./feed-display-types";
+import { FeedPageView, type FeedListState } from "./feed-page-view";
+
+type SortMode = FeedSort;
 
 export function CanonicalFeedClient({ initialTypeFilter = null }: { initialTypeFilter?: string | null }) {
   const configured = isConvexConfigured();
-  const { authStatus } = useAuth();
+  const router = useRouter();
+  const { authStatus, openAuthModal } = useAuth() as { authStatus: string; openAuthModal?: (mode?: any) => void };
   const member = authStatus === "authenticated";
   // CAP-183 (quoted): "Anonymous lands on Hot."
   const [sort, setSort] = useState<SortMode>("hot");
@@ -45,11 +47,11 @@ export function CanonicalFeedClient({ initialTypeFilter = null }: { initialTypeF
     api.feed.list,
     configured ? ({ sortMode: effectiveSort, typeFilter: typeFilter ?? undefined, cursor } as any) : "skip",
   );
+  const chrome = useQuery(api.feed.getChrome, configured ? {} : "skip");
 
-  const why = useMutation(api.feed.getWhy as any); // drawer uses the query form below
-  void why;
   const cardAction = useMutation(api.feed.cardAction);
   const unhide = useMutation(api.feed.unhide);
+  const castVote = useMutation(api.posts.debate.cast);
 
   // Re-navigation to a different ?category= resets the walk exactly like a
   // type-nav click (the param is the type filter's URL entry point).
@@ -76,186 +78,92 @@ export function CanonicalFeedClient({ initialTypeFilter = null }: { initialTypeF
     });
     setLoadingMore(false);
   }, [page, cursor]);
-  const cards = useMemo(() => pages.flat().filter((c) => !hiddenIds.has(c.postId)), [pages, hiddenIds]);
+
+  const typeLabels = useMemo(() => {
+    const map = new Map<string, string>(((chrome as any)?.typeNav ?? []).map((t: any) => [t.type, t.label]));
+    return (type: string) => map.get(type) ?? null;
+  }, [chrome]);
+  const cards: FeedCardData[] = useMemo(() => pages.flat().map((raw) => toCardData(raw, typeLabels)), [pages, typeLabels]);
 
   if (!configured) return null;
 
-  return (
-    <section className="space-y-5" aria-label="Feed">
-      <TrendSorter
-        value={effectiveSort}
-        onChange={(mode) => {
-          if (mode === "fav" && !member) return;
-          setSort(mode);
-          setPages([]);
-          setCursor(undefined);
-        }}
-      />
-
-      {/* Cards */}
-      {page === undefined && pages.length === 0 ? (
-        <div className="flex justify-center py-10">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-(--border-default) border-t-(--brand-primary)" />
-        </div>
-      ) : cards.length === 0 ? (
-        <Card>
-          <CardContent className="py-10 text-center text-sm text-(--text-muted)">
-            {effectiveSort === "fav"
-              ? "Nothing saved yet — save posts and comments and they collect here."
-              : "The feed is forming. Member posts appear here the moment they publish."}
-          </CardContent>
-        </Card>
-      ) : (
-        <ul className="space-y-3">
-          {cards.map((card) => (
-            <FeedCard
-              key={card.postId}
-              card={card}
-              member={member}
-              onHidden={(id) => setHiddenIds((prev) => new Set([...prev, id]))}
-              cardAction={cardAction}
-            />
-          ))}
-        </ul>
-      )}
-
-      {page?.cursor != null ? (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={loadingMore}
-            onClick={() => {
-              setLoadingMore(true);
-              setCursor(page.cursor!);
-            }}
-          >
-            {loadingMore ? "Loading…" : "Load more"}
-          </Button>
-        </div>
-      ) : null}
-
-      {/* CAP-553 surface: undo hides */}
-      {hiddenIds.size > 0 ? (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              for (const id of hiddenIds) void unhide({ postId: id as any });
-              setHiddenIds(new Set());
-            }}
-          >
-            Unhide {hiddenIds.size} hidden item{hiddenIds.size === 1 ? "" : "s"} (CAP-553)
-          </Button>
-        </div>
-      ) : null}
-    </section>
-  );
-}
-
-function FeedCard({
-  card,
-  member,
-  onHidden,
-  cardAction,
-}: {
-  card: any;
-  member: boolean;
-  onHidden: (id: string) => void;
-  cardAction: any;
-}) {
-  const [whyOpen, setWhyOpen] = useState(false);
-  const why = useQuery(api.feed.getWhy, whyOpen && member ? ({ postId: card.postId as any } as any) : "skip");
-  const [busy, setBusy] = useState(false);
+  const resetWalk = () => {
+    setPages([]);
+    setCursor(undefined);
+  };
+  const signIn = () => openAuthModal?.("login");
+  const hide = (postId: string, action: "hide" | "mute" | "report") => {
+    void cardAction({ postId: postId as any, action });
+    setHiddenIds((prev) => new Set(prev).add(postId));
+  };
+  const undoHide = (postId: string) => {
+    void unhide({ postId: postId as any });
+    setHiddenIds((prev) => {
+      const next = new Set(prev);
+      next.delete(postId);
+      return next;
+    });
+  };
+  const listState: FeedListState = page === undefined && pages.length === 0 ? "loading" : cards.length === 0 ? "empty" : "ready";
+  const navItems = toNavItems((chrome as any)?.typeNav);
 
   return (
-    <li>
-      <Card>
-        <CardContent className="space-y-2 py-4">
-          {card.coverImage ? (
-            /* CR-010a: storage-resolved cover from postSeoMeta.ogImageAssetId (backend
-             * returns the URL; null when absent). unoptimized — the asset is served by
-             * the deployment's own storage host, not a next/image remote pattern. */
-            <a
-              href={`/discussions/${card.slug ?? card.postId}`}
-              className="relative block h-[132px] w-full overflow-hidden rounded-md"
-              aria-label={`Open discussion: ${card.title}`}
+    <FeedPageView
+      heroSlides={toHeroSlides((chrome as any)?.hero)}
+      heroLoading={chrome === undefined}
+      nav={{
+        items: navItems,
+        activeKey: typeFilter ?? "home",
+        onStartDiscussion: () => (member ? router.push("/new-post") : signIn()),
+      }}
+      sort={effectiveSort}
+      onSortChange={(mode) => {
+        if (mode === "fav" && !member) return signIn(); // §9.4: visitor → sign in
+        setSort(mode);
+        resetWalk();
+      }}
+      favNew={false /* D-13: no Fav-activity source yet */}
+      listState={listState}
+      cards={cards}
+      hiddenIds={hiddenIds}
+      cardActions={(card) => ({
+        onOpenStrings: card.href ? () => router.push(card.href!) : undefined,
+        onShare: card.href ? () => void navigator.clipboard?.writeText(`${window.location.origin}${card.href}`) : undefined,
+        onVote:
+          card.facet?.kind === "debate" ? (choice) => (member ? void castVote({ postId: card.id as any, choice }) : signIn()) : undefined,
+        ...(member
+          ? {
+              onHide: () => hide(card.id, "hide"),
+              onMute: () => hide(card.id, "mute"),
+              onReport: () => hide(card.id, "report"),
+              onUndoHide: () => undoHide(card.id),
+            }
+          : {}),
+      })}
+      onEmptyAction={member ? () => router.push("/new-post") : undefined}
+      footer={
+        page?.cursor != null ? (
+          <div className="flex justify-center">
+            <button
+              type="button"
+              disabled={loadingMore}
+              onClick={() => {
+                setLoadingMore(true);
+                setCursor(page.cursor!);
+              }}
+              className="focus-ring h-9 rounded-full border border-border-subtle px-4 text-caption font-medium text-text-secondary transition-[border-color,color,scale] duration-normal hover:border-border-default hover:text-text-primary active:scale-97 active:duration-press disabled:opacity-60"
             >
-              <Image src={card.coverImage} alt={card.title} fill sizes="(max-width: 768px) 100vw, 480px" className="object-cover" unoptimized />
-            </a>
-          ) : null}
-          <div className="flex flex-wrap items-center gap-2 text-xs text-(--text-muted)">
-            <Badge tone="neutral">{card.type}</Badge>
-            {card.rising ? <Badge tone="warning">Rising</Badge> : null}
-            <span>{card.authorName}</span>
-            <span>· {new Date(card.publishedAt).toLocaleDateString()}</span>
-            <span className="ml-auto flex gap-2">
-              {card.discussingCount > 0 ? <span>{card.discussingCount} discussing</span> : null}
-            </span>
+              {loadingMore ? "Loading…" : "Load more"}
+            </button>
           </div>
-          <a href={`/discussions/${card.slug ?? card.postId}`} className="block text-base font-semibold text-(--text-primary) underline-offset-2 hover:underline">
-            {card.title}
-          </a>
-          <p className="text-sm text-(--text-secondary)">{card.oneLiner}</p>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-(--text-muted)">
-            <span>▲ {card.engagement.valuable}</span>
-            <span>💬 {card.engagement.replies}</span>
-            <span>🔖 {card.engagement.saves}</span>
-            {member ? (
-              <>
-                <button className="cursor-pointer hover:text-text-primary" onClick={() => setWhyOpen((v) => !v)}>
-                  Why this?
-                </button>
-                <button
-                  className="cursor-pointer hover:text-text-primary"
-                  disabled={busy}
-                  onClick={() => {
-                    setBusy(true);
-                    cardAction({ postId: card.postId, action: "hide" })
-                      .then(() => onHidden(card.postId))
-                      .finally(() => setBusy(false));
-                  }}
-                >
-                  Hide
-                </button>
-                <button
-                  className="cursor-pointer hover:text-text-primary"
-                  disabled={busy}
-                  onClick={() => {
-                    setBusy(true);
-                    cardAction({ postId: card.postId, action: "mute" })
-                      .then(() => onHidden(card.postId))
-                      .finally(() => setBusy(false));
-                  }}
-                >
-                  Mute
-                </button>
-                <button
-                  className="cursor-pointer hover:text-text-primary"
-                  disabled={busy}
-                  onClick={() => {
-                    setBusy(true);
-                    cardAction({ postId: card.postId, action: "report", reasonCode: "member_report" }).finally(() => setBusy(false));
-                  }}
-                >
-                  Report
-                </button>
-              </>
-            ) : null}
-          </div>
-          {whyOpen ? (
-            why ? (
-              <div className="rounded-md bg-(--bg-overlay) p-3 text-xs text-(--text-secondary)">
-                <p>Top score {why.topScore?.toFixed(2)} · Hot {why.hotScore?.toFixed(2)} — from {why.engagement?.distinctCommenters ?? 0} distinct commenters, {why.engagement?.valuable ?? 0} valuable marks.</p>
-                {why.exploration ? <p className="mt-1">Exploration: {why.exploration.injected} insertions (exposure deficit {why.exploration.deficit}).</p> : null}
-              </div>
-            ) : (
-              <p className="text-xs text-(--text-muted)">Loading…</p>
-            )
-          ) : null}
-        </CardContent>
-      </Card>
-    </li>
+        ) : null
+      }
+      vibing={toVibingItems((chrome as any)?.vibing, (chrome as any)?.featured, typeLabels)}
+      podium={{
+        windowLabel: "this week", // getChrome serves the overall · 7-day projection
+        entries: toPodium((chrome as any)?.podium).entries,
+        leaderboardHref: "/leaderboard",
+      }}
+    />
   );
 }

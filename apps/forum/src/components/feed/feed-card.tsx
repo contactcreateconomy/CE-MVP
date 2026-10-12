@@ -1,224 +1,374 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import {
-  ArrowUp,
-  Bookmark,
-  ChevronsUp,
-  MessageCircle,
-  MoreHorizontal,
-  Star,
-  ThumbsDown,
-  ThumbsUp,
-  TrendingUp,
-} from "lucide-react";
+import { Bookmark, Check, Link2, MessageCircle, MoreHorizontal, Orbit, Pin, Share2 } from "lucide-react";
 
-import { Component as AvatarWithName } from "@/components/ui/avatar-with-name";
-import { formatCompactNumber } from "@/lib/format";
+import { CreateconomyLogoMark } from "@/components/ui/createconomy-logo-mark";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-import { FeedAvatar, PersonaLabel } from "./feed-avatar";
-import type { FeedCardData, FeedCardExtras, FeedCommentPreview, FeedPerson } from "./feed-display-types";
-import { postTypeMeta } from "./feed-post-type-meta";
+import { FeedAvatar } from "./feed-avatar";
+import type { FeedCardData, FeedFacet, FeedPerson, FeedWhyCare } from "./feed-display-types";
+import { stringsLabel } from "./feed-format";
+import { FeedGSwitch } from "./feed-g-switch";
 
-/** Overflow actions — an item renders only when its handler is passed, so
- *  the wiring decides the product set (Why / Share / Hide / Mute / Report). */
+/** Handlers — a control or menu item renders only when its handler is passed,
+ *  so the wiring decides the product set. */
 export interface FeedCardActions {
-  onToggleValued?: () => void;
+  /** Tap G (L-63). */
+  onAppreciate?: () => void;
   onToggleSaved?: () => void;
-  onWhy?: () => void;
   onShare?: () => void;
+  /** Strings → open the thread with the composer. */
+  onOpenStrings?: () => void;
+  onVote?: (choice: "agree" | "disagree") => void;
+  onWhy?: () => void;
+  /** Private "Not for me" (L-64) — never public, feeds hidden mass only. */
+  onNotForMe?: () => void;
   onHide?: () => void;
   onMute?: () => void;
   onReport?: () => void;
+  /** L-79: a hidden card collapses in place to "Hidden · Undo". */
+  onUndoHide?: () => void;
 }
 
 export interface FeedCardProps extends FeedCardActions {
   card: FeedCardData;
+  /** Hidden by the viewer this session → the inline "Hidden · Undo" row (L-79). */
+  hidden?: boolean;
   className?: string;
 }
 
-const COMMENT_CYCLE_MS = 1700;
+const Mono = ({ children, className }: { children: ReactNode; className?: string }) => (
+  <span className={cn("font-mono tabular-nums", className)}>{children}</span>
+);
 
-/* ── Author row (v2: a link to the profile, soft hover wash) ───────────── */
+/* ── 1 · identity ─────────────────────────────────────────────────────── */
 
-function AuthorRow({ person, timeLabel, typeLabel }: { person: FeedPerson; timeLabel: string; typeLabel: string }) {
-  const inner = (
-    <>
-      <FeedAvatar person={person} size="md" />
-      <span className="min-w-0">
-        <span className="flex min-w-0 items-center gap-1.5">
-          <span className="truncate text-heading-xs font-semibold text-text-primary">{person.name}</span>
-          {person.isPersona ? <PersonaLabel /> : null}
-        </span>
-        <span className="block truncate font-mono text-label-sm font-light text-text-muted">
-          {person.handle ? `@${person.handle} · ` : null}
-          {timeLabel}
-          {/* Type label is the chip's hover reveal at lg+; below lg it lives here (no hover-only affordances, S00 §6). */}
-          <span className="lg:hidden"> · {typeLabel}</span>
-        </span>
+function Face({ person }: { person: FeedPerson }) {
+  if (person.isEditorial) {
+    return (
+      <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-text-primary">
+        <CreateconomyLogoMark size={16} markColor="var(--bg-canvas)" />
       </span>
-    </>
-  );
-  const rowClass = "flex min-w-0 max-w-full items-center gap-2.5 rounded-lg";
-  return person.handle ? (
-    <Link
-      href={`/users/${encodeURIComponent(person.handle)}`}
-      className={cn(rowClass, "focus-ring transition-colors duration-normal hover:bg-bg-overlay/60")}
-    >
-      {inner}
-    </Link>
-  ) : (
-    <div className={rowClass}>{inner}</div>
+    );
+  }
+  return <FeedAvatar person={person} size="md" />;
+}
+
+const Label = ({ children }: { children: string }) => (
+  <span className="shrink-0 rounded-full border border-border-default px-1.5 text-micro font-medium text-text-secondary">
+    {children}
+  </span>
+);
+
+function Identity({ card, menu }: { card: FeedCardData; menu: ReactNode }) {
+  const { author } = card;
+  const name = <span className="truncate text-body-sm font-semibold text-text-primary">{author.name}</span>;
+  return (
+    <header className="flex items-center gap-2.5">
+      <Face person={author} />
+      <div className="flex min-w-0 flex-1 items-center gap-1.5">
+        {author.handle ? (
+          <Link href={`/users/${encodeURIComponent(author.handle)}`} className="focus-ring min-w-0 truncate rounded-sm hover:underline">
+            {name}
+          </Link>
+        ) : (
+          name
+        )}
+        {author.levelLabel && !author.isEditorial ? (
+          <span title={`Level ${author.levelLabel}`} className="shrink-0 text-brand-primary">
+            <Orbit className="size-3.5" strokeWidth={1.75} aria-hidden />
+            <span className="sr-only">Level {author.levelLabel}</span>
+          </span>
+        ) : null}
+        {author.isPersona ? <Label>AI persona</Label> : null}
+        {author.isEditorial ? <Label>Createconomy</Label> : null}
+        <span className="shrink-0 text-caption text-text-muted">
+          · <Mono>{card.timeLabel}</Mono>
+          {card.updated ? <span> · Updated</span> : null}
+        </span>
+      </div>
+      {menu}
+    </header>
   );
 }
 
-/* ── Type-specific strip (v2 CardExtras) ───────────────────────────────── */
+/* ── 4 · facets (§10.2) ───────────────────────────────────────────────── */
 
-const VERDICT_TONE = {
-  positive: "bg-feedback-success/15 text-feedback-success",
-  caution: "bg-feedback-warning/15 text-feedback-warning",
-  negative: "bg-feedback-error/15 text-feedback-error",
-} as const;
+function Stars({ v, className }: { v: number; className?: string }) {
+  return (
+    <span className={cn("inline-flex items-center gap-1", className)}>
+      <span className="text-feedback-warning" aria-hidden>
+        ★
+      </span>
+      <Mono>{Number.isInteger(v) ? v : v.toFixed(1)}</Mono>
+    </span>
+  );
+}
 
-function CardExtras({ extras }: { extras: FeedCardExtras }) {
-  if (extras.kind === "review") {
-    const stars = Math.max(0, Math.min(5, Math.round(extras.stars ?? 0)));
-    if (!extras.verdict && stars === 0) return null;
-    return (
-      <div className="mt-1.5 flex items-center gap-2 text-caption">
-        {extras.verdict ? (
-          <span className={cn("rounded-full px-2 py-0.5 font-medium", VERDICT_TONE[extras.verdict.tone])}>
-            {extras.verdict.label}
-          </span>
-        ) : null}
-        {stars > 0 ? (
-          <span className="flex items-center gap-0.5" aria-label={`${stars} out of 5`}>
-            {Array.from({ length: 5 }, (_, i) => (
-              <Star
+function ToolChip({ name, extra }: { name: string; extra?: ReactNode }) {
+  return (
+    <span className="inline-flex h-7 items-center gap-1.5 rounded-full border border-border-subtle bg-bg-surface pl-1 pr-2.5 text-caption text-text-primary">
+      <span aria-hidden className="inline-flex size-5 items-center justify-center rounded-full bg-bg-overlay text-micro font-semibold text-text-secondary">
+        {name.slice(0, 1)}
+      </span>
+      <span className="font-medium">{name}</span>
+      {extra}
+    </span>
+  );
+}
+
+function DebateFacet({ facet, onVote }: { facet: Extract<FeedFacet, { kind: "debate" }>; onVote?: FeedCardActions["onVote"] }) {
+  const voted = facet.viewerVote ?? null;
+  const choices = [
+    { key: "agree", label: "Agree" },
+    { key: "disagree", label: "Disagree" },
+  ] as const;
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-caption text-text-muted">
+        <Mono className="text-text-secondary">{facet.votes}</Mono>
+        {voted === null && onVote ? " voted · take a side" : " voted"}
+      </p>
+      {voted === null ? (
+        onVote ? (
+          // L-37: binary choices weigh equally; colour only after the choice.
+          <div className="flex gap-2" role="group" aria-label="Your vote">
+            {choices.map((c) => (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => onVote(c.key)}
+                className="focus-ring h-9 min-w-26 rounded-full border border-border-default bg-bg-surface px-5 text-body-sm font-semibold text-text-primary transition-[border-color,scale] duration-normal hover:border-border-prominent active:scale-97 active:duration-press"
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+        ) : null
+      ) : typeof facet.agreePct === "number" ? (
+        // L-29: the split appears only after the viewer voted.
+        <div className="flex max-w-90 flex-col gap-1.5" aria-live="polite">
+          <div className="flex h-2 gap-1 overflow-hidden rounded-full">
+            {[facet.agreePct, 100 - facet.agreePct].map((pct, i) => (
+              <div
                 key={i}
-                aria-hidden
-                className={cn("size-3", i < stars ? "fill-feedback-warning text-feedback-warning" : "text-text-muted/30")}
+                style={{ width: `${pct}%` }}
+                className={cn("h-full rounded-full", (i === 0) === (voted === "agree") ? "bg-brand-primary" : "bg-text-disabled")}
               />
             ))}
-          </span>
-        ) : null}
-      </div>
-    );
-  }
-  if (extras.kind === "debate") {
-    const hasVotes = typeof extras.agree === "number" || typeof extras.disagree === "number";
-    if (!hasVotes && !extras.proposition) return null;
-    return (
-      <div className="mt-1.5 flex items-center gap-2 text-caption text-text-secondary">
-        {hasVotes ? (
-          <>
-            <span className="inline-flex items-center gap-1" aria-label={`${extras.agree ?? 0} agree`}>
-              <ThumbsUp className="size-3 text-feedback-success" aria-hidden />
-              {extras.agree ?? 0}
-            </span>
-            <span className="inline-flex items-center gap-1" aria-label={`${extras.disagree ?? 0} disagree`}>
-              <ThumbsDown className="size-3 text-feedback-error" aria-hidden />
-              {extras.disagree ?? 0}
-            </span>
-          </>
-        ) : (
-          <span className="truncate italic text-text-muted">{extras.proposition}</span>
-        )}
-      </div>
-    );
-  }
-  if (extras.parts.length === 0) return null;
-  return (
-    <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-caption text-text-secondary">
-      {extras.parts.map((part, i) => (
-        <span key={`${part}-${i}`} className="flex items-center gap-1.5">
-          {i > 0 ? (
-            <span className="text-border-default" aria-hidden>
-              ·
-            </span>
-          ) : null}
-          {part}
-        </span>
-      ))}
-    </p>
-  );
-}
-
-/* ── Comment preview cycler ───────────────────────────────────────────── */
-
-function CommentPreviewCycler({ comments, isActive }: { comments: FeedCommentPreview[]; isActive: boolean }) {
-  const [index, setIndex] = useState(0);
-  const visible = comments.slice(0, 4);
-
-  useEffect(() => {
-    if (!isActive || visible.length <= 1) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const timer = window.setInterval(() => setIndex((i) => (i + 1) % visible.length), COMMENT_CYCLE_MS);
-    return () => window.clearInterval(timer);
-  }, [isActive, visible.length]);
-
-  if (visible.length === 0) return null;
-  const active = visible[index % visible.length];
-
-  return (
-    <div className="flex h-10 items-center rounded-lg border border-border-subtle bg-bg-overlay/25 px-3">
-      <p key={active.id} className="flex w-full min-w-0 items-center gap-1.5 text-body-sm text-text-secondary">
-        <span className="shrink-0 font-mono text-caption text-text-muted">
-          {active.author.handle ? `@${active.author.handle}` : active.author.name}
-        </span>
-        {active.author.isPersona ? <PersonaLabel /> : null}
-        <span className="truncate">{active.body}</span>
-      </p>
+          </div>
+          <div className="flex justify-between text-caption">
+            {choices.map((c, i) => {
+              const mine = voted === c.key;
+              const pct = i === 0 ? facet.agreePct! : 100 - facet.agreePct!;
+              return (
+                <span key={c.key} className={cn("flex items-center gap-1", mine ? "font-semibold text-text-primary" : "text-text-muted")}>
+                  {mine ? <Check className="size-3.5 text-brand-primary" strokeWidth={2} aria-hidden /> : null}
+                  {c.label} <Mono>{pct}%</Mono>
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <p className="text-caption text-text-secondary">You voted {voted === "agree" ? "Agree" : "Disagree"}</p>
+      )}
     </div>
   );
 }
 
-/* ── Overflow menu ────────────────────────────────────────────────────── */
+function FacetView({ facet, onVote }: { facet: FeedFacet; onVote?: FeedCardActions["onVote"] }) {
+  switch (facet.kind) {
+    case "review":
+      return (
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-caption">
+            {facet.tool ? (
+              <ToolChip name={facet.tool.name} extra={facet.tool.price ? <Mono className="text-text-muted">{facet.tool.price}</Mono> : null} />
+            ) : null}
+            {typeof facet.verdict === "number" ? (
+              <span className="text-text-muted">
+                Verdict <Stars v={facet.verdict} className="font-semibold text-text-primary" />
+              </span>
+            ) : null}
+            {typeof facet.community === "number" ? (
+              <span className="text-text-muted">
+                Community <Stars v={facet.community} className="text-text-secondary" />
+              </span>
+            ) : null}
+          </div>
+          {facet.pro || facet.con ? (
+            <ul className="grid gap-0.5 text-caption text-text-secondary">
+              {facet.pro ? (
+                <li className="flex gap-1.5">
+                  <span className="w-3 font-mono text-feedback-success" aria-label="Pro">+</span>
+                  {facet.pro}
+                </li>
+              ) : null}
+              {facet.con ? (
+                <li className="flex gap-1.5">
+                  <span className="w-3 font-mono text-feedback-error" aria-label="Con">−</span>
+                  {facet.con}
+                </li>
+              ) : null}
+            </ul>
+          ) : null}
+        </div>
+      );
+    case "compare":
+      return (
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap gap-1.5">
+            {facet.tools.map((t) => (
+              <ToolChip key={t.name} name={t.name} extra={typeof t.community === "number" ? <Stars v={t.community} className="text-text-secondary" /> : null} />
+            ))}
+          </div>
+          {facet.row ? (
+            <p className="flex flex-wrap items-center gap-2 text-caption text-text-muted">
+              {facet.row.label}:
+              {facet.row.values.map((v, i) => (
+                <span key={i} className="text-text-secondary">
+                  {i > 0 ? <span className="mr-2 text-text-disabled">/</span> : null}
+                  {v}
+                </span>
+              ))}
+            </p>
+          ) : null}
+        </div>
+      );
+    case "debate":
+      return <DebateFacet facet={facet} onVote={onVote} />;
+    case "help":
+      return (
+        <div className="flex items-center gap-2.5 text-caption">
+          {facet.problem ? <p className="min-w-0 flex-1 truncate text-text-secondary">{facet.problem}</p> : <span className="flex-1" />}
+          {facet.resolvedBy || facet.resolved ? (
+            <span className="shrink-0 rounded-full bg-feedback-success/15 px-2 py-0.5 font-medium text-feedback-success">
+              {facet.resolvedBy ? `Resolved ✓ by @${facet.resolvedBy}` : "Resolved ✓"}
+            </span>
+          ) : (
+            <span className="shrink-0 rounded-full border border-border-default px-2 py-0.5 font-medium text-text-secondary">Open</span>
+          )}
+        </div>
+      );
+    case "list":
+      return (
+        <ol className="flex flex-col gap-1 text-caption">
+          {facet.items.slice(0, 3).map((item, i) => (
+            <li key={item.label} className="flex items-center gap-2">
+              <Mono className="w-3 text-text-muted">{i + 1}</Mono>
+              <span className="flex-1 text-text-secondary">{item.label}</span>
+              <Mono className="text-text-muted">▲ {item.votes}</Mono>
+            </li>
+          ))}
+          {facet.more ? (
+            <li className="pl-5 text-text-muted">
+              +<Mono>{facet.more}</Mono> more
+            </li>
+          ) : null}
+        </ol>
+      );
+    case "showcase":
+      return (
+        <div className="flex items-center gap-2.5 text-caption">
+          {facet.thing ? <p className="min-w-0 flex-1 truncate text-text-secondary">{facet.thing}</p> : <span className="flex-1" />}
+          {facet.linkApproved ? (
+            <span className="inline-flex shrink-0 items-center gap-1 text-text-secondary">
+              <Link2 className="size-3.5" strokeWidth={1.5} aria-hidden />
+              Project link
+              <Check className="size-3 text-feedback-success" strokeWidth={2} aria-label="approved" />
+            </span>
+          ) : null}
+        </div>
+      );
+    case "news":
+      return (
+        <p className="flex items-center gap-2 text-caption">
+          {facet.claim ? <span className="min-w-0 flex-1 truncate text-text-secondary">{facet.claim}</span> : <span className="flex-1" />}
+          {facet.domain ? <span className="shrink-0 font-mono text-text-muted">{facet.domain}</span> : null}
+        </p>
+      );
+    case "meta":
+      return facet.parts.length ? (
+        <p className="flex flex-wrap items-center gap-1.5 text-caption text-text-secondary">
+          {facet.parts.map((part, i) => (
+            <span key={`${part}-${i}`} className="flex items-center gap-1.5">
+              {i > 0 ? <span className="text-text-disabled" aria-hidden>·</span> : null}
+              {part}
+            </span>
+          ))}
+        </p>
+      ) : null;
+  }
+}
+
+/* ── 5 · why care now (one fixed-height line, §10.3) ──────────────────── */
+
+function WhyCare({ why }: { why: FeedWhyCare }) {
+  const [open, setOpen] = useState(false);
+  if (why.kind === "comment") {
+    // Established: best human comment — tap expands to 3 lines in place.
+    return (
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="focus-ring block w-full rounded-sm text-left">
+        <p className={cn("text-caption text-text-secondary", open ? "line-clamp-3" : "line-clamp-1")}>
+          <span className="font-medium text-text-primary">@{why.author}:</span> {why.body}
+        </p>
+      </button>
+    );
+  }
+  return (
+    <p className="h-5 truncate text-caption leading-5 text-text-secondary">
+      {why.rising ? <span className="text-brand-primary">{why.text ? "↗ Rising · " : "↗ Rising"}</span> : null}
+      {why.text}
+      {why.detail ? (
+        // Hover adds depth, never layout (Bible §10.3): same line, fades in.
+        <span className="text-text-muted opacity-0 transition-opacity duration-normal group-hover/card:opacity-100 group-focus-within/card:opacity-100">
+          {" "}· {why.detail}
+        </span>
+      ) : null}
+    </p>
+  );
+}
+
+/* ── ⋯ menu ───────────────────────────────────────────────────────────── */
 
 function MenuItem({ onSelect, danger, children }: { onSelect: () => void; danger?: boolean; children: ReactNode }) {
   return (
     <DropdownMenu.Item
       onSelect={onSelect}
-      className={
-        "text-body-sm " +
-        cn(
-          "cursor-pointer rounded-md px-2 py-2 outline-none transition-colors duration-fast data-highlighted:bg-bg-overlay",
-          danger ? "text-feedback-error" : "text-text-primary",
-        )
-      }
+      className={cn(
+        "flex h-9 cursor-pointer items-center rounded-md px-2.5 text-body-sm outline-none transition-colors duration-fast data-highlighted:bg-bg-overlay",
+        danger ? "text-feedback-error" : "text-text-secondary data-highlighted:text-text-primary",
+      )}
     >
       {children}
     </DropdownMenu.Item>
   );
 }
 
-function CardMenu({ id, onWhy, onShare, onHide, onMute, onReport }: FeedCardActions & { id: string }) {
-  if (!onWhy && !onShare && !onHide && !onMute && !onReport) return null;
+function CardMenu({ card, onWhy, onNotForMe, onHide, onMute, onReport }: FeedCardActions & { card: FeedCardData }) {
+  if (!onWhy && !onNotForMe && !onHide && !onMute && !onReport) return null;
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         <button
-          id={`feed-card-menu-${id}`}
           type="button"
-          aria-label="Post actions"
-          className="focus-ring inline-flex size-11 items-center justify-center rounded-full text-text-secondary transition-colors duration-normal hover:bg-bg-overlay hover:text-text-primary lg:size-8"
+          aria-label="More options"
+          className="focus-ring inline-flex size-11 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors duration-normal hover:bg-bg-overlay hover:text-text-primary lg:size-8"
         >
-          <MoreHorizontal className="size-4" />
+          <MoreHorizontal className="size-4" strokeWidth={1.5} />
         </button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
-        <DropdownMenu.Content
-          align="end"
-          sideOffset={8}
-          className="z-dropdown min-w-44 rounded-lg border border-border-default bg-bg-surface p-1 shadow-lg"
-        >
+        <DropdownMenu.Content align="end" sideOffset={6} className="frost-strong z-dropdown w-56 rounded-lg border border-border-subtle p-1">
           {onWhy ? <MenuItem onSelect={onWhy}>Why am I seeing this?</MenuItem> : null}
-          {onShare ? <MenuItem onSelect={onShare}>Share</MenuItem> : null}
+          {onNotForMe ? <MenuItem onSelect={onNotForMe}>Not for me</MenuItem> : null}
           {onHide ? <MenuItem onSelect={onHide}>Hide</MenuItem> : null}
-          {onMute ? <MenuItem onSelect={onMute}>Mute</MenuItem> : null}
+          {onMute ? <MenuItem onSelect={onMute}>{card.author.handle ? `Mute @${card.author.handle}` : "Mute"}</MenuItem> : null}
           {onReport ? (
             <MenuItem onSelect={onReport} danger>
               Report
@@ -230,223 +380,171 @@ function CardMenu({ id, onWhy, onShare, onHide, onMute, onReport }: FeedCardActi
   );
 }
 
-/* ── Interaction row ──────────────────────────────────────────────────── */
+/* ── 6 · footer ───────────────────────────────────────────────────────── */
 
-function InteractionRow({ card, onToggleValued, onToggleSaved }: FeedCardProps) {
-  const UpIcon = card.isValued ? ChevronsUp : ArrowUp;
-  const { Icon: TypeIcon } = postTypeMeta(card.type);
-  // v2: every pill lifts 2px on hover (lg only — no hover affordances on touch).
-  const pill =
-    "focus-ring inline-flex min-h-11 shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-1.5 transition-[transform,color,background-color] duration-normal ease-out-cubic sm:px-2 lg:min-h-0 lg:py-1 lg:hover:-translate-y-0.5";
+const iconBtn =
+  "focus-ring inline-flex h-8 items-center gap-1.5 rounded-full px-2 text-caption text-text-muted transition-[background-color,color,scale] duration-normal hover:bg-bg-overlay hover:text-text-primary active:scale-97 active:duration-press disabled:pointer-events-none";
 
+function Footer(props: FeedCardProps) {
+  const { card, onAppreciate, onToggleSaved, onShare, onOpenStrings } = props;
+  const saved = !!card.viewer.saved;
   return (
-    <div className="flex items-center justify-between gap-2 rounded-menu border border-border-subtle bg-bg-overlay/20 px-2 py-1 sm:px-3 lg:py-2">
-      <div className="flex min-w-0 flex-1 items-center gap-1.5 text-caption text-text-secondary sm:gap-3">
-        <button
-          type="button"
-          onClick={onToggleValued}
-          disabled={!onToggleValued}
-          aria-pressed={card.isValued}
-          aria-label={card.isValued ? "Remove valuable" : "Mark valuable"}
-          className={cn(pill, card.isValued && "text-brand-primary")}
-        >
-          <UpIcon
-            className={cn(
-              "size-3.5 shrink-0 transition-transform duration-fast motion-reduce:transition-none",
-              card.isValued && "scale-110",
-            )}
-          />
-          {formatCompactNumber(card.valuableCount)}
+    <footer className="-mx-1 mt-1.5 flex items-center justify-between gap-2">
+      <div className="flex min-w-0 items-center">
+        <FeedGSwitch gravity={card.gravity} viewer={card.viewer} onAppreciate={onAppreciate} />
+        <button type="button" onClick={onOpenStrings} disabled={!onOpenStrings} className={cn(iconBtn, "min-w-0")}>
+          <MessageCircle className="size-3.75 shrink-0" strokeWidth={1.5} aria-hidden />
+          <span className="truncate">{stringsLabel(card.strings)}</span>
         </button>
-
-        <span className={pill} aria-label={`${card.replyCount} replies`}>
-          <MessageCircle className="size-3.5 shrink-0" />
-          {formatCompactNumber(card.replyCount)}
-        </span>
-
-        <button
-          type="button"
-          onClick={onToggleSaved}
-          disabled={!onToggleSaved}
-          aria-pressed={card.isSaved}
-          aria-label={card.isSaved ? "Remove favorite" : "Add favorite"}
-          className={cn(
-            pill,
-            "group/fav min-w-0 active:scale-95 active:duration-75 lg:hover:scale-104 lg:hover:bg-bg-overlay/55",
-            card.isSaved && "text-brand-primary",
-          )}
-        >
-          <Bookmark
-            className={cn(
-              "size-3.5 shrink-0 transition-transform duration-normal group-active/fav:scale-125 lg:group-hover/fav:scale-110 motion-reduce:transition-none",
-              card.isSaved && "scale-110 fill-current",
-            )}
-          />
-          Fav
-        </button>
-      </div>
-
-      <div className="flex shrink-0 items-center gap-1">
-        <AvatarWithName
-          name={card.typeLabel}
-          direction="top"
-          size="sm"
-          icon={<TypeIcon className="size-5 text-text-primary transition-colors duration-normal" />}
-          className="relative z-30"
-          motionClassName="[&>span]:size-8 sm:[&>span]:size-9"
-          avatarClassName="size-8 bg-bg-surface sm:size-9"
-          nameClassName="border-border-default bg-bg-surface text-text-primary"
-          labelStyle={{ left: "50%", translate: "-50% 0" }}
-        />
-        {card.participants.length > 0 ? (
-          <div className="flex -space-x-1.5">
-            {card.participants.slice(0, 3).map((person, index) => (
-              <FeedAvatar
-                key={`${person.handle ?? person.name}-${index}`}
-                person={person}
-                size="sm"
-                className={cn(
-                  "ring-2 ring-bg-surface",
-                  index === 1 && "max-[340px]:hidden",
-                  index === 2 && "max-[401px]:hidden",
-                )}
-              />
-            ))}
-          </div>
+        {onToggleSaved ? (
+          <button
+            type="button"
+            onClick={onToggleSaved}
+            aria-pressed={saved}
+            aria-label={saved ? "Saved" : "Save"}
+            className={cn(iconBtn, "size-8 justify-center px-0", saved && "text-brand-primary")}
+          >
+            <Bookmark className={cn("size-3.75", saved && "fill-current")} strokeWidth={1.5} aria-hidden />
+          </button>
+        ) : null}
+        {onShare ? (
+          <button type="button" onClick={onShare} aria-label="Share" className={cn(iconBtn, "size-8 justify-center px-0")}>
+            <Share2 className="size-3.75" strokeWidth={1.5} aria-hidden />
+          </button>
         ) : null}
       </div>
-    </div>
-  );
-}
-
-/* ── Card ─────────────────────────────────────────────────────────────── */
-
-function Title({ card }: { card: FeedCardData }) {
-  return (
-    <h3 className="line-clamp-3 text-heading-md font-bold text-text-primary">
-      {card.isRising ? (
-        <span className="mr-1.5 inline-flex -translate-y-px items-center gap-1 align-middle text-label-sm font-semibold text-brand-primary">
-          <TrendingUp className="size-3.5" aria-hidden />
-          Rising
+      {card.participants.length > 0 ? (
+        // L-82: faces only — no "N discussing" count (Gravity and Strings are the public numbers, L-64).
+        <span data-faces className="flex shrink-0 -space-x-1.5">
+          {card.participants.slice(0, 3).map((p, i) => (
+            <FeedAvatar key={`${p.handle ?? p.name}-${i}`} person={p} size="xs" className="ring-2 ring-bg-surface" />
+          ))}
         </span>
       ) : null}
-      {card.title}
-    </h3>
+    </footer>
   );
 }
 
+/* ── card ─────────────────────────────────────────────────────────────── */
+
 /**
- * FeedCard — the one feed card (S02). prototype-v2 `post-card.tsx` +
- * `post-interaction-row.tsx` + category `CardExtras` on S00 tokens. Two
- * layouts: cover image (text left, 208px image right at md+; below the
- * text at 390) and text-only. The whole text block is one link (v2).
+ * FeedCard — the one feed card (FEED-DESIGN §10, founder-approved Make look).
+ * Skeleton for every type: identity · kind chip · title · facet · why-care-now
+ * · footer (G-switch + Gravity, strings, save, share · faces, L-82).
+ * Material: frost-look (L1 — translucent + 1px highlight + shadow-xs, no live
+ * blur, L-39/L-73). No glow at rest (L-38); hover adds depth only.
  */
 export function FeedCard(props: FeedCardProps) {
-  const { card, className } = props;
-  const [isHovered, setIsHovered] = useState(false);
-
-  const textBlock = (
-    <>
-      <Title card={card} />
-      <p className="mt-2 line-clamp-3 break-words text-body-sm text-text-secondary">{card.summary}</p>
-      {card.extras ? <CardExtras extras={card.extras} /> : null}
-      {card.commentPreviews.length > 0 ? (
-        <div className="mt-4">
-          <CommentPreviewCycler comments={card.commentPreviews} isActive={isHovered} />
-        </div>
-      ) : null}
-    </>
-  );
-  const body = card.href ? (
-    <Link href={card.href} className="focus-ring block min-w-0 rounded-lg">
-      {textBlock}
-    </Link>
-  ) : (
-    <div className="min-w-0">{textBlock}</div>
+  const { card, className, onVote } = props;
+  if (props.hidden) {
+    return (
+      <div role="status" className={cn("frost-look flex h-11 items-center justify-between rounded-lg border border-border-subtle px-4 text-body-sm text-text-muted", className)}>
+        Hidden
+        {props.onUndoHide ? (
+          <button
+            type="button"
+            onClick={props.onUndoHide}
+            className="focus-ring rounded-full px-2 py-1 font-medium text-text-primary transition-[color,scale] duration-normal hover:text-brand-primary active:scale-97 active:duration-press"
+          >
+            Undo
+          </button>
+        ) : null}
+      </div>
+    );
+  }
+  const spark = card.type === "spark";
+  const title = (
+    <h3 className={cn("font-semibold text-text-primary", spark ? "text-heading-sm" : "text-body-lg")}>{card.title}</h3>
   );
 
   return (
     <article
       className={cn(
-        "card-surface group relative p-4 transition-[transform,box-shadow] duration-normal ease-out",
-        // v2 `.feed-post-card`: 2px lift on hover / keyboard focus-within (lg only).
-        // Its brand-tinted hover glow is not ported (D-007 / S00 §7) — neutral shadow instead.
-        "lg:hover:-translate-y-0.5 lg:hover:shadow-md lg:focus-within:-translate-y-0.5 lg:focus-within:shadow-md motion-reduce:transform-none",
+        "group/card frost-look rounded-lg border border-border-subtle p-4 transition-[translate,box-shadow] duration-normal ease-out-cubic lg:hover:-translate-y-px lg:hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0",
         className,
       )}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onFocus={() => setIsHovered(true)}
-      onBlur={() => setIsHovered(false)}
     >
-      <div className="absolute right-1 top-1 z-20 lg:right-3 lg:top-3">
-        <CardMenu id={card.id} {...props} />
-      </div>
+      {card.pinned ? (
+        <p className="mb-2 flex items-center gap-1.5 text-micro font-medium text-text-muted">
+          <Pin className="size-3" strokeWidth={1.5} aria-hidden />
+          Pinned by Createconomy
+        </p>
+      ) : null}
 
-      <div className="mb-3 flex items-start pr-10">
-        <AuthorRow person={card.author} timeLabel={card.timeLabel} typeLabel={card.typeLabel} />
-      </div>
+      <Identity card={card} menu={<CardMenu {...props} />} />
 
-      {card.coverImageUrl ? (
-        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_208px] md:items-end">
-          {body}
-          {(() => {
-            const image = (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={card.coverImageUrl}
-                alt=""
-                loading="lazy"
-                className="size-full object-cover transition-transform duration-slow ease-out lg:group-hover:scale-102 motion-reduce:transition-none"
-              />
-            );
-            const frame = "relative block h-33 w-full overflow-hidden rounded-menu md:h-35";
-            return card.href ? (
-              <Link href={card.href} tabIndex={-1} aria-hidden className={frame}>
-                {image}
-              </Link>
-            ) : (
-              <div className={frame}>{image}</div>
-            );
-          })()}
+      <div className="mt-3 flex gap-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+          <p className="flex items-center gap-1 text-caption">
+            <span className="font-medium text-brand-primary">{card.typeLabel}</span>
+            {card.topicLabel ? (
+              <>
+                <span className="text-text-disabled" aria-hidden>·</span>
+                <span className="text-text-secondary">{card.topicLabel}</span>
+              </>
+            ) : null}
+          </p>
+          {card.href ? (
+            <Link href={card.href} className="focus-ring rounded-sm hover:underline">
+              {title}
+            </Link>
+          ) : (
+            title
+          )}
+          {card.facet ? <FacetView facet={card.facet} onVote={onVote} /> : null}
         </div>
-      ) : (
-        <div className="pr-10">{body}</div>
-      )}
-
-      <div className="relative z-20 mt-4">
-        <InteractionRow {...props} />
+        {card.coverImageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={card.coverImageUrl}
+            alt=""
+            loading="lazy"
+            className="size-21 shrink-0 rounded-md bg-bg-overlay object-cover md:h-25 md:w-37"
+          />
+        ) : null}
       </div>
+
+      {card.whyCare ? (
+        <div className="mt-3 border-t border-border-subtle pt-2.5">
+          <WhyCare why={card.whyCare} />
+        </div>
+      ) : null}
+
+      <Footer {...props} />
     </article>
   );
 }
 
-/** v2 `PostCardSkeleton` — same geometry as the image card. */
+/** Same geometry as the card (Make `FeedCardSkeleton`). */
 export function FeedCardSkeleton() {
-  const block = "animate-pulse rounded-sm bg-bg-overlay motion-reduce:animate-none";
   return (
-    <div className="card-surface p-4" aria-hidden>
-      <div className="mb-3 flex items-center gap-2.5 pr-10">
-        <div className={cn(block, "size-9 rounded-full")} />
-        <div className="space-y-1.5">
-          <div className={cn(block, "h-3.5 w-24")} />
-          <div className={cn(block, "h-2.5 w-16 bg-bg-overlay/50")} />
+    <div className="frost-look rounded-lg border border-border-subtle p-4" aria-hidden>
+      <div className="flex items-center gap-2.5">
+        <Skeleton className="size-9 rounded-full" />
+        <div className="flex flex-col gap-1.5">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-2.5 w-16" />
         </div>
       </div>
-      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_208px] md:items-end">
-        <div>
-          <div className={cn(block, "h-6 w-3/4")} />
-          <div className="mt-3 space-y-2">
-            <div className={cn(block, "h-3 w-full bg-bg-overlay/50")} />
-            <div className={cn(block, "h-3 w-5/6 bg-bg-overlay/50")} />
-          </div>
+      <div className="mt-4 flex gap-4">
+        <div className="flex flex-1 flex-col gap-2.5">
+          <Skeleton className="h-4 w-4/5" />
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-3 w-3/5" />
         </div>
-        <div className={cn(block, "h-33 w-full rounded-menu bg-bg-overlay/40 md:h-35")} />
+        <Skeleton className="size-21 shrink-0 rounded-md md:h-25 md:w-37" />
       </div>
-      <div className="mt-4 flex items-center gap-4 border-t border-border-subtle pt-4">
-        <div className={cn(block, "h-8 w-16 rounded-full bg-bg-overlay/50")} />
-        <div className={cn(block, "h-8 w-16 rounded-full bg-bg-overlay/50")} />
-        <div className={cn(block, "ml-auto size-4 rounded-full bg-bg-overlay/50")} />
+      <div className="mt-4 flex items-center justify-between">
+        <div className="flex gap-4">
+          <Skeleton className="h-3 w-10" />
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-3 w-6" />
+        </div>
+        <div className="flex -space-x-1.5">
+          <Skeleton className="size-6 rounded-full" />
+          <Skeleton className="size-6 rounded-full" />
+          <Skeleton className="size-6 rounded-full" />
+        </div>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 
 import { TopPostHeroSection } from "@/components/layout/top-post-hero-section";
-import { LeftSidebar } from "@/components/layout/left-sidebar";
+import { ConditionalLeftSidebar } from "@/components/layout/conditional-left-sidebar";
 import { ConditionalRightSidebar } from "@/components/layout/conditional-right-sidebar";
 import { TopNav } from "@/components/layout/top-nav";
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
@@ -18,13 +18,11 @@ export function AppShell({ children }: AppShellProps) {
       <div className="relative z-10">
         <TopNav />
 
-        <section className="mx-auto hidden w-full max-w-(--container-app) px-4 pb-2 pt-6 md:px-6 lg:block lg:px-8">
-          <TopPostHeroSection />
-        </section>
+        <TopPostHeroSection />
 
         <div className="mx-auto flex w-full max-w-(--container-app) gap-4 px-4 py-6 md:px-6 lg:gap-8 lg:px-8">
           <Suspense fallback={null}>
-            <LeftSidebar />
+            <ConditionalLeftSidebar />
           </Suspense>
           <main className="min-w-0 flex-1 pb-24 lg:pb-8">{children}</main>
           <ConditionalRightSidebar />

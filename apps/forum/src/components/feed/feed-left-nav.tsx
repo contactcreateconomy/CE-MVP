@@ -1,81 +1,110 @@
 "use client";
 
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Hash, Plus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 import type { FeedNavItem } from "./feed-display-types";
 import { postTypeMeta } from "./feed-post-type-meta";
 
-const ITEM_H = 40; // h-10
-const ITEM_GAP = 4; // space-y-1
-
 export interface FeedLeftNavProps {
   /** "home" first, then the active post types (postTypeConfig, state=active). */
   items: FeedNavItem[];
+  /** "Your topics" (interests / StellarMap order, §9.6). Empty → section hidden. */
+  topics?: FeedNavItem[];
   activeKey: string;
   /** Hidden when absent (e.g. guests → wiring passes the sign-in opener). */
   onStartDiscussion?: () => void;
   className?: string;
 }
 
-/**
- * Left rail (lg+): "Start Discussion" CTA + Discover list with a sliding
- * active pill. prototype-v2 `left-sidebar.tsx`; the conic `GlowingEffect`
- * around the CTA and the hover text glow are not ported (D-007 / S00 §7 —
- * flagged in S02-SPEC §4); the CTA glows on hover/press only (`hover:glow-cta`, L-38). Item labels come
- * from data: v2's sidebar ("Q&A", no Spark) is a SCOPE question, not copied.
- */
-export function FeedLeftNav({ items, activeKey, onStartDiscussion, className }: FeedLeftNavProps) {
-  const activeIndex = Math.max(
-    0,
-    items.findIndex((item) => item.key === activeKey),
-  );
+const Count = ({ n }: { n?: number | null }) =>
+  n ? <span className="font-mono text-micro tabular-nums text-text-muted">{n}</span> : null;
 
+const Heading = ({ children, className }: { children: string; className?: string }) => (
+  <p className={cn("mb-1.5 px-2.5 font-mono text-micro font-medium uppercase tracking-widest text-text-muted", className)}>{children}</p>
+);
+
+function Row({ item, active, topic }: { item: FeedNavItem; active: boolean; topic?: boolean }) {
+  const Icon = topic ? Hash : postTypeMeta(item.key).Icon;
   return (
-    <aside className={cn("sticky top-20 h-fit w-60 shrink-0 space-y-4", className)}>
+    <Link
+      href={item.href}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "focus-ring flex h-8 w-full items-center gap-2.5 rounded-full px-2.5 text-body-sm transition-colors duration-normal",
+        // Active = the selected state; glow-active is the one allowed at-rest glow (L-38).
+        active ? "glow-active bg-bg-overlay font-medium text-brand-primary" : "text-text-secondary hover:bg-bg-overlay/60 hover:text-text-primary",
+      )}
+    >
+      <Icon className={cn("size-3.75 shrink-0", !active && "text-text-muted")} strokeWidth={1.5} aria-hidden />
+      <span className="flex-1 truncate">{item.label}</span>
+      <Count n={item.count} />
+    </Link>
+  );
+}
+
+/**
+ * Left rail (lg+, FEED-DESIGN §9.3 + §9.6, Make Discover): the Start
+ * Discussion pill (one job — glows on hover/press only, L-34/L-38) above a
+ * frosted Discover card (L2 functional → frost-subtle): post types, then
+ * "Your topics", each with a mono new-since-last-visit count (none at 0).
+ * Labels come from data (COPY-1). Drill-down + lens bus land in B9.
+ */
+export function FeedLeftNav({ items, topics = [], activeKey, onStartDiscussion, className }: FeedLeftNavProps) {
+  return (
+    <aside className={cn("flex flex-col gap-3", className)}>
       {onStartDiscussion ? (
-        <div className="card-surface animate-soft-float p-3 motion-reduce:animate-none">
-          <button
-            type="button"
-            onClick={onStartDiscussion}
-            className="hover:glow-cta active:glow-active focus-ring inline-flex h-9 w-full items-center justify-center gap-1 rounded-full bg-brand-primary text-body-md font-semibold text-text-inverse transition-[transform,background-color] duration-normal ease-out-cubic hover:bg-brand-primary-hover active:scale-97"
-          >
-            <Plus className="size-4" strokeWidth={2.5} />
-            Start Discussion
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={onStartDiscussion}
+          className="hover:glow-cta active:glow-active focus-ring inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-full bg-brand-primary text-body-sm font-semibold text-text-inverse transition-[background-color,box-shadow,scale] duration-normal hover:bg-brand-primary-hover active:scale-97 active:duration-press"
+        >
+          <Plus className="size-4" strokeWidth={2} aria-hidden />
+          Start Discussion
+        </button>
       ) : null}
 
-      <nav className="card-surface animate-soft-float motion-reduce:animate-none" style={{ animationDelay: "60ms" }} aria-label="Discover">
-        <h2 className="p-4 pb-2 text-label-md font-semibold uppercase text-text-muted">Discover</h2>
-        <div className="relative space-y-1 p-3 pt-0">
-          <div
-            aria-hidden
-            className="glow-active pointer-events-none absolute left-3 right-3 top-0 rounded-full border border-border-active/70 bg-bg-overlay/55 transition-transform duration-slow ease-out-cubic will-change-transform motion-reduce:transition-none"
-            style={{ transform: `translateY(${activeIndex * (ITEM_H + ITEM_GAP)}px)`, height: ITEM_H }}
-          />
-          {items.map((item) => {
-            const isActive = item.key === activeKey;
-            const { Icon } = postTypeMeta(item.key);
-            return (
-              <Link
-                key={item.key}
-                href={item.href}
-                aria-current={isActive ? "page" : undefined}
-                className={"text-heading-xs " + cn(
-                  "focus-ring relative z-10 flex h-10 w-full items-center gap-2.5 rounded-full px-3 font-semibold transition-colors duration-normal",
-                  isActive ? "text-brand-primary" : "text-text-primary hover:text-brand-primary",
-                )}
-              >
-                <Icon className={cn("size-4", isActive && "scale-105")} strokeWidth={2.5} />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
+      <nav aria-label="Discover" className="frost-subtle rounded-lg border border-border-subtle px-2 py-3">
+        <Heading>Discover</Heading>
+        {items.map((item) => (
+          <Row key={item.key} item={item} active={item.key === activeKey} />
+        ))}
+        {topics.length > 0 ? (
+          <>
+            <Heading className="mt-3">Your topics</Heading>
+            {topics.map((item) => (
+              <Row key={item.key} item={item} active={item.key === activeKey} topic />
+            ))}
+          </>
+        ) : null}
       </nav>
     </aside>
+  );
+}
+
+/** Mobile (<lg): Discover as one horizontal chip row under the top bar (§8). */
+export function FeedDiscoverChips({ items, topics = [], activeKey, className }: Omit<FeedLeftNavProps, "onStartDiscussion">) {
+  return (
+    <div className={cn("no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4", className)} role="navigation" aria-label="Discover">
+      {[...items, ...topics].map((item) => {
+        const on = item.key === activeKey;
+        return (
+          <Link
+            key={item.key}
+            href={item.href}
+            aria-current={on ? "page" : undefined}
+            className={cn(
+              "focus-ring flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-caption font-medium transition-[scale] active:scale-97 active:duration-press",
+              on ? "border-transparent bg-bg-overlay text-brand-primary" : "border-border-subtle bg-bg-surface/70 text-text-secondary",
+            )}
+          >
+            {item.label}
+            <Count n={item.count} />
+          </Link>
+        );
+      })}
+    </div>
   );
 }

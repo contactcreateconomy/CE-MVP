@@ -1,0 +1,416 @@
+{
+  "capturedFrom": "tests/integration/feed-u2-payload.test.ts (convex-test, real feed.list + getChrome)",
+  "list": {
+    "cursor": null,
+    "page": [
+      {
+        "author": {
+          "avatarUrl": "https://some-deployment.convex.cloud/api/storage/D0Y2x49l02OezloGS1rnU+NAhhShT7GKtNdUDSwkhUM=",
+          "handle": "rachel",
+          "kind": "user",
+          "level": null,
+          "name": "Rachel Moore"
+        },
+        "authorName": "Rachel Moore",
+        "avatarUserIds": [
+          "000000000000000000000010004users",
+          "000000000000000000000010002users"
+        ],
+        "bestComment": {
+          "author": "lina",
+          "body": "the handoff checklist alone saved me a week"
+        },
+        "coverImage": "https://some-deployment.convex.cloud/api/storage/D0Y2x49l02OezloGS1rnU+NAhhShT7GKtNdUDSwkhUM=",
+        "discussingCount": 24,
+        "engagement": {
+          "reads": 40,
+          "replies": 24,
+          "saves": 2,
+          "valuable": 18
+        },
+        "facet": {
+          "community": 4.4,
+          "con": "Usage caps",
+          "kind": "review",
+          "pro": "Fast multi-file edits",
+          "tool": {
+            "name": "Cursor",
+            "price": "$20/mo"
+          },
+          "verdict": 4
+        },
+        "oneLiner": "Six months in",
+        "participants": [
+          {
+            "avatarUrl": null,
+            "handle": "lina",
+            "kind": "user",
+            "level": null,
+            "name": "Lina Park"
+          },
+          {
+            "avatarUrl": "https://some-deployment.convex.cloud/api/storage/D0Y2x49l02OezloGS1rnU+NAhhShT7GKtNdUDSwkhUM=",
+            "handle": "rachel",
+            "kind": "user",
+            "level": null,
+            "name": "Rachel Moore"
+          }
+        ],
+        "postId": "000000000000000000000010005posts",
+        "publishedAt": 1,
+        "rising": true,
+        "runningCommentRef": {
+          "commentId": "000000000000000000010029comments",
+          "frozenAt": 1
+        },
+        "slug": "a-review",
+        "title": "A review post",
+        "type": "review",
+        "viewer": {
+          "saved": true
+        }
+      },
+      {
+        "author": {
+          "avatarUrl": "https://some-deployment.convex.cloud/api/storage/D0Y2x49l02OezloGS1rnU+NAhhShT7GKtNdUDSwkhUM=",
+          "handle": "rachel",
+          "kind": "user",
+          "level": null,
+          "name": "Rachel Moore"
+        },
+        "authorName": "Rachel Moore",
+        "avatarUserIds": [],
+        "bestComment": null,
+        "coverImage": null,
+        "discussingCount": 0,
+        "engagement": {
+          "reads": 40,
+          "replies": 23,
+          "saves": 2,
+          "valuable": 19
+        },
+        "facet": {
+          "agreePct": null,
+          "kind": "debate",
+          "viewerVote": null,
+          "votes": 100
+        },
+        "oneLiner": "A debate post",
+        "participants": [],
+        "postId": "000000000000000000000010008posts",
+        "publishedAt": 1,
+        "rising": false,
+        "runningCommentRef": null,
+        "slug": "a-debate",
+        "title": "A debate post",
+        "type": "debate",
+        "viewer": {
+          "saved": false
+        }
+      },
+      {
+        "author": {
+          "avatarUrl": "https://some-deployment.convex.cloud/api/storage/D0Y2x49l02OezloGS1rnU+NAhhShT7GKtNdUDSwkhUM=",
+          "handle": "rachel",
+          "kind": "user",
+          "level": null,
+          "name": "Rachel Moore"
+        },
+        "authorName": "Rachel Moore",
+        "avatarUserIds": [],
+        "bestComment": null,
+        "coverImage": null,
+        "discussingCount": 0,
+        "engagement": {
+          "reads": 40,
+          "replies": 22,
+          "saves": 2,
+          "valuable": 20
+        },
+        "facet": {
+          "kind": "help",
+          "problem": "Zapier double-fires",
+          "resolved": true,
+          "resolvedBy": "lina"
+        },
+        "oneLiner": "A help post",
+        "participants": [],
+        "postId": "000000000000000000000010011posts",
+        "publishedAt": 1,
+        "rising": false,
+        "runningCommentRef": null,
+        "slug": "a-help",
+        "title": "A help post",
+        "type": "help",
+        "viewer": {
+          "saved": false
+        }
+      },
+      {
+        "author": {
+          "avatarUrl": "https://some-deployment.convex.cloud/api/storage/D0Y2x49l02OezloGS1rnU+NAhhShT7GKtNdUDSwkhUM=",
+          "handle": "rachel",
+          "kind": "user",
+          "level": null,
+          "name": "Rachel Moore"
+        },
+        "authorName": "Rachel Moore",
+        "avatarUserIds": [],
+        "bestComment": null,
+        "coverImage": null,
+        "discussingCount": 0,
+        "engagement": {
+          "reads": 40,
+          "replies": 21,
+          "saves": 2,
+          "valuable": 21
+        },
+        "facet": {
+          "items": [
+            {
+              "label": "Framer",
+              "votes": 128
+            },
+            {
+              "label": "Tally",
+              "votes": 94
+            },
+            {
+              "label": "Make",
+              "votes": 71
+            }
+          ],
+          "kind": "list",
+          "more": 1
+        },
+        "oneLiner": "A list post",
+        "participants": [],
+        "postId": "000000000000000000000010014posts",
+        "publishedAt": 1,
+        "rising": false,
+        "runningCommentRef": null,
+        "slug": "a-list",
+        "title": "A list post",
+        "type": "list",
+        "viewer": {
+          "saved": false
+        }
+      },
+      {
+        "author": {
+          "avatarUrl": "https://some-deployment.convex.cloud/api/storage/D0Y2x49l02OezloGS1rnU+NAhhShT7GKtNdUDSwkhUM=",
+          "handle": "rachel",
+          "kind": "user",
+          "level": null,
+          "name": "Rachel Moore"
+        },
+        "authorName": "Rachel Moore",
+        "avatarUserIds": [],
+        "bestComment": null,
+        "coverImage": null,
+        "discussingCount": 0,
+        "engagement": {
+          "reads": 40,
+          "replies": 20,
+          "saves": 2,
+          "valuable": 22
+        },
+        "facet": {
+          "kind": "showcase",
+          "linkApproved": true,
+          "thing": "An onboarding pipeline"
+        },
+        "oneLiner": "A showcase post",
+        "participants": [],
+        "postId": "000000000000000000000010017posts",
+        "publishedAt": 1,
+        "rising": false,
+        "runningCommentRef": null,
+        "slug": "a-showcase",
+        "title": "A showcase post",
+        "type": "showcase",
+        "viewer": {
+          "saved": false
+        }
+      },
+      {
+        "author": {
+          "avatarUrl": "https://some-deployment.convex.cloud/api/storage/D0Y2x49l02OezloGS1rnU+NAhhShT7GKtNdUDSwkhUM=",
+          "handle": "rachel",
+          "kind": "user",
+          "level": null,
+          "name": "Rachel Moore"
+        },
+        "authorName": "Rachel Moore",
+        "avatarUserIds": [],
+        "bestComment": null,
+        "coverImage": null,
+        "discussingCount": 0,
+        "engagement": {
+          "reads": 40,
+          "replies": 19,
+          "saves": 2,
+          "valuable": 23
+        },
+        "facet": {
+          "claim": "Chapter search for every channel",
+          "domain": "theverge.com",
+          "kind": "news"
+        },
+        "oneLiner": "A news post",
+        "participants": [],
+        "postId": "000000000000000000000010020posts",
+        "publishedAt": 1,
+        "rising": false,
+        "runningCommentRef": null,
+        "slug": "a-news",
+        "title": "A news post",
+        "type": "news",
+        "viewer": {
+          "saved": false
+        }
+      },
+      {
+        "author": {
+          "avatarUrl": "https://some-deployment.convex.cloud/api/storage/D0Y2x49l02OezloGS1rnU+NAhhShT7GKtNdUDSwkhUM=",
+          "handle": "rachel",
+          "kind": "user",
+          "level": null,
+          "name": "Rachel Moore"
+        },
+        "authorName": "Rachel Moore",
+        "avatarUserIds": [],
+        "bestComment": null,
+        "coverImage": null,
+        "discussingCount": 0,
+        "engagement": {
+          "reads": 40,
+          "replies": 18,
+          "saves": 2,
+          "valuable": 24
+        },
+        "facet": {
+          "kind": "compare",
+          "tools": [
+            {
+              "community": 4.4,
+              "name": "Cursor"
+            }
+          ]
+        },
+        "oneLiner": "A compare post",
+        "participants": [],
+        "postId": "000000000000000000000010023posts",
+        "publishedAt": 1,
+        "rising": false,
+        "runningCommentRef": null,
+        "slug": "a-compare",
+        "title": "A compare post",
+        "type": "compare",
+        "viewer": {
+          "saved": false
+        }
+      },
+      {
+        "author": {
+          "avatarUrl": "https://some-deployment.convex.cloud/api/storage/D0Y2x49l02OezloGS1rnU+NAhhShT7GKtNdUDSwkhUM=",
+          "handle": "rachel",
+          "kind": "user",
+          "level": null,
+          "name": "Rachel Moore"
+        },
+        "authorName": "Rachel Moore",
+        "avatarUserIds": [],
+        "bestComment": null,
+        "coverImage": null,
+        "discussingCount": 0,
+        "engagement": {
+          "reads": 40,
+          "replies": 17,
+          "saves": 2,
+          "valuable": 25
+        },
+        "facet": null,
+        "oneLiner": "A spark post",
+        "participants": [],
+        "postId": "000000000000000000000010026posts",
+        "publishedAt": 1,
+        "rising": false,
+        "runningCommentRef": null,
+        "slug": "a-spark",
+        "title": "A spark post",
+        "type": "spark",
+        "viewer": {
+          "saved": false
+        }
+      }
+    ],
+    "snapshot": true
+  },
+  "chrome": {
+    "featured": [],
+    "hero": [
+      {
+        "coverImage": "https://some-deployment.convex.cloud/api/storage/D0Y2x49l02OezloGS1rnU+NAhhShT7GKtNdUDSwkhUM=",
+        "ctaLabel": "Open discussion",
+        "disclosureClass": "community_top",
+        "isCommunityTop": true,
+        "mediaUrl": null,
+        "postId": "000000000000000000000010005posts",
+        "slotOrder": 0,
+        "slug": "a-review",
+        "summary": "Six months in",
+        "title": "A review post",
+        "type": "review"
+      }
+    ],
+    "podium": {
+      "forming": true
+    },
+    "typeNav": [
+      {
+        "label": "Compare",
+        "type": "compare"
+      },
+      {
+        "label": "Debate",
+        "type": "debate"
+      },
+      {
+        "label": "Help",
+        "type": "help"
+      },
+      {
+        "label": "List",
+        "type": "list"
+      },
+      {
+        "label": "News",
+        "type": "news"
+      },
+      {
+        "label": "Review",
+        "type": "review"
+      },
+      {
+        "label": "Showcase",
+        "type": "showcase"
+      },
+      {
+        "label": "Spark",
+        "type": "spark"
+      }
+    ],
+    "vibing": [
+      {
+        "hook": null,
+        "humans": 512,
+        "objectId": "000000000000000000000010008posts",
+        "objectType": "post",
+        "postType": "debate",
+        "slug": "a-debate",
+        "title": "A debate post"
+      }
+    ]
+  }
+}

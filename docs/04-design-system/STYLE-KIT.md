@@ -100,6 +100,9 @@ sheet/radius             radius/xl (16px)                  top corners of bottom
 sheet/max-h              90dvh                             sheet content cap
 sheet/handle             36 x 4px, border/default colour   drag handle
 scrim                    black 40% (dark) / 25% (light)    sheet/dialog overlay
+media-scrim              black 80% (both themes)            text over photos / media (FEED-DESIGN L-78)
+text-on-media            white (both themes)                text on media-scrim (L-78)
+rank-gold/silver/bronze  light: hsl(42 96% 36%) / hsl(215 14% 48%) / hsl(26 85% 38%); dark: hsl(45 93% 53%) / hsl(210 24% 84%) / hsl(28 89% 44%)   Podium crowns, ≥ 3:1 on the surface in both themes (L-81)
 safe/top|bottom|left|right  env(safe-area-inset-*)         notched-phone insets
 tabbar/h                 56px (+ safe/bottom at usage)    mobile tab bar
 topbar/h                 48px (+ safe/top at usage)       mobile top bar

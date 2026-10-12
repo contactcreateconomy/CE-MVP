@@ -1,0 +1,2 @@
+Error: Failed to resolve import "../feed-adapter" from "src/components/feed/__tests__/feed-adapter.test.ts". Does the file exist?
+      Tests  no tests

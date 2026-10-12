@@ -42,6 +42,8 @@ vi.mock("convex/react", () => ({
   useMutation: () => vi.fn(),
 }));
 vi.mock("@cemvp/convex-client", () => ({ isConvexConfigured: () => true }));
+// FEED-U2: the feed container navigates with the app router (Start Discussion, strings).
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {} }), usePathname: () => "/feed" }));
 vi.mock("@cemvp/auth-ui", () => ({ useAuth: () => ({ authStatus: "unauthenticated" }) }));
 
 import { CanonicalFeedClient } from "@/components/feed/canonical-feed-client";
@@ -70,7 +72,8 @@ describe("review fix — feed pre-filter truncation + double read (convex/feed.t
   });
 
   it("the gated post read is reused for card assembly — no second fetch", () => {
-    expect(feedSrc).toContain("const card = await assembleCard(ctx, row, post);");
+    // FEED-U2: the viewer id rides along (facet split / viewer state); the post read is still reused.
+    expect(feedSrc).toContain("const card = await assembleCard(ctx, row, post, userId);");
     expect(feedSrc).toContain("fetchedPost ?? (await ctx.db.get(score.postId))");
   });
 });

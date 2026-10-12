@@ -28,6 +28,7 @@ import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { requireUser } from "./lib/authz";
 import { captureEvent } from "./lib/events";
+import { authorOf, bestComment, facetOf, participants, resolveImageUrl, userPerson, viewerState } from "./lib/feedPayload";
 
 const PAGE = 20;
 
@@ -79,7 +80,7 @@ async function ensureSessionRow(ctx: any, userId: Id<"users">, sortMode: string)
   return await ctx.db.get(id);
 }
 
-async function assembleCard(ctx: any, score: any, fetchedPost?: any): Promise<any> {
+async function assembleCard(ctx: any, score: any, fetchedPost?: any, viewerId: Id<"users"> | null = null): Promise<any> {
   // Callers that already fetched the post for gating (the organic walk)
   // pass it in — one read, reused; everyone else fetches here.
   const post = fetchedPost ?? (await ctx.db.get(score.postId));
@@ -124,6 +125,12 @@ async function assembleCard(ctx: any, score: any, fetchedPost?: any): Promise<an
     // Rising badge (CAP-201 → routes to Podium) — display flag from the
     // trend projection (flagged heuristic until M12's Rising definition)
     rising: score.trendScore > 0,
+    // ── FEED-U2 additive payload (CR-010 slice; null / [] when no row) ──
+    author: await authorOf(ctx, post),
+    facet: await facetOf(ctx, post, viewerId),
+    bestComment: await bestComment(ctx, card?.runningCommentRef?.commentId),
+    participants: await participants(ctx, card?.avatarUserIds),
+    viewer: await viewerState(ctx, viewerId, post._id),
   };
 }
 
@@ -172,7 +179,7 @@ export const list = query({
       }
       scored.sort((a: any, b: any) => b.lastEligibleInteractionAt - a.lastEligibleInteractionAt); // unread-activity ordering
       for (const score of scored.slice(0, PAGE)) {
-        const card = await assembleCard(ctx, score);
+        const card = await assembleCard(ctx, score, undefined, userId);
         if (card && (!args.typeFilter || card.type === args.typeFilter)) cards.push(card);
       }
     } else {
@@ -205,7 +212,7 @@ export const list = query({
           if (post.authorType !== "user") continue; // persona/staff ZERO in core ranking (§3 M)
           if (hidden.has(row.postId)) continue;
           if (args.typeFilter && post.type !== args.typeFilter) continue;
-          const card = await assembleCard(ctx, row, post); // reuse the gated read — no second fetch
+          const card = await assembleCard(ctx, row, post, userId); // reuse the gated read — no second fetch
           if (!card) continue;
           cards.push(card);
           emitted += 1;
@@ -257,6 +264,10 @@ export const getChrome = query({
         coverImage: seo?.ogImageAssetId ? ((await ctx.storage.getUrl(seo.ogImageAssetId as any)) ?? null) : null, // CR-010a — the hero reads active.coverImage
         title: slot.headlineOverride ?? post.title,
         ctaLabel: slot.ctaLabel ?? null,
+        // FEED-U2 additive: frame summary + type; slot media wins over the post cover (L-85 fallback).
+        summary: slot.textOverride ?? (await ctx.db.query("cardSummaries").withIndex("by_postId", (q: any) => q.eq("postId", post._id)).unique())?.oneLiner ?? null,
+        type: post.type,
+        mediaUrl: await resolveImageUrl(ctx, slot.mediaAssetId ?? seo?.ogImageAssetId ?? null),
         disclosureClass: slot.disclosureClass,
         isCommunityTop: slot.disclosureClass === "community_top",
       });
@@ -282,6 +293,8 @@ export const getChrome = query({
         // title is the fallback; no emotion attributed to a named user.
         hook: hook && !hook.stale && hook.groundingStatus === "grounded" ? hook.hookText : null,
         humans: trend.distinctHumanCount,
+        // FEED-U2 additive: post trends carry their title / slug / type (CR-010 "Vibing title/link").
+        ...(await vibingTarget(ctx, trend)),
       });
     }
 
@@ -303,6 +316,11 @@ export const getChrome = query({
       for (const entry of podium.entries) {
         const u = await ctx.db.get(entry.userId);
         (entry as any).displayName = u?.displayName ?? u?.username ?? "Member";
+        // FEED-U2 additive: handle (Podium links) + avatar + level.
+        const person = await userPerson(ctx, entry.userId, true);
+        (entry as any).handle = person?.handle ?? null;
+        (entry as any).avatarUrl = person?.avatarUrl ?? null;
+        (entry as any).level = person?.level ?? null;
       }
     }
 
@@ -323,6 +341,20 @@ export const getChrome = query({
     };
   },
 });
+
+/** FEED-U2: a Vibing trend's post title / slug / type (null fields when not a post). */
+async function vibingTarget(ctx: any, trend: any) {
+  if (trend.objectType !== "post") return { title: null, slug: null, postType: null };
+  let post: any = null;
+  try {
+    post = await ctx.db.get(trend.objectId);
+  } catch {
+    post = null;
+  }
+  if (!post || post.lifecycleStatus !== "published") return { title: null, slug: null, postType: null };
+  const seo = await ctx.db.query("postSeoMeta").withIndex("by_postId", (q: any) => q.eq("postId", post._id)).unique();
+  return { title: post.title as string, slug: (seo?.slug as string) ?? null, postType: post.type as string };
+}
 
 /** CAP-199 — the why-drawer source (member-only). */
 export const getWhy = query({
