@@ -7204,5 +7204,239 @@
     "seen": 1791784629.8368335,
     "ast_hash": "9d34b1a56116070935a2840adf78a51a",
     "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-NOTES.md": {
+    "mtime": 1791784756.0933914,
+    "seen": 1791784776.695915,
+    "ast_hash": "019a8e5e268ee41b164f1082283322da",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/.figma/make/analyze-routes": {
+    "mtime": 1791786421.43812,
+    "seen": 1791786501.0546556,
+    "ast_hash": "d408a5d15cc549d950d9c85aa8e6733b",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/.figma/make/deploy": {
+    "mtime": 1791786421.43812,
+    "seen": 1791786501.0546577,
+    "ast_hash": "83ee566420dd252ed3f89323c4a65854",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/.figma/make/deploy-preview": {
+    "mtime": 1791786421.43812,
+    "seen": 1791786501.0546598,
+    "ast_hash": "fdc0963cde1d657cef0c0466c295a006",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/.figma/make/dev": {
+    "mtime": 1791786421.454756,
+    "seen": 1791786501.0546618,
+    "ast_hash": "a5b7c2a9b3a999bfe8576e021e0f16b3",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/.figma/make/dev.json": {
+    "mtime": 1791786421.454756,
+    "seen": 1791786501.0546632,
+    "ast_hash": "6d5deb245a1940f815cb1e363b75fc90",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/.figma/make/format": {
+    "mtime": 1791786421.43812,
+    "seen": 1791786501.0546646,
+    "ast_hash": "c5130615e938cf0b5fb51e190b3f212f",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/.figma/make/install": {
+    "mtime": 1791786421.4530752,
+    "seen": 1791786501.0546663,
+    "ast_hash": "fb3cb807fb882cb065ee02b8874f759c",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/.figma/make/langserver": {
+    "mtime": 1791786421.454075,
+    "seen": 1791786501.0546677,
+    "ast_hash": "09d73139e9a9873fe47d02fb6e66d19e",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/.figma/make/site.json": {
+    "mtime": 1791786421.454756,
+    "seen": 1791786501.0546694,
+    "ast_hash": "98835a627c224ec266dce21084367af8",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/package.json": {
+    "mtime": 1791786421.454756,
+    "seen": 1791786501.054671,
+    "ast_hash": "fd73a48ef8c338e33e8ae4f020b96083",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/App.tsx": {
+    "mtime": 1791786421.454756,
+    "seen": 1791786501.0546722,
+    "ast_hash": "d7960686d868b22575f9d1b9444d2b18",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/Brand.tsx": {
+    "mtime": 1791786421.4715066,
+    "seen": 1791786501.0546734,
+    "ast_hash": "fcad3b6001f82bf5b79ceaac0265f959",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/Chrome.tsx": {
+    "mtime": 1791786421.487259,
+    "seen": 1791786501.0546744,
+    "ast_hash": "2df0815a7477ff8d5723639afc49de01",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/Composer.tsx": {
+    "mtime": 1791786421.4749665,
+    "seen": 1791786501.0546758,
+    "ast_hash": "3b87d41cb6a7d0b344042960239238f3",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/Discover.tsx": {
+    "mtime": 1791786421.4749665,
+    "seen": 1791786501.0546772,
+    "ast_hash": "36705e9abb4d3f92724904d6f970fee0",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/Feed.tsx": {
+    "mtime": 1791786421.476971,
+    "seen": 1791786501.0546784,
+    "ast_hash": "c2ee44732c3e6b4dad8afea059e115f1",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/FeedCard.tsx": {
+    "mtime": 1791786421.4880202,
+    "seen": 1791786501.0546799,
+    "ast_hash": "1f23fe05ed077fd3070af1d808fdec66",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/IconButton.tsx": {
+    "mtime": 1791786421.4880202,
+    "seen": 1791786501.054681,
+    "ast_hash": "e66fa48151a3f4802538f474efcd4b32",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/Podium.tsx": {
+    "mtime": 1791786421.476971,
+    "seen": 1791786501.054683,
+    "ast_hash": "1b40d4dfdaced43ddd9e0eef5b026b5a",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/PrototypePanel.tsx": {
+    "mtime": 1791786421.4880202,
+    "seen": 1791786501.0546844,
+    "ast_hash": "c983c319a743fbe2d2c60bea074fa1e3",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/Slots.tsx": {
+    "mtime": 1791786421.476971,
+    "seen": 1791786501.0546856,
+    "ast_hash": "48f03c857fb768f66c32a1225f875490",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/Sorter.tsx": {
+    "mtime": 1791786421.476971,
+    "seen": 1791786501.0546868,
+    "ast_hash": "671e164b57ebac25f069132413a578b6",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/Vibing.tsx": {
+    "mtime": 1791786421.476971,
+    "seen": 1791786501.0546882,
+    "ast_hash": "96150cc3731cfb3d07f901adbeca453e",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/feedData.ts": {
+    "mtime": 1791786421.4880202,
+    "seen": 1791786501.0546896,
+    "ast_hash": "36ca35feb9d08487c44caca17891c1c1",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/hero/Cover.tsx": {
+    "mtime": 1791786421.476971,
+    "seen": 1791786501.0546908,
+    "ast_hash": "0e18a4e4ca77e581f6a102e91cfe0c9e",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/hero/FrameContent.tsx": {
+    "mtime": 1791786421.476971,
+    "seen": 1791786501.054692,
+    "ast_hash": "bd7e51cd83eecb594378e88cf4b6aa82",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/hero/Hero.tsx": {
+    "mtime": 1791786421.476971,
+    "seen": 1791786501.0546935,
+    "ast_hash": "b8f59360aeec7b5237d4ca4393872cc3",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/hero/data.ts": {
+    "mtime": 1791786421.476971,
+    "seen": 1791786501.054695,
+    "ast_hash": "e8a492d9b1df15f5d74a39c5ec725e09",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/components/taxonomy.ts": {
+    "mtime": 1791786421.4860883,
+    "seen": 1791786501.0546958,
+    "ast_hash": "de1ae229d1fb6db15550e535e2479edc",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/main.tsx": {
+    "mtime": 1791786421.4695082,
+    "seen": 1791786501.0546975,
+    "ast_hash": "42c0b1d9c2751a5e4e55876cee46fc57",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/motion.ts": {
+    "mtime": 1791786421.4706447,
+    "seen": 1791786501.0546985,
+    "ast_hash": "6260bb36b4ed7ae2780e65b8d61ce688",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/src/vite-env.d.ts": {
+    "mtime": 1791786421.4715066,
+    "seen": 1791786501.0546997,
+    "ast_hash": "0352474ba2918efe13895edbc3780d94",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/tsconfig.json": {
+    "mtime": 1791786421.4880202,
+    "seen": 1791786501.0547013,
+    "ast_hash": "f67af494aefeae8b9d2d0dc4021ce32d",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/vite.config.ts": {
+    "mtime": 1791786421.4880202,
+    "seen": 1791786501.0547025,
+    "ast_hash": "d76498a7f0fb1cb0206c9f6c9b4e36a4",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/AGENTS.md": {
+    "mtime": 1791786421.454756,
+    "seen": 1791786501.0558016,
+    "ast_hash": "704403927d5803613a0aefe03b8fb477",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/CLAUDE.md": {
+    "mtime": 1791786421.4880202,
+    "seen": 1791786501.0558026,
+    "ast_hash": "5c27369b226fcf2be8a6cfe52224e767",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/code/index.html": {
+    "mtime": 1791786421.454756,
+    "seen": 1791786501.055804,
+    "ast_hash": "02d04d4321f068edfa562d42ad5d0e02",
+    "semantic_hash": ""
+  },
+  "ak-redesign/specs/S02-refs/make/make-feed-1440.png": {
+    "mtime": 1791786184.31728,
+    "seen": 1791786501.0562904,
+    "ast_hash": "3b1754bf61bdd89252fde32395e83016",
+    "semantic_hash": ""
   }
 }

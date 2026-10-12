@@ -1,0 +1,10 @@
+     × cards carry author, cover, best comment, participants, facets and viewer state from real rows 89ms
+     × debate split stays hidden until the viewer votes (L-29) 19ms
+     × guests get no viewer state and no split 15ms
+     × hero frames carry summary + type + cover; post trends carry title + slug + type 17ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected undefined to match object { name: 'Rachel Moore', …(2) }
+AssertionError: expected undefined to deeply equal { kind: 'debate', votes: 100, …(2) }
+AssertionError: expected undefined to deeply equal {}
+AssertionError: expected { …(8) } to match object { title: 'A review post', …(5) }
+      Tests  4 failed (4)
