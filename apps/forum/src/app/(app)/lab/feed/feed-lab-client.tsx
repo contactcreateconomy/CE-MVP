@@ -52,7 +52,7 @@ export function LabFeedClient({ initialState, forcedTheme, showToolbar, typeFilt
   }, [forcedTheme, setTheme]);
 
   const visible = useMemo(() => {
-    let list = cards.filter((c) => c.id !== hidden);
+    let list = cards;
     if (typeFilter !== "home") list = list.filter((c) => c.type === typeFilter || c.pinned);
     if (sort === "fav") list = list.filter((c) => c.viewer.saved || c.viewer.commented);
     return list;
@@ -99,6 +99,7 @@ export function LabFeedClient({ initialState, forcedTheme, showToolbar, typeFilt
           onHide: () => setHidden(card.id),
           onMute: () => setHidden(card.id),
           onReport: () => setHidden(card.id),
+          onUndoHide: () => setHidden(null),
         })}
         onEmptyAction={() => {}}
         vibing={vibing}
@@ -111,7 +112,7 @@ export function LabFeedClient({ initialState, forcedTheme, showToolbar, typeFilt
           formingDetail: podiumFormingDetail,
           leaderboardHref: "/lab/feed",
         }}
-        undo={hidden ? { message: "Hidden", onUndo: () => setHidden(null), onDismiss: () => setHidden(null) } : null}
+        hiddenIds={hidden ? new Set([hidden]) : undefined}
       />
 
       {showToolbar ? (

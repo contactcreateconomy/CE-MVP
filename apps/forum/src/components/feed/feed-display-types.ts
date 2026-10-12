@@ -111,7 +111,8 @@ export interface FeedCardData {
   gravity: number;
   /** Strings = comments (L-65). */
   strings: number;
-  /** Distinct humans in the discussion ("24 discussing"). 0 → hidden. */
+  /** Distinct humans in the discussion. Not shown on the card (L-82: faces
+   *  only); kept for the wiring / author flux. */
   discussing: number;
   /** Up to 3 faces of people discussing. */
   participants: FeedPerson[];
@@ -169,7 +170,7 @@ export interface FeedPodiumEntry {
   rank: number;
   person: FeedPerson;
   href: string | null;
-  /** What they did, in plain words ("38 answers valued") — never opaque
+  /** What they did, in plain words ("38 answers drew Gravity") — never opaque
    *  points (R-10). From the recognition projection. */
   did: string;
 }

@@ -30,7 +30,8 @@ describe("FeedCard footer (L-62, L-64, L-65)", () => {
     render(<FeedCard card={card()} />);
     expect(screen.getByText("18G")).toBeTruthy();
     expect(screen.getByText("24 strings")).toBeTruthy();
-    expect(document.querySelector("[data-discussing]")?.textContent).toBe("24 discussing");
+    // L-82 (supersedes the U1 "24 discussing" label): faces only, no count.
+    expect(document.body.textContent).not.toMatch(/discussing/);
   });
   it("no Gravity number at 0; empty strings invite", () => {
     render(<FeedCard card={card({ gravity: 0, strings: 0, discussing: 0 })} />);

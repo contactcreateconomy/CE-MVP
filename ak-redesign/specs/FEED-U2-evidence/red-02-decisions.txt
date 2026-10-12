@@ -1,0 +1,11 @@
+     × renders the faces but never the word 'discussing' 61ms
+     × debate keeps 'N voted · take a side' before the vote, split hidden 31ms
+     × a hidden card collapses in place to 'Hidden · Undo' 11ms
+     × the page-level undo toast is gone from the feed view 1ms
+     × lab fixtures speak Gravity 6ms
+     × --rank-gold light ≥ 3:1, dark ≥ 3:1 2ms
+     × --rank-silver light ≥ 3:1, dark ≥ 3:1 1ms
+     × --rank-bronze light ≥ 3:1, dark ≥ 3:1 2ms
+     × tokens exist in both themes and the hero overlay uses them 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  9 failed | 1 passed (10)

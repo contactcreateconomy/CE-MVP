@@ -288,9 +288,10 @@
   --cat-showcase: hsl(330 81% 60%);
 
   /* Podium / leaderboard rank medals */
-  --rank-gold: hsl(45 93% 53%);
-  --rank-silver: hsl(210 24% 84%);
-  --rank-bronze: hsl(28 89% 44%);
+  /* L-81: light-surface crowns ≥ 3:1 (WCAG 1.4.11); dark keeps the bright set (.dark). */
+  --rank-gold: hsl(42 96% 36%);
+  --rank-silver: hsl(215 14% 48%);
+  --rank-bronze: hsl(26 85% 38%);
   --rank-four: hsl(173 80% 36%);
   --rank-five: hsl(230 84% 66%);
 
@@ -469,6 +470,11 @@
   --frost-look-bg: color-mix(in srgb, var(--bg-surface) 85%, transparent);
   --frost-highlight: color-mix(in srgb, var(--bg-canvas) 90%, transparent);
 
+  /* Media overlay (L-78): text over photos reads the same in both themes —
+     a dark scrim (Bible §3.2 rule 5) under white text. */
+  --media-scrim: hsl(0 0% 0% / 0.8);
+  --text-on-media: hsl(0 0% 100%);
+
   /* Sheet (§5.4) */
   --sheet-radius: var(--radius-xl);
   --sheet-max-h: 90dvh;
@@ -577,6 +583,15 @@
   --frost-strong-bg: color-mix(in srgb, var(--bg-surface) 55%, transparent);
   --frost-look-bg: color-mix(in srgb, var(--bg-surface) 85%, transparent);
   --frost-highlight: color-mix(in srgb, var(--text-primary) 7%, transparent);
+
+  /* Media overlay (L-78) — same as light: media is media. */
+  --media-scrim: hsl(0 0% 0% / 0.8);
+  --text-on-media: hsl(0 0% 100%);
+
+  /* Crowns on dark surfaces (L-81 keeps the bright set here). */
+  --rank-gold: hsl(45 93% 53%);
+  --rank-silver: hsl(210 24% 84%);
+  --rank-bronze: hsl(28 89% 44%);
   --scrim: hsl(0 0% 0% / 0.4);
 }
 

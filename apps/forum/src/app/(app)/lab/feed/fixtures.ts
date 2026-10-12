@@ -84,7 +84,7 @@ export const cards: FeedCardData[] = [
     id: "p-review", href: "/lab/feed", type: "review", typeLabel: "Review", topicLabel: "Agents", updated: true,
     title: "Cursor after six months: still worth $20?", author: people.rachel, timeLabel: "2h", coverImageUrl: cover(210),
     facet: { kind: "review", tool: { name: "Cursor", price: "$20/mo" }, verdict: 4, community: 4.4, pro: "Multi-file edits finally feel trustworthy", con: "Usage caps bite on long refactors" },
-    whyCare: { kind: "line", rising: true, text: "14 valued in the last 3h", detail: "faster than most Review posts" },
+    whyCare: { kind: "line", rising: true, text: "+14G in the last 3h", detail: "faster than most Review posts" },
     gravity: 1240, strings: 23, discussing: 24, participants: faces(people.theo, people.lina, people.maya), viewer: { appreciated: true, saved: true },
   },
   {
@@ -118,7 +118,7 @@ export const cards: FeedCardData[] = [
     id: "p-list", href: "/lab/feed", type: "list", typeLabel: "List", topicLabel: "No-code",
     title: "The leanest no-code stack for a one-person studio", author: people.atlas, timeLabel: "3h", coverImageUrl: null,
     facet: { kind: "list", items: [{ label: "Framer for the site", votes: 128 }, { label: "Tally for intake", votes: 94 }, { label: "Make for glue", votes: 71 }], more: 12 },
-    whyCare: { kind: "line", text: "Still valued 3 months later", detail: "6 valued this week" },
+    whyCare: { kind: "line", text: "Still drawing Gravity 3 months later", detail: "+6G this week" },
     gravity: 12400, strings: 64, discussing: 9, participants: faces(people.lina, people.rachel, people.maya), viewer: { saved: true },
   },
   {
@@ -159,11 +159,11 @@ export const podiumDimensions: FeedPodiumDimension[] = [
 const ranked = [people.maya, people.rachel, people.lina, people.dev, people.theo];
 const nums = [38, 31, 24, 19, 15];
 const did: Record<string, (n: number) => string> = {
-  overall: (n) => `${n * 3} contributions valued`,
-  commenters: (n) => `${n} comments valued`,
-  helpers: (n) => `${n} answers valued`,
+  overall: (n) => `+${n * 3}G from contributions`,
+  commenters: (n) => `${n} comments drew Gravity`,
+  helpers: (n) => `${n} answers drew Gravity`,
   reviewers: (n) => `${Math.round(n / 3)} reviews found helpful`,
-  rising: (n) => `+${n * 4} valued, up from 3`,
+  rising: (n) => `+${n * 4}G, up from +3G`,
 };
 export const podiumFor = (dim: string): FeedPodiumEntry[] | null =>
   dim === "rising"

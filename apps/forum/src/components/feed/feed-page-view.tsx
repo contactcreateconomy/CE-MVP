@@ -19,7 +19,6 @@ import {
   type FeedVibingWidgetProps,
 } from "./feed-rail";
 import { FeedTabs, type FeedTabsProps } from "./feed-tabs";
-import { FeedUndoToast } from "./feed-undo-toast";
 
 export type FeedListState = "loading" | "ready" | "empty";
 
@@ -51,7 +50,8 @@ export interface FeedPageViewProps {
   footer?: ReactNode;
   vibing: FeedVibingWidgetProps["items"];
   podium: Omit<FeedPodiumWidgetProps, "className">;
-  undo?: { message: string; onUndo: () => void; onDismiss: () => void } | null;
+  /** Cards the viewer hid this session — they collapse in place to "Hidden · Undo" (L-79). */
+  hiddenIds?: ReadonlySet<string>;
 }
 
 function Divider({ children }: { children: ReactNode }) {
@@ -73,7 +73,7 @@ function Divider({ children }: { children: ReactNode }) {
  */
 export function FeedPageView(props: FeedPageViewProps) {
   const { heroSlides, heroLoading, heroMode, nav, sort, onSortChange, favNew, sortNotes, listState, cards } = props;
-  const { cardActions, newPosts, caughtUpAfter, onEmptyAction, footer, vibing, podium, undo } = props;
+  const { cardActions, hiddenIds, newPosts, caughtUpAfter, onEmptyAction, footer, vibing, podium } = props;
   const tabsRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -130,7 +130,7 @@ export function FeedPageView(props: FeedPageViewProps) {
                 <div className="flex flex-col gap-3">
                   {cards.map((card, i) => (
                     <Fragment key={card.id}>
-                      <FeedCard card={card} {...(cardActions?.(card) ?? {})} />
+                      <FeedCard card={card} hidden={hiddenIds?.has(card.id)} {...(cardActions?.(card) ?? {})} />
                       {caughtUpAfter != null && i === caughtUpAfter - 1 ? <Divider>You&apos;re caught up since your last visit</Divider> : null}
                       {i === PODIUM_AFTER - 1 ? <FeedPodiumCard {...podium} className="lg:hidden" /> : null}
                     </Fragment>
@@ -149,11 +149,6 @@ export function FeedPageView(props: FeedPageViewProps) {
         </div>
       </div>
 
-      {undo ? (
-        <div className="fixed inset-x-0 bottom-[calc(var(--tabbar-h)+var(--safe-bottom)+1rem)] z-toast flex justify-center px-4 lg:bottom-6">
-          <FeedUndoToast message={undo.message} onUndo={undo.onUndo} onDismiss={undo.onDismiss} />
-        </div>
-      ) : null}
     </div>
   );
 }

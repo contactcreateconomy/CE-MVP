@@ -18,7 +18,8 @@ import { postTypeMeta } from "./feed-post-type-meta";
  * (D-017).
  *  - large (L-43): centred cover-flow, text overlaid on the active frame;
  *    side frames scale 0.8 + brightness 0.45 + a slight turn, never blurred
- *    (L-40, R-07); neutral frost, no colour bleed (R-05).
+ *    (L-40, R-07); neutral frost, no colour bleed (R-05). Text over the photo
+ *    sits on --media-scrim in --text-on-media, both themes (L-78).
  *  - compact: a cascade on the left, the frame text on the right.
  * Never auto-rotates (L-31, R-06): arrows, ← →, trackpad (wheel lockout) and
  * drag. Frame 1 plays tease → reveal once per session. Reduced motion: no
@@ -247,16 +248,16 @@ export function FeedHeroCarousel({ slides, initialMode = "default", className }:
                             initial="hidden"
                             animate="visible"
                             exit={{ opacity: 0, transition: { duration: 0.15 } }}
-                            className="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-linear-to-t from-bg-canvas/90 via-bg-canvas/55 to-transparent px-5 pb-4 pt-16"
+                            className="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-linear-to-t from-(--media-scrim) via-(--media-scrim)/60 to-transparent px-5 pb-4 pt-16 text-(--text-on-media)"
                           >
                             <motion.p variants={m.focusPull} className="font-mono text-micro font-medium uppercase tracking-widest text-brand-primary">
                               {slide.eyebrow}
                             </motion.p>
-                            <motion.h2 variants={m.focusPull} className="line-clamp-2 text-heading-md font-semibold text-text-primary">
+                            <motion.h2 variants={m.focusPull} className="line-clamp-2 text-heading-md font-semibold">
                               {slide.title}
                             </motion.h2>
                             {slide.summary ? (
-                              <motion.p variants={m.focusPull} className="truncate text-body-sm text-text-secondary">
+                              <motion.p variants={m.focusPull} className="truncate text-body-sm opacity-75">
                                 {slide.summary}
                               </motion.p>
                             ) : null}

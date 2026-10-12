@@ -30,10 +30,14 @@ export interface FeedCardActions {
   onHide?: () => void;
   onMute?: () => void;
   onReport?: () => void;
+  /** L-79: a hidden card collapses in place to "Hidden · Undo". */
+  onUndoHide?: () => void;
 }
 
 export interface FeedCardProps extends FeedCardActions {
   card: FeedCardData;
+  /** Hidden by the viewer this session → the inline "Hidden · Undo" row (L-79). */
+  hidden?: boolean;
   className?: string;
 }
 
@@ -126,7 +130,8 @@ function DebateFacet({ facet, onVote }: { facet: Extract<FeedFacet, { kind: "deb
   return (
     <div className="flex flex-col gap-2">
       <p className="text-caption text-text-muted">
-        <Mono className="text-text-secondary">{facet.votes}</Mono> voted
+        <Mono className="text-text-secondary">{facet.votes}</Mono>
+        {voted === null && onVote ? " voted · take a side" : " voted"}
       </p>
       {voted === null ? (
         onVote ? (
@@ -406,20 +411,13 @@ function Footer(props: FeedCardProps) {
           </button>
         ) : null}
       </div>
-      {card.discussing > 0 ? (
-        <div className="flex shrink-0 items-center gap-2 text-caption text-text-muted">
-          {card.participants.length > 0 ? (
-            <span className="flex -space-x-1.5">
-              {card.participants.slice(0, 3).map((p, i) => (
-                <FeedAvatar key={`${p.handle ?? p.name}-${i}`} person={p} size="xs" className="ring-2 ring-bg-surface" />
-              ))}
-            </span>
-          ) : null}
-          <span data-discussing>
-            <Mono className="text-text-secondary">{card.discussing}</Mono>
-            <span className="hidden sm:inline"> discussing</span>
-          </span>
-        </div>
+      {card.participants.length > 0 ? (
+        // L-82: faces only — no "N discussing" count (Gravity and Strings are the public numbers, L-64).
+        <span data-faces className="flex shrink-0 -space-x-1.5">
+          {card.participants.slice(0, 3).map((p, i) => (
+            <FeedAvatar key={`${p.handle ?? p.name}-${i}`} person={p} size="xs" className="ring-2 ring-bg-surface" />
+          ))}
+        </span>
       ) : null}
     </footer>
   );
@@ -430,12 +428,28 @@ function Footer(props: FeedCardProps) {
 /**
  * FeedCard — the one feed card (FEED-DESIGN §10, founder-approved Make look).
  * Skeleton for every type: identity · kind chip · title · facet · why-care-now
- * · footer (G-switch + Gravity, strings, save, share · faces + discussing).
+ * · footer (G-switch + Gravity, strings, save, share · faces, L-82).
  * Material: frost-look (L1 — translucent + 1px highlight + shadow-xs, no live
  * blur, L-39/L-73). No glow at rest (L-38); hover adds depth only.
  */
 export function FeedCard(props: FeedCardProps) {
   const { card, className, onVote } = props;
+  if (props.hidden) {
+    return (
+      <div role="status" className={cn("frost-look flex h-11 items-center justify-between rounded-lg border border-border-subtle px-4 text-body-sm text-text-muted", className)}>
+        Hidden
+        {props.onUndoHide ? (
+          <button
+            type="button"
+            onClick={props.onUndoHide}
+            className="focus-ring rounded-full px-2 py-1 font-medium text-text-primary transition-[color,scale] duration-normal hover:text-brand-primary active:scale-97 active:duration-press"
+          >
+            Undo
+          </button>
+        ) : null}
+      </div>
+    );
+  }
   const spark = card.type === "spark";
   const title = (
     <h3 className={cn("font-semibold text-text-primary", spark ? "text-heading-sm" : "text-body-lg")}>{card.title}</h3>
