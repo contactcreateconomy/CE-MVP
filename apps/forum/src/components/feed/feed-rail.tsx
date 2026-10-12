@@ -185,7 +185,7 @@ function Rows({ entries }: { entries: FeedPodiumEntry[] }) {
             <FeedAvatar person={e.person} size="sm" />
             <span className="min-w-0 flex-1">
               <span className="block truncate text-body-sm font-medium text-text-primary">{e.person.name}</span>
-              <span className="block truncate text-micro text-text-muted">{monoNumbers(e.did)}</span>
+              {e.did ? <span className="block truncate text-micro text-text-muted">{monoNumbers(e.did)}</span> : null}
             </span>
             {e.person.levelLabel ? <span className="shrink-0 text-micro text-text-muted">{e.person.levelLabel}</span> : null}
           </>

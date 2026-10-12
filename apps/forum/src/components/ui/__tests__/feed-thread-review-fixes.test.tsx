@@ -42,6 +42,8 @@ vi.mock("convex/react", () => ({
   useMutation: () => vi.fn(),
 }));
 vi.mock("@cemvp/convex-client", () => ({ isConvexConfigured: () => true }));
+// FEED-U2: the feed container navigates with the app router (Start Discussion, strings).
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {} }), usePathname: () => "/feed" }));
 vi.mock("@cemvp/auth-ui", () => ({ useAuth: () => ({ authStatus: "unauthenticated" }) }));
 
 import { CanonicalFeedClient } from "@/components/feed/canonical-feed-client";

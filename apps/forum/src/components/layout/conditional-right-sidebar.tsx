@@ -6,7 +6,8 @@ import { RightSidebar } from "@/components/layout/right-sidebar";
 
 export function ConditionalRightSidebar() {
   const pathname = usePathname();
-  if (pathname?.startsWith("/discussions/")) {
+  // /feed brings its own rail (FeedPageView — FEED-U2).
+  if (pathname === "/feed" || pathname?.startsWith("/discussions/")) {
     return null;
   }
   return <RightSidebar />;

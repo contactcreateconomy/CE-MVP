@@ -56,7 +56,7 @@ export function LabFeedClient({ initialState, forcedTheme, showToolbar, typeFilt
     if (typeFilter !== "home") list = list.filter((c) => c.type === typeFilter || c.pinned);
     if (sort === "fav") list = list.filter((c) => c.viewer.saved || c.viewer.commented);
     return list;
-  }, [cards, hidden, sort, typeFilter]);
+  }, [cards, sort, typeFilter]);
 
   const patch = (id: string, change: (c: FeedCardData) => Partial<FeedCardData>) =>
     setCards((all) => all.map((c) => (c.id === id ? { ...c, ...change(c) } : c)));

@@ -51,7 +51,8 @@ export interface FeedViewerInteractions {
 export type FeedFacet =
   | {
       kind: "review";
-      tool: { name: string; price?: string | null };
+      /** null → no tool chip (the review row has no resolvable tool). */
+      tool: { name: string; price?: string | null } | null;
       /** Author's verdict, 1–5. */
       verdict?: number | null;
       /** Community ★ (M5), shown beside the author's. */
@@ -73,7 +74,13 @@ export type FeedFacet =
       /** Agree share 0–100 — only passed AFTER the viewer voted (L-29, no herding). */
       agreePct?: number | null;
     }
-  | { kind: "help"; problem?: string | null; resolvedBy?: string | null }
+  | {
+      kind: "help";
+      problem?: string | null;
+      /** Resolved without a named answerer still reads "Resolved ✓". */
+      resolved?: boolean;
+      resolvedBy?: string | null;
+    }
   | { kind: "list"; items: Array<{ label: string; votes: number }>; more?: number }
   | { kind: "showcase"; thing?: string | null; linkApproved?: boolean }
   | { kind: "news"; claim?: string | null; domain?: string | null }

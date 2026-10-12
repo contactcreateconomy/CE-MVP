@@ -187,7 +187,9 @@ function FacetView({ facet, onVote }: { facet: FeedFacet; onVote?: FeedCardActio
       return (
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-caption">
-            <ToolChip name={facet.tool.name} extra={facet.tool.price ? <Mono className="text-text-muted">{facet.tool.price}</Mono> : null} />
+            {facet.tool ? (
+              <ToolChip name={facet.tool.name} extra={facet.tool.price ? <Mono className="text-text-muted">{facet.tool.price}</Mono> : null} />
+            ) : null}
             {typeof facet.verdict === "number" ? (
               <span className="text-text-muted">
                 Verdict <Stars v={facet.verdict} className="font-semibold text-text-primary" />
@@ -244,9 +246,9 @@ function FacetView({ facet, onVote }: { facet: FeedFacet; onVote?: FeedCardActio
       return (
         <div className="flex items-center gap-2.5 text-caption">
           {facet.problem ? <p className="min-w-0 flex-1 truncate text-text-secondary">{facet.problem}</p> : <span className="flex-1" />}
-          {facet.resolvedBy ? (
+          {facet.resolvedBy || facet.resolved ? (
             <span className="shrink-0 rounded-full bg-feedback-success/15 px-2 py-0.5 font-medium text-feedback-success">
-              Resolved ✓ by @{facet.resolvedBy}
+              {facet.resolvedBy ? `Resolved ✓ by @${facet.resolvedBy}` : "Resolved ✓"}
             </span>
           ) : (
             <span className="shrink-0 rounded-full border border-border-default px-2 py-0.5 font-medium text-text-secondary">Open</span>
@@ -320,7 +322,7 @@ function WhyCare({ why }: { why: FeedWhyCare }) {
   }
   return (
     <p className="h-5 truncate text-caption leading-5 text-text-secondary">
-      {why.rising ? <span className="text-brand-primary">↗ Rising · </span> : null}
+      {why.rising ? <span className="text-brand-primary">{why.text ? "↗ Rising · " : "↗ Rising"}</span> : null}
       {why.text}
       {why.detail ? (
         // Hover adds depth, never layout (Bible §10.3): same line, fades in.
