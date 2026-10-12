@@ -1,47 +1,51 @@
 /**
- * theme-transition — the two theme-switch candidates for O-04 (founder
- * picks in the browser; FEED-DESIGN §11.2). Lab-only until picked: `?v=a`
- * = Iris, `?v=b` = Horizon, no param = instant switch (today's behaviour).
+ * theme-transition — the theme switch (FEED-DESIGN L-67, Bible §9.4).
  *
- *   Iris    — the new theme opens as a circle from the toggle the user
- *             pressed (origin = pointer / button centre).
- *   Horizon — the new theme arrives as a level line: dark falls from the
- *             top like dusk, light rises from the bottom like dawn.
+ *   Iris (the chosen switch) — the new theme opens as a circle from the
+ *   toggle the user pressed (origin = button centre), 500ms, --ease-emerge.
  *
- * Both use the View Transitions API (CSS in packages/design-tokens/
- * utilities.css, keyed on html[data-theme-switch]). No support → instant.
- * Reduced motion → a plain crossfade, never a moving edge.
+ * Uses the View Transitions API (CSS in packages/design-tokens/utilities.css,
+ * keyed on html[data-theme-switch]). No support → instant. Reduced motion →
+ * a plain crossfade, never a moving edge (Bible §9.2 rule 11).
+ *
+ * The rejected Horizon candidate lives only in /lab/foundation (?v=b) with
+ * its CSS in that folder; it is never shipped to product routes.
  */
+import { flushSync } from "react-dom";
 
 export type ThemeSwitchVariant = "iris" | "horizon";
 export type ThemeSwitchResult = ThemeSwitchVariant | "fade" | "instant";
-
-export function themeSwitchVariant(param: string | null | undefined): ThemeSwitchVariant | null {
-  if (param === "a") return "iris";
-  if (param === "b") return "horizon";
-  return null;
-}
+export type ThemeName = "light" | "dark";
 
 interface ViewTransitionLike {
   finished: Promise<void>;
 }
 
+/** Flip the theme synchronously (the transition snapshots right after),
+ *  then let next-themes persist it. */
+export function applyTheme(to: ThemeName, setTheme: (theme: string) => void): void {
+  document.documentElement.classList.toggle("dark", to === "dark");
+  document.documentElement.style.colorScheme = to;
+  flushSync(() => setTheme(to));
+}
+
 export function runThemeSwitch({
   apply,
-  variant,
   to,
   origin,
   reducedMotion = false,
+  variant = "iris",
 }: {
-  /** Must update the DOM synchronously (e.g. toggle the `.dark` class). */
+  /** Must update the DOM synchronously — use applyTheme(). */
   apply: () => void;
-  variant: ThemeSwitchVariant | null;
-  to: "light" | "dark";
+  to: ThemeName;
   origin?: { x: number; y: number };
   reducedMotion?: boolean;
+  /** Lab only: "horizon" needs the lab's horizon.css. */
+  variant?: ThemeSwitchVariant;
 }): ThemeSwitchResult {
   const doc = document as Document & { startViewTransition?: (cb: () => void) => ViewTransitionLike };
-  if (!variant || typeof doc.startViewTransition !== "function") {
+  if (typeof doc.startViewTransition !== "function") {
     apply();
     return "instant";
   }

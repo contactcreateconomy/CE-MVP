@@ -1,0 +1,6 @@
+     × defaults to Iris, stamping origin and direction 6ms
+     × reduced motion → crossfade only 1ms
+     × Horizon is lab-only: not in shared CSS, only in the lab 2ms
+     × the product theme toggle (top nav) uses the switch 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  4 failed | 1 passed (5)

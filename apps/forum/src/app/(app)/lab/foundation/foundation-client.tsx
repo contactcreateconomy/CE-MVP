@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
-import { flushSync } from "react-dom";
 import { motion } from "motion/react";
 import { useTheme } from "next-themes";
 
@@ -9,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { CreateconomyLogoFull } from "@/components/ui/createconomy-logo-full";
 import { CreateconomyLogoMark } from "@/components/ui/createconomy-logo-mark";
 import { useFeedMotion, usePrefersReducedMotion, type SpringFamily } from "@/lib/motion";
-import { runThemeSwitch, themeSwitchVariant } from "@/lib/theme-transition";
+import { applyTheme, runThemeSwitch } from "@/lib/theme-transition";
+
+import "./horizon.css";
 import { cn } from "@/lib/utils";
 
 interface LabFoundationClientProps {
@@ -17,11 +18,12 @@ interface LabFoundationClientProps {
   variantParam: string | null;
 }
 
-const VARIANT_LABEL = { iris: "Iris (?v=a)", horizon: "Horizon (?v=b)" } as const;
+const VARIANT_LABEL = { iris: "Iris — chosen", horizon: "Horizon (?v=b, rejected)" } as const;
 
 export function LabFoundationClient({ forcedTheme, variantParam }: LabFoundationClientProps) {
   const { setTheme, resolvedTheme } = useTheme();
-  const variant = themeSwitchVariant(variantParam);
+  // L-67: Iris is the switch; ?v=b replays the rejected Horizon for comparison.
+  const variant = variantParam === "b" ? "horizon" : "iris";
   const m = useFeedMotion();
   const reducedMotion = usePrefersReducedMotion();
   const [replay, setReplay] = useState(0);
@@ -48,13 +50,7 @@ export function LabFoundationClient({ forcedTheme, variantParam }: LabFoundation
       to,
       reducedMotion,
       origin: { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 },
-      apply: () => {
-        // The view transition snapshots right after this returns, so the
-        // class must flip synchronously; next-themes then persists it.
-        document.documentElement.classList.toggle("dark", to === "dark");
-        document.documentElement.style.colorScheme = to;
-        flushSync(() => setTheme(to));
-      },
+      apply: () => applyTheme(to, setTheme),
     });
   };
 
@@ -69,11 +65,10 @@ export function LabFoundationClient({ forcedTheme, variantParam }: LabFoundation
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" variant="secondary" onClick={toggleTheme} data-testid="theme-toggle">
-            {themeLabel} → switch ({variant ? VARIANT_LABEL[variant] : "instant"})
+            {themeLabel} → switch ({VARIANT_LABEL[variant]})
           </Button>
-          <a className="text-body-sm text-text-link underline" href="?v=a">Iris</a>
-          <a className="text-body-sm text-text-link underline" href="?v=b">Horizon</a>
-          <a className="text-body-sm text-text-link underline" href="?">Instant</a>
+          <a className="text-body-sm text-text-link underline" href="?">Iris</a>
+          <a className="text-body-sm text-text-link underline" href="?v=b">Horizon (rejected)</a>
         </div>
       </header>
       <p className="mt-2 font-mono text-caption text-text-muted">
@@ -138,7 +133,7 @@ export function LabFoundationClient({ forcedTheme, variantParam }: LabFoundation
             <motion.button
               key={family}
               type="button"
-              whileTap={{ scale: reducedMotion ? 1 : 0.94, opacity: reducedMotion ? 0.7 : 1 }}
+              whileTap={{ scale: reducedMotion ? 1 : 0.97, opacity: reducedMotion ? 0.7 : 0.9 }}
               transition={m.springs[family]}
               className="focus-ring h-10 rounded-full border border-border-default bg-bg-surface px-4 text-body-sm font-medium text-text-primary"
             >
@@ -165,9 +160,9 @@ export function LabFoundationClient({ forcedTheme, variantParam }: LabFoundation
         </div>
       </Section>
 
-      <Section title="Theme switch (O-04)" note="Use the header button. Iris opens a circle from the button; Horizon: dark falls from the top, light rises from the bottom. Founder picks.">
+      <Section title="Theme switch (L-67)" note="Use the header button. Iris (chosen) opens a circle from the button. ?v=b replays the rejected Horizon for comparison.">
         <p className="text-body-sm text-text-secondary">
-          Current: <strong className="text-text-primary">{variant ? VARIANT_LABEL[variant] : "instant (no param)"}</strong>
+          Current: <strong className="text-text-primary">{VARIANT_LABEL[variant]}</strong>
         </p>
       </Section>
     </main>

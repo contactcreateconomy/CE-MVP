@@ -6,7 +6,7 @@ import { LabFoundationClient } from "./foundation-client";
  * /lab/foundation — FEED-B1 foundations side by side (dev-only: 404 in
  * production): frost (L-39/L-40), glow at rest (L-38), motion (§11.2),
  * logo (L-42) and the theme-switch candidates (O-04).
- * Query params: `theme=dark|light`, `v=a` (Iris) | `v=b` (Horizon).
+ * Query params: `theme=dark|light`, `v=b` (rejected Horizon; default = Iris, L-67).
  */
 export default async function LabFoundationPage({
   searchParams,
