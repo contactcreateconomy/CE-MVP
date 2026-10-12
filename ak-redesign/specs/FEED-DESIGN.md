@@ -125,6 +125,7 @@ The **lens** = subject (all / type / tool / topic) × time (New·24H / Hot·7D /
 | L-53 | Editorial posts never enter organic ranking; they appear only as labelled placements (hero, pinned) | B | FEED-GAP F-4 |
 | L-54 | D-14 = the BETA-SWITCH removal (demo world deleted before beta) is the exclusion switch; no read-time filter. Base seed + admin fixtures must also be covered by removal (register them) | B | FEED-GAP F-5; prod is loopback-guarded |
 | L-55 | Post saves get a `toggleSavePost` mutation in B2 | B | FEED-GAP F-7 |
+| L-56 | Every Opus session queries the code graph via a committed helper (`scripts/graph-explain.mjs`) plus a generated table-access index (`graphify-out/tables.json`: which functions read/write each table); GLM regenerates both locally after every merged phase | B | graph indexes functions only |
 | L-57 | AI persona posts appear in organic sorts: labelled, ranked only by human reactions, max 1 per page, never in exploration slots | B | closes O-11 |
 | L-58 | Dev reviews only at the end (security audit, final code review, prod deploy). Until then backend branches are gated by Grok review + RED/GREEN + additive-only, each with a CR-RESPONSE note so the final review is fast | B | closes O-03; amends L-03 |
 | L-59 | **Gravity** replaces "Valuable": a reader gives Gravity to a post or a comment (one per member per item, legitimacy-weighted, never counted from personas/staff). Lucide `Orbit` icon; tap = a particle falls into the orb, the ring tightens once, count ticks (one celebrate glow, dark only); reduced motion = fill only. Final look judged in the lab (B5) | B | closes O-10 |
@@ -135,7 +136,12 @@ The **lens** = subject (all / type / tool / topic) × time (New·24H / Hot·7D /
 | L-64 | Interactions: appreciate (tap G) · Not for me (in ⋯, private) · save · share · comment. **Public numbers on card and post: only G and Strings.** Gravity = legitimacy-weighted sum of positive interactions, each member counted at most once per kind: appreciate 1 · save 3 · qualified share 2 (counts only when someone arrives via the link) · comment 1 per distinct human (not per comment). Not-for-me never adds or subtracts publicly; it feeds hidden mass only. Personas/staff weigh 0 | C | Quality engine input; weights in config |
 | L-65 | **Strings** = comments (threads are made of strings). Card shows "24 strings"; empty = "No strings attached · start one" | A | |
 | L-66 | Author-only breakdown (appreciations, saves, shares, strings, not-for-me, reach) inside author flux; **no switch to make it public** (keeps G the single public currency, avoids vanity/farming). Precedent: YouTube hid public dislikes in 2021 but creators still see them | B | extends L-16, L-61 |
-| L-56 | Every Opus session queries the code graph via a committed helper (`scripts/graph-explain.mjs`) plus a generated table-access index (`graphify-out/tables.json`: which functions read/write each table); GLM regenerates both locally after every merged phase | B | graph indexes functions only |
+| L-67 | Theme switch candidates: **Iris** = new theme opens as a circle from the toggle; **Horizon** = dark falls from the top (dusk), light rises from the bottom (dawn); 500ms, reduced motion = 200ms crossfade. **Founder picked Iris** (2026-10-12) | A | B1; closes O-04 |
+| L-68 | Founder confirmed frosted glass for the shell: B6 moves the shell from `glass-*` to `frost-*` and retires `glass-*` (one glass family, no saturate bleed) | A | B1 |
+| L-69 | L-38 supersedes S00-SPEC §8: the mobile Create tab has no glow at rest | A | B1 |
+| L-70 | Sorter active pill = solid brand, **no glow** (§9.4 wins over glow/active), so Fav's glow (L-47) stays the only glow on the sorter and keeps its meaning | A | B1 |
+| L-71 | **DESIGN-BIBLE.md is the design foundation.** Precedence: CEY-VISION > DESIGN-BIBLE > screen specs > STYLE-KIT tokens. Every spec, prompt and review cites the bible section it follows | B | 2026-10-12 |
+| L-72 | Taps are critically damped: `feedback` spring damping raised so it does not overshoot (ratio ≈1.0); springs may be expressed as `{bounce, duration}`. Bounce (≈0.8 ratio) only when a gesture carried momentum | A | Bible §9.3 |
 
 ### 2.2 Provisional / experiments
 | ID | Item | How we validate |
@@ -483,7 +489,8 @@ Plugs into **M15** (shell, widget registry, kill_switch / config_group / monitor
 ### 16.2 Standing rules (paste once per Opus session; every phase prompt assumes them)
 ```
 STANDING RULES — CREATECONOMY FEED BUILD
-Read first: ak-redesign/specs/FEED-DESIGN.md (the living spec; decision IDs
+Read first: ak-redesign/specs/DESIGN-BIBLE.md (how it must feel),
+ak-redesign/specs/FEED-DESIGN.md (the living spec; decision IDs
 L-xx are binding), ak-redesign/00-control/STATUS.md, DECISIONS.md,
 TEAM-WORKFLOW.md, templates/BUILD.md. Find code with node scripts/graph-explain.mjs <name> and
 graphify-out/tables.json (who reads/writes each table) BEFORE reading
@@ -699,5 +706,7 @@ Opus builds → Grok reviews against the decision IDs touched (prompt: "Review b
 ---
 
 ## 17. Change log
+- 2026-10-12 — DESIGN-BIBLE.md v1 adopted (L-71); Iris picked (L-67); frosted shell confirmed (L-68); L-72 feedback spring must not overshoot. Standing rules now read the bible first.
+- 2026-10-11 — FEED-B1 foundation (branch feed-b1-foundation, FEED-B1-BUILD.md): cn() knows the 22 font-size tokens; frost-strong/-subtle/-look utilities (neutral, no saturate; frost-look no live blur); glow at rest removed and test-fenced; lib/motion.ts; logo gaps transparent, +15% in dark, 3-segment reveal; theme-switch candidates at /lab/foundation?v=a|b; CanonicalFeedClient hero grid removed (F-2). Recorded L-67…L-70 (L-70: sorter pill no glow). Register order tidied.
 - 2026-10-11 — FEED-B0 audit: ak-redesign/specs/FEED-GAP.md. Prod has no writer for post counters (CR-014), day buckets (CR-013), post saves or exposure events → Top/Hot/Vibing/Rising/Fav/exploration flat in prod. Recorded L-51…L-66 (Gravity L-59–L-66: G-switch, Strings, author-only breakdown) (persona posts L-57, dev-at-the-end L-58); opened O-10 (post-level Valuable), O-11 (persona posts in organic). Amended §16 file names, B2/B5/B6/B7 prompts, standing rules (graph helper), D-14 scope, demo-world size.
 - 2026-10-04 — v1 created from session 3 (council phases 1–7, StellarMap, polymorphism, Figma Make rounds 1–3, user testing). Supersedes firestarter §5–§8.
