@@ -1,0 +1,26 @@
+     × sticks under the island on phones with a scroll-edge fade, static on lg 89ms
+     × is the shared-element origin of the Start sheet 175ms
+     × is a frost-strong island: sticky 12px from top (8px on phones), container width, radius xl 108ms
+     × uses tokens only — no raw rgba / white-alpha / glass in the island 4ms
+     × deepens its shadow after 8px of scroll (a raised layer, opacity only) 25ms
+     × bell shows an unread DOT (no number), the count lives in the label 59ms
+     × search widens on focus (no animated width — Bible §9.2 rule 5) 20ms
+     × no @utility glass-* and no --glass-* tokens 2ms
+     × no glass-* class anywhere in the forum source 18ms
+     × full-width frosted bar with safe-area padding, five tabs in order 103ms
+     × active tab = brand colour + label weight, aria-current 45ms
+     × every tab has press feedback; reduced motion drops the scale 45ms
+     × Create has no glow at rest (L-69) and opens the Start sheet from the tab 68ms
+     × first mount plays the 3-segment reveal; a later mount does not 19ms
+     × member: heading + one row per type with its one-line description 6ms
+     × visitor: sign-in instead of the types 5ms
+     × is a frosted L3 sheet that grows from its trigger (shared element, glide) 6ms
+     × reduced motion: crossfade, no shared-element grow 5ms
+     × host: data types (composable, unlocked) → choosing one routes to the existing composer 6ms
+     × host: visitor → sign-in opens the auth modal 7ms
+     × composer reads ?type= (help → qa, unknown → none) 2ms
+     × utilities.css owns the fade: canvas → transparent, no hard line 1ms
+     × the island casts a fade, not a solid anti-bleed mask 21ms
+⎯⎯⎯⎯⎯⎯ Failed Tests 23 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  2 failed (2)
+      Tests  23 failed | 1 passed (24)

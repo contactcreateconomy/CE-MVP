@@ -1,0 +1,26 @@
+ ✓ src/components/feed/__tests__/feed-u3-page.test.tsx > mobile sorter (§8: sticky under the top island) > sticks under the island on phones with a scroll-edge fade, static on lg 86ms
+ ✓ src/components/feed/__tests__/feed-u3-page.test.tsx > rail Start Discussion pill > is the shared-element origin of the Start sheet 140ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 1 · menu island (§9.1, L-68) > is a frost-strong island: sticky 12px from top (8px on phones), container width, radius xl 260ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 1 · menu island (§9.1, L-68) > uses tokens only — no raw rgba / white-alpha / glass in the island 1ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 1 · menu island (§9.1, L-68) > deepens its shadow after 8px of scroll (a raised layer, opacity only) 31ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 1 · menu island (§9.1, L-68) > visitor sees Login; member sees the account menu 97ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 1 · menu island (§9.1, L-68) > bell shows an unread DOT (no number), the count lives in the label 72ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 1 · menu island (§9.1, L-68) > search widens on focus (no animated width — Bible §9.2 rule 5) 16ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 1 · glass-* retired (L-68: one glass family) > no @utility glass-* and no --glass-* tokens 0ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 1 · glass-* retired (L-68: one glass family) > no glass-* class anywhere in the forum source 16ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 2 · mobile tab bar (§8, Bible §13) > full-width frosted bar with safe-area padding, five tabs in order 23ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 2 · mobile tab bar (§8, Bible §13) > active tab = brand colour + label weight, aria-current 35ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 2 · mobile tab bar (§8, Bible §13) > every tab has press feedback; reduced motion drops the scale 34ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 2 · mobile tab bar (§8, Bible §13) > Create has no glow at rest (L-69) and opens the Start sheet from the tab 23ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 3 · logo reveal on first load only > first mount plays the 3-segment reveal; a later mount does not 29ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 4 · Start Discussion sheet (§9.3, L-34) > member: heading + one row per type with its one-line description 75ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 4 · Start Discussion sheet (§9.3, L-34) > visitor: sign-in instead of the types 38ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 4 · Start Discussion sheet (§9.3, L-34) > is a frosted L3 sheet that grows from its trigger (shared element, glide) 29ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 4 · Start Discussion sheet (§9.3, L-34) > reduced motion: crossfade, no shared-element grow 33ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 4 · Start Discussion sheet (§9.3, L-34) > host: data types (composable, unlocked) → choosing one routes to the existing composer 99ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 4 · Start Discussion sheet (§9.3, L-34) > host: visitor → sign-in opens the auth modal 33ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 4 · Start Discussion sheet (§9.3, L-34) > composer reads ?type= (help → qa, unknown → none) 1ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 5 · scroll-edge fade (Bible §3.2 rule 4) > utilities.css owns the fade: canvas → transparent, no hard line 0ms
+ ✓ src/components/layout/__tests__/feed-u3-shell.test.tsx > 5 · scroll-edge fade (Bible §3.2 rule 4) > the island casts a fade, not a solid anti-bleed mask 16ms
+ Test Files  2 passed (2)
+      Tests  24 passed (24)
