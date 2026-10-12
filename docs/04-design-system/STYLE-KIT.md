@@ -493,6 +493,7 @@ TOKEN                       VALUE    USAGE
 ────────────────────────────────────────────────────────────────────────────
 duration/instant            0ms      No animation (accessibility override)
 duration/stagger-step       50ms     Stagger step; toggle-word entry delay
+duration/press              100ms    Press-in feedback: scale 0.97 on pointer-down (FEED-DESIGN L-74)
 duration/fast               160ms    Micro opacity/fades (toggle letter), fast hovers
 duration/normal             200ms    DEFAULT — hover states, card lifts
 duration/float              220ms    soft-float-up toasts/menus (app)
@@ -506,7 +507,7 @@ duration/modal-in           360ms    Modal pop-in
 duration/emerge             420ms    route-emerge page transitions (app)
 duration/media              500ms    Showcase media shadow settle
 duration/shimmer            1200ms   Progress-bar shimmer loop
-duration/pulse              2000ms   Glow pulse loop
+duration/pulse              2000ms   (legacy) glow pulse loop — no shared utility uses it since L-76
 duration/search-spin        2500ms   Search focus ring rotation
 ```
 

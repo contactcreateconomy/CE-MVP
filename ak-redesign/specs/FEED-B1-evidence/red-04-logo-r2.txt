@@ -1,0 +1,10 @@
+     × gaps are real (transparent geometry), never painted in canvas colour 46ms
+     × dark gaps are ~15% wider than light gaps 10ms
+     × reveal plays the three segments in order 6ms
+     × does not render its own hero grid or print disclosureClass 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected SVGGElement{ …(2), …(2) } to be null
+AssertionError: expected NaN to be 2 // Object.is equality
+AssertionError: expected +0 to be 3 // Object.is equality
+AssertionError: expected '/* eslint-disable @typescript-eslint/…' not to match /chrome\?\.hero/
+      Tests  4 failed (4)

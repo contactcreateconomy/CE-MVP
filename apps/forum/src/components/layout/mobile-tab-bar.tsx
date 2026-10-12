@@ -40,7 +40,7 @@ export function MobileTabBar() {
                 <span
                   className={cn(
                     "mb-1 flex h-8 w-8 items-center justify-center rounded-full",
-                    tab.highlight ? "electric-glow bg-(--brand-primary)" : active ? "bg-(--bg-overlay)" : "",
+                    tab.highlight ? "bg-(--brand-primary)" : active ? "bg-(--bg-overlay)" : "",
                   )}
                 >
                   <Icon className="h-4 w-4" />

@@ -356,6 +356,7 @@
   /* Motion durations (Layer 1 §7.1) */
   --duration-instant: 0ms;
   --duration-stagger-step: 50ms;
+  --duration-press: 100ms; /* L-74: press-in feedback (Bible §9.2 rule 1, §10.7) */
   --duration-fast: 160ms;
   --duration-normal: 200ms;
   --duration-float: 220ms;
@@ -457,6 +458,17 @@
   --glass-strong-blur: blur(24px);
   --glass-border: color-mix(in srgb, var(--border-subtle) 60%, transparent);
 
+  /* Frost (FEED-DESIGN L-39, L-40) — neutral glass: same surface mixes as
+     glass, but NO saturate boost, so content behind never bleeds colour.
+     frost-look = feed cards: translucent surface + 1px top highlight, no
+     live blur (perf on mid Android). */
+  --frost-subtle-bg: color-mix(in srgb, var(--bg-surface) 78%, transparent);
+  --frost-subtle-blur: blur(12px);
+  --frost-strong-bg: color-mix(in srgb, var(--bg-surface) 55%, transparent);
+  --frost-strong-blur: blur(24px);
+  --frost-look-bg: color-mix(in srgb, var(--bg-surface) 85%, transparent);
+  --frost-highlight: color-mix(in srgb, var(--bg-canvas) 90%, transparent);
+
   /* Sheet (§5.4) */
   --sheet-radius: var(--radius-xl);
   --sheet-max-h: 90dvh;
@@ -552,13 +564,19 @@
      T03 utilities can adopt the new names with zero visual change. */
   --glow-cta: 0 0 20px hsl(199 89% 48% / 0.35), 0 0 60px hsl(199 89% 48% / 0.15);
   --glow-active: 0 0 10px hsl(199 89% 48% / 0.2);
-  --glow-focus: 0 0 0 1px hsl(199 89% 48%), 0 0 15px hsl(199 89% 48% / 0.25);
+  --glow-focus: 0 0 0 2px hsl(199 89% 48%); /* L-76: solid 2px ring, no halo (Bible §10.6) */
   --glow-celebrate: 0 0 30px hsl(199 89% 48% / 0.4), 0 0 80px hsl(199 89% 48% / 0.2);
   --glow-live: 0 0 10px hsl(199 89% 48% / 0.2); /* pulse base; keyframe swaps ↔ --glow-cta (T03) */
   --glow-track: 0 0 6px hsl(199 89% 48% / 0.5), 0 0 14px hsl(199 89% 48% / 0.2);
 
   /* Glass (§5.3) — dark: 72% surface */
   --glass-subtle-bg: color-mix(in srgb, var(--bg-surface) 72%, transparent);
+
+  /* Frost (L-39, L-40) — dark surface mixes; highlight = a faint light edge. */
+  --frost-subtle-bg: color-mix(in srgb, var(--bg-surface) 72%, transparent);
+  --frost-strong-bg: color-mix(in srgb, var(--bg-surface) 55%, transparent);
+  --frost-look-bg: color-mix(in srgb, var(--bg-surface) 85%, transparent);
+  --frost-highlight: color-mix(in srgb, var(--text-primary) 7%, transparent);
   --scrim: hsl(0 0% 0% / 0.4);
 }
 

@@ -1,0 +1,5 @@
+     × every unconditioned glow class is an allowed active/open state 51ms
+     × feed-tabs.tsx 2ms
+     × trend-sorter.tsx 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  3 failed | 4 passed (7)

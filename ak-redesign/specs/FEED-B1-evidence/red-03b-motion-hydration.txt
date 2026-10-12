@@ -1,0 +1,4 @@
+     × hydrates without mismatch, then applies reduced motion 29ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected 'opacity,filter,scale,y' to be 'opacity' // Object.is equality
+      Tests  1 failed (1)

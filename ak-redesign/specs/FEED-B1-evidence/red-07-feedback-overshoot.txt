@@ -1,0 +1,4 @@
+     × feedback is critically damped and never overshoots (L-72, Bible §9.3) 7ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected 0.7454993164109749 to be greater than or equal to 1
+      Tests  1 failed | 4 passed (5)

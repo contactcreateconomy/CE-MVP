@@ -75,16 +75,6 @@ main {
   }
 }
 
-@keyframes pulse-glow {
-  0%,
-  100% {
-    box-shadow: var(--glow-primary-sm);
-  }
-  50% {
-    box-shadow: var(--glow-primary-md);
-  }
-}
-
 @keyframes route-emerge {
   0% {
     opacity: 0;
@@ -100,10 +90,6 @@ main {
 
 .animate-soft-float {
   animation: soft-float-up 220ms cubic-bezier(0.215, 0.61, 0.355, 1) both;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2000ms cubic-bezier(0.645, 0.045, 0.355, 1) infinite;
 }
 
 .animate-route-emerge {
@@ -185,6 +171,7 @@ main {
 @utility duration-instant { transition-duration: var(--duration-instant); }
 @utility duration-stagger-step { transition-duration: var(--duration-stagger-step); }
 @utility duration-fast { transition-duration: var(--duration-fast); }
+@utility duration-press { transition-duration: var(--duration-press); } /* L-74: press-in ≤100ms (Bible §10.7) */
 @utility duration-normal { transition-duration: var(--duration-normal); }
 @utility duration-slow { transition-duration: var(--duration-slow); }
 @utility duration-float { transition-duration: var(--duration-float); }
@@ -520,8 +507,7 @@ main {
     transform: none;
   }
 
-  .electric-glow,
-  .animate-pulse-glow {
+  .electric-glow {
     box-shadow: none;
     animation: none !important;
   }
@@ -595,7 +581,9 @@ main {
   }
 }
 
-/* Celebrate — a creator moment: one-shot, 600 ms, runs once. */
+/* Celebrate — a creator moment: one-shot, 600 ms, runs once.
+   (L-76: the infinite live/notification glow pulses were deleted —
+   Bible §9.2 rule 9. A future Live state pulses a few times, then rests.) */
 @keyframes glow-celebrate-once {
   0% {
     box-shadow: var(--glow-celebrate);
@@ -612,25 +600,6 @@ main {
   }
 }
 
-/* Live — signals a live state ONLY (never idle): 2000 ms pulse,
-   base glow stays when motion is reduced. */
-@keyframes glow-live-pulse {
-  0%,
-  100% {
-    box-shadow: var(--glow-live);
-  }
-  50% {
-    box-shadow: var(--glow-cta);
-  }
-}
-@utility pulse-live {
-  box-shadow: var(--glow-live);
-  animation: glow-live-pulse 2000ms ease-in-out infinite;
-
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
-  }
-}
 
 /* ── Glass (§5.3) ────────────────────────────────────────────────────── */
 /* Fallbacks are NESTED inside each utility so they live in the same rule
@@ -671,6 +640,139 @@ main {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
+}
+
+/* ── Frost (FEED-DESIGN L-39, L-40) ───────────────────────────────────── */
+/* Neutral glass for chrome, hero, rail widgets, sheets: real backdrop blur
+   with no saturate boost (no colour bleed), solid fallbacks nested like the
+   glass utilities above. frost-look is the feed-card surface: the frost
+   LOOK without live blur (translucent surface + 1px top highlight).
+   L-73: each material carries its layer shadow (Bible §3.1: L1 xs, L2 md;
+   an L3 sheet adds shadow-lg at the call site) and falls back to solid +
+   1px border/prominent under prefers-contrast: more (§3.2 rule 8). */
+
+@utility frost-strong {
+  background: var(--frost-strong-bg);
+  -webkit-backdrop-filter: var(--frost-strong-blur);
+  backdrop-filter: var(--frost-strong-blur);
+  box-shadow: var(--shadow-md); /* L2 functional layer (Bible §3.1) */
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: var(--bg-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--bg-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  @media (prefers-contrast: more) {
+    background: var(--bg-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    outline: 1px solid var(--border-prominent); /* not border: an unlayered `* { border-color }` would win */
+    outline-offset: -1px;
+  }
+}
+
+@utility frost-subtle {
+  background: var(--frost-subtle-bg);
+  -webkit-backdrop-filter: var(--frost-subtle-blur);
+  backdrop-filter: var(--frost-subtle-blur);
+  box-shadow: var(--shadow-md); /* L2 functional layer (Bible §3.1) */
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: var(--bg-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--bg-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  @media (prefers-contrast: more) {
+    background: var(--bg-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    outline: 1px solid var(--border-prominent); /* not border: an unlayered `* { border-color }` would win */
+    outline-offset: -1px;
+  }
+}
+
+@utility frost-look {
+  background: var(--frost-look-bg);
+  box-shadow: inset 0 1px 0 var(--frost-highlight), var(--shadow-xs); /* L1 content layer (Bible §3.1) */
+
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--bg-surface);
+  }
+
+  @media (prefers-contrast: more) {
+    background: var(--bg-surface);
+    outline: 1px solid var(--border-prominent); /* not border: an unlayered `* { border-color }` would win */
+    outline-offset: -1px;
+  }
+}
+
+/* ── Logo reveal (FEED-DESIGN §11.1, L-42) ─────────────────────────────── */
+/* 3-segment reveal: each segment pulls in from its own centre, staggered by
+   --i (0, 1, 2). Plays once; reduced motion shows the mark at rest. */
+@keyframes logo-segment-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.logo-reveal-segment {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: logo-segment-in var(--duration-emerge) var(--ease-emerge) both;
+  animation-delay: calc(var(--i, 0) * var(--duration-fast));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-reveal-segment {
+    animation: none;
+  }
+}
+
+/* ── Theme switch: Iris (L-67; apps/forum/src/lib/theme-transition.ts) ── */
+/* Only active while html[data-theme-switch] is set by runThemeSwitch().
+   The old snapshot stays still; the new theme opens as a circle from the
+   toggle. */
+html[data-theme-switch="iris"]::view-transition-old(root) {
+  animation: none;
+}
+
+html[data-theme-switch="iris"]::view-transition-new(root) {
+  mix-blend-mode: normal;
+  animation: theme-switch-iris var(--duration-modal-in) var(--ease-emerge) both; /* 360ms — L-75: ≤ 400ms */
+}
+
+@keyframes theme-switch-iris {
+  from {
+    clip-path: circle(0 at var(--theme-switch-x) var(--theme-switch-y));
+  }
+  to {
+    clip-path: circle(var(--theme-switch-r) at var(--theme-switch-x) var(--theme-switch-y));
+  }
+}
+
+/* Reduced motion: a plain crossfade, no moving edge. */
+html[data-theme-switch="fade"]::view-transition-old(root),
+html[data-theme-switch="fade"]::view-transition-new(root) {
+  animation-duration: var(--duration-normal);
 }
 
 /* ── Safe areas (§5.5) ───────────────────────────────────────────────── */

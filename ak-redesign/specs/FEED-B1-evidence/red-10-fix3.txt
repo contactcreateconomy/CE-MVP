@@ -1,0 +1,24 @@
+     × .frost-look: layer shadow at rest 7ms
+     × .frost-look: prefers-contrast: more → solid + 1px border/prominent 1ms
+     × .frost-subtle: layer shadow at rest 1ms
+     × .frost-subtle: prefers-contrast: more → solid + 1px border/prominent 1ms
+     × .frost-strong: layer shadow at rest 1ms
+     × .frost-strong: prefers-contrast: more → solid + 1px border/prominent 1ms
+     × --duration-press: 100ms + duration-press utility + STYLE-KIT entry 2ms
+     × the Iris animation resolves to a duration token ≤ 400ms 1ms
+     × pulse-live and animate-pulse-glow are gone from shared CSS 2ms
+     × dark focus = solid 2px ring, no glow halo (same as light) 1ms
+     × scales to 0.97 on :active with the press duration, and transitions scale 166ms
+     × scales to 0.97 on :active with the press duration, and transitions scale 16ms
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected '@utility frost-look {\n  background: …' to match /box-shadow:\s*inset 0 1px 0 var\(--fr…/
+AssertionError: missing @media (prefers-contrast: more): expected '' not to be '' // Object.is equality
+AssertionError: expected '@utility frost-subtle {\n  background…' to match /box-shadow:\s*var\(--shadow-md\)/
+AssertionError: expected '@utility frost-strong {\n  background…' to match /box-shadow:\s*var\(--shadow-md\)/
+AssertionError: expected undefined to be '100ms' // Object.is equality
+AssertionError: expected 500 to be less than or equal to 400
+AssertionError: expected '/*\n * shared base + component + util…' not to match /pulse-live|animate-pulse-glow|@keyfra…/
+AssertionError: expected '0 0 0 1px hsl(199 89% 48%), 0 0 15px …' to match /^0 0 0 2px hsl\([^)]*\)$/
+AssertionError: expected 'inline-flex items-center justify-cent…' to match /(^|\s)active:scale-97(\s|$)/
+AssertionError: expected 'inline-flex items-center justify-cent…' to match /(^|\s)active:scale-97(\s|$)/
+      Tests  12 failed (12)

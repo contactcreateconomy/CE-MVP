@@ -24,8 +24,8 @@ export interface FeedTabsProps {
 
 /**
  * Feed sort control — prototype `trend-sorter.tsx`: a pill with a sliding
- * brand indicator (glow-active in dark). Same four sorts as `feed.list`
- * `sortMode`. Guests selecting Fav is the wiring's call (feed.list returns
+ * brand indicator — solid, no glow (L-70: Fav's glow stays the only glow
+ * on the sorter). Same four sorts as `feed.list` `sortMode`. Guests selecting Fav is the wiring's call (feed.list returns
  * `member_only`).
  */
 export function FeedTabs({ active, onSelect, ref, className }: FeedTabsProps) {
@@ -46,7 +46,7 @@ export function FeedTabs({ active, onSelect, ref, className }: FeedTabsProps) {
     >
       <div
         aria-hidden
-        className="glow-active pointer-events-none absolute bottom-1 left-1 top-1 w-[calc(25%-0.25rem)] rounded-full bg-brand-primary transition-transform duration-slow ease-out-cubic motion-reduce:transition-none"
+        className="pointer-events-none absolute bottom-1 left-1 top-1 w-[calc(25%-0.25rem)] rounded-full bg-brand-primary transition-transform duration-slow ease-out-cubic motion-reduce:transition-none"
         style={{ transform: `translateX(${activeIndex * 100}%)` }}
       />
       <div className="relative z-10 grid grid-cols-4">

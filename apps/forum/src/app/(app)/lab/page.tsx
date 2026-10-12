@@ -24,6 +24,12 @@ export default function LabPage() {
         >
           /lab/utilities — glow &amp; glass utility demos
         </a>
+        <a
+          href="/lab/foundation"
+          className="ml-2 inline-flex h-9 items-center rounded-md bg-(--brand-primary) px-3 text-sm font-medium text-(--text-inverse)"
+        >
+          /lab/foundation — frost, motion, logo, theme switch
+        </a>
       </div>
     </main>
   );

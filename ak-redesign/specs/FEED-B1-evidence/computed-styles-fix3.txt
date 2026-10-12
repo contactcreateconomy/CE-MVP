@@ -1,0 +1,21 @@
+/lab/feed dark: console errors = none
+/lab/feed light: console errors = none
+contrast=no-preference
+  frost-look: backdrop=none bg=color(srgb 0.0705882 0.0705882 0.0705882 / 0.85) border=1px rgba(0, 0, 0, 0) shadow=color(srgb 0.980392 0.980392 0.980392 / 0.07) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.3) 0px 1px 2px 0px
+  frost-subtle: backdrop=blur(12px) bg=color(srgb 0.0705882 0.0705882 0.0705882 / 0.72) border=1px rgba(0, 0, 0, 0) shadow=rgba(0, 0, 0, 0.3) 0px 4px 6px 0px, rgba(0, 0, 0, 0.15) 0px 2px 4px 0px
+  frost-strong: backdrop=blur(24px) bg=color(srgb 0.0705882 0.0705882 0.0705882 / 0.55) border=1px rgba(0, 0, 0, 0) shadow=rgba(0, 0, 0, 0.3) 0px 4px 6px 0px, rgba(0, 0, 0, 0.15) 0px 2px 4px 0px
+Primary Button while pressed: scale=0.97 transition-duration=0.1s
+Primary Button after release: scale=none
+dark focus-ring (input:focus-visible): rgb(13, 162, 231) 0px 0px 0px 2px
+  console errors: none
+contrast=more
+  frost-look: backdrop=none bg=rgb(18, 18, 18) border=1px rgba(0, 0, 0, 0) shadow=color(srgb 0.980392 0.980392 0.980392 / 0.07) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.3) 0px 1px 2px 0px
+  frost-subtle: backdrop=none bg=rgb(18, 18, 18) border=1px rgba(0, 0, 0, 0) shadow=rgba(0, 0, 0, 0.3) 0px 4px 6px 0px, rgba(0, 0, 0, 0.15) 0px 2px 4px 0px
+  frost-strong: backdrop=none bg=rgb(18, 18, 18) border=1px rgba(0, 0, 0, 0) shadow=rgba(0, 0, 0, 0.3) 0px 4px 6px 0px, rgba(0, 0, 0, 0.15) 0px 2px 4px 0px
+  console errors: none
+HC dark frost-look: bg=rgb(18, 18, 18) backdrop=none outline=1px solid rgb(51, 51, 51) offset=-1px
+HC dark frost-subtle: bg=rgb(18, 18, 18) backdrop=none outline=1px solid rgb(51, 51, 51) offset=-1px
+HC dark frost-strong: bg=rgb(18, 18, 18) backdrop=none outline=1px solid rgb(51, 51, 51) offset=-1px
+HC light frost-look: bg=rgb(250, 250, 250) backdrop=none outline=1px solid rgb(212, 212, 216) offset=-1px
+HC light frost-subtle: bg=rgb(250, 250, 250) backdrop=none outline=1px solid rgb(212, 212, 216) offset=-1px
+HC light frost-strong: bg=rgb(250, 250, 250) backdrop=none outline=1px solid rgb(212, 212, 216) offset=-1px

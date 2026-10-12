@@ -1,0 +1,8 @@
+     × keeps a named size next to a text colour 11ms
+     × still resolves two named sizes to the last one 1ms
+     × covers every --text-<size> token in tokens.css 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected 'text-text-primary' to be 'text-caption text-text-primary' // Object.is equality
+AssertionError: expected 'text-body-md text-sm' to be 'text-sm' // Object.is equality
+TypeError: FONT_SIZE_TOKENS is not iterable
+      Tests  3 failed (3)

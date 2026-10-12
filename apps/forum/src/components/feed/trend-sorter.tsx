@@ -16,7 +16,7 @@ interface TrendSorterProps {
   onChange: (mode: FeedSortMode) => void;
 }
 
-/** Old-forum sliding pill: brand fill + glow, black label on the active slot. */
+/** Old-forum sliding pill: solid brand fill, no glow (L-70), black label on the active slot. */
 export function TrendSorter({ value, onChange }: TrendSorterProps) {
   const activeIndex = Math.max(0, sortItems.findIndex((item) => item.key === value));
 
@@ -27,7 +27,7 @@ export function TrendSorter({ value, onChange }: TrendSorterProps) {
       aria-label="Sort mode"
     >
       <div
-        className="pointer-events-none absolute bottom-1 left-1 top-1 w-[calc(25%-0.25rem)] rounded-full bg-brand-primary shadow-glow-primary-pill transition-transform duration-slow ease-out"
+        className="pointer-events-none absolute bottom-1 left-1 top-1 w-[calc(25%-0.25rem)] rounded-full bg-brand-primary transition-transform duration-slow ease-out"
         style={{ transform: `translateX(${activeIndex * 100}%)` }}
       />
 

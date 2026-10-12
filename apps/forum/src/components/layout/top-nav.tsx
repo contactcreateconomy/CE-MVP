@@ -17,6 +17,8 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/lib/convex";
 import { isConvexConfigured } from "@cemvp/convex-client";
 import { useSharedData } from "@/providers/shared-data-context";
+import { usePrefersReducedMotion } from "@/lib/motion";
+import { applyTheme, runThemeSwitch } from "@/lib/theme-transition";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@cemvp/auth-ui";
 import { useScroll } from "@/components/ui/use-scroll";
@@ -124,6 +126,7 @@ function TopNavInner({
   const searchParams = useSearchParams();
   const currentCategory = searchParams.get("category");
   const { resolvedTheme, setTheme } = useTheme();
+  const reducedMotion = usePrefersReducedMotion();
   const { authStatus, user, openAuthModal, logout } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -222,7 +225,17 @@ function TopNavInner({
               <NavTooltip label={mounted && resolvedTheme === "dark" ? "Light mode" : "Dark mode"}>
                 <button
                   aria-label="Toggle theme"
-                  onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+                  onClick={(e) => {
+                    // L-67: Iris — the new theme opens as a circle from this button.
+                    const to = resolvedTheme === "dark" ? "light" : "dark";
+                    const r = e.currentTarget.getBoundingClientRect();
+                    runThemeSwitch({
+                      to,
+                      reducedMotion,
+                      origin: { x: r.left + r.width / 2, y: r.top + r.height / 2 },
+                      apply: () => applyTheme(to, setTheme),
+                    });
+                  }}
                   className="rounded-full p-2 text-text-secondary transition-[transform,colors,box-shadow] duration-normal hover:-translate-y-px hover:bg-(--bg-overlay) hover:text-text-primary hover:shadow-glow-primary-sm"
                 >
                   {!mounted ? <Moon className="h-4 w-4" /> : resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -243,7 +256,7 @@ function TopNavInner({
                       (pathname === "/notifications" || notificationsOpen) && "text-brand-primary",
                     )}
                   >
-                    <Bell className={cn("h-4 w-4", unread > 0 && !notificationsOpen && "animate-pulse-glow")} />
+                    <Bell className="h-4 w-4" />
                     {unread > 0 ? (
                       <span className="absolute -right-0.5 -top-0.5 rounded-full bg-(--feedback-error) px-1.5 py-0.5 text-micro font-semibold text-white">
                         {unread}

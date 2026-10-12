@@ -1,0 +1,39 @@
+/* Horizon — the rejected theme-switch candidate (L-67 picked Iris). Kept for
+   comparison in /lab/foundation?v=b only; never imported by product code.
+   Dark falls from the top (dusk), light rises from the bottom (dawn). */
+html[data-theme-switch="horizon"]::view-transition-old(root) {
+  animation: none;
+}
+
+html[data-theme-switch="horizon"]::view-transition-new(root) {
+  mix-blend-mode: normal;
+  animation-duration: var(--duration-media);
+  animation-timing-function: var(--ease-emerge);
+  animation-fill-mode: both;
+}
+
+@keyframes theme-switch-dusk {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes theme-switch-dawn {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+html[data-theme-switch="horizon"][data-theme-switch-to="dark"]::view-transition-new(root) {
+  animation-name: theme-switch-dusk;
+}
+
+html[data-theme-switch="horizon"][data-theme-switch-to="light"]::view-transition-new(root) {
+  animation-name: theme-switch-dawn;
+}

@@ -1,0 +1,31 @@
+     × .frost-strong: real blur + solid fallbacks 10ms
+     × .frost-subtle: real blur + solid fallbacks 1ms
+     × .frost-look: no live blur, translucent surface + 1px top highlight 1ms
+     × frost tokens exist in both themes and stay neutral (no saturate) 20ms
+     × every unconditioned glow class is an allowed active/open state 30ms
+     × gaps are cut by a mask, never painted in canvas colour 47ms
+     × dark gaps are ~15% wider than light gaps 10ms
+     × reveal plays the three segments in order 14ms
+     × does not render its own hero grid or print disclosureClass 2ms
+Error: Failed to resolve import "../motion" from "src/lib/__tests__/motion.test.ts". Does the file exist?
+Error: Failed to resolve import "../theme-transition" from "src/lib/__tests__/theme-transition.test.ts". Does the file exist?
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/lib/__tests__/feed-b1-frost-glow.test.ts > frost utilities (L-39, L-40) > .frost-strong: real blur + solid fallbacks
+AssertionError: @utility frost-strong missing: expected '' not to be '' // Object.is equality
+ FAIL  src/lib/__tests__/feed-b1-frost-glow.test.ts > frost utilities (L-39, L-40) > .frost-subtle: real blur + solid fallbacks
+AssertionError: @utility frost-subtle missing: expected '' not to be '' // Object.is equality
+ FAIL  src/lib/__tests__/feed-b1-frost-glow.test.ts > frost utilities (L-39, L-40) > .frost-look: no live blur, translucent surface + 1px top highlight
+AssertionError: @utility frost-look missing: expected '' not to be '' // Object.is equality
+ FAIL  src/lib/__tests__/feed-b1-frost-glow.test.ts > frost utilities (L-39, L-40) > frost tokens exist in both themes and stay neutral (no saturate)
+AssertionError: --frost-subtle-bg (light): expected ':root {\n  --font-sans: var(--font-ge…' to contain '--frost-subtle-bg:'
+ FAIL  src/lib/__tests__/feed-b1-frost-glow.test.ts > no glow at rest (L-38) > every unconditioned glow class is an allowed active/open state
+AssertionError: expected { …(15) } to deeply equal { …(9) }
+ FAIL  src/components/ui/__tests__/feed-b1-logo-hero.test.tsx > CreateconomyLogoMark (L-42) > gaps are cut by a mask, never painted in canvas colour
+AssertionError: expected +0 to be 2 // Object.is equality
+ FAIL  src/components/ui/__tests__/feed-b1-logo-hero.test.tsx > CreateconomyLogoMark (L-42) > dark gaps are ~15% wider than light gaps
+AssertionError: expected NaN to be 2 // Object.is equality
+ FAIL  src/components/ui/__tests__/feed-b1-logo-hero.test.tsx > CreateconomyLogoMark (L-42) > reveal plays the three segments in order
+AssertionError: expected +0 to be 3 // Object.is equality
+ FAIL  src/components/ui/__tests__/feed-b1-logo-hero.test.tsx > CanonicalFeedClient hero (FEED-GAP F-2) > does not render its own hero grid or print disclosureClass
+AssertionError: expected '/* eslint-disable @typescript-eslint/…' not to match /chrome\?\.hero/
+      Tests  9 failed (9)

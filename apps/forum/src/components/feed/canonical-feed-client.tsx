@@ -5,7 +5,8 @@
  * CanonicalFeedClient — SLICE-P6-03 (CAP-182…186/194/198…201/553): the
  * canonical /feed over postDistributionScores + cardSummaries. Four sorts
  * (anonymous lands on Hot — quoted), type filter via Discover `?category=`
- * (left rail); hero band in the shell; Featured + Vibing + Podium in the
+ * (left rail); hero band in the shell only (its own getChrome — FEED-GAP F-2:
+ * the duplicate in-feed hero grid is gone); Featured + Vibing + Podium in the
  * right rail ("forming" until M12), snapshot pagination, per-card why-drawer
  * + hide/mute/report + unhide. The legacy demo feed is retired from this
  * route (00-TRANSITION: canonical replaces; demo data disposable).
@@ -40,7 +41,6 @@ export function CanonicalFeedClient({ initialTypeFilter = null }: { initialTypeF
   const [loadingMore, setLoadingMore] = useState(false);
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
 
-  const chrome = useQuery(api.feed.getChrome, configured ? {} : "skip");
   const page = useQuery(
     api.feed.list,
     configured ? ({ sortMode: effectiveSort, typeFilter: typeFilter ?? undefined, cursor } as any) : "skip",
@@ -82,21 +82,6 @@ export function CanonicalFeedClient({ initialTypeFilter = null }: { initialTypeF
 
   return (
     <section className="space-y-5" aria-label="Feed">
-      {/* Hero band (4–6; labeled; Community Top auto-fills are marked) */}
-      {chrome?.hero?.length ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {chrome.hero.map((h: any) => (
-            <a key={h.postId} href={`/discussions/${h.slug ?? h.postId}`} className="card-surface rounded-xl border border-(--border-subtle) p-4 transition-colors hover:border-(--border-prominent)">
-              <div className="flex items-center gap-2">
-                <Badge tone="brand">{h.isCommunityTop ? "Community Top" : "Featured"}</Badge>
-                <span className="text-xs text-(--text-muted)">{h.disclosureClass}</span>
-              </div>
-              <h3 className="mt-2 text-base font-semibold text-(--text-primary)">{h.title}</h3>
-            </a>
-          ))}
-        </div>
-      ) : null}
-
       <TrendSorter
         value={effectiveSort}
         onChange={(mode) => {
