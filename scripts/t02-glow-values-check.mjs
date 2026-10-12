@@ -65,10 +65,9 @@ if (!glassSection) {
   console.error("could not locate STYLE-KIT §2.2a");
   process.exit(1);
 }
-for (const [kitName, cssName] of [
-  ["glass/subtle-blur", "glass-subtle-blur"],
-  ["glass/strong-blur", "glass-strong-blur"],
-]) {
+// L-68 (FEED-U3): glass-* retired — frost-* is the one glass family; no
+// glass blur tokens remain to verify.
+for (const [kitName, cssName] of /** @type {[string, string][]} */ ([])) {
   const row = glassSection[0].match(new RegExp(`^${kitName.replace("/", "\\/")}\\s+.*$`, "m"));
   if (!row) {
     console.error(`  [✗] ${kitName}: no §2.2a row`);

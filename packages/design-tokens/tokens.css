@@ -452,12 +452,7 @@
   --glow-live: none;
   --glow-track: none;
 
-  /* Glass (§5.3) — light: 78% surface */
-  --glass-subtle-bg: color-mix(in srgb, var(--bg-surface) 78%, transparent);
-  --glass-subtle-blur: blur(12px) saturate(150%);
-  --glass-strong-bg: color-mix(in srgb, var(--bg-surface) 55%, transparent);
-  --glass-strong-blur: blur(24px);
-  --glass-border: color-mix(in srgb, var(--border-subtle) 60%, transparent);
+  /* Glass (§5.3) retired by L-68 (FEED-U3): frost-* is the one glass family. */
 
   /* Frost (FEED-DESIGN L-39, L-40) — neutral glass: same surface mixes as
      glass, but NO saturate boost, so content behind never bleeds colour.
@@ -574,9 +569,6 @@
   --glow-celebrate: 0 0 30px hsl(199 89% 48% / 0.4), 0 0 80px hsl(199 89% 48% / 0.2);
   --glow-live: 0 0 10px hsl(199 89% 48% / 0.2); /* pulse base; keyframe swaps ↔ --glow-cta (T03) */
   --glow-track: 0 0 6px hsl(199 89% 48% / 0.5), 0 0 14px hsl(199 89% 48% / 0.2);
-
-  /* Glass (§5.3) — dark: 72% surface */
-  --glass-subtle-bg: color-mix(in srgb, var(--bg-surface) 72%, transparent);
 
   /* Frost (L-39, L-40) — dark surface mixes; highlight = a faint light edge. */
   --frost-subtle-bg: color-mix(in srgb, var(--bg-surface) 72%, transparent);

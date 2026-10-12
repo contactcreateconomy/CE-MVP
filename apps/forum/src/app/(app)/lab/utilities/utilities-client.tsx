@@ -100,12 +100,12 @@ export function LabUtilitiesClient() {
           )}
         </Row>
 
-        <Row title=".glass-chrome — subtle glass over content" glass>
-          {(cls) => <GlassDemo cls={cls} testId="glass-chrome-demo" utility="glass-chrome" label="glass-chrome bar" />}
+        <Row title=".frost-subtle — subtle frost over content (glass-* retired, L-68)" glass>
+          {(cls) => <GlassDemo cls={cls} testId="frost-subtle-demo" utility="frost-subtle" label="frost-subtle bar" />}
         </Row>
 
-        <Row title=".glass-strong — strong glass (spec exceptions only)" glass>
-          {(cls) => <GlassDemo cls={cls} testId="glass-strong-demo" utility="glass-strong" label="glass-strong panel" />}
+        <Row title=".frost-strong — strong frost (menu island, sheets)" glass>
+          {(cls) => <GlassDemo cls={cls} testId="frost-strong-demo" utility="frost-strong" label="frost-strong panel" />}
         </Row>
 
         <Row title="safe-area helpers — .pt-safe/.pb-safe/.pl-safe/.pr-safe">
@@ -178,7 +178,7 @@ function GlassDemo({ cls, testId, utility, label }: { cls: string; testId: strin
         data-testid={testId}
         className={cn(
           utility,
-          "sticky top-4 z-10 mx-4 flex h-14 items-center justify-center rounded-lg border border-(--glass-border) text-sm font-medium text-(--text-primary)",
+          "sticky top-4 z-10 mx-4 flex h-14 items-center justify-center rounded-lg border border-border-subtle text-sm font-medium text-(--text-primary)",
         )}
       >
         {label}
