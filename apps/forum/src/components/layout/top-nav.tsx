@@ -11,13 +11,12 @@ import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatRelativeDate } from "@/lib/format";
 import { CreateconomyLogoMark } from "@/components/ui/createconomy-logo-mark";
-import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { useQuery, useMutation } from "convex/react";
 
 import { api } from "@/lib/convex";
 import { isConvexConfigured } from "@cemvp/convex-client";
 import { useSharedData } from "@/providers/shared-data-context";
-import { usePrefersReducedMotion } from "@/lib/motion";
+import { motionFor, usePrefersReducedMotion } from "@/lib/motion";
 import { applyTheme, runThemeSwitch } from "@/lib/theme-transition";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@cemvp/auth-ui";
@@ -30,6 +29,24 @@ const TYPE_ACCENT_CLASS: Record<"comment" | "upvote" | "follow" | "system", stri
   follow: "bg-(--feedback-success)",
   system: "bg-(--text-muted)",
 };
+
+/* Logo 3-segment reveal plays on the first load only (§11.1, L-42): the
+   server and the first client mount reveal; any later mount (client-side
+   navigation into another layout) shows the mark at rest. */
+let logoRevealed = false;
+
+/** Test-only: forget that the logo already revealed in this document. */
+export function resetLogoRevealForTests() {
+  logoRevealed = false;
+}
+
+function useFirstLoadLogoReveal(): boolean {
+  const [reveal] = useState(() => typeof window === "undefined" || !logoRevealed);
+  useEffect(() => {
+    logoRevealed = true;
+  }, []);
+  return reveal;
+}
 
 function getInitials(name: string) {
   return name
@@ -131,7 +148,10 @@ function TopNavInner({
   const [mounted, setMounted] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const scrolled = useScroll(10);
+  // §9.1: the island deepens its shadow after 8px of scroll (settle spring).
+  const scrolled = useScroll(8);
+  const logoReveal = useFirstLoadLogoReveal();
+  const springs = motionFor(reducedMotion).springs;
 
   const effectiveList: NotificationRow[] = useMemo(() => {
     if (!convexNotificationsEnabled || authStatus !== "authenticated") {
@@ -153,40 +173,35 @@ function TopNavInner({
   }, []);
 
   return (
-    <header className="sticky top-0 z-40">
-      {/* Anti-bleed solid mask above the floating pill */}
-      <div 
+    // Menu bar = a floating frosted island (FEED-DESIGN §8/§9.1, Bible §1/§3):
+    // L2 functional → frost-strong (L-68), sticky 8px from the top on phones
+    // and 12px on desktop, container width, radius xl. Content scrolls under
+    // it and is separated by a scroll-edge fade, never a line (§3.2 r4).
+    <header className="sticky top-2 z-sticky px-2 lg:top-3 lg:px-3">
+      <div
+        data-testid="menu-edge-fade"
+        aria-hidden
         className={cn(
-          "pointer-events-none absolute inset-x-0 top-0 z-[-1] bg-(--bg-canvas) transition-all duration-slow ease-out",
-          scrolled ? "h-3 opacity-100" : "h-0 opacity-0"
-        )} 
+          "scroll-edge-fade absolute inset-x-0 -top-2 z-behind h-20 transition-opacity duration-slow lg:-top-3",
+          scrolled ? "opacity-100" : "opacity-0",
+        )}
       />
-      <div className="mx-auto w-full max-w-(--container-app) px-4 md:px-6 lg:px-8">
-        <div
-          className={cn(
-            "relative w-full border transition-[transform,background-color,border-color,box-shadow,border-radius] duration-slow ease-out will-change-transform",
-            scrolled
-              ? "translate-y-2 rounded-xl border-white/40 [.dark_&]:border-white/[0.12] bg-white/45 [.dark_&]:bg-[rgba(20,20,20,0.55)] shadow-[0_8px_32px_rgba(0,0,0,0.08)] [.dark_&]:shadow-[0_8px_32px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-2xl"
-              : "translate-y-1.5 rounded-xl border-white/30 [.dark_&]:border-(--border-subtle) bg-white/25 [.dark_&]:bg-[rgba(20,20,20,0.35)] backdrop-blur-2xl shadow-[0_1px_0_rgba(0,0,0,0.04)] [.dark_&]:shadow-[0_1px_0_rgba(255,255,255,0.04)]",
-          )}
-        >
-          <GlowingEffect
-            spread={50}
-            glow
-            disabled={false}
-            proximity={80}
-            inactiveZone={0.01}
-            borderWidth={1}
-            movementDuration={0.65}
-          />
+      <div data-testid="menu-island" className="frost-strong relative mx-auto w-full max-w-250 rounded-xl border border-border-subtle">
+        {/* Deeper shadow once scrolled: a shadow-lg layer that fades in
+            (opacity only — Bible §9.2 r5); reduced motion → crossfade. */}
+        <motion.div
+          data-testid="menu-island-raised"
+          data-raised={scrolled ? "true" : "false"}
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-xl shadow-lg"
+          initial={false}
+          animate={{ opacity: scrolled ? 1 : 0 }}
+          transition={springs.settle}
+        />
           <div className="relative z-10 flex h-14 w-full items-center gap-3 px-2 sm:px-3 md:px-4">
             <Link href="/feed" className="group flex shrink-0 items-center gap-2">
-              <CreateconomyLogoMark
-                size={34}
-                markColor="var(--text-primary)"
-                className="drop-shadow-[0_1px_2px_rgba(0,0,0,0.12)] [.dark_&]:drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)] transition-[filter] duration-normal group-hover:drop-shadow-[0_0_8px_rgba(9,9,11,0.42)] [.dark_&]:group-hover:drop-shadow-[0_0_6px_rgba(250,250,250,0.35)]"
-              />
-              <span className="text-[0.95rem] font-semibold tracking-tight text-text-primary drop-shadow-[0_1px_2px_rgba(0,0,0,0.1)] [.dark_&]:drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)] sm:text-[1.05rem]">Createconomy</span>
+              <CreateconomyLogoMark size={34} markColor="var(--text-primary)" reveal={logoReveal} />
+              <span className="text-body-md font-semibold tracking-tight text-text-primary sm:text-body-lg">Createconomy</span>
             </Link>
 
             <form
@@ -196,7 +211,12 @@ function TopNavInner({
               role="search"
             >
               {currentCategory ? <input type="hidden" name="category" value={currentCategory} /> : null}
-              <label className="group relative w-full max-w-[480px]" aria-label="Search">
+              {/* Focus widens the field (state change, not an animated width). */}
+              <label
+                data-testid="menu-search-field"
+                className="group relative w-full max-w-(--container-search) focus-within:max-w-(--container-reading)"
+                aria-label="Search"
+              >
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
                 <input
                   name="q"
@@ -257,10 +277,13 @@ function TopNavInner({
                     )}
                   >
                     <Bell className="h-4 w-4" />
+                    {/* Unread = a dot (§9.1); the count is in the label. */}
                     {unread > 0 ? (
-                      <span className="absolute -right-0.5 -top-0.5 rounded-full bg-(--feedback-error) px-1.5 py-0.5 text-micro font-semibold text-white">
-                        {unread}
-                      </span>
+                      <span
+                        data-testid="unread-dot"
+                        aria-hidden
+                        className="absolute right-1.5 top-1.5 size-2 rounded-full bg-feedback-error ring-2 ring-bg-surface"
+                      />
                     ) : null}
                   </button>
                 </DropdownMenu.Trigger>
@@ -446,7 +469,6 @@ function TopNavInner({
               )}
             </div>
           </div>
-        </div>
       </div>
     </header>
   );

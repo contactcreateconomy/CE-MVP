@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "motion/react";
 import { Hash, Plus } from "lucide-react";
 
+import { usePrefersReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 import type { FeedNavItem } from "./feed-display-types";
 import { postTypeMeta } from "./feed-post-type-meta";
+import { startSheetLayoutId } from "./feed-start-sheet";
 
 export interface FeedLeftNavProps {
   /** "home" first, then the active post types (postTypeConfig, state=active). */
@@ -53,17 +56,23 @@ function Row({ item, active, topic }: { item: FeedNavItem; active: boolean; topi
  * Labels come from data (COPY-1). Drill-down + lens bus land in B9.
  */
 export function FeedLeftNav({ items, topics = [], activeKey, onStartDiscussion, className }: FeedLeftNavProps) {
+  const reduced = usePrefersReducedMotion();
   return (
     <aside className={cn("flex flex-col gap-3", className)}>
       {onStartDiscussion ? (
-        <button
+        // FEED-U3: the pill is the Start sheet's shared element — it grows
+        // into the sheet and the sheet returns into it (§9.3, Bible §9.4).
+        <motion.button
           type="button"
           onClick={onStartDiscussion}
-          className="hover:glow-cta active:glow-active focus-ring inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-full bg-brand-primary text-body-sm font-semibold text-text-inverse transition-[background-color,box-shadow,scale] duration-normal hover:bg-brand-primary-hover active:scale-97 active:duration-press"
+          aria-haspopup="dialog"
+          data-start-origin="rail"
+          layoutId={reduced ? undefined : startSheetLayoutId("rail")}
+          className="hover:glow-cta active:glow-active focus-ring inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-full bg-brand-primary text-body-sm font-semibold text-text-inverse transition-[background-color,box-shadow,scale] duration-normal hover:bg-brand-primary-hover active:scale-97 active:duration-press motion-reduce:active:scale-100"
         >
           <Plus className="size-4" strokeWidth={2} aria-hidden />
           Start Discussion
-        </button>
+        </motion.button>
       ) : null}
 
       <nav aria-label="Discover" className="frost-subtle rounded-lg border border-border-subtle px-2 py-3">

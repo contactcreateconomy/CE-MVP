@@ -7,6 +7,7 @@ import { ConditionalLeftSidebar } from "@/components/layout/conditional-left-sid
 import { ConditionalRightSidebar } from "@/components/layout/conditional-right-sidebar";
 import { TopNav } from "@/components/layout/top-nav";
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
+import { StartDiscussionHost } from "@/components/layout/start-discussion-host";
 interface AppShellProps {
   children: ReactNode;
 }
@@ -41,6 +42,7 @@ export function AppShell({ children }: AppShellProps) {
           </div>
         </footer>
         <MobileTabBar />
+        <StartDiscussionHost />
       </div>
     </div>
   );
