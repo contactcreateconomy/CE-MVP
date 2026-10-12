@@ -70,7 +70,8 @@ describe("review fix — feed pre-filter truncation + double read (convex/feed.t
   });
 
   it("the gated post read is reused for card assembly — no second fetch", () => {
-    expect(feedSrc).toContain("const card = await assembleCard(ctx, row, post);");
+    // FEED-U2: the viewer id rides along (facet split / viewer state); the post read is still reused.
+    expect(feedSrc).toContain("const card = await assembleCard(ctx, row, post, userId);");
     expect(feedSrc).toContain("fetchedPost ?? (await ctx.db.get(score.postId))");
   });
 });
