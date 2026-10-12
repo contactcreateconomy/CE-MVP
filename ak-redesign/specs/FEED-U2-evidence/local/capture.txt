@@ -18,3 +18,12 @@ Observed (DOM + pixels):
   ("slot media wins over the post cover", comment at :267) is not implemented.
   Demo posts DO have covers (card covers load). → U2 fix candidate, not patched
   here (backend changes go through the CR flow, L-58).
+
+After L-83/L-84/L-85 (commit ce9103b, 2026-10-12 evening):
+- L-85 live: hero mediaUrl falls back to post covers; the three demo hero posts
+  were seeded WITHOUT covers, so 3 existing cover assets were attached to them
+  via a throwaway mutation (ogImageAssetId patch — not fingerprinted; seed:check
+  PASS before and after; mutation file deleted, never committed). Hero now shows
+  3 real photos (feed-1440-dark-after-l85.png).
+- L-83 live: no G counts on cards (adapter sends null) — G-switch still renders.
+- L-84 live: sorter tabs carry no hover notes on /feed.
