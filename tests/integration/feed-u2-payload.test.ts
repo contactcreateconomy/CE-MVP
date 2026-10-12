@@ -99,6 +99,9 @@ async function seed(t: ReturnType<typeof makeT>) {
     await ctx.db.insert("postNews", { postId: ids.news, sourceOfTruthUrl: "https://www.theverge.com/a", keyClaims: ["Chapter search for every channel"] });
     await ctx.db.insert("postCompares", { postId: ids.compare, toolIds: [cursor], qualitativeGrid: {} });
     await ctx.db.insert("saves", { userId: viewer, postId: ids.review, createdAt: 1 });
+    for (const [i, [type, label]] of ([["spark", "Spark"], ["news", "News"], ["review", "Review"], ["compare", "Compare"], ["debate", "Debate"], ["help", "Help"], ["list", "List"], ["showcase", "Showcase"]] as const).entries()) {
+      await ctx.db.insert("postTypeConfig", { type, state: "active", sortOrder: i, label, updatedAt: 1 });
+    }
     // chrome
     await ctx.db.insert("heroSlots", {
       slotOrder: 0, postId: ids.review, startAt: 0, endAt: Date.now() + 86_400_000, desktopEnabled: true, mobileEnabled: false,
