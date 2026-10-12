@@ -147,6 +147,14 @@ The **lens** = subject (all / type / tool / topic) × time (New·24H / Hot·7D /
 | L-75 | Iris is an accepted exception to Bible §9.2 rules 2 and 5 (View Transitions block input and animate clip-path): duration capped at 400ms, used only for the theme switch | A | rare, user-initiated |
 | L-76 | Remove infinite-loop utilities (`pulse-live`, `animate-pulse-glow`) — no sustained oscillation (Bible §9.2 r9). Dark-mode focus = solid 2px ring like light mode (Bible §10.6), no glow halo | A | B1 round 3 |
 | L-77 | Regression fix: the unlayered `* { border-color: transparent }` in tokens.css (since S00-T01) moves into `@layer base`, so themed borders show again as STYLE-KIT intends. Own branch, before/after screenshots of key screens, founder visual pass before merge | A | B1 finding |
+| L-78 | Two media tokens: `--media-scrim` and `--text-on-media` for text over photos (hero overlay matches Make in both themes) + STYLE-KIT rows | A | U1 |
+| L-79 | Hidden cards collapse inline to "Hidden · Undo" (FEED §10.4 wins over the toast) | A | U1 |
+| L-80 | Why-care copy speaks Gravity: "↗ Rising · 14G in the last 3h"; "Still pulling Gravity 3 months later" | A | U1 |
+| L-81 | Silver Podium crown gets an increased-contrast variant in light mode (AA for icons, 3:1) | A | U1 |
+| L-82 | L-64 clarified: "only G and Strings" governs **engagement counters**. The "N discussing" label is removed (Strings already says it; faces stay). Facet data is content, not engagement, and stays: debate "214 voted · take a side" (L-29 — the split stays hidden until you vote), review scores, list item votes | A | Grok U1 review |
+| L-83 | Until the Gravity engine lands (B2a), the public **G count renders nothing** (D-012: the label G must mean Gravity, not the old weighted score). The G-switch itself still works for the viewer | A | Grok U2 review; supersedes the stand-in |
+| L-84 | Sorter hover notes/tooltips stay hidden until B3 applies the real windows (L-07, L-52) — a label never promises what the code doesn't do | A | Grok U2 review |
+| L-85 | Hero media falls back to the post's own cover when a slot has no media (`getChrome`) | A | GLM U2 capture finding |
 
 ### 2.2 Provisional / experiments
 | ID | Item | How we validate |
@@ -711,6 +719,8 @@ Opus builds → Grok reviews against the decision IDs touched (prompt: "Review b
 ---
 
 ## 17. Change log
+- 2026-10-12 — FEED-U2 wire (feed-u2-payload + feed-u2-wire, FEED-U2-BUILD.md, CR-010-U2-RESPONSE.md): /feed renders FeedPageView via container + pure adapter; additive payload (author, facets, best comment, participants, viewer.saved; hero summary/type/media; trend title/slug; podium handle/avatar/level); debate split only after vote; shell hands /feed over; autoplay hero deleted. L-78…L-82 applied. Grok FIX → L-83 (no G count until Gravity engine), L-84 (no sort notes until windows exist), L-85 (hero media falls back to post cover). Local /feed verified with demo data (DISABLE_BEACON=1 makes the local backend boot in ~15s).
+- 2026-10-12 — FEED-U1 port (branch feed-u1-port, FEED-U1-BUILD.md): Make look ported into canonical feed-* layer (8 facets, why-care line, G-switch + "18G", strings, vote-to-reveal, text sorter + Fav glow, Discover + topics, Vibing v2 + ticker, Podium "what they did", 1000px grid, hero cover-flow + cascade, no autoplay); retired post-card family deleted; L-77 on feed-l77-border-layer (1/48 → 48/48 borders). Recorded L-78…L-81. Plan change: U1/U2 (visible feed) before B2 backend to spend remaining cloud credit on taste-critical UI.
 - 2026-10-12 — FEED-B1 fix-3: L-73 frost shadows + high-contrast outline edge; L-74 press 0.97 + 100ms token; L-75 Iris 360ms; L-76 pulses deleted, solid 2px dark focus; /lab/feed hydration fixed. Finding → L-77 (themed borders invisible app-wide since S00-T01; fix on own branch with visual pass).
 - 2026-10-12 — FEED-B1 round 2: L-72 feedback spring 520/46 (ratio ≈1.01, peak 1.0, 95% at 212ms); L-70 sorter pill no glow (test-fenced); L-67 Iris is the product theme switch, Horizon lab-only. Bible audit → recorded L-73 (frost shadows + high-contrast fallback), L-74 (press 0.97 + 100ms token), L-75 (Iris exception, ≤400ms), L-76 (no infinite pulses; solid focus ring in dark).
 - 2026-10-12 — DESIGN-BIBLE.md v1 adopted (L-71); Iris picked (L-67); frosted shell confirmed (L-68); L-72 feedback spring must not overshoot. Standing rules now read the bible first.
