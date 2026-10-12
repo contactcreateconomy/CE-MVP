@@ -70,6 +70,8 @@ Apple's eight principles, each with what it means **here**:
 | **L3 Transient** | sheets, popovers, menus, toasts | `frost-strong` + scrim when blocking | `shadow/lg` |
 | **L4 Critical** | blocking dialogs, auth | solid `bg/surface-elevated` | `shadow/xl` |
 
+The frost utilities carry their layer's shadow, so the pairing can't drift (L-73).
+
 ### 3.2 Rules
 1. **Glass is functional, not decorative.** Real frost only on L2–L3. Cards never get live blur (performance on mid-range Android + Apple's layer rule).
 2. **Use glass sparingly** — "limit these effects to the most important functional elements" (Apple). If everything floats, nothing does.
@@ -188,7 +190,7 @@ Motion is **physics, not decoration**. An interface feels alive when motion **st
 
 ### 9.4 Signature moves (ours)
 - **Focus pull** — entering content arrives from soft blur + slight depth to sharp. Used for first load, reveals and lens changes. Never on scroll.
-- **Iris** — theme change opens as a circle from the toggle (L-67).
+- **Iris** — theme change opens as a circle from the toggle (L-67). Accepted exception to rules 2 and 5 (it briefly blocks input and animates a clip): capped at 400ms, theme switch only (L-75).
 - **G-switch slide** — the capsule slides into the G on the user's first positive interaction (L-63).
 - **Grow from the trigger** — buttons expand into their sheet (Start Discussion → publisher).
 
@@ -202,7 +204,7 @@ From visionOS "eyes" to web hover:
 3. **Hover adds depth, never layout** (FEED rule 4). No height change, no reflow.
 4. **Don't reveal new content next to where the user is looking** — it pulls the eye away involuntarily (Apple Eyes). Reveal *in place*.
 5. **Every hover has a tap twin** on phones (tap the indicator).
-6. **Focus is separate from hover:** keyboard focus = visible solid ring (both themes), always.
+6. **Focus is separate from hover:** keyboard focus = a solid 2px ring in **both** themes, no glow halo (L-76), always.
 7. **Press state** on everything tappable (scale ≈0.97 + slight dim), within 100ms.
 
 ---
@@ -314,4 +316,5 @@ Everything else stays quiet so these three are felt.
 - Deci & Ryan, Self-Determination Theory · Kahneman, peak–end rule · Kivetz, Urminsky & Zheng (2006) goal gradient · Nunes & Drèze (2006) endowed progress · Norton, Mochon & Ariely (2012) IKEA effect · Salganik, Dodds & Watts (2006) MusicLab · Thaler & Sunstein, Nudge · Pirolli & Card, information foraging · Nielsen heuristics · WCAG 2.2
 
 ## 17. Change log
+- 2026-10-12 — v1.1: B1 audit folded in — frost carries layer shadows (L-73), press token 100ms (L-74), Iris exception (L-75), solid focus ring in dark, no infinite pulses (L-76).
 - 2026-10-12 — v1. Foundations from Apple HIG (iOS, macOS, visionOS) + Emil Kowalski's apple-design notes + psychology layer, tailored to Createconomy. Flags L-72 (feedback spring overshoots).

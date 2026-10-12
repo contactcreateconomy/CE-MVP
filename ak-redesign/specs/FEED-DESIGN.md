@@ -142,6 +142,11 @@ The **lens** = subject (all / type / tool / topic) × time (New·24H / Hot·7D /
 | L-70 | Sorter active pill = solid brand, **no glow** (§9.4 wins over glow/active), so Fav's glow (L-47) stays the only glow on the sorter and keeps its meaning | A | B1 |
 | L-71 | **DESIGN-BIBLE.md is the design foundation.** Precedence: CEY-VISION > DESIGN-BIBLE > screen specs > STYLE-KIT tokens. Every spec, prompt and review cites the bible section it follows | B | 2026-10-12 |
 | L-72 | Taps are critically damped: `feedback` spring damping raised so it does not overshoot (ratio ≈1.0); springs may be expressed as `{bounce, duration}`. Bounce (≈0.8 ratio) only when a gesture carried momentum | A | Bible §9.3 |
+| L-73 | Frost utilities carry their layer's shadow (L1 `shadow/xs`, L2 `shadow/md`, L3 `shadow/lg`, Bible §3.1) and a `prefers-contrast: more` fallback (solid surface + 1px `border/prominent`) | A | B1 round 3 |
+| L-74 | Press feedback: every Button/tappable gets `scale(0.97)` on pointer-down with a new `--duration-press: 100ms` token (STYLE-KIT addition) | A | Bible §9.2 r1, §10.7 |
+| L-75 | Iris is an accepted exception to Bible §9.2 rules 2 and 5 (View Transitions block input and animate clip-path): duration capped at 400ms, used only for the theme switch | A | rare, user-initiated |
+| L-76 | Remove infinite-loop utilities (`pulse-live`, `animate-pulse-glow`) — no sustained oscillation (Bible §9.2 r9). Dark-mode focus = solid 2px ring like light mode (Bible §10.6), no glow halo | A | B1 round 3 |
+| L-77 | Regression fix: the unlayered `* { border-color: transparent }` in tokens.css (since S00-T01) moves into `@layer base`, so themed borders show again as STYLE-KIT intends. Own branch, before/after screenshots of key screens, founder visual pass before merge | A | B1 finding |
 
 ### 2.2 Provisional / experiments
 | ID | Item | How we validate |
@@ -706,6 +711,8 @@ Opus builds → Grok reviews against the decision IDs touched (prompt: "Review b
 ---
 
 ## 17. Change log
+- 2026-10-12 — FEED-B1 fix-3: L-73 frost shadows + high-contrast outline edge; L-74 press 0.97 + 100ms token; L-75 Iris 360ms; L-76 pulses deleted, solid 2px dark focus; /lab/feed hydration fixed. Finding → L-77 (themed borders invisible app-wide since S00-T01; fix on own branch with visual pass).
+- 2026-10-12 — FEED-B1 round 2: L-72 feedback spring 520/46 (ratio ≈1.01, peak 1.0, 95% at 212ms); L-70 sorter pill no glow (test-fenced); L-67 Iris is the product theme switch, Horizon lab-only. Bible audit → recorded L-73 (frost shadows + high-contrast fallback), L-74 (press 0.97 + 100ms token), L-75 (Iris exception, ≤400ms), L-76 (no infinite pulses; solid focus ring in dark).
 - 2026-10-12 — DESIGN-BIBLE.md v1 adopted (L-71); Iris picked (L-67); frosted shell confirmed (L-68); L-72 feedback spring must not overshoot. Standing rules now read the bible first.
 - 2026-10-11 — FEED-B1 foundation (branch feed-b1-foundation, FEED-B1-BUILD.md): cn() knows the 22 font-size tokens; frost-strong/-subtle/-look utilities (neutral, no saturate; frost-look no live blur); glow at rest removed and test-fenced; lib/motion.ts; logo gaps transparent, +15% in dark, 3-segment reveal; theme-switch candidates at /lab/foundation?v=a|b; CanonicalFeedClient hero grid removed (F-2). Recorded L-67…L-70 (L-70: sorter pill no glow). Register order tidied.
 - 2026-10-11 — FEED-B0 audit: ak-redesign/specs/FEED-GAP.md. Prod has no writer for post counters (CR-014), day buckets (CR-013), post saves or exposure events → Top/Hot/Vibing/Rising/Fav/exploration flat in prod. Recorded L-51…L-66 (Gravity L-59–L-66: G-switch, Strings, author-only breakdown) (persona posts L-57, dev-at-the-end L-58); opened O-10 (post-level Valuable), O-11 (persona posts in organic). Amended §16 file names, B2/B5/B6/B7 prompts, standing rules (graph helper), D-14 scope, demo-world size.
