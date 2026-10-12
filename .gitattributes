@@ -4,3 +4,4 @@ graphify-out/graph.json merge=graphify
 # Founder design references — frozen verbatim copies; never normalize
 ak-redesign/specs/S02-refs/prototype/** -text
 ak-redesign/specs/S02-refs/prototype-v2/** -text
+ak-redesign/specs/S02-refs/make/** -text

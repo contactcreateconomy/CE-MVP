@@ -1,0 +1,10 @@
+{
+  "description": "Createconomy offers an interactive feed for users to engage with content seamlessly, featuring customizable themes and a smooth, elegant interface.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
