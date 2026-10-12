@@ -155,6 +155,10 @@ The **lens** = subject (all / type / tool / topic) × time (New·24H / Hot·7D /
 | L-83 | Until the Gravity engine lands (B2a), the public **G count renders nothing** (D-012: the label G must mean Gravity, not the old weighted score). The G-switch itself still works for the viewer | A | Grok U2 review; supersedes the stand-in |
 | L-84 | Sorter hover notes/tooltips stay hidden until B3 applies the real windows (L-07, L-52) — a label never promises what the code doesn't do | A | Grok U2 review |
 | L-85 | Hero media falls back to the post's own cover when a slot has no media (`getChrome`) | A | GLM U2 capture finding |
+| L-86 | Start sheet lists the 7 member-composable types (News is platform-injected, never member-composed) | A | U3 |
+| L-87 | Mobile tab bar keeps all five labels (iOS standard); only the active tab turns brand | A | U3 |
+| L-88 | While a sheet is open, the menu island behind it turns solid (Bible §3.2 r3: never stack translucency) | A | U3 |
+| L-89 | Type key mismatch (`help` in data vs `qa` in composer) fixed by a client-side mapping now; unify the key in the backend later (CR) | A | U3 |
 
 ### 2.2 Provisional / experiments
 | ID | Item | How we validate |
@@ -719,6 +723,7 @@ Opus builds → Grok reviews against the decision IDs touched (prompt: "Review b
 ---
 
 ## 17. Change log
+- 2026-10-12 — FEED-U3 shell (feed-u3-shell, FEED-U3-BUILD.md): menu bar = frost-strong floating island (glass-* retired, L-68), mobile frosted tab bar + top island, logo reveal on first load, Start Discussion grows into a frosted Start sheet routing to /new-post?type=, scroll-edge fades, reduced-motion paths. Recorded L-86…L-89.
 - 2026-10-12 — FEED-U2 wire (feed-u2-payload + feed-u2-wire, FEED-U2-BUILD.md, CR-010-U2-RESPONSE.md): /feed renders FeedPageView via container + pure adapter; additive payload (author, facets, best comment, participants, viewer.saved; hero summary/type/media; trend title/slug; podium handle/avatar/level); debate split only after vote; shell hands /feed over; autoplay hero deleted. L-78…L-82 applied. Grok FIX → L-83 (no G count until Gravity engine), L-84 (no sort notes until windows exist), L-85 (hero media falls back to post cover). Local /feed verified with demo data (DISABLE_BEACON=1 makes the local backend boot in ~15s).
 - 2026-10-12 — FEED-U1 port (branch feed-u1-port, FEED-U1-BUILD.md): Make look ported into canonical feed-* layer (8 facets, why-care line, G-switch + "18G", strings, vote-to-reveal, text sorter + Fav glow, Discover + topics, Vibing v2 + ticker, Podium "what they did", 1000px grid, hero cover-flow + cascade, no autoplay); retired post-card family deleted; L-77 on feed-l77-border-layer (1/48 → 48/48 borders). Recorded L-78…L-81. Plan change: U1/U2 (visible feed) before B2 backend to spend remaining cloud credit on taste-critical UI.
 - 2026-10-12 — FEED-B1 fix-3: L-73 frost shadows + high-contrast outline edge; L-74 press 0.97 + 100ms token; L-75 Iris 360ms; L-76 pulses deleted, solid 2px dark focus; /lab/feed hydration fixed. Finding → L-77 (themed borders invisible app-wide since S00-T01; fix on own branch with visual pass).

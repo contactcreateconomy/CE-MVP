@@ -20,6 +20,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/lib/convex";
 import { isConvexConfigured } from "@cemvp/convex-client";
 import { useAuth } from "@cemvp/auth-ui";
+import { useStartSheet } from "@/stores/start-sheet-store";
 
 import { toCardData, toHeroSlides, toNavItems, toPodium, toVibingItems } from "./feed-adapter";
 import type { FeedCardData, FeedSort } from "./feed-display-types";
@@ -32,6 +33,7 @@ export function CanonicalFeedClient({ initialTypeFilter = null }: { initialTypeF
   const router = useRouter();
   const { authStatus, openAuthModal } = useAuth() as { authStatus: string; openAuthModal?: (mode?: any) => void };
   const member = authStatus === "authenticated";
+  const showStartSheet = useStartSheet((s) => s.show);
   // CAP-183 (quoted): "Anonymous lands on Hot."
   const [sort, setSort] = useState<SortMode>("hot");
   const effectiveSort = sort === "fav" && !member ? "hot" : sort;
@@ -114,7 +116,8 @@ export function CanonicalFeedClient({ initialTypeFilter = null }: { initialTypeF
       nav={{
         items: navItems,
         activeKey: typeFilter ?? "home",
-        onStartDiscussion: () => (member ? router.push("/new-post") : signIn()),
+        // FEED-U3: the pill grows into the Start sheet; visitors see sign-in there (§9.3).
+        onStartDiscussion: () => showStartSheet("rail"),
       }}
       sort={effectiveSort}
       onSortChange={(mode) => {

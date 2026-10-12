@@ -16,8 +16,8 @@ const channel = process.env.PW_CHANNEL;
 if (channel) test.use({ channel });
 
 const GLASS_ROWS = [
-  { testId: "glass-chrome-demo", name: ".glass-chrome" },
-  { testId: "glass-strong-demo", name: ".glass-strong" },
+  { testId: "frost-subtle-demo", name: ".frost-subtle" },
+  { testId: "frost-strong-demo", name: ".frost-strong" },
 ] as const;
 
 async function computed(page: import("@playwright/test").Page, testId: string) {

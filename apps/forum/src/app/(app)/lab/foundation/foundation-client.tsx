@@ -86,7 +86,6 @@ export function LabFoundationClient({ forcedTheme, variantParam }: LabFoundation
             <Panel cls="frost-strong" label=".frost-strong" hint="menu island, hero, sheets" />
             <Panel cls="frost-subtle" label=".frost-subtle" hint="rail widgets, tab bar" />
             <Panel cls="frost-look" label=".frost-look" hint="feed cards — no live blur" />
-            <Panel cls="glass-chrome" label=".glass-chrome (today)" hint="saturate 150% — compare the tint" />
           </div>
         </div>
       </Section>

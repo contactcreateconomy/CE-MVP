@@ -609,47 +609,6 @@ main {
 }
 
 
-/* ── Glass (§5.3) ────────────────────────────────────────────────────── */
-/* Fallbacks are NESTED inside each utility so they live in the same rule
-   and can never lose the cascade to the utility's own declarations
-   (standalone override blocks compile into an earlier layer and lose). */
-
-@utility glass-chrome {
-  background: var(--glass-subtle-bg);
-  -webkit-backdrop-filter: var(--glass-subtle-blur);
-  backdrop-filter: var(--glass-subtle-blur);
-
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    background: var(--bg-surface);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-
-  @media (prefers-reduced-transparency: reduce) {
-    background: var(--bg-surface);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-@utility glass-strong {
-  background: var(--glass-strong-bg);
-  -webkit-backdrop-filter: var(--glass-strong-blur);
-  backdrop-filter: var(--glass-strong-blur);
-
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    background: var(--bg-surface);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-
-  @media (prefers-reduced-transparency: reduce) {
-    background: var(--bg-surface);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
 /* ── Frost (FEED-DESIGN L-39, L-40) ───────────────────────────────────── */
 /* Neutral glass for chrome, hero, rail widgets, sheets: real backdrop blur
    with no saturate boost (no colour bleed), solid fallbacks nested like the
@@ -781,6 +740,15 @@ html[data-theme-switch="iris"]::view-transition-new(root) {
 html[data-theme-switch="fade"]::view-transition-old(root),
 html[data-theme-switch="fade"]::view-transition-new(root) {
   animation-duration: var(--duration-normal);
+}
+
+/* ── Scroll-edge fade (Bible §3.2 rule 4, FEED-U3) ─────────────────────── */
+/* Content scrolls under glass: chrome is separated from content by a fade
+   from the canvas, never a hard line or a solid bar. Sits directly below
+   the menu island and the mobile sorter dock; pointer-events none. */
+@utility scroll-edge-fade {
+  background: linear-gradient(to bottom, var(--bg-canvas), transparent);
+  pointer-events: none;
 }
 
 /* Sideways chip rows (mobile Discover, podium dimensions): scroll without

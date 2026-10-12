@@ -92,7 +92,13 @@ export function FeedPageView(props: FeedPageViewProps) {
           <main className="min-w-0">
             <section className="flex flex-col gap-3" aria-label="Feed">
               <FeedDiscoverChips items={nav.items} topics={nav.topics} activeKey={nav.activeKey} className="lg:hidden" />
-              <FeedTabs ref={tabsRef} active={sort} onSelect={onSortChange} favNew={favNew} notes={sortNotes} />
+              {/* Phones: the sorter docks under the top island (8px inset + 56px
+                  island = top-16) and casts a scroll-edge fade, not a line (§8,
+                  Bible §3.2 r4). lg: it scrolls with the column. */}
+              <div data-testid="sorter-dock" className="sticky top-16 z-sticky lg:static">
+                <FeedTabs ref={tabsRef} active={sort} onSelect={onSortChange} favNew={favNew} notes={sortNotes} />
+                <div className="scroll-edge-fade absolute inset-x-0 top-full h-3 lg:hidden" aria-hidden />
+              </div>
               <FeedVibingTicker items={vibing} className="lg:hidden" />
 
               {newPosts && newPosts.count > 0 ? (

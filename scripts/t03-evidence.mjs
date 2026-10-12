@@ -63,10 +63,10 @@ async function shoot(browser, name, opts) {
   }
   if (name.includes("reduced-transparency")) {
     assertions.chromeBackdrop = await page
-      .getByTestId("glass-chrome-demo").first()
+      .getByTestId("frost-subtle-demo").first()
       .evaluate((el) => getComputedStyle(el).backdropFilter);
     assertions.chromeBg = await page
-      .getByTestId("glass-chrome-demo").first()
+      .getByTestId("frost-subtle-demo").first()
       .evaluate((el) => getComputedStyle(el).backgroundColor);
   }
   const file = path.join(OUT, `${name}.png`);
@@ -121,7 +121,7 @@ for (const r of results) {
       console.error(`  [✗] reduced-transparency: backdrop="${r.assertions.chromeBackdrop}" bg="${r.assertions.chromeBg}" — expected backdrop none + OPAQUE bg`);
       failures += 1;
     } else {
-      console.log(`  [✓] reduced-transparency: .glass-chrome backdrop=none, bg="${r.assertions.chromeBg}" (opaque solid)`);
+      console.log(`  [✓] reduced-transparency: .frost-subtle backdrop=none, bg="${r.assertions.chromeBg}" (opaque solid)`);
     }
   }
 }

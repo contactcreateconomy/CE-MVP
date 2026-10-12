@@ -91,6 +91,9 @@ function CategoryLucideIcon({
 
 interface NewPostComposerProps {
   categories: Category[];
+  /** Type chosen in the Start sheet (/new-post?type=…, FEED-U3) — wins over
+   *  the default and over a restored draft's type. */
+  initialType?: CategoryKey | null;
 }
 
 function MenuBtn({
@@ -128,7 +131,7 @@ function setTipTapPlaceholder(editor: NonNullable<ReturnType<typeof useEditor>>,
   editor.view.dispatch(editor.state.tr);
 }
 
-export function NewPostComposer({ categories }: NewPostComposerProps) {
+export function NewPostComposer({ categories, initialType = null }: NewPostComposerProps) {
   const router = useRouter();
   const { authStatus, openAuthModal } = useAuth();
   // B2 (founder-approved Section-B rec, 2026-09-06; executed 2026-09-10):
@@ -142,8 +145,12 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
     [categories],
   );
   const defaultCategory = useMemo(
-    () => composableCategories.find((c) => !c.lockedByDefault)?.key ?? composableCategories[0]?.key ?? "review",
-    [composableCategories],
+    () =>
+      (initialType && composableCategories.some((c) => c.key === initialType) ? initialType : null) ??
+      composableCategories.find((c) => !c.lockedByDefault)?.key ??
+      composableCategories[0]?.key ??
+      "review",
+    [composableCategories, initialType],
   );
   const [categoryKey, setCategoryKey] = useState<CategoryKey>(defaultCategory);
   const [title, setTitle] = useState("");
@@ -275,7 +282,7 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
       if (!parsed || typeof parsed.editorHtml !== "string") return;
       if (titleRef.current.trim() !== "" || editor.getText().trim() !== "") return;
       draftRestoredRef.current = true;
-      if (parsed.categoryKey && composableCategories.some((c) => c.key === parsed.categoryKey)) {
+      if (!initialType && parsed.categoryKey && composableCategories.some((c) => c.key === parsed.categoryKey)) {
         setCategoryKey(parsed.categoryKey);
       }
       setTitle(typeof parsed.title === "string" ? parsed.title : "");
@@ -295,7 +302,7 @@ export function NewPostComposer({ categories }: NewPostComposerProps) {
     } catch {
       /* ignore corrupt draft */
     }
-  }, [composableCategories, editor, showToast]);
+  }, [composableCategories, editor, initialType, showToast]);
 
   useLayoutEffect(() => {
     if (!editor) return;

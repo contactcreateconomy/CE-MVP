@@ -77,6 +77,8 @@ glow/track               glow/primary-track    0 0 6px hsl(199 89% 48% / 0.5), 0
 
 ### 2.2a Glass (NEW — S00-T02, D-007)
 
+> **Retired — L-68 (FEED-U3, 2026-10-12).** The `glass-*` tokens and utilities are deleted; the shell uses the neutral `frost-*` family (`frost-strong` / `frost-subtle` / `frost-look`, no saturate). The rows below are history. The layer rules in the paragraph that follows still hold for frost.
+
 Glass (translucent surface + blur) is chrome-only: top bar, tab bar, sheets, modals. Max **2 stacked glass layers**; a sheet opened over glass chrome sets the chrome behind it to solid.
 
 ```
