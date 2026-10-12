@@ -194,7 +194,7 @@ function TopNavInner({
         data-testid="menu-island"
         className={cn(
           "relative mx-auto w-full max-w-250 rounded-xl border border-border-subtle",
-          sheetOpen ? "bg-surface" : "frost-strong",
+          sheetOpen ? "bg-bg-surface" : "frost-strong",
         )}
       >
         {/* Deeper shadow once scrolled: a shadow-lg layer that fades in

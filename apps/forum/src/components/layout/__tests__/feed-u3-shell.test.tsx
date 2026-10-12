@@ -107,16 +107,41 @@ describe("1 · menu island (§9.1, L-68)", () => {
     expect(header).toHaveClass("sticky", "top-2", "lg:top-3");
   });
 
-  it("L-88 — turns solid (bg-surface, no frost) while the Start sheet is open, frost returns on close", () => {
-    render(<TopNav />);
-    const island = screen.getByTestId("menu-island");
-    expect(island).toHaveClass("frost-strong");
-    act(() => useStartSheet.getState().show("rail"));
-    expect(island).toHaveClass("bg-surface");
-    expect(island).not.toHaveClass("frost-strong");
-    act(() => useStartSheet.getState().hide());
-    expect(island).toHaveClass("frost-strong");
-    expect(island).not.toHaveClass("bg-surface");
+  it("L-88 — while the Start sheet is open the island's computed background is the surface token, not transparent", () => {
+    // The chain, from the real CSS sources: Tailwind's .bg-bg-surface →
+    // var(--color-bg-surface) → var(--bg-surface) → a real hsl colour in both
+    // themes (tokens.css, module-level read). jsdom cannot resolve var()
+    // chains, so we inject Tailwind's generated rule verbatim and require the
+    // computed background to reference the surface token: "" means no
+    // background rule matched at all (the invalid `bg-surface` class bug).
+    const surfaceDecl = (scope: string) =>
+      tokens
+        .slice(tokens.indexOf(scope))
+        .match(/--bg-surface:\s*([^;]+);/)?.[1]
+        ?.trim();
+    const light = surfaceDecl(":root {");
+    const dark = surfaceDecl(".dark {");
+    expect(light).toMatch(/^hsl\(|^rgb\(|^#/);
+    expect(light).not.toContain("transparent");
+    expect(dark).toMatch(/^hsl\(|^rgb\(|^#/);
+    expect(tokens).toMatch(/--color-bg-surface:\s*var\(--bg-surface\)/);
+
+    const style = document.createElement("style");
+    style.textContent = ".bg-bg-surface { background-color: var(--color-bg-surface); }";
+    document.head.appendChild(style);
+    try {
+      render(<TopNav />);
+      const island = screen.getByTestId("menu-island");
+      act(() => useStartSheet.getState().show("rail"));
+      expect(island).not.toHaveClass("frost-strong"); // no blur under the sheet
+      const open = getComputedStyle(island).backgroundColor;
+      expect(open).toBe("var(--color-bg-surface)"); // resolves to the surface colour
+      expect(open).not.toBe("");
+      act(() => useStartSheet.getState().hide());
+      expect(getComputedStyle(island).backgroundColor).not.toBe("var(--color-bg-surface)");
+    } finally {
+      style.remove();
+    }
   });
 
   it("uses tokens only — no raw rgba / white-alpha / glass in the island", () => {
