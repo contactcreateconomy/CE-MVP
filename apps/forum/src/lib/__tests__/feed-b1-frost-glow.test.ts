@@ -74,7 +74,6 @@ const ALLOWED_STATE_GLOW: Record<string, number> = {
   "apps/forum/src/components/ui/combobox.tsx": 1, // popover open
   "apps/forum/src/components/new-post/new-post-composer.tsx": 1, // active type indicator
   "apps/forum/src/components/layout/left-sidebar.tsx": 1, // active category indicator
-  "apps/forum/src/components/feed/trend-sorter.tsx": 1, // active sort pill
   "apps/forum/src/components/layout/podium-widget.tsx": 1, // active window pill
 };
 
@@ -101,4 +100,15 @@ describe("no glow at rest (L-38)", () => {
     }
     expect(found).toEqual(ALLOWED_STATE_GLOW);
   });
+});
+
+/* ── Sorter pill (L-70) ─────────────────────────────────────────────── */
+describe("sorter active pill = solid brand, no glow (L-70)", () => {
+  for (const f of ["apps/forum/src/components/feed/feed-tabs.tsx", "apps/forum/src/components/feed/trend-sorter.tsx"]) {
+    it(f.split("/").pop()!, () => {
+      const code = readFileSync(join(REPO, f), "utf8").replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, "");
+      expect(code).not.toMatch(/glow/);
+      expect(code).toMatch(/bg-brand-primary/);
+    });
+  }
 });
