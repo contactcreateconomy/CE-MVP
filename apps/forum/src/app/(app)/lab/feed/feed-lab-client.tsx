@@ -19,6 +19,10 @@ interface LabFeedClientProps {
 /** Local-state stand-in for the wiring GLM builds on /feed. */
 export function LabFeedClient({ initialState, forcedTheme, showToolbar, typeFilter, heroMode }: LabFeedClientProps) {
   const { setTheme, resolvedTheme } = useTheme();
+  // next-themes resolves the theme on the client only — label after mount
+  // (same fix as /lab/foundation; avoids the SSR hydration mismatch).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const [listState, setListState] = useState<FeedListState>(initialState);
   const [sort, setSort] = useState<FeedSort>("top");
   const [podiumWindow, setPodiumWindow] = useState<FeedPodiumWindow>("d7");
@@ -80,7 +84,7 @@ export function LabFeedClient({ initialState, forcedTheme, showToolbar, typeFilt
             className="rounded-full px-2 py-1 text-text-secondary hover:text-text-primary"
             onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
           >
-            {resolvedTheme === "dark" ? "Dark" : "Light"}
+            {!mounted ? "Theme" : resolvedTheme === "dark" ? "Dark" : "Light"}
           </button>
           {(["ready", "loading", "empty"] as const).map((s) => (
             <button
