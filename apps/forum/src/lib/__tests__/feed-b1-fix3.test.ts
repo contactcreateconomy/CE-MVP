@@ -39,7 +39,11 @@ describe("L-73 frost carries its layer shadow (Bible §3.1)", () => {
       const hc = block(block(utilities, `@utility ${name} {`), "@media (prefers-contrast: more)");
       expect(hc, "missing @media (prefers-contrast: more)").not.toBe("");
       expect(hc).toMatch(/background:\s*var\(--bg-surface\)/);
-      expect(hc).toMatch(/border:\s*1px solid var\(--border-prominent\)/);
+      // 1px border/prominent drawn as an inset outline: tokens.css has an UNLAYERED
+      // `* { border-color: transparent }` that beats every utility-layer border colour,
+      // and an outline also adds no layout shift in high-contrast mode.
+      expect(hc).toMatch(/outline:\s*1px solid var\(--border-prominent\)/);
+      expect(hc).toMatch(/outline-offset:\s*-1px/);
       if (name !== "frost-look") expect(hc).toMatch(/backdrop-filter:\s*none/);
     });
   }

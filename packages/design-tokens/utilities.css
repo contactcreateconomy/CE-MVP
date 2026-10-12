@@ -673,7 +673,8 @@ main {
     background: var(--bg-surface);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    border: 1px solid var(--border-prominent);
+    outline: 1px solid var(--border-prominent); /* not border: an unlayered `* { border-color }` would win */
+    outline-offset: -1px;
   }
 }
 
@@ -699,7 +700,8 @@ main {
     background: var(--bg-surface);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    border: 1px solid var(--border-prominent);
+    outline: 1px solid var(--border-prominent); /* not border: an unlayered `* { border-color }` would win */
+    outline-offset: -1px;
   }
 }
 
@@ -713,7 +715,8 @@ main {
 
   @media (prefers-contrast: more) {
     background: var(--bg-surface);
-    border: 1px solid var(--border-prominent);
+    outline: 1px solid var(--border-prominent); /* not border: an unlayered `* { border-color }` would win */
+    outline-offset: -1px;
   }
 }
 

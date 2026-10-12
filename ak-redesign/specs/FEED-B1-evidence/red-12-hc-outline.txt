@@ -1,0 +1,5 @@
+     × .frost-look: prefers-contrast: more → solid + 1px border/prominent 6ms
+     × .frost-subtle: prefers-contrast: more → solid + 1px border/prominent 1ms
+     × .frost-strong: prefers-contrast: more → solid + 1px border/prominent 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  3 failed | 7 passed (10)
