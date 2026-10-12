@@ -100,20 +100,6 @@ export function LabUtilitiesClient() {
           )}
         </Row>
 
-        <Row title=".pulse-live — live state only, 2000 ms pulse">
-          {(cls) => (
-            <div
-              data-testid="pulse-live-demo"
-              className={cn(
-                "pulse-live inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm text-(--text-primary)",
-                cls,
-              )}
-            >
-              <span className="h-2 w-2 rounded-full bg-(--brand-primary)" /> Live now
-            </div>
-          )}
-        </Row>
-
         <Row title=".glass-chrome — subtle glass over content" glass>
           {(cls) => <GlassDemo cls={cls} testId="glass-chrome-demo" utility="glass-chrome" label="glass-chrome bar" />}
         </Row>

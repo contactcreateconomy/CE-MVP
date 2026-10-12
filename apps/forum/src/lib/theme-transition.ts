@@ -2,7 +2,13 @@
  * theme-transition — the theme switch (FEED-DESIGN L-67, Bible §9.4).
  *
  *   Iris (the chosen switch) — the new theme opens as a circle from the
- *   toggle the user pressed (origin = button centre), 500ms, --ease-emerge.
+ *   toggle the user pressed (origin = button centre), 360ms
+ *   (--duration-modal-in, L-75: ≤ 400ms), --ease-emerge.
+ *
+ * Accepted exception (L-75) to Bible §9.2 rule 2 (never block input) and
+ * rule 5 (animate transform/opacity only): a View Transition holds input for
+ * its duration and Iris animates clip-path. Kept short (≤ 400ms) because the
+ * switch is rare and user-caused; reduced motion uses a crossfade instead.
  *
  * Uses the View Transitions API (CSS in packages/design-tokens/utilities.css,
  * keyed on html[data-theme-switch]). No support → instant. Reduced motion →

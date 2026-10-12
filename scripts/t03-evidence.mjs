@@ -8,6 +8,10 @@
  *     (computed-style asserted + screenshot)
  * Writes to ak-redesign/specs/S00-evidence/T03/ and prints a summary meant
  * for the BUILD report. Edge channel (Playwright CDN unavailable here).
+ *
+ * HISTORICAL (S00-T03): .pulse-live was deleted by FEED-DESIGN L-76 (no
+ * sustained pulses), so its assertions below no longer apply — re-running
+ * this script fails on the missing pulse-live-demo row by design.
  */
 import { chromium } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
