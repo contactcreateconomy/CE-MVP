@@ -10,8 +10,12 @@
  * is allowed only for selected/active/open states, listed below with why.
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import { join, relative, resolve, sep } from "node:path";
 import { describe, expect, it } from "vitest";
+
+// normalize to forward slashes so the lab exclusion and the allowlist keys
+// below hold on Windows, where join()/relative() yield backslash paths
+const toPosix = (p: string) => p.split(sep).join("/");
 
 const REPO = resolve(__dirname, "../../../../..");
 const utilities = readFileSync(join(REPO, "packages/design-tokens/utilities.css"), "utf8");
@@ -79,7 +83,7 @@ const ALLOWED_STATE_GLOW: Record<string, number> = {
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
+    const p = toPosix(join(dir, e));
     if (e === "__tests__" || e === "node_modules" || p.includes("/app/(app)/lab")) continue;
     if (statSync(p).isDirectory()) walk(p, out);
     else if (/\.(tsx|ts)$/.test(e)) out.push(p);
@@ -94,7 +98,7 @@ describe("no glow at rest (L-38)", () => {
       const src = readFileSync(f, "utf8");
       for (const m of src.matchAll(GLOW)) {
         if (STATE_VARIANT.test(m[1] ?? "")) continue;
-        const rel = relative(REPO, f);
+        const rel = toPosix(relative(REPO, f));
         found[rel] = (found[rel] ?? 0) + 1;
       }
     }
