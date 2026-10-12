@@ -27,14 +27,6 @@ import { FeedPageView, type FeedListState } from "./feed-page-view";
 
 type SortMode = FeedSort;
 
-/** FEED-DESIGN §9.4 window notes (L-07: no config key exists yet — spec copy). */
-const SORT_NOTES: Record<SortMode, string> = {
-  top: "Top · best of the last month",
-  hot: "Hot · accelerating this week",
-  new: "New · last 24 hours",
-  fav: "Fav · new activity on what you saved or joined",
-};
-
 export function CanonicalFeedClient({ initialTypeFilter = null }: { initialTypeFilter?: string | null }) {
   const configured = isConvexConfigured();
   const router = useRouter();
@@ -131,7 +123,6 @@ export function CanonicalFeedClient({ initialTypeFilter = null }: { initialTypeF
         resetWalk();
       }}
       favNew={false /* D-13: no Fav-activity source yet */}
-      sortNotes={SORT_NOTES}
       listState={listState}
       cards={cards}
       hiddenIds={hiddenIds}

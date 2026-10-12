@@ -91,9 +91,9 @@ export function toCardData(raw: any, typeLabel: TypeLabel, now = Date.now()): Fe
     coverImageUrl: raw.coverImage ?? null,
     facet: facet(raw.facet),
     whyCare: whyCare(raw),
-    // Interim: Gravity = the legitimacy-weighted positive signal on the score
-    // row until the Gravity engine (L-60/L-64) lands with B2/B3.
-    gravity: Math.round(raw.engagement?.valuable ?? 0),
+    // L-83: the public G count renders nothing until the Gravity engine
+    // (L-60/L-64) lands with B2a — the valuable-score stand-in is gone.
+    gravity: null,
     strings: raw.engagement?.replies ?? 0,
     discussing: raw.discussingCount ?? 0,
     participants: (raw.participants ?? []).map(person),

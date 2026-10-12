@@ -111,3 +111,14 @@ describe("L-78 — media overlay tokens", () => {
     expect(hero).toMatch(/text-on-media/);
   });
 });
+
+describe("L-84 — /feed shows no sorter notes until the real windows exist", () => {
+  it("the product container passes no sortNotes; the mechanism stays for the lab", () => {
+    const client = read("apps/forum/src/components/feed/canonical-feed-client.tsx");
+    expect(client).not.toMatch(/SORT_NOTES/);
+    expect(client).not.toMatch(/sortNotes=/);
+    // the mechanism is kept: the view still accepts an optional notes prop
+    const view = read("apps/forum/src/components/feed/feed-page-view.tsx");
+    expect(view).toMatch(/sortNotes\?:/);
+  });
+});

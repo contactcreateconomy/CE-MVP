@@ -114,8 +114,10 @@ export interface FeedCardData {
   coverImageUrl: string | null;
   facet?: FeedFacet | null;
   whyCare?: FeedWhyCare | null;
-  /** Public Gravity (L-59/L-64). 0 → no number shown. */
-  gravity: number;
+  /** Public Gravity (L-59/L-64). null until the Gravity engine (L-83), 0 → no
+   *  number shown; the adapter always sends null for now (lab fixtures may
+   *  still pass a number to demo the display). */
+  gravity: number | null;
   /** Strings = comments (L-65). */
   strings: number;
   /** Distinct humans in the discussion. Not shown on the card (L-82: faces

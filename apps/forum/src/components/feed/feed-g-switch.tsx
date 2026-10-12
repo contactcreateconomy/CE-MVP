@@ -10,7 +10,7 @@ import { formatGravity, gSwitchReason } from "./feed-format";
 import type { FeedViewerInteractions } from "./feed-display-types";
 
 export interface FeedGSwitchProps {
-  gravity: number;
+  gravity: number | null;
   viewer: FeedViewerInteractions;
   /** Tap G = appreciate (L-63). Absent → the switch is display-only. */
   onAppreciate?: () => void;

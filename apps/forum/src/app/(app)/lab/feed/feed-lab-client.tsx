@@ -85,7 +85,7 @@ export function LabFeedClient({ initialState, forcedTheme, showToolbar, typeFilt
           onAppreciate: () =>
             patch(card.id, (c) => ({
               viewer: { ...c.viewer, appreciated: !c.viewer.appreciated },
-              gravity: c.gravity + (c.viewer.appreciated ? -1 : 1),
+              gravity: (c.gravity ?? 0) + (c.viewer.appreciated ? -1 : 1),
             })),
           onToggleSaved: () => patch(card.id, (c) => ({ viewer: { ...c.viewer, saved: !c.viewer.saved } })),
           onShare: () => {},

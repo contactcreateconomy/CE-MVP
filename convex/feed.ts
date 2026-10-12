@@ -264,10 +264,10 @@ export const getChrome = query({
         coverImage: seo?.ogImageAssetId ? ((await ctx.storage.getUrl(seo.ogImageAssetId as any)) ?? null) : null, // CR-010a — the hero reads active.coverImage
         title: slot.headlineOverride ?? post.title,
         ctaLabel: slot.ctaLabel ?? null,
-        // FEED-U2 additive: frame summary + type; slot media wins over the post cover.
+        // FEED-U2 additive: frame summary + type; slot media wins over the post cover (L-85 fallback).
         summary: slot.textOverride ?? (await ctx.db.query("cardSummaries").withIndex("by_postId", (q: any) => q.eq("postId", post._id)).unique())?.oneLiner ?? null,
         type: post.type,
-        mediaUrl: slot.mediaAssetId ? await resolveImageUrl(ctx, slot.mediaAssetId) : null,
+        mediaUrl: await resolveImageUrl(ctx, slot.mediaAssetId ?? seo?.ogImageAssetId ?? null),
         disclosureClass: slot.disclosureClass,
         isCommunityTop: slot.disclosureClass === "community_top",
       });

@@ -22,13 +22,18 @@ describe("toCardData", () => {
     const c = toCardData(rawCard, labels, NOW);
     expect(c).toMatchObject({
       id: "p1", href: "/discussions/cursor-review-abc", type: "review", typeLabel: "Review", title: "Cursor after six months",
-      timeLabel: "2h", coverImageUrl: "https://cdn.test/c.jpg", gravity: 18, strings: 23, discussing: 24, viewer: { saved: true },
+      timeLabel: "2h", coverImageUrl: "https://cdn.test/c.jpg", gravity: null, strings: 23, discussing: 24, viewer: { saved: true },
       author: { name: "Rachel Moore", handle: "rachel", avatarUrl: "https://cdn.test/a.jpg", isPersona: false, isEditorial: false, levelLabel: "Moon" },
       facet: { kind: "review", tool: { name: "Cursor", price: "$20/mo" }, verdict: 4, community: 4.4, pro: "Fast", con: "Caps" },
       whyCare: { kind: "comment", author: "lina", body: "the checklist saved me a week" },
     });
     expect(c.participants).toEqual([{ name: "Lina Park", handle: "lina", avatarUrl: null, isPersona: false, isEditorial: false, levelLabel: null }]);
     expect(c.topicLabel).toBeNull(); // no source yet (L-23)
+  });
+
+  it("L-83 — no G count until the Gravity engine (B2a): the valuable-score stand-in renders nothing", () => {
+    // rawCard.engagement.valuable = 17.6 — the interim mapping must be gone.
+    expect(toCardData(rawCard, labels, NOW).gravity).toBeNull();
   });
 
   it("an old payload (no additive fields) still renders, with nothing invented", () => {

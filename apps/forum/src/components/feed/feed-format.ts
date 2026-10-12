@@ -8,9 +8,10 @@ const full = new Intl.NumberFormat("en-US");
 
 /** L-62 — Gravity is written as a unit, never the word: "18G", full digits
  *  up to 9,999 ("1,240G"), above that "12.4K G" with a thin space so it never
- *  reads as kilograms. 0 → null: nothing is shown until someone adds Gravity. */
-export function formatGravity(n: number): string | null {
-  if (!Number.isFinite(n) || n <= 0) return null;
+ *  reads as kilograms. 0 → null: nothing is shown until someone adds Gravity.
+ *  null = no Gravity engine yet (L-83) — also renders nothing. */
+export function formatGravity(n: number | null): string | null {
+  if (n == null || !Number.isFinite(n) || n <= 0) return null;
   if (n <= 9999) return `${full.format(Math.round(n))}G`;
   const [div, unit] = n >= 1_000_000 ? [1_000_000, "M"] : [1000, "K"];
   const v = Math.round((n / div) * 10) / 10;

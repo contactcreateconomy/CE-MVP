@@ -177,8 +177,17 @@ describe("getChrome additive payload (FEED-U2)", () => {
     const t = makeT();
     await seed(t);
     const chrome: any = await t.query(api.feed.getChrome, {});
-    expect(chrome.hero[0]).toMatchObject({ title: "A review post", summary: "Six months in", type: "review", isCommunityTop: true, slug: "a-review", mediaUrl: null });
+    expect(chrome.hero[0]).toMatchObject({ title: "A review post", summary: "Six months in", type: "review", isCommunityTop: true, slug: "a-review" });
     expect(chrome.hero[0].coverImage).toMatch(/^https?:\/\//);
     expect(chrome.vibing[0]).toMatchObject({ title: "A debate post", slug: "a-debate", postType: "debate", humans: 512 });
+  });
+
+  it("L-85 — hero mediaUrl falls back to the post's cover when the slot has none", async () => {
+    const t = makeT();
+    await seed(t);
+    const chrome: any = await t.query(api.feed.getChrome, {});
+    // the seeded slot carries no mediaAssetId; the review post has a stored cover
+    expect(chrome.hero[0].mediaUrl).toMatch(/^https?:\/\//);
+    expect(chrome.hero[0].mediaUrl).toBe(chrome.hero[0].coverImage);
   });
 });
