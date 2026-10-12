@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-11T17:19:03.571Z",
+ "generatedAt": "2026-10-12T12:43:16.357Z",
  "scanRoot": "convex",
  "tableCount": 177,
  "note": "patch/replace/delete attribution is heuristic (block queries T + contains the op). class: demo_seed = convex/{demoWorld,seed,dev}/**.",
@@ -814,7 +814,13 @@
     {
      "fn": "FEED_CARD_ACTION_EVENT_ROW",
      "file": "convex/feed.ts",
-     "line": 34,
+     "line": 35,
+     "class": "prod"
+    },
+    {
+     "fn": "getChrome",
+     "file": "convex/feed.ts",
+     "line": 242,
      "class": "prod"
     }
    ]
@@ -1162,7 +1168,7 @@
     {
      "fn": "list",
      "file": "convex/feed.ts",
-     "line": 132,
+     "line": 139,
      "class": "prod"
     },
     {
@@ -1252,7 +1258,7 @@
     {
      "fn": "list",
      "file": "convex/feed.ts",
-     "line": 132,
+     "line": 139,
      "class": "prod"
     },
     {
@@ -1852,6 +1858,12 @@
      "file": "convex/demoWorld/importEngagement.ts",
      "line": 213,
      "class": "demo_seed"
+    },
+    {
+     "fn": "facetOf",
+     "file": "convex/lib/feedPayload.ts",
+     "line": 118,
+     "class": "prod"
     },
     {
      "fn": "cast",
@@ -2460,6 +2472,12 @@
      "class": "prod"
     },
     {
+     "fn": "resolveImageUrl",
+     "file": "convex/lib/feedPayload.ts",
+     "line": 13,
+     "class": "prod"
+    },
+    {
      "fn": "getMetrics",
      "file": "convex/profile/metrics.ts",
      "line": 35,
@@ -2746,7 +2764,7 @@
     {
      "fn": "getWhy",
      "file": "convex/feed.ts",
-     "line": 328,
+     "line": 360,
      "class": "prod"
     },
     {
@@ -2762,7 +2780,7 @@
     {
      "fn": "FEED_CARD_ACTION_EVENT_ROW",
      "file": "convex/feed.ts",
-     "line": 34,
+     "line": 35,
      "ops": [
       "insert"
      ],
@@ -2773,7 +2791,7 @@
     {
      "fn": "FEED_CARD_ACTION_EVENT_ROW",
      "file": "convex/feed.ts",
-     "line": 34,
+     "line": 35,
      "class": "prod"
     }
    ]
@@ -2922,7 +2940,7 @@
     {
      "fn": "getChrome",
      "file": "convex/feed.ts",
-     "line": 235,
+     "line": 242,
      "class": "prod"
     },
     {
@@ -3340,7 +3358,7 @@
     {
      "fn": "getChrome",
      "file": "convex/feed.ts",
-     "line": 235,
+     "line": 242,
      "class": "prod"
     },
     {
@@ -4999,13 +5017,13 @@
     {
      "fn": "getWhy",
      "file": "convex/feed.ts",
-     "line": 328,
+     "line": 360,
      "class": "prod"
     },
     {
      "fn": "list",
      "file": "convex/feed.ts",
-     "line": 132,
+     "line": 139,
      "class": "prod"
     },
     {
@@ -5295,6 +5313,12 @@
      "file": "convex/dev/demoSeed.ts",
      "line": 814,
      "class": "demo_seed"
+    },
+    {
+     "fn": "facetOf",
+     "file": "convex/lib/feedPayload.ts",
+     "line": 118,
+     "class": "prod"
     },
     {
      "fn": "getDetail",
@@ -5892,13 +5916,13 @@
     {
      "fn": "FEED_CARD_ACTION_EVENT_ROW",
      "file": "convex/feed.ts",
-     "line": 34,
+     "line": 35,
      "class": "prod"
     },
     {
      "fn": "getChrome",
      "file": "convex/feed.ts",
-     "line": 235,
+     "line": 242,
      "class": "prod"
     },
     {
@@ -6163,7 +6187,7 @@
     {
      "fn": "getChrome",
      "file": "convex/feed.ts",
-     "line": 235,
+     "line": 242,
      "class": "prod"
     },
     {
@@ -6629,7 +6653,7 @@
     {
      "fn": "cardAction",
      "file": "convex/feed.ts",
-     "line": 360,
+     "line": 392,
      "ops": [
       "insert"
      ],
@@ -7137,7 +7161,13 @@
     {
      "fn": "list",
      "file": "convex/feed.ts",
-     "line": 132,
+     "line": 139,
+     "class": "prod"
+    },
+    {
+     "fn": "viewerState",
+     "file": "convex/lib/feedPayload.ts",
+     "line": 204,
      "class": "prod"
     },
     {
@@ -9500,7 +9530,7 @@
     {
      "fn": "getChrome",
      "file": "convex/feed.ts",
-     "line": 235,
+     "line": 242,
      "class": "prod"
     },
     {
@@ -9551,7 +9581,7 @@
     {
      "fn": "getChrome",
      "file": "convex/feed.ts",
-     "line": 235,
+     "line": 242,
      "class": "prod"
     }
    ]
@@ -9628,7 +9658,7 @@
     {
      "fn": "getChrome",
      "file": "convex/feed.ts",
-     "line": 235,
+     "line": 242,
      "class": "prod"
     },
     {
