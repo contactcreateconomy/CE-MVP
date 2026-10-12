@@ -1,9 +1,11 @@
 "use client";
 
 import { lazy, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { isConvexConfigured } from "@cemvp/convex-client";
 import { useSharedData } from "@/providers/shared-data-context";
+import { composerTypeFromParam } from "@/lib/new-post/composer-type-param";
 import type { Category } from "@/types";
 
 const NewPostComposer = lazy(() =>
@@ -14,6 +16,8 @@ const NewPostComposer = lazy(() =>
 
 function NewPostPageWithConvex() {
   const { categories, categoriesLoading } = useSharedData();
+  // FEED-U3: the Start sheet routes here with ?type=<chosen post type>.
+  const initialType = composerTypeFromParam(useSearchParams().get("type"));
 
   if (categoriesLoading) {
     return (
@@ -31,7 +35,7 @@ function NewPostPageWithConvex() {
         </div>
       }
     >
-      <NewPostComposer categories={categories as Category[]} />
+      <NewPostComposer categories={categories as Category[]} initialType={initialType} />
     </Suspense>
   );
 }
