@@ -17,6 +17,7 @@ import { api } from "@/lib/convex";
 import { isConvexConfigured } from "@cemvp/convex-client";
 import { useSharedData } from "@/providers/shared-data-context";
 import { motionFor, usePrefersReducedMotion } from "@/lib/motion";
+import { useStartSheet } from "@/stores/start-sheet-store";
 import { applyTheme, runThemeSwitch } from "@/lib/theme-transition";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@cemvp/auth-ui";
@@ -150,6 +151,7 @@ function TopNavInner({
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   // §9.1: the island deepens its shadow after 8px of scroll (settle spring).
   const scrolled = useScroll(8);
+  const sheetOpen = useStartSheet((s) => s.open);
   const logoReveal = useFirstLoadLogoReveal();
   const springs = motionFor(reducedMotion).springs;
 
@@ -186,7 +188,15 @@ function TopNavInner({
           scrolled ? "opacity-100" : "opacity-0",
         )}
       />
-      <div data-testid="menu-island" className="frost-strong relative mx-auto w-full max-w-250 rounded-xl border border-border-subtle">
+      {/* L-88 (Bible §3.2 r3): while the Start sheet (L3 frost + scrim) is
+          open, the island behind it goes solid — bg-surface, no blur. */}
+      <div
+        data-testid="menu-island"
+        className={cn(
+          "relative mx-auto w-full max-w-250 rounded-xl border border-border-subtle",
+          sheetOpen ? "bg-surface" : "frost-strong",
+        )}
+      >
         {/* Deeper shadow once scrolled: a shadow-lg layer that fades in
             (opacity only — Bible §9.2 r5); reduced motion → crossfade. */}
         <motion.div

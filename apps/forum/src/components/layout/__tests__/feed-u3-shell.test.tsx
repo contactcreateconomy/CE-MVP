@@ -107,6 +107,18 @@ describe("1 · menu island (§9.1, L-68)", () => {
     expect(header).toHaveClass("sticky", "top-2", "lg:top-3");
   });
 
+  it("L-88 — turns solid (bg-surface, no frost) while the Start sheet is open, frost returns on close", () => {
+    render(<TopNav />);
+    const island = screen.getByTestId("menu-island");
+    expect(island).toHaveClass("frost-strong");
+    act(() => useStartSheet.getState().show("rail"));
+    expect(island).toHaveClass("bg-surface");
+    expect(island).not.toHaveClass("frost-strong");
+    act(() => useStartSheet.getState().hide());
+    expect(island).toHaveClass("frost-strong");
+    expect(island).not.toHaveClass("bg-surface");
+  });
+
   it("uses tokens only — no raw rgba / white-alpha / glass in the island", () => {
     expect(topNavSrc).not.toMatch(/rgba\(|bg-white\/|border-white\/|glass-|GlowingEffect/);
   });
