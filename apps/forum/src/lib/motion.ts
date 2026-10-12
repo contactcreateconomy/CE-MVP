@@ -5,7 +5,7 @@
  * ({opacity 0, blur 10px, scale 0.985, y 6px} → sharp), children stagger 50ms.
  *
  * Three spring families — pick by WHO caused the change and HOW BIG it is:
- *   feedback  520/34  presses, toggles (≤150ms feel)
+ *   feedback  520/46  presses, toggles — critically damped, never overshoots (L-72)
  *   settle    260/30  user-caused state changes (200–300ms)
  *   glide     140/22  large surfaces, one-time data reveals (400–800ms, once)
  *
@@ -27,7 +27,8 @@ import { useSyncExternalStore } from "react";
 import type { Transition, Variants } from "motion/react";
 
 export const SPRINGS = {
-  feedback: { type: "spring", stiffness: 520, damping: 34 },
+  // Taps are critically damped (L-72, Bible §9.3): ratio = 46 / (2·√520) ≈ 1.01 → no overshoot.
+  feedback: { type: "spring", stiffness: 520, damping: 46 },
   settle: { type: "spring", stiffness: 260, damping: 30 },
   glide: { type: "spring", stiffness: 140, damping: 22 },
 } as const satisfies Record<string, Transition>;
