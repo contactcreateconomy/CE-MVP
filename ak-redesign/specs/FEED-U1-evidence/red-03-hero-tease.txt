@@ -1,0 +1,4 @@
+     × tease → reveal finishes (frame 1 sharpens instead of staying blurred) 144ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected 'teasing' to be 'ready' // Object.is equality
+      Tests  1 failed | 1 passed (2)

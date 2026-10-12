@@ -1,512 +1,345 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState, type RefObject, type WheelEvent } from "react";
-import { AnimatePresence, motion, useReducedMotion, type PanInfo } from "motion/react";
+import { useCallback, useEffect, useRef, useState, type WheelEvent } from "react";
+import { AnimatePresence, motion, useInView, type PanInfo } from "motion/react";
 import { ArrowUpRight, ChevronLeft, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
 
+import { Skeleton } from "@/components/ui/skeleton";
+import { SPRINGS, motionFor, usePrefersReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 import type { FeedHeroSlide } from "./feed-display-types";
 import { postTypeMeta } from "./feed-post-type-meta";
 
 /*
- * Polymorphic desktop hero (lg+ only — mobile starts with the feed, D-017).
- * prototype-v2 `top-post-hero-carousel.tsx` on S00 tokens. Two states:
- *  - default: 3D cover-flow (focus card + 2 receding cards each side) over
- *    an ambient blur of the active cover;
- *  - compact: half height, a 4-card cascade on the left and the slide text
- *    on the right.
- * Motion physics are the prototype's (JS springs, not CSS tokens). Every
- * spatial motion collapses to opacity under prefers-reduced-motion, and
- * autoplay stops (WCAG 2.2.2).
+ * Desktop hero — a trailer for what's best right now (FEED-DESIGN §9.2,
+ * founder-approved Make geometry). lg+ only; mobile starts with the feed
+ * (D-017).
+ *  - large (L-43): centred cover-flow, text overlaid on the active frame;
+ *    side frames scale 0.8 + brightness 0.45 + a slight turn, never blurred
+ *    (L-40, R-07); neutral frost, no colour bleed (R-05).
+ *  - compact: a cascade on the left, the frame text on the right.
+ * Never auto-rotates (L-31, R-06): arrows, ← →, trackpad (wheel lockout) and
+ * drag. Frame 1 plays tease → reveal once per session. Reduced motion: no
+ * 3D, only the active frame, crossfades.
  */
 
-const SLIDE_INTERVAL_MS = 5200;
-const BASE_SPRING = { type: "spring", stiffness: 300, damping: 30, mass: 1 } as const;
-const TAP_SPRING = { type: "spring", stiffness: 450, damping: 18, mass: 1 } as const;
-const COLLAPSE_SPRING = { type: "spring", stiffness: 200, damping: 28, mass: 1.2 } as const;
-const CASCADE_SPRING = { type: "spring", stiffness: 180, damping: 25, mass: 0.9 } as const;
-const TEXT_SPRING = { type: "spring", stiffness: 280, damping: 28, mass: 0.9 } as const;
+type Mode = "default" | "compact";
 
-const SWIPE_CONFIDENCE = 8000;
+const HEIGHT: Record<Mode, number> = { default: 360, compact: 208 };
+const CARD: Record<Mode, { w: number; h: number }> = { default: { w: 480, h: 270 }, compact: { w: 256, h: 144 } };
+const COMPACT_STAGE_W = 380;
+const SIDE_GAP = 28; // side frames never touch the active frame
 const WHEEL_LOCKOUT_MS = 400;
 const WHEEL_THRESHOLD = 20;
+const TEASE_KEY = "cc-hero-tease";
 
-const X_STRIDE = 440;
-const Z_STRIDE = 160;
-const ROTATE_Y_DEG = 12;
-const MAX_SIDE = 2;
-const TOP_PAD = 16;
-const BOTTOM_PAD = 20;
-
-const DEFAULT_H = 440;
-const DEFAULT_H_XL = 520;
-const COMPACT_H = 220;
-const COMPACT_H_XL = 260;
-const CASCADE_STEP = 96;
-/** 2% soft fade at the stage's left/right edges (v2). */
-const EDGE_MASK = "linear-gradient(to right, transparent 0%, black 2%, black 98%, transparent 100%)";
-
-interface Layout {
-  cardW: number;
-  cardH: number;
-  focusX: number;
-  alignLeft: number;
+function frameTarget(mode: Mode, offset: number, reduced: boolean) {
+  const { w, h } = CARD[mode];
+  const d = Math.abs(offset);
+  if (mode === "default") {
+    // Active frame sits high so the CTA row below stays clear.
+    const base = { width: w, height: h, x: offset * (w / 2 + SIDE_GAP + (w * 0.8) / 2) - w / 2, y: -h / 2 - 21 };
+    if (reduced) return { ...base, x: -w / 2, opacity: d === 0 ? 1 : 0 };
+    return { ...base, z: -d * 60, rotateY: -offset * 14, scale: d ? 0.8 : 1, opacity: 1, filter: `brightness(${d ? 0.45 : 1})` };
+  }
+  const base = { width: w, height: h, x: COMPACT_STAGE_W / 2 - w - 12 - offset * 56, y: -h / 2 };
+  if (reduced) return { ...base, x: COMPACT_STAGE_W / 2 - w - 12, opacity: d === 0 ? 1 : 0 };
+  return { ...base, z: -offset * 70, rotateY: offset * 10, scale: 1 - offset * 0.14, opacity: [1, 1, 0.9][d], filter: `brightness(${[1, 0.55, 0.42][d]})` };
 }
 
-const FALLBACK_LAYOUT: Layout = { cardW: 549, cardH: 275, focusX: -40, alignLeft: 260 };
-
-function cardTransform(offset: number, focusX: number) {
-  const dist = Math.abs(offset);
-  return {
-    x: focusX - offset * X_STRIDE,
-    z: -dist * Z_STRIDE,
-    rotateY: offset * ROTATE_Y_DEG,
-    scale: dist === 0 ? 1 : dist === 1 ? 0.5 : 0.35,
-    opacity: dist === 0 ? 1 : dist === 1 ? 0.55 : 0.14,
-    blur: dist === 0 ? 0 : dist === 1 ? 8 : 16,
-    brightness: dist === 0 ? 1 : dist === 1 ? 0.45 : 0.2,
-  };
+function visibleOffsets(mode: Mode, n: number) {
+  if (mode === "compact") return Array.from({ length: Math.min(n, 3) }, (_, i) => i);
+  const before = Math.min(1, Math.floor((n - 1) / 2));
+  const after = Math.min(1, n - 1 - before);
+  return Array.from({ length: before + after + 1 }, (_, i) => i - before);
 }
 
-function Cover({ slide, className }: { slide: FeedHeroSlide; className?: string }) {
-  const meta = postTypeMeta(slide.type);
+function sessionOnce(key: string): boolean {
+  try {
+    if (sessionStorage.getItem(key)) return false;
+    sessionStorage.setItem(key, "1");
+  } catch {
+    return false;
+  }
+  return true;
+}
+
+function Cover({ slide }: { slide: FeedHeroSlide }) {
   return slide.imageUrl ? (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={slide.imageUrl} alt="" className={cn("absolute inset-0 size-full object-cover", className)} />
+    <img src={slide.imageUrl} alt="" draggable={false} className="block size-full select-none bg-bg-overlay object-cover" />
   ) : (
-    <div className={cn("absolute inset-0 flex items-center justify-center bg-linear-135 from-bg-surface to-bg-overlay", className)}>
-      <div className={cn("absolute inset-0", meta.wash)} />
-      <meta.Icon className={cn("relative size-14 opacity-60", meta.text)} aria-hidden />
+    <div className="relative size-full bg-linear-135 from-bg-surface to-bg-overlay">
+      <div className={cn("absolute inset-0", postTypeMeta(slide.type).wash)} />
     </div>
   );
 }
 
-function NavPill({ index, count, onPrev, onNext }: { index: number; count: number; onPrev: () => void; onNext: () => void }) {
-  const btn =
-    "focus-ring flex size-7 items-center justify-center rounded-full text-text-secondary transition-colors duration-normal hover:bg-bg-overlay hover:text-text-primary";
-  return (
-    <div className="glass-chrome flex items-center gap-0.5 rounded-full border border-border-default p-1">
-      <button type="button" onClick={onPrev} aria-label="Previous featured post" className={btn}>
-        <ChevronLeft className="size-4" />
-      </button>
-      <span className="min-w-[4ch] text-center text-caption tabular-nums text-text-secondary" aria-live="polite">
-        {index + 1} / {count}
-      </span>
-      <button type="button" onClick={onNext} aria-label="Next featured post" className={btn}>
-        <ChevronRight className="size-4" />
-      </button>
-    </div>
-  );
-}
-
-function ExploreButton({ slide }: { slide: FeedHeroSlide }) {
+function Cta({ slide, revealed, reduced }: { slide: FeedHeroSlide; revealed: boolean; reduced: boolean }) {
   return (
     <Link
       href={slide.href}
-      aria-label={`${slide.ctaLabel}: ${slide.title}`}
-      className="glass-chrome focus-ring inline-flex items-center gap-1.5 rounded-full border border-border-default px-4 py-2 text-body-sm font-semibold text-text-primary transition-[border-color,box-shadow] duration-slow group-hover/hero:glow-active group-hover/hero:border-brand-primary"
+      className="hover:glow-cta active:glow-active focus-ring inline-flex h-9 items-center gap-1.5 rounded-full bg-brand-primary px-4 text-body-sm font-semibold text-text-inverse transition-[background-color,box-shadow,scale] duration-normal hover:bg-brand-primary-hover active:scale-97 active:duration-press"
     >
       {slide.ctaLabel}
-      <ArrowUpRight className="size-3.5 transition-colors duration-slow group-hover/hero:text-brand-primary" />
+      {/* L-38: the arrow pulses 3× after the reveal, then rests. */}
+      <motion.span
+        aria-hidden
+        className="inline-flex"
+        animate={revealed && !reduced ? { x: [0, 2, 0], y: [0, -2, 0] } : undefined}
+        transition={{ duration: 0.5, repeat: 2, ease: "easeOut", delay: 0.3 }}
+      >
+        <ArrowUpRight className="size-3.5" strokeWidth={2} />
+      </motion.span>
     </Link>
+  );
+}
+
+const controlBtn =
+  "focus-ring inline-flex size-7.5 items-center justify-center rounded-full text-text-secondary transition-[background-color,color,scale] duration-normal hover:bg-bg-overlay hover:text-text-primary active:scale-97 active:duration-press";
+
+function Counter({ index, n, go }: { index: number; n: number; go: (d: 1 | -1) => void }) {
+  return (
+    <div className="flex items-center rounded-full border border-border-subtle bg-bg-surface/60">
+      <button type="button" aria-label="Previous" onClick={() => go(-1)} className={controlBtn}>
+        <ChevronLeft className="size-3.75" strokeWidth={1.5} />
+      </button>
+      <span className="min-w-9 text-center font-mono text-micro tabular-nums text-text-secondary" aria-live="polite">
+        {index + 1} / {n}
+      </span>
+      <button type="button" aria-label="Next" onClick={() => go(1)} className={controlBtn}>
+        <ChevronRight className="size-3.75" strokeWidth={1.5} />
+      </button>
+    </div>
   );
 }
 
 export interface FeedHeroCarouselProps {
   slides: FeedHeroSlide[];
-  /** Element the focus card aligns to (v2: the sort control). Optional —
-   *  without it a fixed fallback geometry is used. */
-  alignToRef?: RefObject<HTMLElement | null>;
-  /** Starting state; the member toggles with the minimize/maximize control. */
-  initialMode?: "default" | "compact";
+  /** Initial state; the viewer toggles it (never changes on scroll). */
+  initialMode?: Mode;
   className?: string;
 }
 
-export function FeedHeroCarousel({ slides, alignToRef, initialMode = "default", className }: FeedHeroCarouselProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [direction, setDirection] = useState<1 | -1>(1);
-  const [isPaused, setIsPaused] = useState(false);
-  const [mode, setMode] = useState<"default" | "compact">(initialMode);
-  const [layout, setLayout] = useState<Layout>(FALLBACK_LAYOUT);
-  const [isXl, setIsXl] = useState(false);
-  const heroRef = useRef<HTMLDivElement>(null);
+export function FeedHeroCarousel({ slides, initialMode = "default", className }: FeedHeroCarouselProps) {
+  const reduced = usePrefersReducedMotion();
+  const m = motionFor(reduced);
+  const [mode, setMode] = useState<Mode>(initialMode);
+  const [index, setIndex] = useState(0);
+  const [settledId, setSettledId] = useState<string | null>(null);
+  const [teasing, setTeasing] = useState<boolean | null>(null); // null = not yet in view
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { amount: 0.5 });
   const wheelLocked = useRef(false);
-  const reduceMotion = useReducedMotion() ?? false;
-  const count = slides.length;
+  const n = slides.length;
+  const active = slides[index % Math.max(n, 1)];
 
-  // xl height switch (440 → 520), tracked live.
+  // Tease → reveal: frame 1, first time in view, once per session.
   useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1280px)");
-    const sync = () => setIsXl(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
-  }, []);
-
-  // Focus card = width of the align target, centred over it (v2 measures the sorter).
+    if (teasing !== null || !inView) return;
+    setTeasing(!reduced && sessionOnce(TEASE_KEY));
+  }, [inView, teasing, reduced]);
+  // The reveal timer has its own effect: in the one above, setTeasing(true)
+  // re-runs the effect and its cleanup would cancel the reveal (stuck blur).
   useEffect(() => {
-    function measure() {
-      const hero = heroRef.current;
-      const target = alignToRef?.current;
-      if (!hero || !target) return;
-      const h = hero.getBoundingClientRect();
-      const t = target.getBoundingClientRect();
-      const cardW = Math.round(t.width);
-      setLayout({
-        cardW,
-        cardH: Math.round(cardW * 0.5),
-        focusX: t.left + t.width / 2 - (h.left + h.width / 2),
-        alignLeft: Math.round(t.left - h.left),
-      });
-    }
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, [alignToRef]);
+    if (teasing !== true) return;
+    const t = window.setTimeout(() => setTeasing(false), 900);
+    return () => window.clearTimeout(t);
+  }, [teasing]);
 
-  useEffect(() => {
-    if (count <= 1 || isPaused || reduceMotion) return;
-    const id = window.setInterval(() => {
-      setDirection(1);
-      setActiveIndex((i) => (i + 1) % count);
-    }, SLIDE_INTERVAL_MS);
-    return () => window.clearInterval(id);
-  }, [count, isPaused, reduceMotion]);
-
-  const goNext = useCallback(() => {
-    setDirection(1);
-    setActiveIndex((i) => (i + 1) % count);
-  }, [count]);
-  const goPrev = useCallback(() => {
-    setDirection(-1);
-    setActiveIndex((i) => (i - 1 + count) % count);
-  }, [count]);
-
-  // Horizontal wheel / trackpad swipe only (v2 also maps vertical wheel,
-  // which fights page scroll — flagged in S02-SPEC §4).
-  const handleWheel = useCallback(
-    (e: WheelEvent) => {
-      if (mode !== "default" || wheelLocked.current) return;
-      if (Math.abs(e.deltaX) < WHEEL_THRESHOLD || Math.abs(e.deltaX) < Math.abs(e.deltaY)) return;
-      if (e.deltaX > 0) goNext();
-      else goPrev();
-      wheelLocked.current = true;
-      window.setTimeout(() => {
-        wheelLocked.current = false;
-      }, WHEEL_LOCKOUT_MS);
+  const go = useCallback(
+    (dir: 1 | -1) => {
+      if (n < 2) return;
+      setSettledId(null);
+      setIndex((i) => (i + dir + n) % n);
     },
-    [goNext, goPrev, mode],
+    [n],
   );
 
-  const handleDragEnd = useCallback(
-    (_: unknown, info: PanInfo) => {
-      const power = Math.abs(info.offset.x) * info.velocity.x;
-      if (power < -SWIPE_CONFIDENCE) goNext();
-      else if (power > SWIPE_CONFIDENCE) goPrev();
-    },
-    [goNext, goPrev],
-  );
+  if (n === 0) return null;
 
-  if (count === 0) return null;
+  const onWheel = (e: WheelEvent) => {
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) || Math.abs(e.deltaX) < WHEEL_THRESHOLD || wheelLocked.current) return;
+    wheelLocked.current = true;
+    window.setTimeout(() => (wheelLocked.current = false), WHEEL_LOCKOUT_MS);
+    go(e.deltaX > 0 ? 1 : -1);
+  };
+  const onDragEnd = (_: unknown, info: PanInfo) => {
+    if (Math.abs(info.offset.x) * Math.abs(info.velocity.x) > 8000 || Math.abs(info.offset.x) > 80) go(info.offset.x < 0 ? 1 : -1);
+  };
 
-  const active = slides[activeIndex % count];
-  const activeMeta = postTypeMeta(active.type);
-  const defaultH = isXl ? DEFAULT_H_XL : DEFAULT_H;
-  const compactH = isXl ? COMPACT_H_XL : COMPACT_H;
-  const { cardW, cardH, focusX, alignLeft } = layout;
-
-  // Never show the same slide twice: side depth shrinks with small sets.
-  const side = Math.min(MAX_SIDE, Math.floor((count - 1) / 2));
-  const offsets = Array.from({ length: side * 2 + 1 }, (_, i) => i - side);
-
-  const compactCardH = Math.round((compactH - 24) * 0.88);
-  const compactCardW = Math.round((compactCardH * 16) / 9);
-  const cascade = Array.from({ length: Math.min(4, count) }, (_, i) => ({
-    slide: slides[(activeIndex + i) % count],
-    position: i,
-    idx: (activeIndex + i) % count,
-  }));
-  const cascadeAreaW = compactCardW + CASCADE_STEP * (cascade.length - 1) + 16;
-  const compactLeftPad = Math.max(0, Math.round(alignLeft - (cascadeAreaW - compactCardW)));
-
-  const fade = { duration: reduceMotion ? 0.15 : 0.2 };
+  const ready = teasing === false;
+  const textShown = ready && (reduced || settledId === active.id);
+  const large = mode === "default";
 
   return (
-    <motion.section
-      ref={heroRef}
-      className={cn("group/hero relative select-none overflow-hidden rounded-hero bg-bg-surface", className)}
-      style={{ height: defaultH }}
-      animate={{ height: mode === "default" ? defaultH : compactH }}
-      transition={reduceMotion ? { duration: 0 } : COLLAPSE_SPRING}
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onFocusCapture={() => setIsPaused(true)}
-      onBlurCapture={() => setIsPaused(false)}
-      onWheel={handleWheel}
-      aria-roledescription="carousel"
-      aria-label="Featured posts"
+    <section
+      aria-label="Highlights"
+      data-hero-state={teasing === false ? "ready" : teasing ? "teasing" : "waiting"}
+      className={cn("frost-strong relative overflow-hidden rounded-xl border border-border-subtle transition-[height] duration-slow ease-out-cubic motion-reduce:transition-none", className)}
+      style={{ height: HEIGHT[mode] }}
     >
-      {/* Ambient background: the active cover, heavily blurred, cross-fading. */}
-      <div className="absolute inset-0 overflow-hidden" aria-hidden>
-        <AnimatePresence mode="popLayout">
-          <motion.div
-            key={active.id}
-            className="absolute inset-0"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: reduceMotion ? 0.15 : 0.6 }}
-          >
-            {active.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={active.imageUrl} alt="" className="size-full scale-110 object-cover opacity-55 blur-3xl saturate-150" />
-            ) : (
-              <div className={cn("absolute inset-x-[10%] inset-y-[5%] rounded-full blur-3xl", activeMeta.wash)} />
-            )}
-            <div className="absolute inset-0 bg-linear-to-t from-bg-surface via-bg-surface/50 via-28% to-transparent to-58%" />
-            <div className="absolute inset-0 bg-radial from-transparent from-38% to-bg-surface/80" />
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      <AnimatePresence mode="wait" initial={false}>
-        {mode === "default" ? (
-          <motion.div
-            key="default"
-            className="absolute inset-0"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={fade}
-          >
-            {/* 3D stage */}
-            <div
-              className="absolute inset-x-0 z-10 flex items-center justify-center perspective-distant"
-              style={{ top: TOP_PAD, bottom: BOTTOM_PAD, perspectiveOrigin: "42% 50%", maskImage: EDGE_MASK, WebkitMaskImage: EDGE_MASK }}
-            >
-              <motion.div
-                className="absolute inset-0 cursor-grab active:cursor-grabbing"
-                drag="x"
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={0.12}
-                onDragEnd={handleDragEnd}
-                aria-hidden
-              />
-
-              {offsets.map((offset) => {
-                const dist = Math.abs(offset);
-                const slide = slides[(activeIndex + offset + count) % count];
-                const t = cardTransform(offset, focusX);
-                const isCenter = offset === 0;
+      <div
+        ref={ref}
+        tabIndex={0}
+        role="region"
+        aria-roledescription="showcase"
+        aria-label="Best on Createconomy right now"
+        onKeyDown={(e) => {
+          if (e.key === "ArrowRight") go(1);
+          if (e.key === "ArrowLeft") go(-1);
+        }}
+        onWheel={onWheel}
+        className="focus-ring absolute inset-0 flex items-stretch rounded-xl"
+      >
+        {/* stage */}
+        <motion.div
+          className="relative shrink-0 touch-pan-y"
+          initial={false}
+          animate={{ width: large ? "100%" : COMPACT_STAGE_W }}
+          transition={reduced ? { duration: 0 } : SPRINGS.glide}
+          style={{
+            perspective: large ? 1200 : 900,
+            perspectiveOrigin: large ? "50% 50%" : "70% 50%",
+            maskImage: "linear-gradient(to right, transparent, black 6%, black 94%, transparent)",
+          }}
+          drag={n > 1 ? "x" : false}
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.1}
+          dragSnapToOrigin
+          onDragEnd={onDragEnd}
+        >
+          <div className="absolute left-1/2 top-1/2" style={{ transformStyle: "preserve-3d" }}>
+            <AnimatePresence initial={false}>
+              {visibleOffsets(mode, n).map((o) => {
+                const slide = slides[(index + o + n) % n];
+                const center = o === 0;
+                const t = frameTarget(mode, o, reduced);
+                const tease = center && teasing !== false && !reduced;
                 return (
                   <motion.div
                     key={slide.id}
-                    className="absolute transform-3d"
-                    style={{ zIndex: isCenter ? 20 : 10 - dist }}
-                    initial={{ opacity: 0 }}
-                    animate={
-                      reduceMotion
-                        ? { x: t.x, opacity: t.opacity }
-                        : { x: t.x, z: t.z, rotateY: t.rotateY, scale: t.scale, opacity: t.opacity }
-                    }
-                    transition={BASE_SPRING}
-                    whileTap={isCenter && !reduceMotion ? { scale: 0.97, transition: TAP_SPRING } : undefined}
+                    className="absolute left-0 top-0 overflow-hidden rounded-xl"
+                    style={{ transformStyle: "preserve-3d", zIndex: 10 - Math.abs(o) }}
+                    initial={{ ...t, opacity: 0 }}
+                    animate={tease ? { ...t, scale: 1.07, filter: "blur(14px) brightness(0.6)" } : t}
+                    exit={{ opacity: 0, transition: { duration: 0.2 } }}
+                    transition={reduced ? { duration: 0.2 } : SPRINGS.glide}
+                    onAnimationComplete={() => {
+                      if (center && !tease) setSettledId(slide.id);
+                    }}
                   >
-                    <motion.div
-                      className={cn(
-                        "relative overflow-hidden rounded-2xl",
-                        isCenter ? "pointer-events-auto shadow-2xl" : "pointer-events-none shadow-lg",
-                      )}
-                      style={{ width: cardW, height: cardH }}
-                      animate={{ filter: reduceMotion ? "none" : `blur(${t.blur}px) brightness(${t.brightness})` }}
-                      transition={BASE_SPRING}
-                    >
+                    <div className={cn("relative size-full rounded-xl", center ? "shadow-lg" : "shadow-md", slide.featured && "ring-1 ring-inset ring-border-active")}>
                       <Cover slide={slide} />
-                      {isCenter ? (
-                        <>
-                          <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-bg-surface/90 via-bg-surface/45 via-30% to-transparent to-68%" />
-                          <AnimatePresence mode="wait">
-                            <motion.div
-                              key={`overlay-${slide.id}`}
-                              className="absolute inset-x-0 bottom-0 z-10 px-5 pb-5 pt-10"
-                              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
-                              animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
-                              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
-                              transition={{ duration: 0.28, ease: "easeOut" }}
-                            >
-                              <p className="mb-1 text-overline font-bold uppercase text-brand-primary">{slide.eyebrow}</p>
-                              <h2 className="line-clamp-2 text-heading-md font-bold text-text-primary">{slide.title}</h2>
-                            </motion.div>
-                          </AnimatePresence>
-                          <Link
-                            href={slide.href}
-                            aria-label={`Open: ${slide.title}`}
-                            className="focus-ring absolute inset-0 z-20 rounded-2xl"
-                          />
-                        </>
+                      {slide.featured ? (
+                        // L-30: promoted is always labelled.
+                        <span className="absolute left-2.5 top-2.5 rounded-full bg-bg-surface-elevated/90 px-2 py-0.5 font-mono text-micro font-medium uppercase tracking-wider text-text-primary">
+                          Featured
+                        </span>
                       ) : null}
-                    </motion.div>
+                      <AnimatePresence>
+                        {large && center && textShown ? (
+                          <motion.div
+                            key={slide.id}
+                            variants={m.stagger}
+                            initial="hidden"
+                            animate="visible"
+                            exit={{ opacity: 0, transition: { duration: 0.15 } }}
+                            className="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-linear-to-t from-bg-canvas/90 via-bg-canvas/55 to-transparent px-5 pb-4 pt-16"
+                          >
+                            <motion.p variants={m.focusPull} className="font-mono text-micro font-medium uppercase tracking-widest text-brand-primary">
+                              {slide.eyebrow}
+                            </motion.p>
+                            <motion.h2 variants={m.focusPull} className="line-clamp-2 text-heading-md font-semibold text-text-primary">
+                              {slide.title}
+                            </motion.h2>
+                            {slide.summary ? (
+                              <motion.p variants={m.focusPull} className="truncate text-body-sm text-text-secondary">
+                                {slide.summary}
+                              </motion.p>
+                            ) : null}
+                          </motion.div>
+                        ) : null}
+                      </AnimatePresence>
+                    </div>
                   </motion.div>
                 );
               })}
-            </div>
+            </AnimatePresence>
+          </div>
+        </motion.div>
 
-            <div className="absolute bottom-6 right-7 z-30 flex items-center gap-2.5">
-              {count > 1 ? <NavPill index={activeIndex} count={count} onPrev={goPrev} onNext={goNext} /> : null}
-              <ExploreButton slide={active} />
-            </div>
+        {/* compact: text beside the cascade */}
+        {!large ? (
+          <div className="relative flex min-w-0 flex-1 items-center pl-2 pr-14">
+            <AnimatePresence mode="wait">
+              {textShown ? (
+                <motion.div key={active.id} variants={m.stagger} initial="hidden" animate="visible" exit={{ opacity: 0 }} className="flex min-w-0 flex-col gap-1.5">
+                  <motion.p variants={m.focusPull} className="font-mono text-micro font-medium uppercase tracking-widest text-brand-primary">
+                    {active.eyebrow}
+                  </motion.p>
+                  <motion.h2 variants={m.focusPull} className="line-clamp-2 text-heading-sm font-semibold text-text-primary">
+                    {active.title}
+                  </motion.h2>
+                  {active.summary ? (
+                    <motion.p variants={m.focusPull} className="line-clamp-1 text-body-sm text-text-secondary">
+                      {active.summary}
+                    </motion.p>
+                  ) : null}
+                  <motion.div variants={m.focusPull} className="mt-2">
+                    <Cta slide={active} revealed={textShown} reduced={reduced} />
+                  </motion.div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+          </div>
+        ) : null}
 
-            <button
-              type="button"
-              onClick={() => setMode("compact")}
-              aria-label="Switch to compact view"
-              className="glass-chrome focus-ring absolute right-3 top-3 z-40 flex size-7 items-center justify-center rounded-full border border-border-default opacity-0 transition-[opacity,box-shadow] duration-normal hover:glow-active hover:opacity-100! focus-visible:opacity-100 group-hover/hero:opacity-50"
-            >
-              <Minimize2 className="size-3.5 text-text-secondary" />
-            </button>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="compact"
-            className="absolute inset-0"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ ...fade, delay: reduceMotion ? 0 : 0.06 }}
+        {/* controls */}
+        <div className="absolute right-3 top-3">
+          <button
+            type="button"
+            aria-label={large ? "Make smaller" : "Make larger"}
+            onClick={() => setMode(large ? "compact" : "default")}
+            className={controlBtn}
           >
-            <button
-              type="button"
-              onClick={() => setMode("default")}
-              aria-label="Switch to full view"
-              className="glass-chrome focus-ring absolute right-3 top-3 z-50 flex size-7 items-center justify-center rounded-full border border-border-default opacity-40 transition-[opacity,box-shadow] duration-normal hover:glow-active hover:opacity-100 focus-visible:opacity-100"
-            >
-              <Maximize2 className="size-3.5 text-text-secondary" />
-            </button>
-
-            <div className="absolute inset-0 flex items-stretch py-3" style={{ paddingRight: compactLeftPad }}>
-              {/* Cascade: active in front + up to 3 upcoming fanned to the left */}
-              <div
-                className="relative shrink-0 -translate-x-[2%] perspective-[900px]"
-                style={{ width: cascadeAreaW, marginLeft: compactLeftPad, perspectiveOrigin: "70% 50%" }}
-              >
-                <AnimatePresence mode="popLayout">
-                  {cascade.map(({ slide, position, idx }) => {
-                    const isFront = position === 0;
-                    const deep = { x: -300, z: -300, rotateY: 28, scale: 0.32, opacity: 0, filter: "blur(8px) brightness(0.38)" };
-                    const near = { x: -120, z: -140, rotateY: 16, scale: 0.55, opacity: 0, filter: "blur(6px) brightness(0.45)" };
-                    return (
-                      <motion.div
-                        key={slide.id}
-                        className="absolute right-0 transform-3d"
-                        style={{ top: `calc(50% - ${compactCardH / 2}px)`, zIndex: 10 - position }}
-                        initial={reduceMotion ? { opacity: 0 } : direction === 1 ? deep : near}
-                        animate={
-                          reduceMotion
-                            ? { x: 0, opacity: isFront ? 1 : 0 }
-                            : {
-                                x: -position * CASCADE_STEP,
-                                z: -position * 80,
-                                rotateY: position * 10,
-                                scale: 1 - position * 0.16,
-                                opacity: isFront ? 1 : Math.max(0.4, 0.8 - position * 0.2),
-                                filter: isFront ? "none" : `blur(${position * 1.2}px) brightness(${1 - position * 0.12})`,
-                              }
-                        }
-                        exit={reduceMotion ? { opacity: 0 } : direction === 1 ? near : deep}
-                        transition={reduceMotion ? { duration: 0.15 } : CASCADE_SPRING}
-                      >
-                        <div
-                          className={cn("relative overflow-hidden rounded-xl", isFront ? "shadow-xl" : "shadow-lg")}
-                          style={{ width: compactCardW, height: compactCardH }}
-                        >
-                          <Cover slide={slide} />
-                          {isFront ? (
-                            <>
-                              <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-bg-surface/55 to-transparent to-50%" />
-                              <Link
-                                href={slide.href}
-                                aria-label={`Open: ${slide.title}`}
-                                className="focus-ring absolute inset-0 z-10 rounded-xl"
-                              />
-                            </>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setDirection(1);
-                                setActiveIndex(idx);
-                              }}
-                              aria-label={`View: ${slide.title}`}
-                              className="focus-ring absolute inset-0 z-10 cursor-pointer rounded-xl"
-                            />
-                          )}
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </AnimatePresence>
-              </div>
-
-              <div className="relative flex min-w-0 flex-1 flex-col justify-between py-3 pl-6">
-                <div className="relative min-h-0 flex-1 overflow-hidden">
-                  <AnimatePresence initial={false} custom={direction} mode="sync">
-                    <motion.div
-                      key={active.id}
-                      custom={direction}
-                      initial={reduceMotion ? { opacity: 0 } : { x: direction * 56, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      exit={reduceMotion ? { opacity: 0 } : { x: direction * -56, opacity: 0 }}
-                      transition={reduceMotion ? { duration: 0.15 } : TEXT_SPRING}
-                      className="absolute inset-0 flex flex-col gap-1 pt-2"
-                    >
-                      <p className="mb-1 text-overline font-bold uppercase text-brand-primary">{active.eyebrow}</p>
-                      <h3 className="line-clamp-2 text-heading-sm font-bold text-text-primary xl:text-heading-md">
-                        {active.title}
-                      </h3>
-                      {active.summary ? (
-                        <p className="mt-2 line-clamp-4 text-body-sm text-text-secondary">{active.summary}</p>
-                      ) : null}
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
-                <div className="flex shrink-0 items-center gap-2.5 pt-2">
-                  {count > 1 ? <NavPill index={activeIndex} count={count} onPrev={goPrev} onNext={goNext} /> : null}
-                  <ExploreButton slide={active} />
-                </div>
-              </div>
+            {large ? <Minimize2 className="size-3.5" strokeWidth={1.5} /> : <Maximize2 className="size-3.5" strokeWidth={1.5} />}
+          </button>
+        </div>
+        <div className="absolute bottom-3 right-3 flex items-center gap-3">
+          {n > 1 ? <Counter index={index} n={n} go={go} /> : null}
+          {large ? (
+            <div className="flex h-9 items-center">
+              <AnimatePresence mode="wait">
+                {textShown ? (
+                  <motion.div key={active.id} variants={m.focusPull} initial="hidden" animate="visible" exit={{ opacity: 0 }}>
+                    <Cta slide={active} revealed={textShown} reduced={reduced} />
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.section>
+          ) : null}
+        </div>
+      </div>
+    </section>
   );
 }
 
-/** v2 `TopPostHeroCarouselSkeleton` (loading state while hero data resolves). */
 export function FeedHeroCarouselSkeleton({ className }: { className?: string }) {
-  const pulse = "animate-pulse motion-reduce:animate-none";
   return (
-    <div
-      className={cn("relative h-110 overflow-hidden rounded-hero border border-border-subtle bg-bg-surface xl:h-130", className)}
-      aria-busy="true"
-      aria-label="Loading featured posts"
-    >
-      <div className={cn("absolute inset-0 bg-bg-overlay/10", pulse)} />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className={cn("relative h-69 w-full max-w-137 overflow-hidden rounded-2xl bg-bg-overlay/40 shadow-sm", pulse)}>
-          <div className="absolute inset-x-0 bottom-0 px-5 pb-5 pt-10">
-            <div className="mb-2.5 h-2 w-16 rounded-sm bg-bg-overlay/60" />
-            <div className="mb-1.5 h-4 w-3/4 rounded-sm bg-bg-overlay/60" />
-            <div className="h-4 w-1/2 rounded-sm bg-bg-overlay/60" />
-          </div>
+    <section aria-busy="true" aria-label="Highlights loading" className={cn("frost-strong flex h-46 items-center gap-6 overflow-hidden rounded-xl border border-border-subtle p-5", className)}>
+      <Skeleton className="h-full w-65 shrink-0 rounded-lg" />
+      <div className="flex flex-1 flex-col gap-3">
+        <Skeleton className="h-2.5 w-20 rounded-full" />
+        <Skeleton className="h-4 w-2/3" />
+        <Skeleton className="h-3 w-5/6" />
+        <div className="mt-6 flex gap-2">
+          <Skeleton className="h-8 w-20 rounded-full" />
+          <Skeleton className="h-8 w-24 rounded-full" />
         </div>
       </div>
-      <div className="absolute bottom-6 right-7 flex items-center gap-2.5">
-        <div className={cn("h-9 w-22 rounded-full bg-bg-overlay/60", pulse)} />
-        <div className={cn("h-9 w-24 rounded-full bg-bg-overlay/60", pulse)} />
-      </div>
-    </div>
+    </section>
   );
 }

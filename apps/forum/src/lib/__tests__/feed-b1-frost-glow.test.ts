@@ -108,10 +108,16 @@ describe("no glow at rest (L-38)", () => {
 
 /* ── Sorter pill (L-70) ─────────────────────────────────────────────── */
 describe("sorter active pill = solid brand, no glow (L-70)", () => {
-  for (const f of ["apps/forum/src/components/feed/feed-tabs.tsx", "apps/forum/src/components/feed/trend-sorter.tsx"]) {
+  // L-47: Fav's letters may glow on new activity — the ONLY glow class allowed on the sorter.
+  const cases: Array<[string, string[]]> = [
+    ["apps/forum/src/components/feed/feed-tabs.tsx", ["glow-text-new"]],
+    ["apps/forum/src/components/feed/trend-sorter.tsx", []],
+  ];
+  for (const [f, allowed] of cases) {
     it(f.split("/").pop()!, () => {
       const code = readFileSync(join(REPO, f), "utf8").replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, "");
-      expect(code).not.toMatch(/glow/);
+      const glowClasses = [...new Set(code.match(/(?:[\w-]+:)*(?:shadow-glow[\w-]*|glow-[\w-]+|electric-glow)/g) ?? [])];
+      expect(glowClasses).toEqual(allowed);
       expect(code).toMatch(/bg-brand-primary/);
     });
   }
