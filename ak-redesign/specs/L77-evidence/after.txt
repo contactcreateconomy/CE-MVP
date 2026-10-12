@@ -1,0 +1,8 @@
+after dark lab-feed: themed-border elements with a visible colour = 48/48
+after dark signin: themed-border elements with a visible colour = 0/0
+after dark lab-foundation: themed-border elements with a visible colour = 16/16
+after dark landing: themed-border elements with a visible colour = 2/2
+after light lab-feed: themed-border elements with a visible colour = 48/48
+after light signin: themed-border elements with a visible colour = 0/0
+after light lab-foundation: themed-border elements with a visible colour = 16/16
+after light landing: themed-border elements with a visible colour = 2/2

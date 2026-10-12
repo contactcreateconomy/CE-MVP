@@ -580,7 +580,11 @@
   --scrim: hsl(0 0% 0% / 0.4);
 }
 
-* {
-  @apply border-transparent;
+/* L-77: layered, so utility-layer border colours (border-border-*) win.
+   Unlayered, this reset beat every themed border (regression since S00-T01). */
+@layer base {
+  * {
+    @apply border-transparent;
+  }
 }
 

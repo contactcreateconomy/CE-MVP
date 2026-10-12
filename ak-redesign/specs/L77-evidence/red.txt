@@ -1,0 +1,4 @@
+     × the * border reset sits inside @layer base 7ms
+     × no unlayered top-level * rule remains 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  2 failed (2)
