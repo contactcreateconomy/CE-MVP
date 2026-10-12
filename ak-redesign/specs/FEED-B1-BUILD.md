@@ -106,3 +106,30 @@ Also found (outside B1): `/lab/feed` throws a hydration error — `feed-lab-clie
 ```
 - 2026-10-12 — FEED-B1 fix round (FEED-B1-BUILD.md "Round 2"): L-72 feedback spring 520/46 (ratio ≈1.01; motion spring peak 1.0000, 95% at 212ms); L-70 sorter pill solid brand, no glow (feed-tabs, trend-sorter; test-fenced); L-67 Iris is the product theme switch (top-nav), Horizon kept lab-only at ?v=b. Bible audit gaps G1–G11 reported: PROPOSED L-73 (layer shadow baked into frost utilities), L-74 (Button press 0.97 + --duration-press 100ms); prefers-contrast fallback for frost missing; Iris = accepted exception to §9.2 rules 2 & 5 (to record).
 ```
+
+---
+
+# Round 3 — FEED-B1 FIX-3 (2026-10-12)
+
+**Source note:** the prompt cites DESIGN-BIBLE **v1.1** and FEED-DESIGN **L-73…L-76**; neither is committed on any branch (`feed-base` still has Bible v1, decisions up to L-72). Built from the prompt's wording; Bible citations below are v1 section numbers.
+
+## What changed
+| Decision | Change | Proof (RED → GREEN) |
+|---|---|---|
+| **L-73** layer shadow + high contrast | `frost-look` = inset highlight + `shadow-xs` (L1); `frost-subtle` / `frost-strong` += `shadow-md` (L2); L3 sheets add `shadow-lg` at the call site. All three: `@media (prefers-contrast: more)` → `bg-surface`, no blur, **1px `border/prominent` edge drawn as `outline` + `outline-offset:-1px`** (see finding F-1 for why not `border`) | `red-10`/`red-12` → `green-10`/`green-12`; browser `computed-styles-fix3.txt` (shadows at rest; HC: solid bg, `backdrop=none`, outline 1px #333 dark / #d4d4d8 light), `frost-prefers-contrast-more-{dark,light}@1x.png` |
+| **L-74** press | `--duration-press: 100ms` (tokens.css) + `@utility duration-press` + STYLE-KIT row; forum `Button` and auth-ui `Button`: `active:scale-97 active:duration-press`, and `scale`/`translate` added to the transition lists (Tailwind v4 makes them their own properties — the existing hover lift was snapping because only `transform` was listed) | `red-10` → `green-10` (both Buttons rendered); browser: pressed Primary `scale=0.97`, `transition-duration=0.1s`; released `scale=none` |
+| **L-75** Iris ≤ 400ms | Iris now `--duration-modal-in` (360ms); exception to Bible §9.2 rules 2 + 5 documented at the top of `theme-transition.ts` | test resolves the Iris animation's token from tokens.css: was 500 → 360 |
+| **L-76** no pulses, solid focus | Deleted `@keyframes pulse-glow`, `.animate-pulse-glow`, `@keyframes glow-live-pulse`, `@utility pulse-live` (+ reduced-motion mention). Users checked: forum code none; `/lab/utilities` demo row removed; `scripts/t03-evidence.mjs` (historical S00-T03) annotated as obsolete. Dark `--glow-focus` = `0 0 0 2px hsl(199 89% 48%)` = light | test: no pulse names in shared CSS; dark focus token = light and matches solid 2px; browser: input focus-visible `rgb(13,162,231) 0 0 0 2px` |
+| **#5** `/lab/feed` hydration | `feed-lab-client.tsx` theme label after mount | `red-11` (real "Hydration failed…" from `hydrateRoot`) → `green-11`; browser console clean dark + light |
+
+Gate: lint 0 (forum + admin) · typecheck 0 (forum + admin) · forum tests **76 files / 1013 tests ✅**.
+
+## Findings (not fixed — need a decision)
+- **F-1 (important, app-wide, pre-existing since S00-T01 `3513442`):** `packages/design-tokens/tokens.css:583` `* { @apply border-transparent; }` is **unlayered**, so it beats every Tailwind utility-layer `border-*` colour. Measured on `/lab/feed`: every `border-border-default` / `border-border-active` element computes `border-color: rgba(0,0,0,0)` — **no themed border colour renders anywhere in the forum**. Fix = wrap it in `@layer base { … }` (one line), but it makes borders appear on every screen at once → founder/PM call (**PROPOSED L-77**), then a visual pass.
+- `--glow-live` / `--duration-pulse` tokens are now unused by shared CSS (kept; delete with STYLE-KIT approval). Parked `apps/seller` + `apps/marketplace` keep their own copies of `.animate-pulse-glow` in their own globals (parked — not touched).
+- `/lab/feed`'s `?theme=` effect still re-forces the theme on each toggle (the second bug noted in round 2; outside this prompt).
+
+## Lines to append to FEED-DESIGN.md §17
+```
+- 2026-10-12 — FEED-B1 fix-3 (FEED-B1-BUILD.md "Round 3"): L-73 frost-look+shadow-xs, frost-subtle/strong+shadow-md, prefers-contrast:more → solid + 1px border/prominent (drawn as inset outline); L-74 --duration-press 100ms (+STYLE-KIT), forum + auth-ui Button scale 0.97 on :active; L-75 Iris 360ms, exception noted; L-76 pulse-live/animate-pulse-glow deleted, dark focus = solid 2px ring; /lab/feed hydration fixed. Finding: unlayered `* { border-color: transparent }` (tokens.css, since S00-T01) blanks every themed border colour app-wide — PROPOSED L-77 (move it to @layer base).
+```
